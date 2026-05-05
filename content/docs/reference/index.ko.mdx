@@ -5,29 +5,29 @@ description: 설정 파일, CLI, 카테고리, 훅, 환경 변수, 호환성 메
 
 ## 패키지와 이름 호환성
 
-현재 npm 기준 `oh-my-openagent`와 `oh-my-opencode`는 같은 버전으로 배포되어 있고, 둘 다 같은 바이너리를 제공합니다.
+upstream rename은 전환 중입니다. 설치는 upstream에 현재 배포된 명령을 우선하고, OpenAgent 이름은 product/public identity로 이해하면 안전합니다.
 
 | 이름 | 용도 |
 |---|---|
-| `oh-my-openagent` | 공개 사이트와 새 플러그인 등록에서 우선 사용하는 이름. |
-| `oh-my-opencode` | 기존 설치와 자동화가 쓰던 호환 이름. |
-| `oh-my-openagent` plugin entry | OpenCode 설정의 권장 플러그인 이름. |
-| `oh-my-opencode` plugin entry | 전환 기간 동안 경고와 함께 로드되는 legacy entry. |
+| `oh-my-opencode` | 현재 upstream npm package와 primary installer command. |
+| `oh-my-openagent` | rename transition 중 제공되는 compatibility binary/product name. |
+| `oh-my-openagent` plugin entry | installer가 등록할 수 있을 때 선호하는 OpenCode plugin entry. |
+| `oh-my-opencode` plugin entry | 전환 기간 동안 계속 인식되는 legacy entry. |
 
 ## CLI
 
 | 명령 | 용도 |
 |---|---|
-| `bunx oh-my-openagent install` | 공개 사이트 기준 설치 명령. |
-| `bunx oh-my-opencode install` | 호환 설치 명령. 같은 버전의 패키지를 사용합니다. |
-| `bunx oh-my-openagent doctor` | 시스템, 설정, 도구, 모델 해석 검증. |
-| `bunx oh-my-openagent run <message>` | todo/background task 완료까지 기다리는 OpenCode session runner. |
-| `bunx oh-my-openagent version` | 버전 정보 표시. |
-| `bunx oh-my-openagent mcp oauth ...` | OAuth가 필요한 MCP 서버 인증 관리. |
+| `bunx oh-my-opencode install` | 대화형 installer. |
+| `bunx oh-my-opencode install --no-tui ...` | agent-driven install에 적합한 비대화형 setup. |
+| `bunx oh-my-opencode doctor` | 시스템, 설정, 도구, 모델 해석 검증. |
+| `bunx oh-my-opencode run <message>` | 완료 강제 기능이 포함된 OpenCode session runner. |
+| `bunx oh-my-opencode version` | 버전 정보 표시. |
+| `bunx oh-my-opencode mcp oauth ...` | remote MCP server용 OAuth helper. |
 
 ## 설정 파일 위치
 
-사용자 설정을 먼저 읽고, 프로젝트 설정이 덮어씁니다. JSONC를 지원합니다.
+사용자 설정을 먼저 읽고, 프로젝트 설정이 덮어쓸 수 있습니다. JSONC를 지원합니다.
 
 | 범위 | 경로 |
 |---|---|
@@ -36,11 +36,9 @@ description: 설정 파일, CLI, 카테고리, 훅, 환경 변수, 호환성 메
 
 ## 빠른 설정 예시
 
-공개 사이트는 새 schema 이름을 사용합니다.
-
 ```jsonc
 {
-  "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/master/assets/oh-my-openagent.schema.json",
+  "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/dev/assets/oh-my-opencode.schema.json",
   "agents": {
     "oracle": { "model": "openai/gpt-5.4", "variant": "high" },
     "explore": { "model": "github-copilot/grok-code-fast-1" }
@@ -52,52 +50,51 @@ description: 설정 파일, CLI, 카테고리, 훅, 환경 변수, 호환성 메
 }
 ```
 
-소스 저장소의 전환기 문서에는 호환 schema인 `oh-my-opencode.schema.json`도 등장합니다. 현재 설치된 패키지와 schema 파일 이름이 다르면 `doctor` 결과를 우선 확인하세요.
+설치된 package가 renamed schema를 노출한다면 `doctor`가 알려주는 경로를 우선하세요.
 
 ## Agent 옵션
 
 | 옵션 | 설명 |
 |---|---|
-| `model` | `provider/model` 형식의 모델 override. |
+| `model` | `provider/model` 형식의 명시적 override. |
 | `variant` | `max`, `high`, `medium`, `low`, `xhigh` 같은 변형. |
-| `fallback_models` | API 오류 시 사용할 fallback chain. |
-| `prompt`, `prompt_append` | 시스템 프롬프트 교체/추가. `file://` URI를 지원합니다. |
+| `fallback_models` | model/provider 실패 시 사용하는 순서 있는 fallback chain. |
+| `prompt`, `prompt_append` | agent prompt 교체/추가. `file://` URI를 지원합니다. |
 | `tools` | agent가 사용할 수 있는 도구 제한. |
 | `disable` | 특정 agent 비활성화. |
-| `permission` | `edit`, `bash`, `webfetch` 등의 권한 제어. |
+| `permission` | edit, bash, webfetch 같은 권한 제어. |
 
 ## Category
 
-카테고리는 “어떤 일인가”를 표현합니다. 모델 기본값은 설치 시점과 provider 상태에 따라 바뀔 수 있으므로, 아래 표는 목적 중심으로 읽는 것이 안전합니다.
-
-| 카테고리 | 목적 |
+| Category | 목적 |
 |---|---|
-| `visual-engineering` | 프론트엔드, UI/UX, 디자인, 애니메이션 |
-| `ultrabrain` | 깊은 논리, 아키텍처, 복잡한 판단 |
-| `deep` | 자율 리서치와 end-to-end 구현 |
-| `artistry` | 창의적/비정형 작업 |
-| `quick` | 단순 변경, 오타, 단일 파일 수정 |
-| `unspecified-low`, `unspecified-high` | 애매한 일반 작업의 저/고노력 fallback |
-| `writing` | 문서와 산문 |
+| `visual-engineering` | Frontend, UI/UX, design, styling, animation. |
+| `ultrabrain` | Hard logic, architecture, deep reasoning. |
+| `deep` | Autonomous research + end-to-end implementation. |
+| `artistry` | 창의적/비정형 작업. |
+| `quick` | 단순 변경, typo, 단일 파일 수정. |
+| `unspecified-low`, `unspecified-high` | 일반 작업의 저/고노력 fallback. |
+| `writing` | 문서와 prose. |
 
-## 훅과 실험 기능
+## Install Flags
 
-공개 설정 페이지에는 40개 이상의 hook이 나열됩니다. 자주 마주치는 계열은 아래입니다.
-
-| 계열 | 예시 |
+| Flag | 의미 |
 |---|---|
-| 자동 실행/라우팅 | `auto-slash-command`, `keyword-detector`, `category-skill-reminder` |
-| 연속성 | `ralph-loop`, `todo-continuation-enforcer`, `task-reminder` |
-| 복구 | `session-recovery`, `edit-error-recovery`, `json-error-recovery` |
-| 도구 통합 | `interactive-bash-session`, `claude-code-hooks`, `directory-agents-injector` |
-
-실험 옵션은 설치 버전마다 달라질 수 있습니다. 대표적으로 `aggressive_truncation`, `auto_resume`, `preemptive_compaction`, `truncate_all_tool_outputs` 같은 컨텍스트/재개 관련 옵션이 있습니다.
+| `--claude=no\|yes\|max20` | Claude provider mode. |
+| `--openai=no\|yes` | OpenAI/ChatGPT provider mode. |
+| `--gemini=no\|yes` | Gemini provider mode. |
+| `--copilot=no\|yes` | GitHub Copilot fallback provider. |
+| `--opencode-go=no\|yes` | OpenCode Go subscription path. |
+| `--opencode-zen=no\|yes` | `opencode/` model catalog path. |
+| `--zai-coding-plan=no\|yes` | Z.ai Coding Plan path. |
+| `--kimi-for-coding=no\|yes` | Kimi for Coding path. |
+| `--vercel-ai-gateway=no\|yes` | Vercel AI Gateway path. |
+| `--skip-auth` | 설치 후 auth 안내 생략. |
 
 ## 환경 변수
 
 | 변수 | 의미 |
 |---|---|
-| `OMO_SEND_ANONYMOUS_TELEMETRY=0` | 익명 활성 설치 텔레메트리 비활성화. |
-| `OMO_DISABLE_POSTHOG=1` | PostHog 전송 비활성화. |
+| `OMO_SEND_ANONYMOUS_TELEMETRY=0` | 익명 활성 설치 telemetry 비활성화. |
+| `OMO_DISABLE_POSTHOG=1` | PostHog telemetry 비활성화. |
 | `OPENCODE_CONFIG_DIR` | OpenCode 설정 디렉토리 override. |
-
