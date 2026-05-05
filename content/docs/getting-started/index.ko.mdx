@@ -1,110 +1,112 @@
 ---
 title: 시작하기
-description: Oh My OpenAgent를 설치하고 첫 OpenCode 세션을 검증합니다.
+description: Oh My OpenAgent를 설치하고 provider를 설정한 뒤 첫 OpenCode 세션을 검증합니다.
 ---
 
-## 0. 준비물
+## 준비물
 
-| 항목 | 내용 |
+| 항목 | 요구사항 |
 |---|---|
-| OpenCode | `opencode` 명령이 실행 가능해야 합니다. |
-| 모델 접근 권한 | Claude, OpenAI, Gemini, GitHub Copilot, OpenCode Go/Zen, Kimi for Coding, Z.ai 중 사용할 provider. |
-| 환경 | macOS, Linux, WSL, Windows x64. |
+| OpenCode | `opencode`가 설치되어 있어야 합니다. upstream guide는 OpenCode `1.0.150` 이상을 기준으로 합니다. |
+| Runtime | 설치 후 CLI는 주요 플랫폼용 standalone binary를 사용하지만, bootstrap은 `bunx` 또는 `npx`가 가장 쉽습니다. |
+| Providers | Claude, OpenAI/ChatGPT, Gemini, GitHub Copilot, OpenCode Go/Zen, Kimi for Coding, Z.ai, Vercel AI Gateway 중 실제로 쓰는 것. |
+| OS | macOS ARM64/x64, Linux x64/ARM64 및 musl/Alpine, Windows x64 binary가 배포됩니다. |
 
-OmO는 provider 하나만 고집하지 않습니다. Sisyphus, Hephaestus, Oracle, Explore처럼 역할이 다른 에이전트가 각자 맞는 모델 계열을 씁니다.
+## 설치
 
-## 1. 설치
-
-공식 사이트의 공개 설치 명령은 다음입니다.
-
-```bash
-bunx oh-my-openagent install
-```
-
-현재 npm에는 `oh-my-openagent`와 `oh-my-opencode`가 같은 버전으로 배포되어 있고, 둘 다 `oh-my-openagent` / `oh-my-opencode` 바이너리를 제공합니다. 기존 자동화는 아래 명령을 계속 사용할 수 있습니다.
+upstream 패키지는 아직 `oh-my-opencode`로 배포됩니다.
 
 ```bash
 bunx oh-my-opencode install
 ```
 
-설치기는 보통 다음을 처리합니다.
-
-<Steps>
-
-### Subscription 선택
-
-Claude, OpenAI, Gemini, Copilot, OpenCode Go/Zen, Kimi for Coding, Z.ai 등 실제로 사용할 수 있는 provider를 묻습니다.
-
-### Plugin 등록
-
-OpenCode 설정의 `plugin` 배열에 `oh-my-openagent`를 등록합니다. legacy `oh-my-opencode` 항목은 전환 기간 동안 경고와 함께 로드됩니다.
-
-### OmO 설정 파일 생성
-
-사용자 설정 디렉토리에 `oh-my-openagent.json[c]` 또는 호환 `oh-my-opencode.json[c]` 파일을 생성합니다.
-
-### 인증 안내
-
-필요한 provider에 대해 `opencode auth login` 흐름을 안내합니다. `--skip-auth`를 주면 인증 안내를 건너뜁니다.
-
-</Steps>
-
-## 2. 비대화형 설치
-
-에이전트나 스크립트가 설치할 때는 구독 상태를 플래그로 넘깁니다.
+호환 binary도 사용할 수 있습니다.
 
 ```bash
-bunx oh-my-openagent install --no-tui \
+bunx oh-my-openagent install
+```
+
+installer는 가능하면 OpenCode plugin entry를 `oh-my-openagent`로 등록하고, OmO config 파일을 만들며, 선택한 provider에 필요한 인증 단계를 출력합니다.
+
+## 비대화형 설치
+
+에이전트가 설치를 대신할 때는 `--no-tui`를 쓰는 편이 안전합니다.
+
+```bash
+bunx oh-my-opencode install --no-tui \
   --claude=yes \
   --openai=yes \
   --gemini=no \
   --copilot=no
 ```
 
-주요 플래그:
+주요 provider flag:
 
-| 플래그 | 값 |
+| Flag | 의미 |
 |---|---|
-| `--claude` | `yes`, `no`, `max20` |
-| `--openai`, `--gemini`, `--copilot` | `yes` 또는 `no` |
-| `--opencode-go`, `--opencode-zen` | `yes` 또는 `no` |
-| `--zai-coding-plan`, `--kimi-for-coding`, `--vercel-ai-gateway` | `yes` 또는 `no` |
-| `--skip-auth` | 인증 안내 생략 |
+| `--claude=no\|yes\|max20` | Claude 구독 모드. `max20`은 Claude Max 20x입니다. |
+| `--openai=no\|yes` | Oracle 같은 GPT 기반 agent를 위한 OpenAI / ChatGPT 구독. |
+| `--gemini=no\|yes` | Gemini 통합. |
+| `--copilot=no\|yes` | GitHub Copilot fallback provider. |
+| `--opencode-go=no\|yes` | GLM, Kimi, MiniMax를 제공하는 OpenCode Go. |
+| `--opencode-zen=no\|yes` | `opencode/` model catalog 접근. |
+| `--zai-coding-plan=no\|yes` | 주로 GLM fallback을 제공하는 Z.ai Coding Plan. |
+| `--kimi-for-coding=no\|yes` | Kimi for Coding 구독. |
+| `--vercel-ai-gateway=no\|yes` | Vercel AI Gateway provider 경로. |
+| `--skip-auth` | config만 쓰고 인증 안내를 건너뜁니다. |
 
-## 3. 검증
+Provider 선택은 agent별입니다. OmO는 하나의 전역 provider priority를 쓰지 않고, agent와 category마다 다른 fallback chain을 사용합니다.
+
+## Provider 인증
+
+설치 후 활성화한 provider는 OpenCode auth에서 인증합니다.
+
+```bash
+opencode auth login
+```
+
+Gemini Antigravity OAuth는 현재 `opencode-antigravity-auth` plugin과 해당 README의 model config가 필요합니다. GitHub Copilot, Z.ai, OpenCode Go, OpenCode Zen, Kimi는 installer가 flag에 맞춰 기본 model을 설정합니다.
+
+## 검증
 
 ```bash
 opencode --version
-bunx oh-my-openagent doctor
+bunx oh-my-opencode doctor
 ```
 
-`doctor`는 시스템, 설정, 도구, 모델 해석을 확인합니다.
+`doctor`는 system, config, tools, model resolution을 확인합니다.
 
-| 영역 | 확인하는 것 |
+| 그룹 | 예시 |
 |---|---|
-| System | OpenCode 버전, 플러그인 등록, legacy 이름 경고 |
-| Config | JSONC 파싱, schema 검증, agent/category override |
-| Tools | AST-Grep, LSP, GitHub CLI, MCP 서버 |
-| Models | 모델 capability cache, fallback chain, provider availability |
+| System | OpenCode binary, version, plugin 등록, legacy package warning. |
+| Config | JSONC parsing, schema validation, config file detection. |
+| Tools | AST-Grep, LSP server, GitHub CLI, MCP server. |
+| Models | Capability cache, model normalization, agent/category override, fallback availability. |
 
-## 4. 첫 작업
+Provider/model resolution이 이상하면 `doctor --verbose`를 사용하세요.
 
-OpenCode를 열고 한 줄만 입력해 보세요.
+## 첫 작업
+
+자율 실행:
 
 ```text
-ulw
+ulw fix the failing login flow and verify it in the browser
 ```
 
-또는 더 명시적으로:
+정확한 다단계 작업:
 
 ```text
-ultrawork 현재 프로젝트 구조를 파악하고 README의 설치 설명을 검증해줘
-```
-
-복잡하고 안전하게 진행해야 하는 작업은 Prometheus 계획 모드를 쓰세요.
-
-```text
-@plan 인증 모듈을 동작 변경 없이 리팩토링하고 싶어
+@plan refactor the auth module without behavior changes
 /start-work
 ```
 
+GPT-native deep work가 필요하면 agent selector에서 Hephaestus로 전환하고, 절차가 아니라 목표를 주세요.
+
+## Telemetry
+
+익명 active-install telemetry는 기본 활성화입니다. UTC 하루에 한 번 이하로 hashed installation id를 보내며 PostHog person profile은 만들지 않습니다. 끄려면 둘 중 하나를 설정합니다.
+
+```bash
+OMO_SEND_ANONYMOUS_TELEMETRY=0
+OMO_DISABLE_POSTHOG=1
+```

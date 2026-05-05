@@ -1,57 +1,112 @@
 ---
 title: Getting Started
-description: Install Oh My OpenAgent and verify your first OpenCode session.
+description: Install Oh My OpenAgent, configure providers, and verify your first OpenCode session.
 ---
 
 ## Prerequisites
 
 | Item | Requirement |
 |---|---|
-| OpenCode | `opencode` must be available. |
-| Providers | Claude, OpenAI, Gemini, Copilot, OpenCode Go/Zen, Kimi for Coding, Z.ai, or whichever providers you use. |
-| OS | macOS, Linux, WSL, or Windows x64. |
+| OpenCode | `opencode` should be installed. The upstream guide expects OpenCode `1.0.150` or newer. |
+| Runtime | The CLI ships standalone binaries for major platforms after install, but `bunx` or `npx` is still the easiest bootstrap path. |
+| Providers | Claude, OpenAI/ChatGPT, Gemini, GitHub Copilot, OpenCode Go/Zen, Kimi for Coding, Z.ai, Vercel AI Gateway, or the subset you actually use. |
+| OS | macOS ARM64/x64, Linux x64/ARM64 including musl/Alpine, and Windows x64 are published. |
 
 ## Install
 
-```bash
-bunx oh-my-openagent install
-```
-
-Compatibility path:
+The upstream package is still published as `oh-my-opencode`:
 
 ```bash
 bunx oh-my-opencode install
 ```
 
-Both npm packages currently publish the same version and expose both `oh-my-openagent` and `oh-my-opencode` binaries.
+The compatibility binary also exists:
+
+```bash
+bunx oh-my-openagent install
+```
+
+The installer registers the OpenCode plugin entry as `oh-my-openagent` when possible, creates an OmO config file, and prints the authentication steps needed for the provider flags you selected.
 
 ## Non-Interactive Install
 
+Use non-interactive mode when an agent is doing setup for you:
+
 ```bash
-bunx oh-my-openagent install --no-tui \
+bunx oh-my-opencode install --no-tui \
   --claude=yes \
   --openai=yes \
   --gemini=no \
   --copilot=no
 ```
 
+Common provider flags:
+
+| Flag | Meaning |
+|---|---|
+| `--claude=no\|yes\|max20` | Claude subscription mode. `max20` means Claude Max 20x. |
+| `--openai=no\|yes` | OpenAI / ChatGPT subscription for GPT-backed agents such as Oracle. |
+| `--gemini=no\|yes` | Gemini integration. |
+| `--copilot=no\|yes` | GitHub Copilot fallback provider. |
+| `--opencode-go=no\|yes` | OpenCode Go subscription for GLM, Kimi, MiniMax models. |
+| `--opencode-zen=no\|yes` | `opencode/` model catalog access. |
+| `--zai-coding-plan=no\|yes` | Z.ai Coding Plan, mainly GLM fallbacks. |
+| `--kimi-for-coding=no\|yes` | Kimi for Coding subscription. |
+| `--vercel-ai-gateway=no\|yes` | Vercel AI Gateway provider path. |
+| `--skip-auth` | Skip auth hints after writing config. |
+
+Provider selection is agent-specific. OmO does not use one global provider priority; each agent and category has its own fallback chain.
+
+## Authenticate Providers
+
+After installation, use OpenCode auth for the providers you enabled:
+
+```bash
+opencode auth login
+```
+
+For Gemini Antigravity OAuth, upstream currently expects the `opencode-antigravity-auth` plugin and full model configuration from that plugin's README. For GitHub Copilot, Z.ai, OpenCode Go, OpenCode Zen, and Kimi, the installer chooses model defaults according to the provider flags you passed.
+
 ## Verify
 
 ```bash
 opencode --version
-bunx oh-my-openagent doctor
+bunx oh-my-opencode doctor
 ```
+
+`doctor` checks system, config, tools, and model resolution:
+
+| Group | Examples |
+|---|---|
+| System | OpenCode binary, version, plugin registration, legacy package warnings. |
+| Config | JSONC parsing, schema validation, config file detection. |
+| Tools | AST-Grep, LSP servers, GitHub CLI, MCP servers. |
+| Models | Capability cache, model normalization, agent/category overrides, fallback availability. |
+
+Use `doctor --verbose` when provider/model resolution looks wrong.
 
 ## First Task
 
+For autonomous work:
+
 ```text
-ulw
+ulw fix the failing login flow and verify it in the browser
 ```
 
-For precise work, plan first:
+For precise multi-step work:
 
 ```text
 @plan refactor the auth module without behavior changes
 /start-work
 ```
 
+For GPT-native deep work, switch to Hephaestus from the agent selector and give a goal rather than a recipe.
+
+## Telemetry
+
+Anonymous active-install telemetry is enabled by default. It sends at most one event per UTC day per machine using a hashed installation identifier; it does not create PostHog person profiles. Disable it with either variable:
+
+```bash
+OMO_SEND_ANONYMOUS_TELEMETRY=0
+OMO_DISABLE_POSTHOG=1
+```
