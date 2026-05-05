@@ -6,25 +6,6 @@ import { i18n } from '@/lib/i18n';
 import { OMO_VERSION } from '@/lib/version';
 import { DocsSidebarFooter } from '@/components/docs-sidebar-footer';
 
-function HelpIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <circle cx="12" cy="12" r="10" />
-      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-      <path d="M12 17h.01" />
-    </svg>
-  );
-}
-
 export default async function Layout({
   params,
   children,
@@ -68,7 +49,13 @@ export default async function Layout({
       }}
       sidebar={{
         defaultOpenLevel: 1,
-        footer: <DocsSidebarFooter languageLabel={languageLabel} />,
+        footer: (
+          <DocsSidebarFooter
+            supportHref={`${langPrefix}/docs/support`}
+            supportLabel={supportLabel}
+            languageLabel={languageLabel}
+          />
+        ),
       }}
       i18n={i18n}
       slots={{ languageSelect: false, themeSwitch: false }}
@@ -77,12 +64,6 @@ export default async function Layout({
           text: 'GitHub',
           url: 'https://github.com/code-yeongyu/oh-my-openagent',
           external: true,
-        },
-        {
-          type: 'icon',
-          text: supportLabel,
-          url: `${langPrefix}/docs/support`,
-          icon: <HelpIcon />,
         },
       ]}
     >
