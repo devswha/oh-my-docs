@@ -1,15 +1,19 @@
 ---
 title: Oh My OpenAgent
-description: ulw 한 단어로 계획, 위임, 실행, 검증을 하나의 루프로 묶는 OpenCode 멀티 모델 에이전트 하네스.
+description: OpenCode에서 여러 에이전트를 한 번에 굴리는 OmO 문서.
 ---
 
 ![Oh My OpenAgent](/images/hero.jpg)
 
-**Oh My OpenAgent(OmO)** 는 OpenCode 위에 올라가는 멀티 모델 에이전트 하네스입니다. 단순한 프롬프트 모음이 아니라 의도 파악, 계획, 위임, 실행, 검증, 세션 연속성을 한 루프로 묶습니다.
+**OpenCode를 위한 멀티 에이전트 오케스트레이션. 목표만 말하면 됩니다.**
 
-OmO의 전제는 명확합니다. 사람은 원하는 결과를 말하고, 하네스가 방법을 찾아야 합니다. 작은 일은 평소처럼 요청하면 되고, 복잡한 일은 `ulw` 또는 `ultrawork`라고 쓰면 됩니다. 정확도가 중요한 일은 Prometheus로 계획을 만든 뒤 `/start-work`로 실행합니다.
+_OpenCode 사용법을 더 외우지 마세요. OmO가 흐름을 잡습니다._
 
-현재 배포 패키지와 바이너리 이름은 여전히 `oh-my-opencode`입니다. OpenCode plugin entry는 `oh-my-openagent`를 선호하지만, 전환 기간에는 legacy entry와 config 파일명도 계속 인식합니다.
+Oh My OpenAgent(OmO)는 OpenCode 위에서 동작하는 에이전트 레이어입니다. 사용자가 원하는 결과를 말하면, OmO가 의도를 읽고 계획, 위임, 실행, 검증까지 이어갑니다.
+
+작은 일은 평소처럼 요청하면 됩니다. 복잡한 일은 `ulw` 또는 `ultrawork`로 시작하세요. 정확한 설계가 먼저 필요하면 Prometheus로 계획을 만들고 `/start-work`로 실행합니다.
+
+> **이름 안내:** 제품 이름은 **Oh My OpenAgent**지만, upstream npm 패키지는 아직 `oh-my-opencode`로 배포됩니다. 설치 문서에서는 이 전환 상태를 그대로 적습니다.
 
 ```bash
 bunx oh-my-opencode install
@@ -27,26 +31,40 @@ bunx oh-my-opencode install
     E -."아직 아님".-> C`
 } />
 
-## OmO가 더하는 것
+## 왜 OmO인가
 
-| 층 | 에이전트에게 주는 것 |
-|---|---|
-| Intent Gate | 답변, 조사, 구현, 계획, 위임 중 사용자의 진짜 의도를 먼저 읽습니다. |
-| Discipline agents | Sisyphus, Hephaestus, Prometheus, Atlas, Oracle, Librarian, Explore, Metis, Momus, Sisyphus-Junior가 서로 다른 일을 맡습니다. |
-| Category routing | 모델명을 직접 고르지 않고 `visual-engineering`, `ultrabrain`, `deep`, `quick`, `writing` 같은 작업 성격으로 위임합니다. |
-| Skills | `playwright`, `git-master`, `frontend-ui-ux`, `review-work`, 프로젝트 스킬이 필요한 순간에만 지식과 MCP를 주입합니다. |
-| Agent-grade tools | LSP, AST-grep, tmux, 브라우저 QA, MCP 검색, session tools, hash-anchored edit를 제공합니다. |
-| Continuation hooks | Todo continuation, Ralph/ulw loop, session recovery, runtime fallback, reminder가 중단된 작업을 다시 밀어 올립니다. |
+- **의도 먼저** — 설명인지, 조사인지, 구현인지 먼저 가릅니다.
+- **에이전트 분업** — Sisyphus, Hephaestus, Prometheus, Atlas, Oracle 등이 역할을 나눕니다.
+- **카테고리 라우팅** — 모델명을 외우는 대신 `visual-engineering`, `deep`, `writing` 같은 작업 성격으로 보냅니다.
+- **스킬 주입** — `playwright`, `git-master`, project skill이 필요한 순간에만 들어옵니다.
+- **실제 검증** — 브라우저, tmux, API 요청, 빌드처럼 사용자가 만지는 표면으로 확인합니다.
+- **계속 밀기** — todo, background task, Ralph/ulw loop가 남은 일을 다시 이어갑니다.
 
-## 문서 지도
+## 문서 구조
 
 <Cards>
-  <Card title="시작하기" href="/ko/docs/getting-started">설치, provider 선택, doctor 검증, 첫 `ulw` 작업.</Card>
-  <Card title="핵심 개념" href="/ko/docs/concepts">Intent Gate, 에이전트, 모델 계열, 카테고리, 스킬, 연속성.</Card>
-  <Card title="가이드" href="/ko/docs/guides">일반 요청, `ultrawork`, Prometheus 계획, Hephaestus 선택 기준.</Card>
-  <Card title="에이전트" href="/ko/docs/agents">오케스트레이터, planner, consultant, retrieval agent, category worker.</Card>
-  <Card title="도구" href="/ko/docs/tools">LSP, AST-grep, MCP, tmux, background agent, session tool, hashline edit.</Card>
-  <Card title="스킬" href="/ko/docs/skills">내장 스킬, custom skill 위치, docs sync harness.</Card>
-  <Card title="훅" href="/ko/docs/hooks">연속성, 복구, 알림, 규칙, comment checker, slash-command hook.</Card>
-  <Card title="레퍼런스" href="/ko/docs/reference">CLI, config, model resolution, category, 환경 변수.</Card>
+  <Card title="Getting Started" href="/ko/docs/getting-started">
+    설치, provider 선택, doctor 검증, 첫 `ulw` 작업
+  </Card>
+  <Card title="Core Concepts" href="/ko/docs/concepts">
+    의도, 에이전트, 모델 계열, 카테고리, 스킬, 연속성
+  </Card>
+  <Card title="Guides" href="/ko/docs/guides">
+    `ulw`, Prometheus 계획, Hephaestus 선택 기준
+  </Card>
+  <Card title="Agents" href="/ko/docs/agents">
+    오케스트레이터, planner, consultant, retrieval agent
+  </Card>
+  <Card title="Skills" href="/ko/docs/skills">
+    내장 스킬, project skill, Patina 기반 문서 톤 가이드
+  </Card>
+  <Card title="Hooks" href="/ko/docs/hooks">
+    연속성, 복구, 알림, 라우팅 hook
+  </Card>
+  <Card title="Tools" href="/ko/docs/tools">
+    LSP, AST-Grep, MCP, tmux, browser QA
+  </Card>
+  <Card title="Reference" href="/ko/docs/reference">
+    CLI, config, model override, category, 환경 변수
+  </Card>
 </Cards>
