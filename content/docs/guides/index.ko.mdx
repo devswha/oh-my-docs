@@ -1,80 +1,71 @@
 ---
 title: 가이드
-description: 작업 성격에 따라 일반 프롬프트, ulw, Prometheus+Atlas를 고르는 법.
+description: 작업 성격에 맞는 OmO workflow를 고릅니다.
 ---
 
-## 어떤 모드를 쓸까
+## workflow 선택
 
 | 상황 | 사용 | 이유 |
 |---|---|---|
-| 작은 수정 | 일반 프롬프트 | Sisyphus가 직접 처리하는 편이 빠릅니다. |
-| 복잡하지만 맡기고 싶음 | `ulw` 또는 `ultrawork` | 탐색, 계획, 병렬 위임, 검증을 자동으로 이어갑니다. |
-| 복잡하고 정확해야 함 | Prometheus → `/start-work` | 인터뷰 기반 계획과 Atlas 실행을 분리합니다. |
-| 브라우저/CLI 동작 확인 필요 | 해당 surface 도구 포함 | Playwright, tmux, HTTP 요청으로 실제 사용 표면을 검증합니다. |
+| 작은 수정 또는 직접 질문 | 일반 prompt | overhead가 가장 낮습니다. |
+| 복잡하지만 맡기고 싶을 때 | `ulw` / `ultrawork` | Sisyphus가 탐색, 위임, 구현, 검증, continuation을 처리합니다. |
+| 복잡하고 정확도가 중요할 때 | Prometheus `@plan` → `/start-work` | 구현 전에 결정을 끝내고 Atlas가 계획을 실행합니다. |
+| GPT-native deep reasoning | Hephaestus | 아키텍처, 어려운 디버깅, cross-domain reasoning용 deep worker. |
+| 좁은 구현 단위 하나 | `task(category=..., load_skills=[...])` | 맞는 model profile로 Sisyphus-Junior가 집중 실행합니다. |
 
-## 의사결정 흐름
+## Ultrawork
 
-<Mermaid chart={`
-flowchart TD
-    A["작업 요청"] --> B{"작은 수정인가?"}
-    B -->|Yes| C["일반 프롬프트"]
-    B -->|No| D{"설명하기 귀찮고 맡기고 싶은가?"}
-    D -->|Yes| E["ulw / ultrawork"]
-    D -->|No| F{"정확한 계획과 검증이 중요한가?"}
-    F -->|Yes| G["Prometheus로 계획 → /start-work"]
-    F -->|No| E
-    C --> H["진단·빌드·수동 QA"]
-    E --> H
-    G --> H
-`} />
-
-## Ultrawork 패턴
-
-`ulw`는 “세 글자만 입력하고 떠나라”에 가까운 모드입니다. 코드베이스를 스캔하고, Explore/Librarian 같은 백그라운드 에이전트를 띄우고, 구현 후 검증까지 이어갑니다.
+`ulw`는 “그냥 해줘” 경로입니다. 목표와, 가능하면 성공을 증명할 표면을 같이 주세요.
 
 ```text
-ulw 결제 파서의 누락된 테스트 커버리지를 추가하고 실제 CLI 흐름까지 검증해줘
+ulw fix the login error message and verify success/failure in the browser
 ```
 
-좋은 `ulw` 요청은 목표와 완료 표면을 함께 줍니다.
+좋은 `ulw` prompt에는 다음이 들어갑니다.
 
-| 나쁜 요청 | 더 나은 요청 |
-|---|---|
-| “로그인 고쳐줘” | “로그인 실패 시 에러 메시지가 안 보이는 문제를 고치고 브라우저에서 실패/성공 흐름을 검증해줘” |
-| “문서 정리” | “설치 문서의 provider 플래그와 doctor 검증 절차를 최신 CLI 기준으로 고쳐줘” |
+- 바꿔야 하는 사용자 관찰 동작.
+- 검증 표면: browser, CLI, API, tests, docs build.
+- 바꾸면 안 되는 경계.
 
-## Prometheus + Atlas 패턴
+## Prometheus + Atlas
 
-정확성이 중요한 작업은 계획과 실행을 나눕니다.
+속도보다 정확도가 중요하면 Prometheus를 사용합니다.
 
-<Steps>
+1. Sisyphus에서 `@plan "..."`을 입력하거나 Tab으로 Prometheus를 선택합니다.
+2. 요구사항이 명확해질 때까지 질문에 답합니다.
+3. Prometheus가 `.sisyphus/plans/` 아래에 계획을 씁니다.
+4. `/start-work`를 실행합니다.
+5. Atlas가 계획을 읽고 boulder state를 만들며, 위임 실행하고 나중에 이어갈 수 있습니다.
 
-### Prometheus에게 설명
+`/start-work`가 active plan을 찾지 못하면 먼저 Prometheus plan을 만들거나 stale `.sisyphus/boulder.json`을 정리해야 합니다.
 
-`@plan` 또는 Prometheus agent로 전환해 목표, 금지사항, 검증 기준을 설명합니다.
+## Hephaestus vs Sisyphus
 
-### Metis와 Momus로 계획 검토
+| 기준 | Hephaestus | Sisyphus + `ulw` |
+|---|---|---|
+| 모델 스타일 | GPT-native autonomous deep worker. | Category와 skill로 위임하는 orchestrator. |
+| 적합한 일 | 아키텍처, 어려운 디버깅, cross-domain reasoning. | 대부분의 복잡한 “맡아서 처리해줘” 작업. |
+| 계획 | 실행하면서 자체 계획. | Prometheus plan을 쓰거나 자율 탐색. |
+| 위임 | Explore/Librarian으로 context를 많이 모읍니다. | Category worker와 specialist를 사용합니다. |
 
-Metis는 빠진 요구사항을 찾고, Momus는 계획이 실행 가능한지 검토합니다.
+기본 추천: 대부분은 `ulw`, GPT-5.4식 깊은 추론이 필요할 때 Hephaestus.
 
-### Atlas 실행
+## 설치를 에이전트에게 맡길 때
 
-`/start-work`를 실행하면 Atlas가 계획을 읽고 Sisyphus-Junior와 specialist에게 작업을 분배합니다.
+upstream README는 OmO 설치를 에이전트에게 맡기는 흐름을 권장합니다. 설치를 돕는 agent는 다음을 해야 합니다.
 
-### 독립 검증
+1. 사용자가 가진 subscription/provider를 묻습니다.
+2. 답변에 맞춰 `bunx oh-my-opencode install --no-tui ...`를 실행합니다.
+3. 필요한 경우 interactive terminal에서 `opencode auth login`을 안내합니다.
+4. `bunx oh-my-opencode doctor`를 실행합니다.
+5. model setup과 safe override를 설명합니다.
 
-Atlas는 하위 에이전트의 “완료”를 그대로 믿지 않고, 직접 진단·빌드·테스트·수동 QA 결과를 확인합니다.
+사용자가 명시하지 않았다면 model 설정을 바꾸거나 hook/MCP를 끄지 마세요.
 
-</Steps>
+## 모델 선택 원칙
 
-## 모델 설정 원칙
-
-모델명은 계속 바뀝니다. 더 오래 가는 원칙은 아래입니다.
-
-- Sisyphus/Prometheus: Claude 계열 또는 Claude-like 모델이 안정적입니다.
-- Hephaestus/Oracle: GPT 계열 고성능 reasoning 모델이 어울립니다.
-- Explore/Librarian: 빠르고 저렴한 검색 모델이 낫습니다.
-- Visual 작업: `visual-engineering` 카테고리와 UI/UX 스킬을 같이 씁니다.
-
-이유 없이 모든 agent를 최고가 모델로 올리면 비용만 늘고 속도는 떨어질 수 있습니다.
-
+- Sisyphus는 Claude Opus, Kimi K2.5, GLM 5 계열에서 가장 안정적입니다.
+- Hephaestus, Oracle, Momus는 GPT-friendly 또는 GPT-native입니다.
+- Visual engineering은 Gemini식 시각/frontend reasoning이 유리합니다.
+- Explore와 Librarian은 빠르고 저렴해야 합니다.
+- Runtime fallback과 `fallback_models`는 실패 시 workflow를 멈추지 않고 다음 모델로 이동하기 위한 장치입니다.

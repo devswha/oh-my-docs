@@ -3,35 +3,69 @@ title: Guides
 description: Choose the right OmO workflow for each task.
 ---
 
-## Decision Flow
+## Choosing a Workflow
 
-<Mermaid chart={`
-flowchart TD
-    A["Task"] --> B{"Small fix?"}
-    B -->|Yes| C["Normal prompt"]
-    B -->|No| D{"Want autonomy?"}
-    D -->|Yes| E["ulw / ultrawork"]
-    D -->|No| F{"Need a verified plan?"}
-    F -->|Yes| G["Prometheus -> /start-work"]
-    F -->|No| E
-    C --> H["Verify through surface"]
-    E --> H
-    G --> H
-`} />
+| Situation | Use | Why |
+|---|---|---|
+| Small fix or direct question | Normal prompt | Lowest overhead. |
+| Complex but you want autonomy | `ulw` / `ultrawork` | Sisyphus explores, delegates, implements, verifies, and continues. |
+| Complex and precision matters | Prometheus `@plan` → `/start-work` | Planning decisions are made before implementation; Atlas executes the plan. |
+| Deep GPT-native reasoning | Hephaestus | Autonomous deep worker for architecture/debugging/synthesis. |
+| One narrow implementation unit | `task(category=..., load_skills=[...])` | Focused Sisyphus-Junior execution with the right model profile. |
 
 ## Ultrawork
 
-`ulw` is the “just do it” path. Give a goal and the surface that proves it works.
+`ulw` is the “just do it” path. Give the goal and, when possible, the surface that proves it works.
 
 ```text
 ulw fix the login error message and verify success/failure in the browser
 ```
 
+Good `ulw` prompts include:
+
+- The user-facing behavior to change.
+- The surface to verify: browser, CLI, API, tests, or docs build.
+- Hard boundaries: what must not change.
+
 ## Prometheus + Atlas
 
-Use this when correctness matters more than speed. Prometheus interviews and plans; Atlas executes the approved plan.
+Use Prometheus when correctness matters more than speed.
+
+1. Stay in Sisyphus and type `@plan "..."`, or switch to Prometheus with Tab.
+2. Answer questions until requirements are clear.
+3. Prometheus writes a plan under `.sisyphus/plans/`.
+4. Run `/start-work`.
+5. Atlas reads the plan, creates boulder state, delegates execution, and can resume later.
+
+If `/start-work` says no active plan exists, create a Prometheus plan first or clear stale `.sisyphus/boulder.json` state.
+
+## Hephaestus vs Sisyphus
+
+| Aspect | Hephaestus | Sisyphus + `ulw` |
+|---|---|---|
+| Model style | GPT-native autonomous deep worker. | Orchestrator that delegates by category and skill. |
+| Best for | Architecture, hard debugging, cross-domain reasoning. | Most complex “please handle it” tasks. |
+| Planning | Self-plans while executing. | Can use Prometheus plans or autonomous exploration. |
+| Delegation | Uses Explore/Librarian heavily for context. | Uses category-based workers and specialists. |
+
+Default recommendation: use `ulw` for most work; switch to Hephaestus when you specifically want GPT-5.4-style deep reasoning.
+
+## Installation as an Agent Task
+
+The upstream README explicitly recommends letting an agent install OmO. When helping a user install it, the agent should:
+
+1. Ask which subscriptions/providers they have.
+2. Run `bunx oh-my-opencode install --no-tui ...` with matching flags.
+3. Guide `opencode auth login` in an interactive terminal when needed.
+4. Run `bunx oh-my-opencode doctor`.
+5. Explain model setup and safe overrides.
+
+Do not silently change model settings or disable hooks/MCPs unless the user asked for that.
 
 ## Model Rule of Thumb
 
-Do not memorize defaults. Use categories. Keep Explore/Librarian cheap and fast; reserve high reasoning models for Sisyphus, Hephaestus, Oracle, and planning.
-
+- Sisyphus works best on Claude Opus, Kimi K2.5, or GLM 5 style models.
+- Hephaestus, Oracle, and Momus are GPT-friendly or GPT-native.
+- Visual engineering benefits from Gemini-style visual/front-end reasoning.
+- Explore and Librarian should stay fast and cheap.
+- Runtime fallback and `fallback_models` exist so failure moves to the next configured model instead of stopping the workflow.
