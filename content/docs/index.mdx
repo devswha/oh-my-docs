@@ -5,36 +5,50 @@ description: A multi-model agent harness for OpenCode. Type ulw and let planning
 
 ![Oh My OpenAgent](/images/hero.jpg)
 
-**Oh My OpenAgent (OmO)** is a multi-model agent harness for OpenCode. It is not just a prompt pack: it connects intent detection, planning, delegation, execution, verification, and session continuity.
+**Oh My OpenAgent (OmO)** is a multi-model agent harness for OpenCode. It is not just a prompt pack: it connects intent detection, planning, delegation, execution, verification, and session continuity around OpenCode.
 
-The public install command is:
+OmO is built around one premise: the human should describe the outcome, not babysit the harness. For quick work you can prompt normally. For complex work you can type `ulw` or `ultrawork`. For high-accuracy work you can plan with Prometheus, then execute with `/start-work`.
+
+The published package and binary are still `oh-my-opencode`; the compatibility layer prefers the OpenCode plugin entry `oh-my-openagent`. Use the compatibility command when following upstream installation docs:
 
 ```bash
-bunx oh-my-openagent install
+bunx oh-my-opencode install
 ```
 
-During the rename transition, `oh-my-opencode` remains available at the same version and exposes the same binaries.
+Compatibility note: `oh-my-openagent` is also exposed as a binary, and both renamed and legacy plugin config basenames are recognized during the transition.
 
 ## Core Loop
 
-<Mermaid chart={`
-flowchart LR
+<Mermaid chart={
+`flowchart LR
     A["Human Intent"] --> B["Intent Gate"]
-    B --> C["Sisyphus"]
-    C --> D["Specialists"]
-    D --> E["Verification"]
+    B --> C["Sisyphus / Hephaestus"]
+    C --> D["Specialists + Tools"]
+    D --> E["Surface Verification"]
     E --> F["Verified Result"]
-    E -."not done".-> C
-`} />
+    E -."not done".-> C`
+} />
+
+## What OmO Adds
+
+| Layer | What it gives the agent |
+|---|---|
+| Intent Gate | Reads whether the user wants an answer, investigation, implementation, planning, or delegation. |
+| Discipline agents | Sisyphus, Hephaestus, Prometheus, Atlas, Oracle, Librarian, Explore, Metis, Momus, and Sisyphus-Junior each do different work. |
+| Category routing | Delegation uses work categories such as `visual-engineering`, `ultrabrain`, `deep`, `quick`, and `writing`, instead of forcing the user to pick model names. |
+| Skills | Domain workflows like `playwright`, `git-master`, `frontend-ui-ux`, `review-work`, and project skills inject instructions and MCP servers only when needed. |
+| Agent-grade tools | LSP, AST-grep, tmux, browser QA, MCP search, session tools, and hash-anchored edits. |
+| Continuation hooks | Todo continuation, Ralph/ulw loops, session recovery, runtime fallback, and reminders keep work moving after interruptions. |
 
 ## Documentation Map
 
 <Cards>
   <Card title="Getting Started" href="/en/docs/getting-started">Install OmO, choose providers, run doctor, and try the first `ulw` task.</Card>
-  <Card title="Core Concepts" href="/en/docs/concepts">Intent Gate, Sisyphus, Prometheus/Atlas, Category+Skill routing.</Card>
-  <Card title="Guides" href="/en/docs/guides">Choose between normal prompting, `ultrawork`, and Prometheus planning.</Card>
-  <Card title="Agents" href="/en/docs/agents">The core orchestrators and specialist agents.</Card>
-  <Card title="Tools" href="/en/docs/tools">LSP, AST-grep, MCP, tmux, background agents, and hashline edits.</Card>
-  <Card title="Reference" href="/en/docs/reference">Config files, CLI commands, categories, hooks, env vars.</Card>
+  <Card title="Core Concepts" href="/en/docs/concepts">Intent Gate, agents, model families, categories, skills, and continuation.</Card>
+  <Card title="Guides" href="/en/docs/guides">Choose between normal prompting, `ultrawork`, Prometheus planning, and Hephaestus.</Card>
+  <Card title="Agents" href="/en/docs/agents">The orchestrators, planners, consultants, retrieval agents, and category workers.</Card>
+  <Card title="Tools" href="/en/docs/tools">LSP, AST-grep, MCP, tmux, background agents, session tools, and hashline edits.</Card>
+  <Card title="Skills" href="/en/docs/skills">Built-in skills, custom skill locations, and the docs sync harness.</Card>
+  <Card title="Hooks" href="/en/docs/hooks">Continuation, recovery, notifications, rules, comments, and slash-command hooks.</Card>
+  <Card title="Reference" href="/en/docs/reference">CLI commands, config files, model resolution, categories, environment variables.</Card>
 </Cards>
-

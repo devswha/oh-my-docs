@@ -1,59 +1,52 @@
 ---
 title: Oh My OpenAgent
-description: OpenCode를 위한 멀티 모델 에이전트 하네스. ulw 한 줄로 계획, 위임, 실행, 검증까지 이어갑니다.
+description: ulw 한 단어로 계획, 위임, 실행, 검증을 하나의 루프로 묶는 OpenCode 멀티 모델 에이전트 하네스.
 ---
 
 ![Oh My OpenAgent](/images/hero.jpg)
 
-**Oh My OpenAgent(OmO)** 는 OpenCode 위에 올라가는 멀티 모델 에이전트 하네스입니다. 단순히 프롬프트 몇 개를 모아둔 레이어가 아니라, 의도 파악, 계획, 위임, 실행, 검증, 세션 연속성을 하나의 루프로 묶습니다.
+**Oh My OpenAgent(OmO)** 는 OpenCode 위에 올라가는 멀티 모델 에이전트 하네스입니다. 단순한 프롬프트 모음이 아니라 의도 파악, 계획, 위임, 실행, 검증, 세션 연속성을 한 루프로 묶습니다.
 
-공식 사이트 기준 설치 명령은 아래입니다.
+OmO의 전제는 명확합니다. 사람은 원하는 결과를 말하고, 하네스가 방법을 찾아야 합니다. 작은 일은 평소처럼 요청하면 되고, 복잡한 일은 `ulw` 또는 `ultrawork`라고 쓰면 됩니다. 정확도가 중요한 일은 Prometheus로 계획을 만든 뒤 `/start-work`로 실행합니다.
+
+현재 배포 패키지와 바이너리 이름은 여전히 `oh-my-opencode`입니다. OpenCode plugin entry는 `oh-my-openagent`를 선호하지만, 전환 기간에는 legacy entry와 config 파일명도 계속 인식합니다.
 
 ```bash
-bunx oh-my-openagent install
+bunx oh-my-opencode install
 ```
-
-전환 기간 동안 `oh-my-opencode` 패키지도 같은 버전과 같은 바이너리를 제공합니다. 기존 문서나 자동화가 `bunx oh-my-opencode install`을 사용해도 동작합니다.
 
 ## 핵심 루프
 
-<Mermaid chart={`
-flowchart LR
-    A["Human Intent\n무엇을 원하는가"] --> B["Intent Gate\n진짜 의도 분류"]
-    B --> C["Sisyphus\n계획과 위임"]
-    C --> D["Specialists\n리서치·구현·검토"]
-    D --> E["Verification\n진단·빌드·테스트·수동 QA"]
-    E --> F["Verified Result\n사용 가능한 결과"]
-    E -."미완료".-> C
-`} />
+<Mermaid chart={
+`flowchart LR
+    A["사람의 의도"] --> B["Intent Gate"]
+    B --> C["Sisyphus / Hephaestus"]
+    C --> D["전문가 + 도구"]
+    D --> E["실제 표면 검증"]
+    E --> F["검증된 결과"]
+    E -."아직 아님".-> C`
+} />
 
-## 문서 구조
+## OmO가 더하는 것
+
+| 층 | 에이전트에게 주는 것 |
+|---|---|
+| Intent Gate | 답변, 조사, 구현, 계획, 위임 중 사용자의 진짜 의도를 먼저 읽습니다. |
+| Discipline agents | Sisyphus, Hephaestus, Prometheus, Atlas, Oracle, Librarian, Explore, Metis, Momus, Sisyphus-Junior가 서로 다른 일을 맡습니다. |
+| Category routing | 모델명을 직접 고르지 않고 `visual-engineering`, `ultrabrain`, `deep`, `quick`, `writing` 같은 작업 성격으로 위임합니다. |
+| Skills | `playwright`, `git-master`, `frontend-ui-ux`, `review-work`, 프로젝트 스킬이 필요한 순간에만 지식과 MCP를 주입합니다. |
+| Agent-grade tools | LSP, AST-grep, tmux, 브라우저 QA, MCP 검색, session tools, hash-anchored edit를 제공합니다. |
+| Continuation hooks | Todo continuation, Ralph/ulw loop, session recovery, runtime fallback, reminder가 중단된 작업을 다시 밀어 올립니다. |
+
+## 문서 지도
 
 <Cards>
-  <Card title="시작하기" href="/ko/docs/getting-started">
-    설치, provider 선택, doctor 검증, 첫 `ulw` 실행까지.
-  </Card>
-  <Card title="주요 개념" href="/ko/docs/concepts">
-    Intent Gate, Sisyphus, Prometheus/Atlas, Category+Skill 라우팅.
-  </Card>
-  <Card title="가이드" href="/ko/docs/guides">
-    일반 프롬프트, `ultrawork`, Prometheus 계획 모드 중 무엇을 쓸지.
-  </Card>
-  <Card title="에이전트" href="/ko/docs/agents">
-    Sisyphus, Hephaestus, Prometheus, Atlas와 전문 에이전트 카탈로그.
-  </Card>
-  <Card title="도구" href="/ko/docs/tools">
-    LSP, AST-grep, MCP, tmux, 백그라운드 에이전트, 해시라인 편집.
-  </Card>
-  <Card title="레퍼런스" href="/ko/docs/reference">
-    설정 파일, CLI, 카테고리, 훅, 환경 변수, 호환성 메모.
-  </Card>
+  <Card title="시작하기" href="/ko/docs/getting-started">설치, provider 선택, doctor 검증, 첫 `ulw` 작업.</Card>
+  <Card title="핵심 개념" href="/ko/docs/concepts">Intent Gate, 에이전트, 모델 계열, 카테고리, 스킬, 연속성.</Card>
+  <Card title="가이드" href="/ko/docs/guides">일반 요청, `ultrawork`, Prometheus 계획, Hephaestus 선택 기준.</Card>
+  <Card title="에이전트" href="/ko/docs/agents">오케스트레이터, planner, consultant, retrieval agent, category worker.</Card>
+  <Card title="도구" href="/ko/docs/tools">LSP, AST-grep, MCP, tmux, background agent, session tool, hashline edit.</Card>
+  <Card title="스킬" href="/ko/docs/skills">내장 스킬, custom skill 위치, docs sync harness.</Card>
+  <Card title="훅" href="/ko/docs/hooks">연속성, 복구, 알림, 규칙, comment checker, slash-command hook.</Card>
+  <Card title="레퍼런스" href="/ko/docs/reference">CLI, config, model resolution, category, 환경 변수.</Card>
 </Cards>
-
-## 무엇이 다른가
-
-- **계획과 실행 분리**: Prometheus는 코드를 쓰지 않고 계획만 세웁니다. Atlas는 검증된 계획을 실행합니다.
-- **모델명을 직접 고르지 않는 위임**: 작업을 `visual-engineering`, `deep`, `quick` 같은 카테고리로 표현합니다.
-- **신뢰하되 검증**: 하위 에이전트 결과를 그대로 믿지 않고, 진단·빌드·테스트·수동 QA로 확인합니다.
-- **중단 복구**: Boulder/continuation 계열 훅이 세션 중단과 미완료 todo를 추적합니다.
-
