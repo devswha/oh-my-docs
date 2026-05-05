@@ -1,0 +1,39 @@
+---
+title: Hooks
+description: Lifecycle automation that keeps OmO sessions recoverable, routed, and moving.
+---
+
+## What Hooks Control
+
+Hooks are the harness layer around OpenCode sessions. They can inject instructions, recover malformed state, route slash commands, remind agents about category/skill rules, and resume unfinished work.
+
+| Family | Examples | Purpose |
+|---|---|---|
+| Routing | `auto-slash-command`, `keyword-detector`, `category-skill-reminder` | Turn user intent into the right workflow. |
+| Continuation | `ralph-loop`, `todo-continuation-enforcer`, `task-reminder` | Prevent unfinished tasks from stopping silently. |
+| Recovery | `session-recovery`, `edit-error-recovery`, `json-error-recovery` | Repair common model/tool failure modes. |
+| Tool integration | `interactive-bash-session`, `claude-code-hooks`, MCP hooks | Connect tmux, external tools, and agent-specific tooling. |
+| Context | `directory-agents-injector`, AGENTS-style injection | Add repository or directory conventions. |
+
+## Practical Model
+
+You rarely need to memorize every hook. Think of them as four guarantees:
+
+1. The right instructions are present before work starts.
+2. The right specialist or category is selected for the task.
+3. The session can recover from tool/model glitches.
+4. The agent continues until todos and verification are complete.
+
+## Safe Customization
+
+When changing hooks or experimental options:
+
+- Change one behavior at a time.
+- Run `bunx oh-my-opencode doctor --verbose` after config changes.
+- Keep continuation hooks enabled unless you are debugging the harness itself.
+- Prefer per-project config for repository-specific behavior.
+- Document any project hook assumptions in `.opencode/skills/` or local docs.
+
+## Related Config
+
+Common experimental options are about context and recovery: `aggressive_truncation`, `auto_resume`, `preemptive_compaction`, and `truncate_all_tool_outputs`. Their exact availability can vary by installed version, so let `doctor` and the generated schema be the source of truth.

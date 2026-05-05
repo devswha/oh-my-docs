@@ -1,0 +1,39 @@
+---
+title: 훅
+description: OmO session을 복구 가능하고, 올바르게 라우팅되고, 계속 움직이게 하는 lifecycle automation.
+---
+
+## Hook이 제어하는 것
+
+Hook은 OpenCode session 주변의 harness layer입니다. 지시를 주입하고, 망가진 state를 복구하고, slash command를 라우팅하고, category/skill rule을 상기시키며, 끝나지 않은 작업을 이어갑니다.
+
+| 계열 | 예시 | 목적 |
+|---|---|---|
+| Routing | `auto-slash-command`, `keyword-detector`, `category-skill-reminder` | 사용자 의도를 맞는 workflow로 변환. |
+| Continuation | `ralph-loop`, `todo-continuation-enforcer`, `task-reminder` | 미완료 작업이 조용히 멈추는 것을 방지. |
+| Recovery | `session-recovery`, `edit-error-recovery`, `json-error-recovery` | 흔한 model/tool 실패 모드 복구. |
+| Tool integration | `interactive-bash-session`, `claude-code-hooks`, MCP hooks | tmux, 외부 도구, agent-specific tooling 연결. |
+| Context | `directory-agents-injector`, AGENTS-style injection | repository 또는 directory convention 주입. |
+
+## 실전 모델
+
+모든 hook 이름을 외울 필요는 거의 없습니다. 네 가지 보장으로 보면 됩니다.
+
+1. 작업 시작 전에 필요한 지시가 들어온다.
+2. 작업에 맞는 specialist 또는 category가 선택된다.
+3. tool/model glitch에서 session을 복구할 수 있다.
+4. todo와 verification이 끝날 때까지 agent가 이어간다.
+
+## 안전한 Customization
+
+Hook이나 experimental option을 바꿀 때는 다음을 지키세요.
+
+- 한 번에 하나의 동작만 바꿉니다.
+- config 변경 후 `bunx oh-my-opencode doctor --verbose`를 실행합니다.
+- harness 자체를 debugging하는 경우가 아니면 continuation hook은 켜 둡니다.
+- repository-specific behavior는 project config에 둡니다.
+- project hook assumption은 `.opencode/skills/` 또는 local docs에 문서화합니다.
+
+## 관련 Config
+
+자주 보이는 experimental option은 context/recovery 관련입니다: `aggressive_truncation`, `auto_resume`, `preemptive_compaction`, `truncate_all_tool_outputs`. 정확한 사용 가능 여부는 설치 버전에 따라 달라질 수 있으므로 `doctor`와 generated schema를 기준으로 삼으세요.
