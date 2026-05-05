@@ -3,27 +3,61 @@ title: Agents
 description: The OmO agent catalog and responsibility split.
 ---
 
-## Agent Map
+## Core Ordering
 
-<Mermaid chart={`
-flowchart LR
-    A["Sisyphus"] --> B["Planning\nPrometheus / Metis / Momus"]
-    A --> C["Deep Work\nHephaestus / Oracle"]
-    A --> D["Retrieval\nExplore / Librarian"]
-    A --> E["Execution\nAtlas / Sisyphus-Junior"]
-    A --> F["Surface QA\nMultimodal-Looker / Browser / Tmux"]
-`} />
+The core agents have deterministic tab order in OpenCode: Sisyphus, Hephaestus, Prometheus, then Atlas. Other agents follow after that stable core.
 
-| Agent | Role |
+| Agent | Role | Notes |
+|---|---|---|
+| Sisyphus | Main orchestrator. Reads intent, delegates, tracks todos, and finishes. | Best with Claude Opus/Kimi/GLM style orchestration, with a GPT-5.4 path available. |
+| Hephaestus | GPT-native autonomous deep worker. | Use for architecture, deep debugging, or cross-domain synthesis. |
+| Prometheus | Strategic planner and interviewer. | Creates plans; should not edit production code. |
+| Atlas | Executes approved plans. | Reads Prometheus plans, creates boulder state, delegates units, verifies progress. |
+| Oracle | Read-only architecture/debugging consultant. | Good for unfamiliar patterns, security/performance tradeoffs, hard debugging. |
+| Librarian | Documentation, remote repositories, OSS examples. | Keep fast and cheap; retrieval should not use orchestration-grade tokens. |
+| Explore | Fast codebase search. | Best for “where is X?” and pattern discovery. |
+| Multimodal-Looker | Images, PDFs, diagrams, screenshots. | Uses visual-capable models for extraction and summary. |
+| Metis | Pre-plan gap analyzer. | Finds hidden intentions, ambiguity, missing constraints. |
+| Momus | Plan/result reviewer. | Rejects vague or unverifiable plans. |
+| Sisyphus-Junior | Category-spawned executor. | Focused worker; cannot re-delegate. |
+
+## Tool Boundaries
+
+| Agent | Constraint |
 |---|---|
-| Sisyphus | Main orchestrator. Reads intent, delegates, and finishes. |
-| Hephaestus | GPT-native deep worker for implementation and debugging. |
-| Prometheus | Strategic planner. Interviews and plans; does not code. |
-| Atlas | Executes approved plans through category+skill delegation. |
-| Oracle | Read-only architecture/debugging consultant. |
-| Librarian | Docs, remote repos, and OSS examples. |
-| Explore | Fast codebase search. |
-| Metis | Gap analysis before a plan hardens. |
-| Momus | Ruthless plan/result review. |
-| Sisyphus-Junior | Focused category-spawned executor. |
+| Oracle | Read-only consultation. No writes, edits, or delegation. |
+| Librarian | Research-only. No writes, edits, or delegation. |
+| Explore | Search-only. No writes, edits, or delegation. |
+| Multimodal-Looker | Media analysis, read-focused. |
+| Atlas | Orchestrates plan execution but delegates implementation units. |
+| Sisyphus-Junior | Implements one assigned unit and must verify before returning. |
 
+These restrictions are part of the harness. They prevent “smart” agents from doing unsafe work in the wrong role.
+
+## Category Workers
+
+When the `task` tool receives a `category`, OmO creates a Sisyphus-Junior-like worker with the category's model/profile. The category describes the domain; skills add instructions and MCPs.
+
+| Category | Worker behavior |
+|---|---|
+| `visual-engineering` | Frontend/UI/design work. Pair with `frontend-ui-ux` and browser verification. |
+| `ultrabrain` | Hard reasoning and architecture. Keep the prompt goal-oriented. |
+| `deep` | Autonomous research plus implementation. Good for hairy but coherent work. |
+| `artistry` | Creative or non-conventional approaches. |
+| `quick` | Small changes. Do not use for visual work just because the diff is small. |
+| `writing` | Documentation and prose. |
+
+## Background Agents
+
+Background agents let the main session keep working while specialists search or analyze.
+
+```ts
+task({
+  subagent_type: "explore",
+  load_skills: [],
+  run_in_background: true,
+  prompt: "Find all auth policy implementations and summarize file paths.",
+});
+```
+
+Use background mode for independent research. Use synchronous mode when the result blocks the next implementation decision.
