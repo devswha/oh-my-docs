@@ -1,0 +1,20 @@
+---
+title: 계획과 리뷰 에이전트
+description: Prometheus, Metis, Momus는 결정과 구현을 분리합니다.
+---
+
+## 계획 루프
+
+Prometheus가 계획하고, Metis가 숨은 의도와 AI-slop 위험을 찾고, Momus가 실행 가능한 계획인지 검토합니다. 덕분에 구현 에이전트가 중간에 제품 결정이나 아키텍처 결정을 만들어내지 않습니다.
+
+| 단계 | Agent | 산출물 |
+|---|---|---|
+| 명확화 | Prometheus | 인터뷰 질문, 가정, 범위 경계. |
+| 갭 분석 | Metis | 숨은 요구사항, 모호성, anti-slop 지시. |
+| 계획 작성 | Prometheus | 작업과 검증이 들어간 `.sisyphus/plans/*.md`. |
+| 고정밀 리뷰 | Momus | blocker 기준 `OKAY` 또는 `REJECT`. |
+| 실행 | Atlas | 위임된 작업과 누적 학습. |
+
+## 언제 쓰나
+
+리팩터링, 아키텍처 결정, 여러 파일에 걸친 기능, “그냥 구현”하면 추측이 너무 많아지는 일에 씁니다.

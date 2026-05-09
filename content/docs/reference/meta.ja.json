@@ -1,5 +1,8 @@
 {
+  "title": "Reference",
   "pages": [
-    "index"
+    "[Config Files](/ja/docs/reference#config-files)",
+    "[CLI](/ja/docs/reference#cli)",
+    "[Telemetry](/ja/docs/reference#telemetry)"
   ]
 }

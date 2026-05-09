@@ -1,5 +1,11 @@
 {
+  "title": "주요 개념",
   "pages": [
-    "index"
+    "[시스템 형태](/ko/docs/concepts#시스템-형태)",
+    "[의도부터 본다](/ko/docs/concepts#의도부터-본다)",
+    "[계획과 실행](/ko/docs/concepts#계획과-실행을-나눈다)",
+    "[모델 역할](/ko/docs/concepts#모델은-역할별로-쓴다)",
+    "[Category + Skill](/ko/docs/concepts#category--skill)",
+    "[Continuation](/ko/docs/concepts#계속-밀어-올린다)"
   ]
 }

@@ -1,0 +1,15 @@
+---
+title: 計画とレビューエージェント
+description: Prometheus、Metis、Momus は意思決定と実装を分離します。
+---
+
+## Planning Loop
+
+Prometheus clarifies and writes plans, Metis finds hidden gaps, and Momus reviews whether the plan is executable.
+
+| Step | Agent | Output |
+|---|---|---|
+| Clarify | Prometheus | Questions, assumptions, scope. |
+| Gap analysis | Metis | Ambiguity and anti-slop directives. |
+| Review | Momus | `OKAY` or `REJECT`. |
+| Execute | Atlas | Delegated tasks and verification. |

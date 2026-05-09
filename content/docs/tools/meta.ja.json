@@ -1,5 +1,10 @@
 {
+  "title": "Tools",
   "pages": [
-    "index"
+    "[Background Agents](/ja/docs/tools#background-agents)",
+    "[LSP and AST-Grep](/ja/docs/tools#lsp-and-ast-grep)",
+    "[tmux](/ja/docs/tools#tmux)",
+    "[MCPs](/ja/docs/tools#mcps)",
+    "[Hashline Edits](/ja/docs/tools#hashline-edits)"
   ]
 }

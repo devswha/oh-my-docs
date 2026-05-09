@@ -1,0 +1,33 @@
+---
+title: 카테고리 워커
+description: Category dispatch는 모델과 스킬 라우팅이 붙은 Sisyphus-Junior 워커를 만듭니다.
+---
+
+## Category Dispatch
+
+`task(category="...")`는 Sisyphus-Junior를 통해 실행됩니다. 카테고리는 작업 성격을 설명하고, OmO는 그에 맞는 모델 프로필과 추가 지시를 붙입니다.
+
+| Category | 적합한 일 |
+|---|---|
+| `visual-engineering` | 프론트엔드, UI/UX, 스타일링, 애니메이션, 브라우저 검증. |
+| `ultrabrain` | 어려운 추론, 아키텍처, 높은 정확도가 필요한 분석. |
+| `deep` | 리서치와 구현을 함께 하는 자율 작업. |
+| `artistry` | 창의적이거나 관습을 깨야 하는 작업. |
+| `quick` | 작고 경계가 분명한 변경. |
+| `writing` | 문서와 글쓰기. |
+| `unspecified-low` / `unspecified-high` | 딱 맞는 레인이 없을 때의 저/고 effort fallback. |
+| `quick-rust`, `quick-zig`, `git` | 설치 버전에서 활성화될 수 있는 특화 quick 레인. |
+
+## Category + Skill
+
+카테고리는 워커 프로필을 고르고, 스킬은 플레이북을 더합니다.
+
+```ts
+task({
+  category: "visual-engineering",
+  load_skills: ["frontend-ui-ux", "playwright"],
+  prompt: "문서 사이드바를 수정하고 브라우저에서 검증해줘.",
+});
+```
+
+Sisyphus-Junior는 하나의 할당 단위에 집중하며, 돌아오기 전에 검증해야 합니다.

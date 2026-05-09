@@ -1,5 +1,9 @@
 {
+  "title": "Agents",
   "pages": [
-    "index"
+    "orchestration",
+    "specialists",
+    "planning-review",
+    "category-workers"
   ]
 }

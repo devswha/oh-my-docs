@@ -1,0 +1,28 @@
+---
+title: Project Skills
+description: How project, user, OpenCode, and built-in skills are discovered and prioritized.
+---
+
+## Priority Order
+
+OmO loads skills with this priority:
+
+```text
+project > opencode > user > builtin
+```
+
+A project skill under `.opencode/skills/` can override or specialize a general built-in skill. That lets a repository encode its own release process, documentation sync rules, or PR workflow without bloating every agent prompt.
+
+## Skill MCPs
+
+Some skills declare MCP servers. OmO isolates skill MCP state per session so the same skill can be used in parallel without state leaking between sessions.
+
+## Good Project Skill Shape
+
+| Section | Purpose |
+|---|---|
+| Description | When the skill should load. |
+| Required sources | Files, commands, or upstream repos that must be checked. |
+| Workflow | Repeatable steps. |
+| Guardrails | What must not happen. |
+| Verification | Commands or surfaces that prove completion. |

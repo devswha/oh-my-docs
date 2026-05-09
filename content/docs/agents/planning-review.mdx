@@ -1,0 +1,20 @@
+---
+title: Planning & Review Agents
+description: Prometheus, Metis, and Momus separate decisions from implementation.
+---
+
+## Planning Loop
+
+Prometheus plans, Metis looks for missing intent and AI-slop risks, and Momus reviews whether the plan is executable. This keeps implementation agents from inventing product or architecture decisions mid-flight.
+
+| Step | Agent | Output |
+|---|---|---|
+| Clarify | Prometheus | Interview questions, assumptions, scope boundaries. |
+| Gap analysis | Metis | Hidden requirements, ambiguity, anti-slop directives. |
+| Plan write | Prometheus | `.sisyphus/plans/*.md` with tasks and verification. |
+| High-accuracy review | Momus | `OKAY` or `REJECT` based on blockers. |
+| Execution | Atlas | Delegated tasks and accumulated learnings. |
+
+## When to Use
+
+Use this lane for refactors, architecture decisions, multi-file features, and work where “just implement it” would leave too much to chance.

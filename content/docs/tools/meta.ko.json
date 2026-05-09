@@ -1,5 +1,10 @@
 {
+  "title": "도구",
   "pages": [
-    "index"
+    "[도구 스택](/ko/docs/tools#도구-스택)",
+    "[LSP와 AST-Grep](/ko/docs/tools#lsp와-ast-grep)",
+    "[수동 QA](/ko/docs/tools#수동-qa-표면)",
+    "[MCP와 검색](/ko/docs/tools#mcp와-검색)",
+    "[Hook과 Continuation](/ko/docs/tools#hook과-continuation)"
   ]
 }

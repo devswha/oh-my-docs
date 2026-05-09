@@ -1,5 +1,9 @@
 {
+  "title": "에이전트",
   "pages": [
-    "index"
+    "orchestration",
+    "specialists",
+    "planning-review",
+    "category-workers"
   ]
 }

@@ -1,0 +1,26 @@
+---
+title: オーケストレーションエージェント
+description: Sisyphus、Hephaestus、Prometheus、Atlas が主要な作業レーンです。
+---
+
+## Primary Lanes
+
+OmO keeps four primary agents in stable order: Sisyphus, Hephaestus, Prometheus, then Atlas.
+
+| Agent | Lane | Use it when |
+|---|---|---|
+| Sisyphus | Main orchestrator | Intent を読み、委任し、todo を追跡して完了まで進める。 |
+| Hephaestus | GPT-native deep worker | アーキテクチャ、難しいデバッグ、横断的な推論を一人で深く進める。 |
+| Prometheus | Strategic planner | 実装前に要件と範囲を明確にする。 |
+| Atlas | Plan executor | Prometheus の計画を `/start-work` で実行する。 |
+
+## Flow
+
+```text
+ultrawork -> Sisyphus orchestrates directly
+@plan -> Prometheus writes a plan -> /start-work activates Atlas
+```
+
+## Source Notes
+
+Facts are aligned with upstream `src/agents/AGENTS.md` and `docs/guide/orchestration.md`.

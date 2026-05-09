@@ -1,4 +1,9 @@
 {
   "title": "Skills",
-  "pages": ["index"]
+  "pages": [
+    "workflow",
+    "engineering",
+    "review-cleanup",
+    "project-skills"
+  ]
 }

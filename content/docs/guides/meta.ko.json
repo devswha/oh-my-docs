@@ -1,5 +1,11 @@
 {
+  "title": "가이드",
   "pages": [
-    "index"
+    "[어디로 시작할까](/ko/docs/guides#어디로-시작할까)",
+    "[Ultrawork](/ko/docs/guides#ultrawork)",
+    "[Prometheus + Atlas](/ko/docs/guides#prometheus--atlas)",
+    "[Hephaestus vs Sisyphus](/ko/docs/guides#hephaestus-vs-sisyphus)",
+    "[설치를 에이전트에게 맡길 때](/ko/docs/guides#설치를-에이전트에게-맡길-때)",
+    "[모델 선택 원칙](/ko/docs/guides#모델-선택-원칙)"
   ]
 }

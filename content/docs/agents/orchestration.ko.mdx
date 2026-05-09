@@ -1,0 +1,31 @@
+---
+title: 오케스트레이션 에이전트
+description: Sisyphus, Hephaestus, Prometheus, Atlas가 기본 작업 레인입니다.
+---
+
+## 기본 레인
+
+OmO는 핵심 에이전트를 Sisyphus, Hephaestus, Prometheus, Atlas 순서로 안정적으로 배치합니다. 사용자가 OpenCode UI나 워크플로우 명령으로 직접 들어가는 상위 레인입니다.
+
+| Agent | 레인 | 언제 쓰나 |
+|---|---|---|
+| Sisyphus | 메인 오케스트레이터 | 의도를 읽고, 위임하고, todo를 추적하며 끝까지 밀어야 할 때. |
+| Hephaestus | GPT-native deep worker | 아키텍처, 어려운 디버깅, 여러 도메인 지식을 한 주체가 깊게 처리해야 할 때. |
+| Prometheus | 전략 플래너 | 인터뷰로 요구사항, 범위, 테스트 전략을 먼저 고정해야 할 때. |
+| Atlas | 계획 실행자 | Prometheus 계획을 `/start-work`로 실행하고 검증해야 할 때. |
+
+## 작업 흐름
+
+```text
+일반 요청 / ultrawork
+  -> Sisyphus가 바로 오케스트레이션
+
+@plan 또는 Prometheus 모드
+  -> Prometheus가 .sisyphus/plans/*.md 작성
+  -> /start-work가 Atlas 활성화
+  -> Atlas가 구현을 위임하고 진행을 검증
+```
+
+## 근거
+
+Upstream은 OmO를 OpenCode용 멀티 모델 오케스트레이션 하네스로 설명합니다. 현재 에이전트 인벤토리는 `src/agents/AGENTS.md`, 오케스트레이션 흐름은 `docs/guide/orchestration.md`에 정리되어 있습니다.
