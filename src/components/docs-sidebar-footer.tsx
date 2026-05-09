@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { LanguageSelect, LanguageSelectText } from 'fumadocs-ui/layouts/shared/slots/language-select';
+import { LanguageSelect } from 'fumadocs-ui/layouts/shared/slots/language-select';
 import { ThemeSwitch } from 'fumadocs-ui/layouts/shared/slots/theme-switch';
 
 function LanguageIcon() {
@@ -15,10 +15,10 @@ function LanguageIcon() {
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
-      className="size-4"
+      className="size-4.5"
     >
       <path d="m5 8 6 6" />
-      <path d="m4 14 6-6 2-3" />
+      <path d="M4 14l6-6 2-3" />
       <path d="M2 5h12" />
       <path d="M7 2h1" />
       <path d="m22 22-5-10-5 10" />
@@ -38,7 +38,7 @@ function HelpIcon() {
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
-      className="size-4"
+      className="size-4.5"
     >
       <circle cx="12" cy="12" r="10" />
       <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
@@ -47,8 +47,8 @@ function HelpIcon() {
   );
 }
 
-const controlClass =
-  'inline-flex size-8 shrink-0 items-center justify-center rounded-md text-sm font-medium transition-colors hover:bg-fd-accent hover:text-fd-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fd-ring';
+const iconButtonClass =
+  'inline-flex items-center justify-center rounded-md p-1.5 text-sm font-medium text-fd-muted-foreground transition-colors duration-100 hover:bg-fd-accent hover:text-fd-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fd-ring';
 
 export function DocsSidebarFooter({
   supportHref,
@@ -60,23 +60,18 @@ export function DocsSidebarFooter({
   languageLabel: string;
 }) {
   return (
-    <div className="flex items-center gap-1 rounded-lg border bg-fd-secondary/50 p-1 text-fd-muted-foreground">
-      <LanguageSelect
-        aria-label={languageLabel}
-        className="min-w-0 flex-1 justify-start px-2 text-start"
-      >
-        <LanguageIcon />
-        <LanguageSelectText className="truncate text-xs" />
-      </LanguageSelect>
+    <div className="-mx-4 -mt-2 border-t px-4 pt-2">
+      <div className="flex items-center text-fd-muted-foreground">
+        <LanguageSelect aria-label={languageLabel}>
+          <LanguageIcon />
+        </LanguageSelect>
 
-      <Link href={supportHref} aria-label={supportLabel} className={controlClass}>
-        <HelpIcon />
-      </Link>
+        <Link href={supportHref} aria-label={supportLabel} className={iconButtonClass}>
+          <HelpIcon />
+        </Link>
 
-      <ThemeSwitch
-        className="shrink-0 overflow-visible border-y-0 border-e-0 p-0"
-        mode="light-dark"
-      />
+        <ThemeSwitch className="ms-auto p-0" mode="light-dark" />
+      </div>
     </div>
   );
 }
