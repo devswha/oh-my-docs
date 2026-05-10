@@ -43,3 +43,6 @@ social-preview-1x.png
 **/.omc/logs
 .playwright-mcp/
 *.tar.gz
+
+# patina-max local run archive
+.patina-max/
