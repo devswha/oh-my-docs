@@ -1,27 +1,27 @@
 ---
 title: 스킬
-description: OmO agent에게 필요한 playbook을 필요한 순간에만 넣는 방법
+description: focused 워커를 도메인 specialist로 바꿔주는 재사용 가능한 instruction pack.
 ---
+
+Skill은 재사용 가능한 instruction pack입니다. 모든 에이전트 프롬프트를 영구히 부풀리지 않고 워크플로우, 제약, 예시, MCP 도구 접근을 더해줍니다.
 
 ## Skill이 하는 일
 
-Skill은 재사용 가능한 instruction pack입니다. 모든 agent에게 모든 규칙을 계속 넣지 않고, 필요한 순간에만 workflow와 도구를 붙입니다.
+<Cards>
+  <Card title="Built-in skill">browser QA, git discipline, review, AI-slop 제거 같은 일반 워크플로우.</Card>
+  <Card title="User skill">OpenCode config 아래에 둔 개인 convention.</Card>
+  <Card title="Project skill">`.opencode/skills/` 아래의 repo 전용 워크플로우.</Card>
+  <Card title="MCP 포함 skill">필요할 때만 로드되는 도구 서버와 함께 들어오는 instruction.</Card>
+</Cards>
 
-| Skill 종류 | 보통 들어가는 것 |
-|---|---|
-| Built-in skill | browser QA, git discipline, review, AI-slop removal 같은 일반 workflow |
-| User skill | 사용자 OpenCode config 아래의 개인 convention |
-| Project skill | `.opencode/skills/`에 저장한 repo 전용 workflow |
-| MCP 포함 skill | 지시와 함께 필요한 tool server |
+## Category + Skill 패턴
 
-## Category + Skill
-
-Category는 model/profile을 고릅니다. Skill은 그 일을 처리하는 playbook입니다.
+Category는 모델과 프로필을 고릅니다. Skill은 도메인 playbook을 더합니다.
 
 ```ts
 task({
   category: "writing",
-  load_skills: ["sync-openagent-docs", "patina"],
+  load_skills: ["sync-openagent-docs"],
   run_in_background: false,
   prompt: "Refresh docs from upstream README and docs/reference facts.",
 });
@@ -29,42 +29,29 @@ task({
 
 원칙은 단순합니다.
 
-- UI 작업은 diff가 작아도 `visual-engineering`으로 보냅니다.
-- task domain과 겹치는 skill은 모두 load합니다.
-- project/user skill이 있으면 generic built-in보다 먼저 봅니다.
-- prompt에는 context, goal, downstream use, request를 넣습니다.
-
-## Patina를 문서에 쓰는 법
-
-이 문서 사이트는 Patina 방식을 prose guardrail로 씁니다. 목적은 문장을 예쁘게 꾸미는 게 아니라 AI 포장을 걷어내는 것입니다.
-
-| Patina 원칙 | OmO docs에 적용하는 방식 |
-|---|---|
-| 의미 보존 | package name, command, provider flag 같은 사실은 바꾸지 않음 |
-| AI 어휘 제거 | “혁신적인”, “강력한”, “핵심적인 가치” 같은 홍보 문구 제거 |
-| 문장 리듬 | 같은 길이의 설명문을 반복하지 않음 |
-| 감사 가능한 수정 | 왜 바꿨는지 skill과 commit에 남김 |
-| 다국어 처리 | Korean/English 먼저, Japanese/Chinese route는 깨지지 않게 유지 |
+- UI 작업은 diff가 작아 보여도 `visual-engineering`을 쓰세요.
+- task domain과 겹치는 skill은 모두 load하세요.
+- project/user skill이 있으면 built-in보다 먼저 보세요.
+- skill 프롬프트는 구체적으로: context, goal, downstream use, request.
 
 ## 문서 동기화 Skill
 
-이 repo에는 `sync-openagent-docs`가 있습니다. upstream `code-yeongyu/oh-my-openagent`를 다시 읽고 docs를 맞추는 project skill입니다.
+이 docs site에는 `sync-openagent-docs`가 들어 있습니다. upstream `code-yeongyu/oh-my-openagent`와 컨텐츠를 맞추는 project skill입니다.
 
-이 skill은 future agent에게 이렇게 요구합니다.
+이 skill은 다음 에이전트에게 이렇게 요구합니다.
 
-- 수정 전에 upstream README, docs, package metadata, 관련 `.opencode/skills` 파일을 읽기
-- 설치 문서에서는 `oh-my-opencode` package transition을 그대로 적기
-- diagram은 architecture boundary가 필요할 때만 쓰기
-- OMC docs처럼 짧고 직접적인 문장으로 쓰기
-- Patina식으로 AI스러운 포장을 줄이고 의미는 보존하기
-- lint, build, route smoke check로 확인하기
+- 수정 전에 upstream README, docs, package metadata, 관련 `.opencode/skills` 파일을 읽기.
+- 패키지 이름 전환을 그대로 보존: 설치 문서는 `oh-my-opencode`로, 제품 정체성은 OpenAgent로.
+- 아키텍처 경계를 짚는 다이어그램이 아니라면 사용을 줄이기.
+- 영어와 한국어를 먼저 갱신하고, 일본어와 중국어 라우트는 깨지지 않게 유지.
+- lint, build, route smoke check로 검증.
 
-## 좋은 Project Skill
+## 좋은 Project Skill 쓰는 법
 
-| 섹션 | 이유 |
+| Section | 이유 |
 |---|---|
-| Purpose | 언제 load해야 하는지 정합니다. |
+| Purpose | skill이 언제 load되어야 하는지 정합니다. |
 | Required sources | stale docs와 추측을 막습니다. |
-| Workflow | 다음 agent도 같은 순서로 움직이게 합니다. |
-| Guardrails | naming, tone, verification rule을 고정합니다. |
-| Output expectations | 완료 여부를 확인할 수 있게 합니다. |
+| Workflow | 에이전트가 같은 길을 반복할 수 있게 합니다. |
+| Guardrails | naming, safety, verification 규칙을 잡습니다. |
+| Output expectations | 완료 여부를 관찰 가능하게 만듭니다. |

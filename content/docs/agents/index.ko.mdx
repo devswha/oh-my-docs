@@ -1,55 +1,59 @@
 ---
 title: 에이전트
-description: OmO 에이전트가 어떤 일을 맡는지 빠르게 보기
+description: OmO 에이전트 카탈로그와 일이 어떻게 나뉘는지.
 ---
+
+![Sisyphus orchestrating tasks in parallel](/images/sisyphus.png)
+
+OmO에는 작은 캐스팅이 있습니다. 네 명은 사용자가 의도적으로 들어가는 레인이고, 나머지는 Sisyphus가 필요할 때 부르는 specialist입니다.
 
 ## 핵심 순서
 
-OpenCode에서 core agent의 Tab 순서는 고정입니다. Sisyphus, Hephaestus, Prometheus, Atlas가 먼저 나오고 나머지가 뒤따릅니다.
+핵심 에이전트 네 명은 OpenCode에서 Tab 순서가 고정입니다. Sisyphus, Hephaestus, Prometheus, Atlas. 나머지가 그 뒤를 따릅니다.
 
-| Agent | 역할 | 메모 |
-|---|---|---|
-| Sisyphus | 메인 orchestrator | 의도 파악, 위임, todo 추적, 완료까지 진행 |
-| Hephaestus | GPT-native deep worker | 아키텍처, 어려운 디버깅, cross-domain 판단 |
-| Prometheus | planner/interviewer | 질문하고 조사해서 계획 작성. production code는 수정하지 않음 |
-| Atlas | plan executor | Prometheus plan을 읽고 boulder state로 이어서 실행 |
-| Oracle | read-only consultant | 낯선 구조, 보안/성능 tradeoff, hard debugging |
-| Librarian | docs/remote repo researcher | 공식 문서, OSS 예제, 외부 repo 조사 |
-| Explore | codebase searcher | “X가 어디 있지?”를 빠르게 찾음 |
-| Multimodal-Looker | media reader | 이미지, PDF, diagram, screenshot 분석 |
-| Metis | pre-plan gap finder | 숨은 의도와 빠진 제약 찾기 |
-| Momus | plan/result reviewer | 모호하거나 검증 불가능한 계획 거절 |
-| Sisyphus-Junior | focused executor | category로 생성되어 하나의 단위만 처리 |
+<Cards>
+  <Card title="Sisyphus" href="/ko/docs/agents/orchestration">메인 오케스트레이터. 의도를 읽고, 위임하고, todo를 추적해서 일을 끝냅니다.</Card>
+  <Card title="Hephaestus" href="/ko/docs/agents/orchestration">아키텍처, 디버깅, 합성 판단을 자율로 처리하는 GPT-native deep worker.</Card>
+  <Card title="Prometheus" href="/ko/docs/agents/planning-review">전략 planner와 interviewer. 계획을 쓰고, production code는 건드리지 않습니다.</Card>
+  <Card title="Atlas" href="/ko/docs/agents/orchestration">승인된 계획을 실행합니다. boulder state를 만들고, 단위를 위임하고, 진행을 검증합니다.</Card>
+  <Card title="Oracle" href="/ko/docs/agents/specialists">아키텍처와 디버깅을 도와주는 read-only consultant.</Card>
+  <Card title="Librarian" href="/ko/docs/agents/specialists">문서, remote repository, OSS 예제. 빠르고 저렴한 retrieval.</Card>
+  <Card title="Explore" href="/ko/docs/agents/specialists">빠른 codebase 검색. "X가 어디 있지?"와 패턴 발견에 강합니다.</Card>
+  <Card title="Multimodal-Looker" href="/ko/docs/agents/specialists">이미지, PDF, diagram, screenshot.</Card>
+  <Card title="Metis" href="/ko/docs/agents/planning-review">계획 전 갭 분석. 숨은 의도, 모호함, 빠진 제약을 끌어냅니다.</Card>
+  <Card title="Momus" href="/ko/docs/agents/planning-review">계획과 결과 reviewer. 모호하거나 검증 불가능한 계획을 거절합니다.</Card>
+  <Card title="Sisyphus-Junior" href="/ko/docs/agents/category-workers">카테고리로 생성되는 executor. 한 단위만 맡고 재위임은 못 합니다.</Card>
+</Cards>
 
 ## 도구 경계
 
-똑똑한 agent라도 아무 일이나 하면 위험합니다. OmO는 역할별로 경계를 둡니다.
+이 제약은 하네스의 일부입니다. "똑똑한" 에이전트가 잘못된 역할에서 위험한 일을 하는 걸 막습니다.
 
-| Agent | 못 하는 일 |
+| Agent | 제약 |
 |---|---|
-| Oracle | write/edit/delegation 없음 |
-| Librarian | write/edit/delegation 없음 |
-| Explore | write/edit/delegation 없음 |
-| Multimodal-Looker | media analysis 중심 |
-| Atlas | 직접 구현보다 계획 실행 orchestration |
-| Sisyphus-Junior | 재위임 없음. 맡은 단위만 구현하고 검증 |
+| Oracle | read-only consultation. write, edit, delegation 없음. |
+| Librarian | research-only. write, edit, delegation 없음. |
+| Explore | search-only. write, edit, delegation 없음. |
+| Multimodal-Looker | media analysis 중심, 읽기 위주. |
+| Atlas | 계획 실행을 오케스트레이션하지만 구현 단위는 위임. |
+| Sisyphus-Junior | 한 단위 구현 후 돌아가기 전 검증 필수. |
 
 ## Category Worker
 
-`task` tool에 `category`를 주면 해당 domain에 맞춘 Sisyphus-Junior가 뜹니다.
+`task`에 `category`가 들어오면, OmO가 그 도메인에 맞춘 Sisyphus-Junior 워커를 띄웁니다. category가 모델 프로필을 정하고, skill이 지시와 MCP를 더합니다.
 
-| Category | 맡기기 좋은 일 |
+| Category | 워커 동작 |
 |---|---|
-| `visual-engineering` | Frontend/UI/design. 작은 CSS라도 여기로 보냅니다. |
-| `ultrabrain` | hard reasoning과 architecture |
-| `deep` | 조사와 구현이 같이 필요한 큰 작업 |
-| `artistry` | 정석이 아닌 접근이 필요한 일 |
-| `quick` | 작은 변경, typo, 단일 파일 수정 |
-| `writing` | 문서와 prose |
+| `visual-engineering` | Frontend/UI/design. `frontend-ui-ux`와 브라우저 검증을 같이 씁니다. |
+| `ultrabrain` | hard reasoning과 architecture. 프롬프트는 목표 중심으로 유지하세요. |
+| `deep` | 자율 조사 + 구현. 복잡하지만 일관된 작업에 좋습니다. |
+| `artistry` | 창의적이거나 비관습적인 접근. |
+| `quick` | 작은 변경. diff가 작다고 시각 작업을 여기로 보내지 마세요. |
+| `writing` | 문서와 prose. |
 
 ## Background Agents
 
-Explore나 Librarian은 background로 띄워두면 좋습니다. 메인 세션은 구현을 계속하고, 조사 결과는 나중에 받습니다.
+메인 세션이 결과 없이도 진행 가능하면 specialist를 background로 돌리세요.
 
 ```ts
 task({
@@ -60,4 +64,4 @@ task({
 });
 ```
 
-다음 구현 결정을 막는 질문이면 synchronous mode로 기다립니다. 단순 조사는 background가 낫습니다.
+독립적인 조사면 background, 다음 구현 결정을 막는 결과면 동기 모드로 기다리세요.

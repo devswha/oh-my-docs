@@ -1,28 +1,30 @@
 ---
 title: 프로젝트 스킬
-description: project, user, OpenCode, built-in 스킬이 어떻게 발견되고 우선순위가 잡히는지 설명합니다.
+description: project, user, OpenCode, built-in 스킬이 어떻게 발견되고 우선순위가 잡히는지.
 ---
+
+프로젝트는 자체 release process, docs sync 규칙, PR workflow를 모든 에이전트 프롬프트를 부풀리지 않고 `.opencode/skills/`에 인코딩할 수 있습니다.
 
 ## 우선순위
 
-OmO는 스킬을 이 순서로 적용합니다.
+OmO는 이 순서로 skill을 load합니다.
 
 ```text
 project > opencode > user > builtin
 ```
 
-`.opencode/skills/` 아래의 프로젝트 스킬은 built-in 스킬을 덮어쓰거나 보강합니다. 레포별 릴리스 절차, 문서 동기화 규칙, PR workflow를 모든 에이전트 프롬프트에 영구로 박지 않고 필요한 순간에만 끼워 넣을 수 있습니다.
+`.opencode/skills/` 아래의 project skill은 일반 built-in skill을 override하거나 특화할 수 있습니다.
 
 ## Skill MCP
 
-일부 스킬은 MCP 서버를 선언합니다. OmO는 세션마다 skill MCP 상태를 분리해서, 같은 스킬을 병렬로 써도 상태가 섞이지 않습니다.
+일부 skill은 MCP 서버를 선언합니다. OmO는 세션마다 skill MCP 상태를 분리해서, 같은 skill을 병렬 세션에서 돌려도 상태가 섞이지 않습니다.
 
-## 좋은 프로젝트 스킬 형태
+## 좋은 Project Skill 형태
 
 | Section | 목적 |
 |---|---|
-| Description | 언제 스킬이 로드되어야 하는지. |
+| Description | skill이 언제 load되어야 하는지. |
 | Required sources | 꼭 확인할 파일, 명령, upstream repo. |
 | Workflow | 반복 가능한 단계. |
-| Guardrails | 절대 하면 안 되는 일. |
+| Guardrails | 절대 일어나면 안 되는 일. |
 | Verification | 완료를 증명할 명령이나 표면. |

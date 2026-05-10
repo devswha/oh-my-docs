@@ -1,71 +1,103 @@
 ---
 title: 가이드
-description: 지금 작업에 맞는 OmO workflow 고르기
+description: 작업 성격에 맞는 OmO workflow 고르기.
 ---
 
-## 어디로 시작할까
+OmO에는 여러 진입점이 있습니다. 보통은 그중 하나만 쓰면 됩니다. 이 페이지는 언제 어느 길로 가야 하는지 빠르게 정리한 지도입니다.
 
-| 상황 | 쓰면 좋은 것 | 이유 |
-|---|---|---|
-| 작은 수정이나 질문 | 일반 prompt | 가장 빠릅니다. |
-| 복잡하지만 맡기고 싶을 때 | `ulw` / `ultrawork` | Sisyphus가 조사, 위임, 구현, 검증까지 갑니다. |
-| 정확한 계획이 먼저일 때 | Prometheus `@plan` → `/start-work` | 구현 전에 결정을 끝냅니다. |
-| 깊은 추론이 필요할 때 | Hephaestus | 아키텍처, 어려운 디버깅, cross-domain 판단에 맞습니다. |
-| 좁은 구현 단위 하나 | `task(category=..., load_skills=[...])` | 맞는 category worker에게 넘깁니다. |
+## 어떤 워크플로우를 쓸까
+
+<Cards>
+  <Card title="일반 프롬프트">작은 수정이나 직접 질문. 가장 가벼운 길 — Sisyphus와 그냥 대화합니다.</Card>
+  <Card title="Ultrawork (`ulw`)">복잡하지만 자율성을 맡기고 싶을 때. Sisyphus가 탐색, 위임, 구현, 검증, 이어가기까지 합니다.</Card>
+  <Card title="Prometheus + Atlas">복잡하고 정확도가 중요할 때. `@plan`으로 먼저 잠그고, `/start-work`로 Atlas가 받아서 실행합니다.</Card>
+  <Card title="Hephaestus">GPT-native deep reasoning. 아키텍처, 디버깅, 합성 판단을 한 명이 자율로 처리합니다.</Card>
+  <Card title="Category task">좁은 구현 단위 하나. category와 skill을 단 focused Sisyphus-Junior를 띄웁니다.</Card>
+</Cards>
 
 ## Ultrawork
 
-`ulw`는 “그냥 끝까지 해줘”에 가깝습니다. 목표와 검증 표면을 같이 주면 좋습니다.
+`ulw`는 "그냥 끝까지 처리해줘" 경로입니다. 목표를 주고, 가능하면 동작을 증명할 표면도 같이 주세요.
 
-```text
+```bash
 ulw fix the login error message and verify success/failure in the browser
 ```
 
-좋은 prompt는 짧아도 됩니다.
+좋은 `ulw` 프롬프트는 세 가지를 짚습니다.
 
-- 사용자가 보게 될 동작
-- 확인해야 할 표면: browser, CLI, API, tests, docs build
-- 건드리면 안 되는 경계
+- 사용자가 보게 될 동작.
+- 그 동작을 증명할 표면: browser, CLI, API, tests, docs build.
+- 절대 건드리면 안 되는 경계.
 
 ## Prometheus + Atlas
 
-속도보다 정확도가 중요하면 이 경로를 탑니다.
+속도보다 정확도가 더 중요할 때 Prometheus를 부릅니다.
 
-1. Sisyphus에서 `@plan "..."`을 입력하거나 Tab으로 Prometheus를 고릅니다.
-2. 요구사항이 또렷해질 때까지 질문에 답합니다.
-3. Prometheus가 `.sisyphus/plans/` 아래에 계획을 씁니다.
-4. `/start-work`를 실행합니다.
-5. Atlas가 계획을 읽고 작업 단위로 실행합니다.
+<Steps>
 
-`/start-work`가 active plan을 못 찾으면 Prometheus plan부터 만들거나 stale `.sisyphus/boulder.json`을 정리하세요.
+<Step>
+
+### Prometheus로 계획 잠그기
+
+Sisyphus 안에서 `@plan`을 입력하거나, Tab으로 Prometheus로 전환하세요.
+
+```bash
+@plan refactor the auth module without behavior changes
+```
+
+요구사항이 또렷해질 때까지 인터뷰 질문에 답하세요. Prometheus가 `.sisyphus/plans/` 아래에 계획을 씁니다.
+
+</Step>
+
+<Step>
+
+### Atlas에 넘기기
+
+```bash
+/start-work
+```
+
+Atlas는 계획을 읽고, boulder state를 만들고, 실행 단위를 위임합니다. 세션이 끊겨도 나중에 이어서 재개할 수 있습니다.
+
+</Step>
+
+<Step>
+
+### 필요하면 복구
+
+`/start-work`가 active plan을 못 찾는다고 하면, Prometheus 계획을 먼저 만들거나 stale `.sisyphus/boulder.json`을 정리하세요.
+
+</Step>
+
+</Steps>
 
 ## Hephaestus vs Sisyphus
 
 | 기준 | Hephaestus | Sisyphus + `ulw` |
 |---|---|---|
-| 스타일 | GPT-native deep worker | category와 skill로 위임하는 orchestrator |
-| 잘하는 일 | 아키텍처, 어려운 debugging, 합성 판단 | 대부분의 “맡아서 처리해줘” 작업 |
-| 계획 | 실행하면서 자체 계획 | Prometheus plan 또는 자율 탐색 |
-| 조사 | Explore/Librarian으로 맥락을 많이 모음 | category worker와 specialist를 섞음 |
+| 모델 스타일 | GPT-native 자율 deep worker. | category와 skill로 위임하는 오케스트레이터. |
+| 잘 맞는 일 | 아키텍처, 어려운 디버깅, cross-domain 추론. | 대부분의 "그냥 처리해줘" 복잡 작업. |
+| 계획 | 실행하면서 자체 계획. | Prometheus 계획이나 자율 탐색 사용. |
+| 위임 | 맥락은 Explore, Librarian에 의존. | category 워커와 specialist 활용. |
 
-대부분은 `ulw`로 충분합니다. GPT식 깊은 판단이 필요할 때 Hephaestus를 고르세요.
+기본은 `ulw`로 두세요. GPT-5.4 식 깊은 추론이 콕 집어 필요할 때만 Hephaestus로 가세요.
 
-## 설치를 에이전트에게 맡길 때
+## 에이전트에게 설치를 맡길 때
 
-upstream README도 agent-driven install을 전제로 설명합니다. 설치를 맡기는 agent는 보통 이렇게 움직입니다.
+upstream README도 에이전트가 OmO를 설치하는 흐름을 권장합니다. 설치를 맡은 에이전트는 이렇게 움직여야 합니다.
 
-1. 사용자가 가진 provider/subscription을 묻습니다.
+1. 어떤 구독과 provider가 있는지 묻습니다.
 2. 답에 맞춰 `bunx oh-my-opencode install --no-tui ...`를 실행합니다.
-3. 필요하면 interactive terminal에서 `opencode auth login`을 안내합니다.
+3. 필요하면 인터랙티브 터미널에서 `opencode auth login`을 안내합니다.
 4. `bunx oh-my-opencode doctor`를 실행합니다.
-5. model setup과 안전한 override만 설명합니다.
+5. 모델 setup과 안전한 override를 설명합니다.
 
-사용자가 말하지 않았다면 model 설정이나 hook/MCP를 마음대로 끄지 않습니다.
+에이전트가 모델 설정이나 hook/MCP를 사용자 동의 없이 조용히 바꾸면 안 됩니다.
 
-## 모델 선택 원칙
+## 모델 선택의 감
 
-- Sisyphus는 Claude Opus, Kimi K2.5, GLM 5 계열에서 안정적입니다.
+- Sisyphus는 Claude Opus, Kimi K2.5, GLM 5 스타일 모델에서 가장 안정적입니다.
 - Hephaestus, Oracle, Momus는 GPT-friendly 또는 GPT-native입니다.
-- Visual engineering은 Gemini식 시각/frontend reasoning이 잘 맞습니다.
+- Visual engineering은 Gemini 식 frontend reasoning이 잘 맞습니다.
 - Explore와 Librarian은 빠르고 저렴해야 합니다.
-- `fallback_models`는 실패했을 때 workflow를 멈추지 않기 위한 안전망입니다.
+- `fallback_models`와 runtime fallback은 워크플로우를 멈추지 않고 실패를 넘깁니다.
