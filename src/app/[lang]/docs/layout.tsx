@@ -32,7 +32,7 @@ export default async function Layout({
         title: (
           <div className="flex items-center gap-2">
             <Image
-              src="/icon.png"
+              src="/icon.svg"
               alt="OmO"
               width={28}
               height={28}
