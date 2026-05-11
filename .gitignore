@@ -1,0 +1,29 @@
+# Root-local agent/runtime state
+/.omx/
+/.omc/
+
+# Dependencies and framework outputs
+node_modules/
+**/node_modules/
+.next/
+**/.next/
+out/
+**/out/
+dist/
+**/dist/
+build/
+**/build/
+
+# Local environment and deployment state
+.env*
+!.env.example
+**/.env.local
+**/.vercel/
+
+# Generated TypeScript/Next artifacts
+*.tsbuildinfo
+**/*.tsbuildinfo
+
+# OS/editor noise
+.DS_Store
+*.swp

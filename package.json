@@ -1,0 +1,24 @@
+{
+  "name": "oh-my-docs",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Monorepo for managing Oh My Codex, Oh My Claude Code, and Oh My OpenAgent documentation together.",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev:codex": "npm --prefix apps/codex run dev",
+    "dev:claudecode": "npm --prefix apps/claudecode run dev",
+    "dev:openagent": "npm --prefix apps/openagent run dev",
+    "build": "npm run build:codex && npm run build:claudecode && npm run build:openagent",
+    "build:codex": "npm --prefix apps/codex run build",
+    "build:claudecode": "npm --prefix apps/claudecode run build",
+    "build:openagent": "npm --prefix apps/openagent run build",
+    "lint": "npm run lint:codex && npm run lint:claudecode && npm run lint:openagent",
+    "lint:codex": "npm --prefix apps/codex run lint",
+    "lint:claudecode": "npm --prefix apps/claudecode run lint",
+    "lint:openagent": "npm --prefix apps/openagent run lint",
+    "install:all": "npm install --prefix apps/codex && npm install --prefix apps/claudecode && npm install --prefix apps/openagent",
+    "status": "git status --short --branch"
+  }
+}
