@@ -43,6 +43,17 @@ For flow images, describe the motion without asking for words inside the image:
 Show three connected zones representing clarify, plan, execute. Use abstract cards, arrows, and agent nodes, but no readable text.
 ```
 
+
+## Model-generated docs images
+
+For model-generated images that will appear inside docs articles, prefer a **learning-material figure** over a hero image:
+
+- Say "educational diagram inside technical documentation or a training handout".
+- Ask for one clear teaching composition, concrete objects, and a visible sequence.
+- Keep the diagram large enough to read at docs-column width.
+- Avoid marketing language such as dramatic, cinematic, glossy, futuristic, or wallpaper.
+- For shared locale assets, ban readable text, letters, pseudo-text, and numbers; use icons, arrows, blank rows, and check marks instead.
+
 ## Accessibility
 
 - Alt text should describe the information conveyed, not the art style.

@@ -1,0 +1,16 @@
+Create a documentation-learning figure for an Oh My CodeX / OMX tutorial page explaining Ultragoal.
+
+Intent: this must look like an educational diagram inside technical documentation or a training handout, not a marketing hero image, not a wallpaper, and not abstract concept art.
+
+Canvas: wide 16:9 figure for a docs article. Use a clean white or very light neutral background with a subtle rounded outer frame. Keep enough whitespace, but make the actual diagram large and readable at documentation-column width.
+
+Composition: a single horizontal teaching diagram inside one rounded container. Show five concrete step panels connected by thin arrows:
+1. approved plan document with a check badge
+2. stack of durable milestone/story cards
+3. ledger or checklist board with rows and check circles
+4. terminal-style handoff card connected to one goal orb
+5. final review shield with a check mark
+
+Style: modern technical learning-material illustration, crisp vector-like line art, thin neutral gray borders, muted off-white fills, sparse soft blue accent, light shadow only, calm and precise. It should feel native to a Fumadocs/Tailwind docs page.
+
+Constraints: no readable text, no letters, no labels, no pseudo-text, no numbers, no logos, no screenshots, no watermark, no dark dramatic background, no busy gradient, no photorealism. Use icons, lines, arrows, check marks, and simple blank rows instead of words.

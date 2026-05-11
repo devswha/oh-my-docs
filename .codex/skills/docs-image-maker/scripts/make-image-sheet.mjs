@@ -332,7 +332,7 @@ function candidates() {
       title: 'Minimal docs rail',
       purpose: 'Best for the docs page: a quiet Fumadocs-style line/card diagram that explains the sequence without overpowering prose.',
       alt: 'Ultragoal turns a large approved plan into one aggregate Codex goal, durable story milestones, a ledger, an explicit handoff, and final verification.',
-      prompt: 'Create a minimal language-neutral docs diagram for Ultragoal: five simple bordered cards connected by a thin line, representing approved plan, durable stories, ledger, goal handoff, and final verification. Match a Fumadocs documentation page: neutral borders, subtle blue accent, no visible words or logos.',
+      prompt: 'Create a documentation-learning figure for an Oh My CodeX / OMX tutorial page explaining Ultragoal. Make it look like an educational diagram inside technical documentation or a training handout, not a marketing hero image or abstract concept art. Use one horizontal rounded container with five concrete step panels connected by thin arrows: approved plan document, durable milestone card stack, ledger/checklist board, terminal-style handoff card connected to one goal orb, and final review shield. Match a Fumadocs/Tailwind docs page with crisp vector-like line art, neutral gray borders, muted off-white fills, sparse soft blue accent, and light shadow only. No readable text, letters, labels, pseudo-text, numbers, logos, screenshots, watermark, dark dramatic background, busy gradient, or photorealism.',
       svg: minimalDocsFlowSvg('ug-minimal'),
     },
     {

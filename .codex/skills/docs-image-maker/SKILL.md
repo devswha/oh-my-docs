@@ -47,8 +47,8 @@ node .codex/skills/docs-image-maker/scripts/make-image-sheet.mjs \
 ```bash
 node .codex/skills/docs-image-maker/scripts/generate-with-gti.mjs \
   --app codex \
-  --prompt "clean conceptual illustration of multi-agent documentation workflow, no text" \
-  --output apps/codex/public/images/docs/guides-ultragoal-flow.png \
+  --prompt-file .codex/skills/docs-image-maker/assets/prompts/ultragoal-learning-figure.txt \
+  --output apps/codex/public/images/docs/skills-workflow-ultragoal-learning.png \
   --size 1536x1024 \
   --dry-run
 ```
@@ -148,3 +148,4 @@ Then use `preview-docs-local` for the app, usually with `--tailscale`, and smoke
 - `references/doc-image-style.md` — prompt, placement, accessibility, and locale guidance.
 - `references/god-tibo-imagen.md` — optional `gti` provider notes based on `NomaDamas/god-tibo-imagen`.
 - `references/html-effectiveness.md` — HTML-first review-sheet pattern for docs rewrite review and visual iteration.
+- `assets/prompts/ultragoal-learning-figure.txt` — model prompt for an educational Ultragoal docs figure.
