@@ -1,0 +1,113 @@
+---
+title: $ultragoal
+description: brief를 repo-native OMX artifact로 나누고 Codex goal-mode 완료를 조율하는 durable multi-goal workflow
+---
+
+`$ultragoal`은 큰 brief나 승인된 계획을 durable `.omx/ultragoal/` artifact로 바꾸고, Codex goal mode와 함께 완료를 조율합니다. 새 plan은 기본적으로 전체 run에 하나의 aggregate Codex goal을 만들고, OMX는 `G001`, `G002` 같은 story 진행 상황을 자체 ledger에 기록합니다.
+
+중요한 경계는 명확합니다. OMX는 shell command가 숨겨진 Codex thread state를 바꿀 수 있다고 주장하지 않습니다. `omx ultragoal complete-goals`는 repo state를 checkpoint하고, 활성 Codex agent가 goal tool로 수행해야 할 handoff를 명시합니다.
+
+## 언제 쓰나
+
+- brief를 여러 durable milestone으로 나눠야 할 때
+- compaction, session 변경, handoff 이후에도 진행 상태를 보존해야 할 때
+- 승인된 `$deep-interview` 또는 `$ralplan` 산출물을 goal-mode 실행 계획으로 바꿔야 할 때
+- 최종 완료에 cleanup, verification, review evidence가 명시적으로 필요할 때
+
+작은 one-shot 수정에는 과합니다. 한 명이 끝까지 밀면 `$ralph`, 승인된 작업이 자연스럽게 병렬화되면 `$team`을 쓰는 편이 낫습니다.
+
+Trigger keyword: "ultragoal", "create-goals", "complete-goals", "durable goals", "multi-goal plan"
+
+## 호출 방법
+
+```text
+codex
+> $ultragoal "이 launch plan을 durable goal로 나누고 끝까지 완료해줘"
+```
+
+```bash
+omx ultragoal create-goals --brief "Ship the feature in three safe milestones"
+omx ultragoal create-goals --brief-file docs/my-brief.md
+cat docs/my-brief.md | omx ultragoal create-goals --from-stdin
+omx ultragoal complete-goals
+omx ultragoal status --json
+```
+
+story마다 fresh Codex thread를 하나씩 쓰고 싶을 때만 per-story mode를 명시합니다.
+
+```bash
+omx ultragoal create-goals --codex-goal-mode per-story --brief "Use one fresh Codex thread per story"
+```
+
+## Durable artifact
+
+모든 상태는 `.omx/ultragoal/` 아래에 저장됩니다.
+
+- `.omx/ultragoal/brief.md` — 원본 brief 또는 승인된 plan summary
+- `.omx/ultragoal/goals.json` — durable story 목록, 상태, Codex objective payload
+- `.omx/ultragoal/ledger.jsonl` — append-only checkpoint와 evidence
+
+`goals.json`에는 활성 Codex agent가 `create_goal`에 넘겨야 하는 deterministic objective인 `codexObjective`가 들어갑니다. 이 값은 Codex objective limit에 맞춰 제한되고 durable goal file을 참조합니다.
+
+## 완료 루프
+
+`omx ultragoal status`가 모든 goal complete를 보고할 때까지 `omx ultragoal complete-goals`를 반복합니다.
+
+각 story에서 활성 agent는 다음을 수행합니다.
+
+1. 현재 goal과 ledger를 읽습니다.
+2. Codex goal tool을 명시적으로 사용합니다. 먼저 `get_goal`, active goal이 없을 때만 `create_goal`.
+3. story를 구현하고 검증합니다.
+4. 실제로 완료된 뒤에만 `update_goal({status: "complete"})`를 호출합니다.
+5. evidence와 함께 checkpoint를 기록합니다.
+
+```bash
+omx ultragoal checkpoint \
+  --goal-id G001-example \
+  --status complete \
+  --evidence "tests passed; docs updated" \
+  --codex-goal-json ./get-goal.json \
+  --quality-gate-json ./quality-gate.json
+```
+
+실패하거나 막힌 story도 run을 잃지 않고 기록할 수 있습니다.
+
+```bash
+omx ultragoal checkpoint --goal-id G001-example --status failed --evidence "blocked on missing credential"
+omx ultragoal complete-goals --retry-failed
+```
+
+## 최종 완료 gate
+
+마지막 ultragoal story는 아래 final quality gate가 끝나기 전까지 완료가 아닙니다.
+
+1. `.omx/ultragoal/goals.json`과 `ledger.jsonl` 기준 whole-run audit
+2. 필요 시 `ai-slop-cleaner`를 포함한 final cleanup pass
+3. cleanup 이후 relevant test, lint, typecheck, build, smoke check 재검증
+4. `$code-review` final review
+5. review가 clean이면 `update_goal({status: "complete"})`를 호출하고, 다시 `get_goal`을 호출한 뒤 fresh complete Codex goal snapshot과 quality-gate JSON으로 checkpoint합니다.
+
+review blocker가 있으면 Codex goal을 complete로 표시하지 않습니다. 대신 blocker-resolution story를 추가합니다.
+
+```bash
+omx ultragoal record-review-blockers \
+  --goal-id G003-final \
+  --title "Resolve final code-review blockers" \
+  --objective "Fix the review blockers and rerun verification" \
+  --evidence "review findings" \
+  --codex-goal-json ./get-goal.json
+```
+
+## Mode note
+
+- 기본은 aggregate mode입니다. 하나의 Codex objective가 전체 ultragoal run을 대표하고, 개별 story ledger는 OMX가 관리합니다.
+- legacy per-story mode도 가능하지만 보통 story마다 fresh Codex thread가 필요합니다.
+- `omx ultragoal checkpoint`는 durable OMX evidence를 기록할 뿐 Codex active thread goal을 변경하지 않습니다.
+- active/incomplete wrong Codex goal은 strict mismatch error입니다. `--status blocked` workaround는 active ultragoal objective와 다른 completed legacy goal에만 적용합니다.
+
+## 관련 스킬
+
+- [`$ralplan`](/ko/docs/skills/workflow/ralplan) — goal-mode follow-up 전 승인된 계획 작성
+- [`$ralph`](/ko/docs/skills/workflow/ralph) — 한 명이 끝까지 밀고 가는 persistent execution loop
+- [`$team`](/ko/docs/skills/workflow/team) — 안전하게 분할 가능한 작업의 병렬 실행
+- [`$ultraqa`](/ko/docs/skills/workflow/ultraqa) — diagnose-fix-rerun 검증 반복

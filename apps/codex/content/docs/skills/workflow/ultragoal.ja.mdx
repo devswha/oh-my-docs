@@ -1,0 +1,113 @@
+---
+title: $ultragoal
+description: brief を repo-native OMX artifact に分割し、Codex goal-mode completion を調整する durable multi-goal workflow
+---
+
+`$ultragoal` は大きな brief や承認済み plan を durable な `.omx/ultragoal/` artifact に変換し、Codex goal mode と completion を調整します。新しい plan はデフォルトで run 全体に 1 つの aggregate Codex goal を使い、OMX は `G001`、`G002` などの story progress を独自 ledger で追跡します。
+
+重要な境界があります。OMX は shell command が隠れた Codex thread state を変更できるとは扱いません。`omx ultragoal complete-goals` は repo state を checkpoint し、active Codex agent が goal tools で実行すべき明示的な handoff を出力します。
+
+## いつ使うか
+
+- brief を複数の durable milestone に分けたいとき
+- compaction、session change、handoff 後も progress を残したいとき
+- 承認済み `$deep-interview` または `$ralplan` artifact を goal-mode execution plan にしたいとき
+- 最終完了に cleanup、verification、review evidence が必要なとき
+
+小さな one-shot edit には重すぎます。1 人の persistent owner で進めるなら `$ralph`、承認済み作業を自然に並列化できるなら `$team` を使います。
+
+Trigger keywords: "ultragoal", "create-goals", "complete-goals", "durable goals", "multi-goal plan"
+
+## 呼び出し方
+
+```text
+codex
+> $ultragoal "turn this launch plan into durable goals and complete them"
+```
+
+```bash
+omx ultragoal create-goals --brief "Ship the feature in three safe milestones"
+omx ultragoal create-goals --brief-file docs/my-brief.md
+cat docs/my-brief.md | omx ultragoal create-goals --from-stdin
+omx ultragoal complete-goals
+omx ultragoal status --json
+```
+
+story ごとに fresh Codex thread を使いたい場合だけ per-story mode を明示します。
+
+```bash
+omx ultragoal create-goals --codex-goal-mode per-story --brief "Use one fresh Codex thread per story"
+```
+
+## Durable artifacts
+
+すべての state は `.omx/ultragoal/` 配下にあります。
+
+- `.omx/ultragoal/brief.md` — original brief または approved plan summary
+- `.omx/ultragoal/goals.json` — durable story list、status、Codex objective payload
+- `.omx/ultragoal/ledger.jsonl` — append-only checkpoints と evidence
+
+`goals.json` には active Codex agent が `create_goal` に渡す deterministic objective である `codexObjective` が含まれます。Codex objective limit に収まるよう制限され、durable goal file を参照します。
+
+## Completion loop
+
+`omx ultragoal status` がすべての goals complete を報告するまで `omx ultragoal complete-goals` を実行します。
+
+各 story で active agent は次を行います。
+
+1. 現在の goal と ledger を読む。
+2. Codex goal tools を明示的に使う。まず `get_goal`、active goal がない場合だけ `create_goal`。
+3. story を実装して検証する。
+4. story が実際に完了した後だけ `update_goal({status: "complete"})` を呼ぶ。
+5. evidence つきで checkpoint を記録する。
+
+```bash
+omx ultragoal checkpoint \
+  --goal-id G001-example \
+  --status complete \
+  --evidence "tests passed; docs updated" \
+  --codex-goal-json ./get-goal.json \
+  --quality-gate-json ./quality-gate.json
+```
+
+失敗または blocked story も run を失わずに記録できます。
+
+```bash
+omx ultragoal checkpoint --goal-id G001-example --status failed --evidence "blocked on missing credential"
+omx ultragoal complete-goals --retry-failed
+```
+
+## Final completion gate
+
+最後の ultragoal story は、final quality gate が完了するまで complete ではありません。
+
+1. `.omx/ultragoal/goals.json` と `ledger.jsonl` に対する whole-run audit
+2. 必要に応じた `ai-slop-cleaner` を含む final cleanup pass
+3. cleanup 後の tests、lint、typecheck、build、smoke checks の再検証
+4. `$code-review` final review
+5. review が clean の場合、`update_goal({status: "complete"})` を呼び、もう一度 `get_goal` を呼び、fresh complete Codex goal snapshot と quality-gate JSON で checkpoint する
+
+review blocker がある場合、Codex goal を complete にしません。代わりに blocker-resolution story を追加します。
+
+```bash
+omx ultragoal record-review-blockers \
+  --goal-id G003-final \
+  --title "Resolve final code-review blockers" \
+  --objective "Fix the review blockers and rerun verification" \
+  --evidence "review findings" \
+  --codex-goal-json ./get-goal.json
+```
+
+## Mode notes
+
+- Aggregate mode がデフォルトです。1 つの Codex objective が ultragoal run 全体を表し、個別 story ledger は OMX が管理します。
+- Legacy per-story mode も利用できますが、通常は story ごとに fresh Codex thread が必要です。
+- `omx ultragoal checkpoint` は durable OMX evidence を記録するだけで、Codex active thread goal は変更しません。
+- active または incomplete wrong Codex goals は strict mismatch errors です。`--status blocked` workaround は active ultragoal objective と異なる completed legacy goal にだけ使います。
+
+## 関連スキル
+
+- [`$ralplan`](/ja/docs/skills/workflow/ralplan) — goal-mode follow-up 前に approved plan を作る
+- [`$ralph`](/ja/docs/skills/workflow/ralph) — persistent single-owner execution loop
+- [`$team`](/ja/docs/skills/workflow/team) — 安全に分割できる作業の parallel execution
+- [`$ultraqa`](/ja/docs/skills/workflow/ultraqa) — diagnose-fix-rerun verification loop

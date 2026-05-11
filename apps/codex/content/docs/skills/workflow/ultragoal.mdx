@@ -1,0 +1,113 @@
+---
+title: $ultragoal
+description: Durable multi-goal workflow that turns a brief into repo-native OMX artifacts and coordinates Codex goal-mode completion
+---
+
+`$ultragoal` turns a large brief or approved plan into durable `.omx/ultragoal/` artifacts, then coordinates completion with Codex goal mode. New plans default to one aggregate Codex goal for the whole run, while OMX tracks `G001`, `G002`, and later story progress in its own ledger.
+
+The important boundary: OMX does not pretend that a shell command can mutate hidden Codex thread state. `omx ultragoal complete-goals` checkpoints repo state and prints the explicit handoff the active Codex agent should perform with goal tools.
+
+## When to use it
+
+- When a brief should be split into multiple durable milestones
+- When you want progress to survive compaction, session changes, or handoff
+- When an approved `$deep-interview` or `$ralplan` artifact should become a goal-mode execution plan
+- When final completion needs explicit cleanup, verification, and review evidence
+
+Avoid it for tiny one-shot edits. Use `$ralph` for one persistent owner, or `$team` when the approved work is naturally parallel.
+
+Trigger keywords: "ultragoal", "create-goals", "complete-goals", "durable goals", "multi-goal plan"
+
+## How to invoke
+
+```text
+codex
+> $ultragoal "turn this launch plan into durable goals and complete them"
+```
+
+```bash
+omx ultragoal create-goals --brief "Ship the feature in three safe milestones"
+omx ultragoal create-goals --brief-file docs/my-brief.md
+cat docs/my-brief.md | omx ultragoal create-goals --from-stdin
+omx ultragoal complete-goals
+omx ultragoal status --json
+```
+
+Use per-story Codex goals only when you explicitly want one fresh Codex thread per story:
+
+```bash
+omx ultragoal create-goals --codex-goal-mode per-story --brief "Use one fresh Codex thread per story"
+```
+
+## Durable artifacts
+
+All state lives under `.omx/ultragoal/`:
+
+- `.omx/ultragoal/brief.md` — original brief or approved plan summary
+- `.omx/ultragoal/goals.json` — durable story list, status, and Codex objective payload
+- `.omx/ultragoal/ledger.jsonl` — append-only checkpoints and evidence
+
+`goals.json` includes the `codexObjective`, the deterministic objective the active Codex agent should pass to `create_goal`. It is capped to Codex's objective limit and references the durable goal file.
+
+## Completion loop
+
+Run `omx ultragoal complete-goals` until `omx ultragoal status` reports all goals complete.
+
+During each story, the active agent should:
+
+1. Read the current goal and ledger.
+2. Use Codex goal tools explicitly: `get_goal`, then `create_goal` when no active goal exists.
+3. Implement and verify the story.
+4. Call `update_goal({status: "complete"})` only after the story is actually complete.
+5. Record a checkpoint with evidence:
+
+```bash
+omx ultragoal checkpoint \
+  --goal-id G001-example \
+  --status complete \
+  --evidence "tests passed; docs updated" \
+  --codex-goal-json ./get-goal.json \
+  --quality-gate-json ./quality-gate.json
+```
+
+Failed or blocked stories can be recorded without losing the run:
+
+```bash
+omx ultragoal checkpoint --goal-id G001-example --status failed --evidence "blocked on missing credential"
+omx ultragoal complete-goals --retry-failed
+```
+
+## Final completion gate
+
+The final ultragoal story is not complete until the active agent has run the final quality gate:
+
+1. Whole-run audit against `.omx/ultragoal/goals.json` and `ledger.jsonl`
+2. Final cleanup pass, including `ai-slop-cleaner` when applicable
+3. Post-cleanup verification: relevant tests, lint, typecheck, build, or smoke checks
+4. `$code-review` final review
+5. If the review is clean, call `update_goal({status: "complete"})`, call `get_goal` again, and checkpoint with the fresh complete Codex goal snapshot plus quality-gate JSON
+
+If review finds blockers, do not mark the Codex goal complete. Append a blocker-resolution story instead:
+
+```bash
+omx ultragoal record-review-blockers \
+  --goal-id G003-final \
+  --title "Resolve final code-review blockers" \
+  --objective "Fix the review blockers and rerun verification" \
+  --evidence "review findings" \
+  --codex-goal-json ./get-goal.json
+```
+
+## Mode notes
+
+- Aggregate mode is the default: one Codex objective covers the whole ultragoal run, and OMX owns the individual story ledger.
+- Legacy per-story mode remains available, but it usually requires a fresh Codex thread per story.
+- `omx ultragoal checkpoint` records durable OMX evidence; it does not change Codex's active thread goal.
+- Active or incomplete wrong Codex goals are strict mismatch errors. The `--status blocked` workaround is only for completed legacy goals that differ from the active ultragoal objective.
+
+## Related skills
+
+- [`$ralplan`](/docs/skills/workflow/ralplan) — produce an approved plan before starting goal-mode follow-up
+- [`$ralph`](/docs/skills/workflow/ralph) — persistent single-owner execution loop
+- [`$team`](/docs/skills/workflow/team) — parallel execution when work can be split safely
+- [`$ultraqa`](/docs/skills/workflow/ultraqa) — repeated diagnose-fix-rerun verification loop

@@ -1,0 +1,113 @@
+---
+title: $ultragoal
+description: 将 brief 转成 repo-native OMX artifacts，并协调 Codex goal-mode completion 的 durable multi-goal workflow
+---
+
+`$ultragoal` 会把大型 brief 或已批准 plan 转换为 durable `.omx/ultragoal/` artifacts，然后与 Codex goal mode 协调 completion。新 plan 默认使用一个覆盖整个 run 的 aggregate Codex goal，同时 OMX 在自己的 ledger 中跟踪 `G001`、`G002` 等 story progress。
+
+关键边界是：OMX 不会声称 shell command 可以修改隐藏的 Codex thread state。`omx ultragoal complete-goals` 会 checkpoint repo state，并输出 active Codex agent 应该用 goal tools 执行的明确 handoff。
+
+## 何时使用
+
+- 需要把 brief 拆成多个 durable milestones 时
+- 需要 progress 在 compaction、session change 或 handoff 后继续保留时
+- 需要把已批准的 `$deep-interview` 或 `$ralplan` artifact 变成 goal-mode execution plan 时
+- 最终完成需要明确 cleanup、verification 与 review evidence 时
+
+很小的一次性编辑不适合使用它。一个 persistent owner 推到底时用 `$ralph`；已批准工作可以自然并行拆分时用 `$team`。
+
+Trigger keywords: "ultragoal", "create-goals", "complete-goals", "durable goals", "multi-goal plan"
+
+## 调用方式
+
+```text
+codex
+> $ultragoal "turn this launch plan into durable goals and complete them"
+```
+
+```bash
+omx ultragoal create-goals --brief "Ship the feature in three safe milestones"
+omx ultragoal create-goals --brief-file docs/my-brief.md
+cat docs/my-brief.md | omx ultragoal create-goals --from-stdin
+omx ultragoal complete-goals
+omx ultragoal status --json
+```
+
+只有在明确想让每个 story 使用一个 fresh Codex thread 时，才使用 per-story mode。
+
+```bash
+omx ultragoal create-goals --codex-goal-mode per-story --brief "Use one fresh Codex thread per story"
+```
+
+## Durable artifacts
+
+所有 state 都位于 `.omx/ultragoal/` 下：
+
+- `.omx/ultragoal/brief.md` — original brief 或 approved plan summary
+- `.omx/ultragoal/goals.json` — durable story list、status 与 Codex objective payload
+- `.omx/ultragoal/ledger.jsonl` — append-only checkpoints 与 evidence
+
+`goals.json` 包含 active Codex agent 应传给 `create_goal` 的 deterministic objective：`codexObjective`。它会被限制在 Codex objective limit 内，并引用 durable goal file。
+
+## Completion loop
+
+重复运行 `omx ultragoal complete-goals`，直到 `omx ultragoal status` 报告所有 goals complete。
+
+每个 story 中，active agent 应该：
+
+1. 读取当前 goal 与 ledger。
+2. 明确使用 Codex goal tools：先 `get_goal`，只有没有 active goal 时才 `create_goal`。
+3. 实现并验证 story。
+4. 只有在 story 真正完成后才调用 `update_goal({status: "complete"})`。
+5. 带 evidence 记录 checkpoint。
+
+```bash
+omx ultragoal checkpoint \
+  --goal-id G001-example \
+  --status complete \
+  --evidence "tests passed; docs updated" \
+  --codex-goal-json ./get-goal.json \
+  --quality-gate-json ./quality-gate.json
+```
+
+失败或 blocked story 也可以记录，而不会丢失整个 run。
+
+```bash
+omx ultragoal checkpoint --goal-id G001-example --status failed --evidence "blocked on missing credential"
+omx ultragoal complete-goals --retry-failed
+```
+
+## Final completion gate
+
+最后一个 ultragoal story 在 final quality gate 完成前不算 complete：
+
+1. 基于 `.omx/ultragoal/goals.json` 与 `ledger.jsonl` 的 whole-run audit
+2. 必要时包含 `ai-slop-cleaner` 的 final cleanup pass
+3. cleanup 后重新运行 relevant tests、lint、typecheck、build 或 smoke checks
+4. `$code-review` final review
+5. 如果 review clean，调用 `update_goal({status: "complete"})`，再次调用 `get_goal`，并用 fresh complete Codex goal snapshot 与 quality-gate JSON checkpoint
+
+如果 review 有 blockers，不要把 Codex goal 标记为 complete。应追加 blocker-resolution story：
+
+```bash
+omx ultragoal record-review-blockers \
+  --goal-id G003-final \
+  --title "Resolve final code-review blockers" \
+  --objective "Fix the review blockers and rerun verification" \
+  --evidence "review findings" \
+  --codex-goal-json ./get-goal.json
+```
+
+## Mode notes
+
+- 默认是 aggregate mode：一个 Codex objective 覆盖整个 ultragoal run，单个 story ledger 由 OMX 管理。
+- Legacy per-story mode 仍可使用，但通常需要每个 story 一个 fresh Codex thread。
+- `omx ultragoal checkpoint` 只记录 durable OMX evidence，不会修改 Codex active thread goal。
+- active 或 incomplete wrong Codex goals 是 strict mismatch errors。`--status blocked` workaround 只适用于与 active ultragoal objective 不同的 completed legacy goal。
+
+## 相关技能
+
+- [`$ralplan`](/zh/docs/skills/workflow/ralplan) — 在 goal-mode follow-up 前生成 approved plan
+- [`$ralph`](/zh/docs/skills/workflow/ralph) — persistent single-owner execution loop
+- [`$team`](/zh/docs/skills/workflow/team) — 工作可安全拆分时的 parallel execution
+- [`$ultraqa`](/zh/docs/skills/workflow/ultraqa) — diagnose-fix-rerun verification loop
