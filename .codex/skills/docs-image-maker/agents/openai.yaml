@@ -1,0 +1,4 @@
+interface:
+  display_name: "Docs Image Maker"
+  short_description: "Plan and generate docs-ready illustrations"
+  default_prompt: "Use $docs-image-maker to add helpful illustrations to the changed docs pages."
