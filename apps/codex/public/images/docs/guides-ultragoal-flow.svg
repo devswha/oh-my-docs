@@ -1,0 +1,125 @@
+<svg width="1536" height="900" viewBox="0 0 1536 900" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Ultragoal durable workflow illustration</title>
+  <desc id="desc">An approved plan fans out into durable milestones, a ledger, a Codex goal handoff, and a final review gate.</desc>
+  <defs>
+    <linearGradient id="bg" x1="96" y1="54" x2="1440" y2="846" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#07111F"/>
+      <stop offset="0.52" stop-color="#0D1D33"/>
+      <stop offset="1" stop-color="#10284B"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#173966"/>
+      <stop offset="1" stop-color="#0E223D"/>
+    </linearGradient>
+    <linearGradient id="cyan" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#67E8F9"/>
+      <stop offset="1" stop-color="#3B82F6"/>
+    </linearGradient>
+    <linearGradient id="violet" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#C084FC"/>
+      <stop offset="1" stop-color="#6366F1"/>
+    </linearGradient>
+    <linearGradient id="green" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#86EFAC"/>
+      <stop offset="1" stop-color="#14B8A6"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="18" stdDeviation="22" flood-color="#020617" flood-opacity="0.38"/>
+    </filter>
+    <filter id="glow" x="-80%" y="-80%" width="260%" height="260%" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="18" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.23 0 0 0 0 0.74 0 0 0 0 0.96 0 0 0 0.45 0"/>
+      <feBlend in="SourceGraphic" mode="screen"/>
+    </filter>
+    <marker id="arrow" markerWidth="18" markerHeight="18" refX="13" refY="9" orient="auto" markerUnits="strokeWidth">
+      <path d="M3 3L14 9L3 15" stroke="#8BDCF6" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </marker>
+    <pattern id="grid" width="64" height="64" patternUnits="userSpaceOnUse">
+      <path d="M64 0H0V64" stroke="#93C5FD" stroke-opacity="0.055" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <rect width="1536" height="900" rx="48" fill="url(#bg)"/>
+  <rect x="48" y="42" width="1440" height="816" rx="40" fill="url(#grid)" opacity="0.75"/>
+  <circle cx="242" cy="150" r="180" fill="#2563EB" opacity="0.12"/>
+  <circle cx="1300" cy="740" r="240" fill="#06B6D4" opacity="0.10"/>
+  <path d="M124 728C320 600 498 672 666 536C834 400 936 262 1188 278C1278 284 1348 254 1412 210" stroke="#7DD3FC" stroke-opacity="0.12" stroke-width="56" stroke-linecap="round"/>
+
+  <!-- Approved plan card -->
+  <g filter="url(#shadow)">
+    <rect x="118" y="280" width="260" height="340" rx="34" fill="url(#panel)" stroke="#60A5FA" stroke-opacity="0.42" stroke-width="2"/>
+    <rect x="154" y="324" width="188" height="26" rx="13" fill="#BAE6FD" opacity="0.82"/>
+    <rect x="154" y="378" width="142" height="18" rx="9" fill="#60A5FA" opacity="0.45"/>
+    <rect x="154" y="424" width="170" height="18" rx="9" fill="#60A5FA" opacity="0.38"/>
+    <rect x="154" y="470" width="124" height="18" rx="9" fill="#60A5FA" opacity="0.34"/>
+    <path d="M184 548L216 580L304 492" stroke="#67E8F9" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" opacity="0.92"/>
+  </g>
+
+  <!-- Durable milestone cards -->
+  <g filter="url(#shadow)">
+    <rect x="520" y="150" width="230" height="150" rx="30" fill="#0F2A4D" stroke="#38BDF8" stroke-opacity="0.45" stroke-width="2"/>
+    <circle cx="570" cy="205" r="24" fill="url(#cyan)"/>
+    <rect x="616" y="188" width="86" height="18" rx="9" fill="#DBEAFE" opacity="0.80"/>
+    <rect x="616" y="226" width="104" height="14" rx="7" fill="#93C5FD" opacity="0.44"/>
+  </g>
+  <g filter="url(#shadow)">
+    <rect x="520" y="375" width="230" height="150" rx="30" fill="#0F2A4D" stroke="#A78BFA" stroke-opacity="0.48" stroke-width="2"/>
+    <circle cx="570" cy="430" r="24" fill="url(#violet)"/>
+    <rect x="616" y="414" width="100" height="18" rx="9" fill="#EDE9FE" opacity="0.78"/>
+    <rect x="616" y="452" width="76" height="14" rx="7" fill="#C4B5FD" opacity="0.44"/>
+  </g>
+  <g filter="url(#shadow)">
+    <rect x="520" y="600" width="230" height="150" rx="30" fill="#0F2A4D" stroke="#5EEAD4" stroke-opacity="0.48" stroke-width="2"/>
+    <circle cx="570" cy="655" r="24" fill="url(#green)"/>
+    <rect x="616" y="638" width="92" height="18" rx="9" fill="#CCFBF1" opacity="0.80"/>
+    <rect x="616" y="676" width="114" height="14" rx="7" fill="#5EEAD4" opacity="0.42"/>
+  </g>
+
+  <!-- Ledger stack -->
+  <g filter="url(#shadow)">
+    <rect x="848" y="294" width="236" height="312" rx="34" fill="#0E2A3D" stroke="#22D3EE" stroke-opacity="0.44" stroke-width="2"/>
+    <rect x="888" y="334" width="156" height="24" rx="12" fill="#A5F3FC" opacity="0.82"/>
+    <rect x="886" y="398" width="158" height="46" rx="16" fill="#164E63" stroke="#67E8F9" stroke-opacity="0.34"/>
+    <circle cx="918" cy="421" r="10" fill="#67E8F9"/>
+    <rect x="944" y="412" width="70" height="14" rx="7" fill="#CFFAFE" opacity="0.58"/>
+    <rect x="886" y="468" width="158" height="46" rx="16" fill="#164E63" stroke="#67E8F9" stroke-opacity="0.28"/>
+    <circle cx="918" cy="491" r="10" fill="#A78BFA"/>
+    <rect x="944" y="482" width="82" height="14" rx="7" fill="#E0E7FF" opacity="0.54"/>
+    <rect x="886" y="538" width="158" height="46" rx="16" fill="#164E63" stroke="#67E8F9" stroke-opacity="0.24"/>
+    <circle cx="918" cy="561" r="10" fill="#86EFAC"/>
+    <rect x="944" y="552" width="58" height="14" rx="7" fill="#CCFBF1" opacity="0.54"/>
+  </g>
+
+  <!-- Codex goal orb -->
+  <g filter="url(#shadow)">
+    <circle cx="1220" cy="450" r="128" fill="#0B203A" stroke="#60A5FA" stroke-opacity="0.48" stroke-width="2"/>
+    <circle cx="1220" cy="450" r="86" fill="url(#cyan)" opacity="0.18" filter="url(#glow)"/>
+    <path d="M1172 452C1172 425.49 1193.49 404 1220 404C1246.51 404 1268 425.49 1268 452C1268 478.51 1246.51 500 1220 500C1193.49 500 1172 478.51 1172 452Z" stroke="#BAE6FD" stroke-width="10" opacity="0.95"/>
+    <path d="M1218 380V406M1218 498V524M1290 452H1266M1174 452H1150" stroke="#67E8F9" stroke-width="10" stroke-linecap="round" opacity="0.72"/>
+  </g>
+
+  <!-- Final review gate -->
+  <g filter="url(#shadow)">
+    <path d="M1220 642L1320 686V756C1320 800 1282 824 1220 846C1158 824 1120 800 1120 756V686L1220 642Z" fill="#102C3E" stroke="#86EFAC" stroke-opacity="0.55" stroke-width="2"/>
+    <path d="M1174 748L1206 780L1270 714" stroke="#86EFAC" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Arrows -->
+  <path d="M388 450C430 450 454 238 504 224" stroke="#8BDCF6" stroke-width="5" stroke-linecap="round" marker-end="url(#arrow)" opacity="0.82"/>
+  <path d="M390 450H502" stroke="#8BDCF6" stroke-width="5" stroke-linecap="round" marker-end="url(#arrow)" opacity="0.82"/>
+  <path d="M388 450C430 450 454 662 504 676" stroke="#8BDCF6" stroke-width="5" stroke-linecap="round" marker-end="url(#arrow)" opacity="0.82"/>
+
+  <path d="M760 225C818 230 814 372 846 410" stroke="#A5F3FC" stroke-width="5" stroke-linecap="round" marker-end="url(#arrow)" opacity="0.72"/>
+  <path d="M762 450H832" stroke="#C4B5FD" stroke-width="5" stroke-linecap="round" marker-end="url(#arrow)" opacity="0.72"/>
+  <path d="M760 675C820 666 818 542 846 510" stroke="#99F6E4" stroke-width="5" stroke-linecap="round" marker-end="url(#arrow)" opacity="0.72"/>
+
+  <path d="M1092 450H1134" stroke="#8BDCF6" stroke-width="5" stroke-linecap="round" marker-end="url(#arrow)" opacity="0.86"/>
+  <path d="M1220 584V630" stroke="#99F6E4" stroke-width="5" stroke-linecap="round" marker-end="url(#arrow)" opacity="0.86"/>
+
+  <!-- Small evidence particles -->
+  <circle cx="452" cy="180" r="8" fill="#67E8F9" opacity="0.75"/>
+  <circle cx="450" cy="720" r="6" fill="#A78BFA" opacity="0.75"/>
+  <circle cx="814" cy="620" r="7" fill="#86EFAC" opacity="0.75"/>
+  <circle cx="1116" cy="280" r="7" fill="#67E8F9" opacity="0.70"/>
+  <circle cx="1352" cy="562" r="8" fill="#C084FC" opacity="0.64"/>
+</svg>
