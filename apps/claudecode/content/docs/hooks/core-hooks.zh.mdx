@@ -1,0 +1,99 @@
+---
+title: 核心钩子
+description: 解释 OMC 的执行模式、编排和持续化核心钩子。
+---
+
+## 执行模式钩子
+
+这些钩子管理 OMC 的核心执行模式。
+它们使用状态文件（`.omc/state/{mode}-state.json`）激活/停用和维护模式。
+
+### autopilot
+
+从想法到可工作代码的完全自主执行。
+
+- **激活**: 关键词如 "autopilot"、"build me"、"I want a"
+- **行为**: 自动运行完整的规划 → 实施 → 测试 → 验证流程
+- **状态文件**: `.omc/state/autopilot-state.json`
+
+### ralph
+
+持续执行模式，保持运行直到验证完成。
+
+- **激活**: 关键词 "ralph"、"don't stop"、"must complete"
+- **行为**: 不停止直到所有任务完成并验证通过
+- **特性**: 自动包含 ultrawork。可以与 team 关联（`team ralph`）
+- **状态文件**: `.omc/state/ralph-state.json`
+- **强化消息**: "The boulder never stops" -- 鼓励从停止钩子继续工作
+
+### ultrawork
+
+以最大并行度运行多个智能体。
+
+- **激活**: 关键词 "ultrawork"、"ulw"
+- **行为**: 将独立任务委派给多个智能体并行执行
+- **状态文件**: `.omc/state/ultrawork-state.json`
+
+### ultraqa
+
+重复 QA 循环直到目标达成。
+
+- **激活**: 在 autopilot 内自动运行
+- **行为**: 测试 → 验证 → 修复 → 重复
+- **相关技能**: `/oh-my-claudecode:ultraqa`
+
+## 编排钩子
+
+### keyword-detector
+
+检测用户提示中的魔法关键词并调用相应的技能。
+
+- **事件**: UserPromptSubmit
+- **行为**: 清理提示（移除代码块、URL、文件路径），然后执行关键词匹配
+- **冲突解决**: cancel 优先级最高，然后 ralph > autopilot > ultrawork
+- **安全防护**: 在 team 工作进程中禁用（防止无限生成）
+
+有关详细的关键词列表，请参阅 [魔法关键词](/zh/docs/hooks/magic-keywords) 页面。
+
+### persistent-mode
+
+跨会话维护活跃执行模式。
+
+- **事件**: Stop
+- **行为**: 当存在活跃模式（ralph、ultrawork、autopilot 等）时注入强化消息
+- **消息**: 当存在未完成任务时鼓励继续工作
+- **取消**: 使用 `/oh-my-claudecode:cancel` 停用模式
+
+## 模式状态管理
+
+执行模式钩子在 `.omc/state/` 目录中管理状态文件。
+
+```json
+{
+  "active": true,
+  "started_at": "2025-01-15T10:30:00Z",
+  "prompt": "ultrawork implement auth",
+  "session_id": "abc123",
+  "project_path": "/path/to/project",
+  "iteration": 0,
+  "max_iterations": 10,
+  "linked_ultrawork": false,
+  "last_checked_at": "2025-01-15T10:30:00Z"
+}
+```
+
+如果存在会话 ID，状态保存在会话范围 `.omc/state/sessions/{sessionId}/`。
+
+### 取消模式
+
+```
+cancelomc
+```
+
+或
+
+```
+/oh-my-claudecode:cancel
+```
+
+cancel 移除所有活跃模式的状态文件，包括 ralph、autopilot 和 ultrawork。

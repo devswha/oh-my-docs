@@ -1,0 +1,73 @@
+---
+title: OMC Teams
+description: tmux で claude、codex、gemini CLI ワーカーを実行する並列タスクスキル
+---
+
+## 概要
+
+OMC Teams は N 個の CLI ワーカープロセスを tmux pane で生成し、タスクを並列実行します。3 つのエージェントタイプに対応しています: Claude、Codex、Gemini。
+
+Claude Code ネイティブチームエージェントを使用する `/team` とは異なり、このアプローチは外部 CLI プロセスを直接実行します。
+
+## 使用方法
+
+```bash
+/oh-my-claudecode:omc-teams N:claude "task description"
+/oh-my-claudecode:omc-teams N:codex "task description"
+/oh-my-claudecode:omc-teams N:gemini "task description"
+```
+
+### パラメータ
+
+- **N**: CLI ワーカー数 (1-10)
+- **agent-type**: `claude`, `codex`, または `gemini`
+- **task**: すべてのワーカーに分散するタスク説明
+
+## 例
+
+```bash
+/omc-teams 2:claude "implement auth module with tests"
+/omc-teams 2:codex "review the auth module for security issues"
+/omc-teams 3:gemini "redesign UI components for accessibility"
+```
+
+## 要件
+
+- **tmux**: インストール済みである必要があります (`command -v tmux`)
+- **アクティブな tmux セッション**: ワーカー pane 作成に必要
+- **claude CLI**: `npm install -g @anthropic-ai/claude-code`
+- **codex CLI**: `npm install -g @openai/codex`
+- **gemini CLI**: `npm install -g @google/gemini-cli`
+
+## ワークフロー
+
+1. **前提条件をチェック**: tmux がインストールされアクティブなセッションがあることを確認
+2. **入力を解析**: N、agent-type、task を抽出と検証
+3. **タスクを分解**: タスクを N 個の独立したサブタスクに分割
+4. **CLI チームを起動**: `omc team N:agent "task"` を実行
+5. **モニター**: `omc team status <team-name>` で進捗をチェック
+6. **シャットダウン**: 必要に応じて `omc team shutdown <team-name>` を使用
+7. **レポート**: 結果をサマリーします
+
+## `/team` との違い
+
+| 項目 | `/team` | `/omc-teams` |
+|------|---------|--------------|
+| ワーカータイプ | Claude Code ネイティブチームエージェント | claude/codex/gemini CLI プロセス |
+| 起動 | `TeamCreate` / `Task` / `SendMessage` | `omc team` CLI + tmux |
+| コーディネーション | ネイティブチームメッセージング、ステージパイプライン | tmux ワーカーランタイム + CLI API 状態ファイル |
+| 使用する場合 | Claude ネイティブチームオーケストレーション | 外部 CLI ワーカーを実行 |
+
+## 関連スキル
+
+- [team](/ja/docs/skills/workflow/team) - Claude Code ネイティブチームオーケストレーション
+- [ccg](/ja/docs/skills/workflow/ccg) - Claude-Codex-Gemini tri-model advisor
+
+## リファレンス
+
+| 項目 | 値 |
+|------|-------|
+| 起動 | `/oh-my-claudecode:omc-teams` |
+| マジックキーワード | - |
+| カテゴリ | Workflow |
+| 状態ファイル | `.omc/state/omc-teams-state.json` |

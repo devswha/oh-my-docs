@@ -1,0 +1,120 @@
+---
+title: 快速命令
+description: 用于直接调用智能体的快速命令快捷方式参考
+---
+
+## 什么是快速命令？
+
+快速命令是直接调用特定智能体的快捷关键词。
+不同于技能，它们立即执行相应的智能体而不需要单独的流水线。
+
+<Callout type="info">
+快速命令不是独立的斜杠命令，而是提示触发行为。在自然语言提示中包含关键词会调用相应的智能体。
+</Callout>
+
+## 完整列表
+
+| 快速命令 | 调用的智能体 | 说明 |
+|--------------|-------------|------|
+| `analyze` | `debugger` | 根本原因分析、缺陷调查 |
+| `tdd` | `test-engineer` | TDD 工作流（Red-Green-Refactor）|
+| `build-fix` | `debugger` | 修复构建错误、类型错误 |
+| `code-review` | `code-reviewer` | 综合代码审查 |
+| `security-review` | `security-reviewer` | 安全漏洞审查 |
+| `review` | `omc-plan --review` | 审查/批评现有计划 |
+
+## 使用示例
+
+### analyze
+
+```bash
+# 分析为什么认证测试失败
+analyze why the auth tests are failing
+
+# 调查性能问题
+analyze the slow response time on /api/users
+```
+
+`debugger` 智能体分析代码并识别根本原因。
+
+### tdd
+
+```bash
+# 使用 TDD 实现特性
+tdd: implement password validation
+
+# 测试优先开发
+test first: add email format validation
+```
+
+`test-engineer` 智能体遵循 Red-Green-Refactor 循环。
+1. 编写一个失败的测试（Red）
+2. 实现通过测试的代码（Green）
+3. 清理代码（Refactor）
+
+### build-fix
+
+```bash
+# 修复构建错误
+build-fix
+
+# 修复类型错误
+fix build errors in the auth module
+```
+
+`debugger` 智能体分析并修复编译/构建错误。
+
+### code-review
+
+```bash
+# 请求代码审查
+code-review the recent changes
+
+# 审查特定文件
+review code in src/auth/
+```
+
+`code-reviewer` 智能体（opus）从以下角度进行审查：
+- 逻辑缺陷
+- 可维护性
+- 反面模式
+- 性能
+- API 合约
+- 向后兼容性
+
+### security-review
+
+```bash
+# 安全审查
+security-review the payment module
+
+# 安全审计
+security review on authentication flow
+```
+
+`security-reviewer` 智能体从以下角度进行审查：
+- 漏洞检测
+- 信任边界
+- 认证/授权逻辑
+- OWASP 检查表
+
+### review
+
+```bash
+# 审查计划
+review the current plan
+
+# 批评设计
+review plan for the migration
+```
+
+运行 `/omc-plan --review` 以分析现有计划的问题。
+
+## 快速命令 vs 技能
+
+| 项目 | 快速命令 | 技能 |
+|------|---------------|------|
+| 调用 | 提示关键词 | `/oh-my-claudecode:name` |
+| 流水线 | 无（单个智能体直接调用）| 是（多个阶段）|
+| 自定义 | 不可用 | 可用（SKILL.md）|
+| 示例 | `analyze`、`tdd` | `autopilot`、`ralph` |

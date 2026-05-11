@@ -1,0 +1,216 @@
+---
+title: Oh My ClaudeCode
+description: Claude Code를 위한 멀티 에이전트 오케스트레이션. 러닝 커브 제로.
+---
+
+![Oh My ClaudeCode](/images/omc-social-preview.jpg)
+
+**Claude Code를 위한 멀티 에이전트 오케스트레이션. 러닝 커브 제로.**
+
+_Claude Code를 배우지 마세요. OMC만 쓰면 됩니다._
+
+Oh My ClaudeCode(OMC)는 Claude Code 위에서 동작하는 멀티 에이전트 오케스트레이션 레이어입니다. 프롬프트 하나로 여러 전문 에이전트를 조율해 복잡한 개발 작업을 end-to-end로 자동화합니다.
+
+## Quick Start
+
+### Step 1 — 설치
+
+Plugin 설치 (대부분의 Claude Code 사용자에게 권장). 아래는 Claude Code 슬래시 명령입니다 — **한 줄씩 입력**하세요 (두 줄을 한 번에 붙여넣으면 실패합니다):
+
+```bash
+/plugin marketplace add https://github.com/Yeachan-Heo/oh-my-claudecode
+```
+
+그리고:
+
+```bash
+/plugin install oh-my-claudecode
+```
+
+marketplace 플로우 대신 npm CLI / runtime 경로를 선호한다면:
+
+```bash
+npm i -g oh-my-claude-sisyphus@latest
+```
+
+> **패키지 이름 안내:** 프로젝트는 **oh-my-claudecode**로 브랜딩되지만(repo, plugin, 명령어), 퍼블리시된 npm 패키지 이름은 [`oh-my-claude-sisyphus`](https://www.npmjs.com/package/oh-my-claude-sisyphus)입니다.
+
+### Step 2 — 설정
+
+```bash
+# Claude Code / OMC 세션 안에서
+/setup
+/omc-setup
+
+# 터미널에서
+omc setup
+```
+
+### Step 3 — 무언가 만들어보기
+
+```bash
+# Claude Code / OMC 세션 안에서
+/autopilot "build a REST API for managing tasks"
+
+# 자연어 in-session 단축
+autopilot: build a REST API for managing tasks
+```
+
+그게 전부입니다. 나머지는 자동입니다.
+
+## CLI 명령 vs In-Session 스킬
+
+OMC는 두 개의 서로 다른 표면을 노출합니다:
+
+- **터미널 CLI 명령** — npm으로 설치 후 셸에서 `omc ...` 실행
+- **In-session 스킬** — plugin 설치 후 Claude Code 세션 안에서 `/...` 실행
+
+| 기능 | 터미널 CLI | In-session 스킬 | 메모 |
+|---|---|---|---|
+| 설정 | `omc setup` | `/setup` 또는 `/omc-setup` | 둘 다 실제 진입점. `/setup`이 가장 쉬운 plugin-first 경로 |
+| Provider 질의 | `omc ask codex "…"` | `/ask codex "…"` | 둘 다 같은 advisor 플로우를 타는 라우트 |
+| 팀 오케스트레이션 | `omc team 2:codex "…"` | `/team 3:executor "…"` | 런타임이 다름. `omc team`은 tmux CLI 워커 spawn, `/team`은 in-session 네이티브 팀 워크플로우 |
+| Autopilot / Ralph / Ultrawork / Deep Interview | — | `/autopilot`, `/ralph`, `/ultrawork`, `/deep-interview` | In-session 전용. `omc autopilot` CLI 서브커맨드는 없음 |
+| Autoresearch | `omc autoresearch "…"` | `/deep-interview --autoresearch "…"` | In-session 경로는 autoresearch를 실행하도록 도와주는 setup/interview 레인 |
+
+## 어디서 시작할지 모르겠다면
+
+요구사항이 불분명하거나, 아이디어가 막연하거나, 설계를 세밀하게 잡고 싶다면:
+
+```bash
+/deep-interview "I want to build a task management app"
+```
+
+deep-interview는 Socratic 질문으로 사고를 정리합니다 — 코드를 작성하기 전에 숨어 있는 가정을 드러내고 여러 가중치 차원에서 명확성을 측정해, "무엇을 만들지"를 실행 전에 확실히 알게 해줍니다.
+
+## Team Mode (권장)
+
+**v4.1.7**부터 **Team**이 OMC의 canonical 오케스트레이션 표면입니다. 레거시 `swarm` 키워드/스킬은 제거되었고, `team`을 직접 사용합니다.
+
+```bash
+/team 3:executor "fix all TypeScript errors"
+```
+
+Claude Code in-session 네이티브 팀 워크플로우는 `/team ...`, 터미널에서 tmux CLI 워커(`claude` / `codex` / `gemini` panes)를 띄우려면 `omc team ...`.
+
+Team은 stage 파이프라인으로 실행됩니다:
+
+```
+team-plan → team-prd → team-exec → team-verify → team-fix (loop)
+```
+
+`~/.claude/settings.json`에서 Claude Code 네이티브 팀을 활성화해야 합니다:
+
+```json
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  }
+}
+```
+
+> 팀이 비활성화되어 있으면 OMC가 경고하고 가능한 한 non-team 실행으로 폴백합니다.
+
+### tmux CLI 워커 — Codex & Gemini
+
+`omc team ...`으로 실제 tmux 워커 pane을 띄워 `claude` / `codex` / `gemini` CLI를 돌릴 수 있습니다:
+
+```bash
+omc team 2:codex "review auth module for security issues"
+omc team 2:gemini "redesign UI components for accessibility"
+omc team 1:claude "implement the payment flow"
+omc team status auth-review
+omc team shutdown auth-review
+```
+
+Codex + Gemini를 한 번에 섞어 쓰려면 **`/ccg`** 스킬 — `/ask codex` + `/ask gemini` 호출 후 Claude가 결과를 합성합니다:
+
+```bash
+/ccg Review this PR — architecture (Codex) and UI components (Gemini)
+```
+
+| 표면 | 워커 | 적합한 용도 |
+|---|---|---|
+| `omc team N:codex "…"` | Codex CLI N개 pane | 코드 리뷰, 보안 분석, 아키텍처 |
+| `omc team N:gemini "…"` | Gemini CLI N개 pane | UI/UX, 문서, 대용량 컨텍스트 |
+| `omc team N:claude "…"` | Claude CLI N개 pane | tmux 내 Claude CLI 일반 작업 |
+| `/ccg` | `/ask codex` + `/ask gemini` | 트리-모델 advisor 합성 |
+
+워커는 on-demand로 spawn되고 작업이 끝나면 죽습니다 — idle 리소스 사용 없음. `codex` / `gemini` CLI 설치와 활성 tmux 세션이 필요합니다.
+
+## Why oh-my-claudecode?
+
+- **설정 제로** — 지능적인 기본값으로 즉시 동작
+- **Team-first 오케스트레이션** — Team이 canonical 멀티 에이전트 표면
+- **자연어 인터페이스** — 외울 명령 없음, 원하는 바를 말로 설명
+- **자동 병렬화** — 복잡한 작업을 전문 에이전트들로 분산
+- **지속 실행** — 작업이 검증 완료될 때까지 포기하지 않음
+- **비용 최적화** — 스마트 모델 라우팅으로 토큰 30–50% 절감
+- **경험으로부터 학습** — 문제 해결 패턴을 추출해 재사용
+- **실시간 가시성** — HUD 상태줄이 내부에서 무슨 일이 벌어지는지 보여줌
+
+## 주요 기능
+
+| 기능 | 설명 |
+|---|---|
+| **19개 전문 에이전트** | 탐색, 계획, 구현, 검증, 리뷰까지 역할 분담 |
+| **37개 스킬** | autopilot, ralph, ultrawork, team 등 자동화 워크플로우 |
+| **매직 키워드** | `autopilot build me X` 한 마디로 전체 파이프라인 실행 |
+| **팀 오케스트레이션** | Claude / Codex / Gemini 에이전트를 역할별 라우팅으로 조율 |
+| **상태 관리** | notepad + project-memory로 세션 간 컨텍스트 유지 |
+| **멀티 AI** | Claude, Codex, Gemini를 교차 검증에 활용 |
+
+## 업데이트
+
+npm으로 설치한 경우:
+
+```bash
+npm i -g oh-my-claude-sisyphus@latest
+```
+
+Claude Code marketplace/plugin 플로우로 설치한 경우:
+
+```bash
+# 1. marketplace clone 업데이트
+/plugin marketplace update omc
+
+# 2. 설정 리프레시
+/setup
+```
+
+업데이트 후 이슈가 발생하면 오래된 plugin 캐시를 정리:
+
+```bash
+/omc-doctor
+```
+
+> marketplace auto-update가 활성화되지 않았다면, 최신 버전을 가져오기 위해 setup 실행 전에 `/plugin marketplace update omc`를 수동으로 실행해야 합니다.
+
+## 문서 구조
+
+<Cards>
+  <Card title="Getting Started" href="/ko/docs/getting-started">
+    설치, 첫 세션 실행, 설정
+  </Card>
+  <Card title="Core Concepts" href="/ko/docs/concepts">
+    에이전트, 스킬, 훅, 상태 관리
+  </Card>
+  <Card title="Guides" href="/ko/docs/guides">
+    Autopilot, 팀 모드, 디버깅 가이드
+  </Card>
+  <Card title="Agents" href="/ko/docs/agents">
+    19개 에이전트 상세 레퍼런스
+  </Card>
+  <Card title="Skills" href="/ko/docs/skills">
+    37개 스킬 상세 레퍼런스
+  </Card>
+  <Card title="Hooks" href="/ko/docs/hooks">
+    훅 시스템과 매직 키워드
+  </Card>
+  <Card title="Tools" href="/ko/docs/tools">
+    MCP 도구 (State, Notepad, LSP 등)
+  </Card>
+  <Card title="Reference" href="/ko/docs/reference">
+    설정, 환경변수, 체인지로그
+  </Card>
+</Cards>

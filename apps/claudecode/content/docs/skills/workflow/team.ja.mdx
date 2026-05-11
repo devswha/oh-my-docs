@@ -1,0 +1,167 @@
+---
+title: Team
+description: N 個の Claude エージェントを調整して共有タスクリストで協力するチームオーケストレーション
+---
+
+## 概要
+
+Team はオーケストレーションスキルです。N 個の Claude Code ネイティブエージェントを作成し、共有タスクリストで協力させます。組み込みチーム管理、エージェント間メッセージング、タスク依存関係サポートがあり、外部依存は不要です。
+
+作業は 5 段階パイプラインを通じて進行します：team-plan、team-prd、team-exec、team-verify、team-fix。
+
+## 使用方法
+
+```bash
+/oh-my-claudecode:team N:agent-type "task description"
+/oh-my-claudecode:team "task description"
+/oh-my-claudecode:team ralph "task description"
+```
+
+### パラメータ
+
+- **N**：チームメンバーエージェント数（1-20）。省略した場合、タスク分解に基づいて自動決定
+- **agent-type**：team-exec ステージで使用するエージェントタイプ（executor、debugger、designer、codex、gemini など）。省略した場合、ステージごとに自動ルーティング
+- **task**：分解して配布する高レベルタスク説明
+- **ralph**：指定した場合、チームパイプラインを Ralph の連続ループでラップし、失敗時のリトライとコンプリート時の architect 検証を実行
+
+## 例
+
+```bash
+# 5 個の executor が TypeScript エラーを修正
+/team 5:executor "fix all TypeScript errors across the project"
+
+# 3 個の debugger がビルドエラーを修正
+/team 3:debugger "fix build errors in src/"
+
+# 自動サイズ、自動ルーティング
+/team "refactor the auth module with security review"
+
+# Ralph 連続ループで
+/team ralph "build a complete REST API for user management"
+
+# Codex CLI ワーカーを使用
+/team 3:codex "review all API endpoints for security"
+```
+
+## パイプラインステージ
+
+### team-plan
+
+explore と planner エージェントがタスクを分析し、実行計画を作成します。
+
+### team-prd
+
+analyst エージェントが要件を分析し、受け入れ基準を定義します。
+
+### team-exec
+
+チームメンバーが並列でタスクを実行します。ステージごとのエージェントルーティングが適用されます。
+
+### team-verify
+
+verifier と必要なレビュアーが結果を検証します。
+
+### team-fix
+
+検証中に見つかった問題を修正します。欠陥タイプに応じて executor または debugger を使用します。
+修正ループは最大試行回数によって制限されます。
+
+## Team + Ralph
+
+`team ralph` はチームパイプラインを Ralph の連続ループでラップします。
+
+- チームが失敗した場合、Ralph がリトライ
+- コンプリート時に architect 検証を実行
+- どちらかをキャンセルするとどちらもキャンセル
+
+## ロール単位のプロバイダー & モデルルーティング
+
+> **スコープ**：`/team` のみに適用。タスクベースの委譲は `delegationRouting`（別システム）を使用。両者は設計により共存。
+
+各標準ロールをサポートするプロバイダー（`claude`、`codex`、`gemini`）とモデルティアを宣言します。ルーティングはチーム作成時に **一度だけ** 解決され、`TeamConfig.resolved_routing` に永続化されます — spawn、スケールアップ、再起動すべてスナップショットから読み込むため、ロールのワーカー CLI とモデルはチームのライフタイム全体で安定します。
+
+### 例 — `.claude/omc.jsonc`
+
+```jsonc
+{
+  "team": {
+    "roleRouting": {
+      "orchestrator":  { "model": "inherit" },
+      "planner":       { "provider": "claude", "model": "HIGH" },
+      "analyst":       { "provider": "claude", "model": "HIGH" },
+      "executor":      { "provider": "claude", "model": "MEDIUM" },
+      "critic":        { "provider": "codex" },
+      "code-reviewer": { "provider": "gemini" },
+      "test-engineer": { "provider": "gemini", "model": "MEDIUM" }
+    }
+  }
+}
+```
+
+### 標準ロール
+
+`orchestrator`、`planner`、`analyst`、`architect`、`executor`、`debugger`、`critic`、`code-reviewer`、`security-reviewer`、`test-engineer`、`designer`、`writer`、`code-simplifier`、`explore`、`document-specialist`。
+
+別名は解析時に正規化されます — `reviewer` → `code-reviewer`、`quality-reviewer` → `code-reviewer`、`harsh-critic` → `critic`、`build-fixer` → `debugger`。未知のロールは検証失敗。
+
+### スペックフィールド
+
+- **`provider`** — `"claude" | "codex" | "gemini"`。省略 → デフォルトは `claude`。
+- **`model`** — ティア名（`"HIGH" | "MEDIUM" | "LOW"`）または明示的モデル ID。ティアは `routing.tierModels` を通じて解決。
+- **`agent`** — 任意の Claude エージェント名（例：`"critic"`、`"executor"`）。解決されたプロバイダーが `claude` の場合のみ尊重。
+
+`orchestrator` は `claude` にピン止めされます；モデルのみ設定可能。
+
+### 環境変数オーバーライド
+
+```bash
+OMC_TEAM_ROLE_OVERRIDES='{"critic":{"provider":"codex"},"code-reviewer":{"provider":"gemini"}}'
+```
+
+優先順位：`OMC_TEAM_ROLE_OVERRIDES` > `.claude/omc.jsonc`（プロジェクト） > `~/.config/claude-omc/config.jsonc`（ユーザー） > 組み込みデフォルト。
+
+### CLI フォールバック
+
+設定されたプロバイダーの CLI が spawn 時に `PATH` に存在しない場合、チームリーダーは可視警告を出し、同じティア + エージェントで Claude 割り当てに確定的にフォールバックします。フォールバックは設計上ロバストです。`omc doctor --team-routing` で可用性を確認。
+
+### ゼロコンフィグ動作
+
+空の `team.roleRouting` はパッチ前の動作を保持します：すべてのワーカーは Claude、モデルティアは `routing.tierModels` に従い、`/team 3:executor ...` は 3 個の Claude Sonnet executor をスポーン。
+
+## 設定
+
+オプション設定は `.claude/omc.jsonc`（プロジェクト）または `~/.config/claude-omc/config.jsonc`（ユーザー）に置かれます：
+
+```jsonc
+{
+  "team": {
+    "ops": {
+      "maxAgents": 20,
+      "defaultAgentType": "claude",
+      "monitorIntervalMs": 30000,
+      "shutdownTimeoutMs": 15000
+    }
+  }
+}
+```
+
+- **`ops.maxAgents`** — 最大チームメンバー数（デフォルト：20）
+- **`ops.defaultAgentType`** — `/team` がエージェントタイプを指定しないときの CLI プロバイダー（`claude` | `codex` | `gemini`、デフォルト：`claude`）
+- **`ops.monitorIntervalMs`** — `TaskList` ポーリング間隔（デフォルト：30s）
+- **`ops.shutdownTimeoutMs`** — シャットダウン応答グレース期間（デフォルト：15s）
+
+## 関連スキル
+
+- [omc-teams](/ja/docs/skills/workflow/omc-teams) - 外部 CLI ワーカー実行（codex/gemini）
+- [ralph](/ja/docs/skills/workflow/ralph) - 単一エージェント連続ループ
+- [ultrawork](/ja/docs/skills/workflow/ultrawork) - シンプルな並列実行
+- [ralplan](/ja/docs/skills/workflow/ralplan) - チーム前の合意計画を推奨
+
+## リファレンス
+
+| 項目 | 値 |
+|------|-------|
+| 起動 | `/oh-my-claudecode:team` |
+| マジックキーワード | - |
+| カテゴリ | Workflow |
+| 状態ファイル | `.omc/state/team-state.json` |

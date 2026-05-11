@@ -1,0 +1,96 @@
+---
+title: Skills
+description: OMC 스킬 37개를 워크플로우와 유틸리티로 나눠서 소개합니다.
+---
+
+## 스킬이란?
+
+스킬은 `/oh-my-claudecode:스킬이름` 형식으로 호출하는 명령입니다.
+매직 키워드로도 활성화되니까, 명령어를 외우지 않아도 대화 중에 바로 쓸 수 있습니다.
+
+> **카운트 참고:** OMC는 **37개 빌트인 스킬**을 제공합니다. 36개는 슬래시 명령이나 매직 키워드로 사용자가 직접 호출 가능하고, 1개(`omc-reference`)는 내부 자동 로드되며 `user-invocable: false`로 표시됩니다.
+
+## 워크플로우 스킬
+
+작업을 자동화하는 실행 모드 스킬입니다.
+
+| 스킬 | 설명 | 매직 키워드 |
+|------|------|------------|
+| [autopilot](/ko/docs/skills/workflow/autopilot) | 아이디어에서 동작하는 코드까지 자율 실행 | `autopilot`, `build me` |
+| [ralph](/ko/docs/skills/workflow/ralph) | 완료까지 반복하는 자기참조 루프 | `ralph`, `don't stop` |
+| [ultrawork](/ko/docs/skills/workflow/ultrawork) | 최대 병렬 에이전트 실행 | `ultrawork`, `ulw` |
+| [ultraqa](/ko/docs/skills/workflow/ultraqa) | QA 사이클링: 테스트, 검증, 수정, 반복 | - |
+| [team](/ko/docs/skills/workflow/team) | N개 Claude 에이전트 조율 파이프라인 | `team` |
+| [omc-teams](/ko/docs/skills/workflow/omc-teams) | tmux에서 claude/codex/gemini CLI 워커 실행 | - |
+| [ccg](/ko/docs/skills/workflow/ccg) | Claude-Codex-Gemini 트라이모델 오케스트레이션 | `ccg` |
+| [plan](/ko/docs/skills/workflow/plan) | 인터뷰 기반 전략 계획 수립 | `plan this` |
+| [ralplan](/ko/docs/skills/workflow/ralplan) | Planner-Architect-Critic 합의 계획 | `ralplan` |
+| [sciomc](/ko/docs/skills/workflow/sciomc) | 병렬 scientist 에이전트 연구 오케스트레이션 | - |
+| [external-context](/ko/docs/skills/workflow/external-context) | 병렬 document-specialist 외부 문서 조회 | - |
+| [deepinit](/ko/docs/skills/workflow/deepinit) | 계층적 AGENTS.md 코드베이스 문서화 | - |
+| [deep-interview](/ko/docs/skills/workflow/deep-interview) | 소크라테스식 심층 인터뷰, 수학적 모호성 게이팅 | `deep interview`, `ouroboros` |
+| [deep-dive](/ko/docs/skills/workflow/deep-dive) | 2단계 파이프라인: trace 조사 → deep-interview 요구사항 정리 | `deep dive` |
+| [self-improve](/ko/docs/skills/workflow/self-improve) | 토너먼트 선택 기반 자율 진화 코드 개선 엔진 | - |
+
+## 유틸리티 스킬
+
+설정, 관리, 보조 기능 스킬입니다.
+
+| 스킬 | 설명 | 매직 키워드 |
+|------|------|------------|
+| [cancel](/ko/docs/skills/utility/cancel) | 모든 활성 모드 취소 | `cancelomc`, `stopomc` |
+| [ask](/ko/docs/skills/utility/ask) | Claude/Codex/Gemini에 질문하고 아티팩트 캡처 | - |
+| [ai-slop-cleaner](/ko/docs/skills/utility/ai-slop-cleaner) | AI 코드 슬롭 정리 | `deslop`, `anti-slop` |
+| [learner](/ko/docs/skills/utility/learner) | 현재 세션에서 재사용 가능한 스킬 추출 | - |
+| [skill](/ko/docs/skills/utility/skill) | 로컬 스킬 관리 (list, add, remove, search) | - |
+| [trace](/ko/docs/skills/utility/trace) | 증거 기반 추적 레인 | - |
+| [hud](/ko/docs/skills/utility/hud) | HUD 디스플레이 설정 | - |
+| [configure-notifications](/ko/docs/skills/utility/configure-notifications) | 알림 통합 (Telegram, Discord, Slack) | - |
+| [release](/ko/docs/skills/utility/release) | 자동 릴리스 워크플로우 | - |
+| [writer-memory](/ko/docs/skills/utility/writer-memory) | 작가용 에이전틱 메모리 시스템 | - |
+| [project-session-manager](/ko/docs/skills/utility/project-session-manager) | git worktree + tmux 격리 개발 환경 | - |
+| [visual-verdict](/ko/docs/skills/utility/visual-verdict) | 스크린샷-레퍼런스 비교를 위한 구조화된 시각적 QA 판정 | - |
+| [omc-setup](/ko/docs/skills/utility/omc-setup) | OMC 설정 및 구성 | - |
+| [mcp-setup](/ko/docs/skills/utility/mcp-setup) | MCP 서버 설정 | - |
+| [omc-doctor](/ko/docs/skills/utility/omc-doctor) | 설치 문제 진단 및 수정 | - |
+| [setup](/ko/docs/skills/utility/setup) | 통합 설정 진입점 | - |
+| [debug](/ko/docs/skills/utility/debug) | OMC 세션, 훅, 상태, 오케스트레이션 진단 | - |
+| [verify](/ko/docs/skills/utility/verify) | 완료 선언 전 증거 기반 검증 | - |
+| [remember](/ko/docs/skills/utility/remember) | 지식을 project memory, notepad, 문서 중 적절한 곳으로 라우팅 | - |
+| [skillify](/ko/docs/skills/utility/skillify) | 세션 워크플로우를 재사용 가능한 SKILL.md 드래프트로 변환 | - |
+| [wiki](/ko/docs/skills/utility/wiki) | 영구 마크다운 지식 베이스 (Karpathy LLM Wiki) | `wiki`, `wiki add`, `wiki query` |
+| [omc-reference](/ko/docs/skills/utility/omc-reference) | 자동 로드 OMC 카탈로그 레퍼런스 (내부) | - |
+
+## 스킬 호출 방법
+
+### 슬래시 명령
+
+```bash
+/oh-my-claudecode:autopilot "REST API for a bookstore"
+/oh-my-claudecode:ralph "fix all TypeScript errors"
+/oh-my-claudecode:team 3:executor "implement user auth"
+```
+
+### 매직 키워드
+
+대화 중에 키워드를 쓰면 자동으로 활성화됩니다.
+
+```
+autopilot build me a todo app with React
+ralph fix the authentication module
+ulw implement user management
+```
+
+## 스킬 관계도
+
+```
+deep-interview (요구사항 정리)
+  → ralplan (합의 계획)
+    → autopilot (자율 실행)
+      → ralph (반복 실행)
+        → ultrawork (병렬 실행)
+      → ultraqa (QA 사이클링)
+```
+
+상위 스킬은 하위 스킬을 자동으로 포함합니다.
+autopilot을 실행하면 내부에서 ralph와 ultrawork가 함께 돕니다.

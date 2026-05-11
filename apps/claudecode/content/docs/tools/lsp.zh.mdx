@@ -1,0 +1,126 @@
+---
+title: LSP
+description: 12 个通过语言服务器协议的代码智能工具
+---
+
+## 概览
+
+LSP 工具基于语言服务器协议提供代码智能。它们启用类型信息、跳转定义、查找引用、错误诊断、符号搜索和重命名。
+
+必须安装语言服务器（typescript-language-server、pylsp、rust-analyzer、gopls 等）。使用 `lsp_servers` 检查安装状态。
+
+## 工具列表
+
+### lsp_hover
+
+返回指定位置的类型信息和文档。
+
+```
+lsp_hover(file="src/auth.ts", line=42, character=10)
+```
+
+### lsp_goto_definition
+
+导航到符号的定义位置。
+
+```
+lsp_goto_definition(file="src/auth.ts", line=42, character=10)
+```
+
+### lsp_find_references
+
+查找符号的所有使用位置。
+
+```
+lsp_find_references(file="src/auth.ts", line=42, character=10)
+```
+
+### lsp_document_symbols
+
+返回文件的结构概览（函数、类、接口等）。
+
+```
+lsp_document_symbols(file="src/auth.ts")
+```
+
+### lsp_workspace_symbols
+
+在整个工作区搜索符号。
+
+```
+lsp_workspace_symbols(query="UserConfig")
+```
+
+### lsp_diagnostics
+
+返回文件的错误、警告和提示。
+
+```
+lsp_diagnostics(file="src/auth.ts")
+```
+
+对立即检查代码更改后的类型错误很有用。
+
+### lsp_diagnostics_directory
+
+为指定目录运行项目级诊断。优先使用 `tsc --noEmit`，失败时回退到迭代 LSP 模式。
+
+```
+lsp_diagnostics_directory(path="src/")
+```
+
+在复杂多文件更改后检查整个项目的类型错误。
+
+### lsp_prepare_rename
+
+提前检查重命名是否有效。
+
+```
+lsp_prepare_rename(file="src/auth.ts", line=42, character=10)
+```
+
+### lsp_rename
+
+返回跨整个项目重命名符号的编辑列表。**不会自动应用更改。**
+
+```
+lsp_rename(file="src/auth.ts", line=42, character=10, newName="AuthService")
+```
+
+### lsp_code_actions
+
+返回可用重构操作的列表。
+
+```
+lsp_code_actions(file="src/auth.ts", startLine=40, endLine=50)
+```
+
+### lsp_code_action_resolve
+
+返回代码操作的详情。
+
+```
+lsp_code_action_resolve(action=<action_object>)
+```
+
+### lsp_servers
+
+返回可用语言服务器及其安装状态的列表。
+
+```
+lsp_servers()
+```
+
+## 环境变量
+
+| 变量 | 默认 | 说明 |
+|------|--------|------|
+| `OMC_LSP_TIMEOUT_MS` | `15000` | LSP 请求超时（毫秒）。对于大型仓库或慢速服务器增加该值 |
+
+## 故障排除
+
+| 问题 | 解决方案 |
+|------|------|
+| LSP 工具不工作 | 安装语言服务器：`npm install -g typescript-language-server` |
+| 超时 | 增加 `OMC_LSP_TIMEOUT_MS` |
+| 检查服务器状态 | 使用 `lsp_servers()` 验证安装状态 |

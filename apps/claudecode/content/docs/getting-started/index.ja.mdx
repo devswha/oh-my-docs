@@ -1,0 +1,340 @@
+---
+title: Getting Started
+description: Oh My ClaudeCode（OMC）のインストールから初回セッションまで、すぐに始める方法
+---
+
+## 概要
+
+Oh My ClaudeCode（OMC）が初めての場合は、下記のステップを順番に進めてください。
+
+1. [インストール](#installation) - OMC プラグインをインストールして初期セットアップを実行
+2. [初回セッション](#first-session) - autopilot で初めてのタスクを実行
+3. [設定](#configuration) - プロジェクト別の設定とエージェントのモデルカスタマイズ
+
+### 前提条件
+
+| 要件 | 詳細 |
+|-------------|---------|
+| [Claude Code](https://docs.anthropic.com/en/docs/claude-code) | インストール必須 |
+| 認証 | Claude Max/Pro サブスクリプション、または `ANTHROPIC_API_KEY` 環境変数 |
+
+---
+
+## インストール
+
+OMC は Claude Code プラグインとしてのみインストール可能です。
+npm または bun による直接インストールはサポートされていません。
+
+### マーケットプレイスの追加
+
+Claude Code 内で次のコマンドを実行してください。
+
+```bash
+/plugin marketplace add https://github.com/Yeachan-Heo/oh-my-claudecode
+```
+
+### プラグインのインストール
+
+Marketplace を追加した後、プラグインをインストールします。
+
+```bash
+/plugin install oh-my-claudecode
+```
+
+### 初期セットアップの実行
+
+インストール後、Claude Code 内で次のいずれかを入力してください。
+
+```bash
+# オプション 1: 自然言語
+setup omc
+
+# オプション 2: スキルコマンド
+/oh-my-claudecode:omc-setup
+```
+
+フラグなしで実行するとインタラクティブなウィザードが起動します。スコープを直接指定することもできます。
+
+| スコープ | コマンド | 設定位置 |
+|-------|---------|-----------------|
+| プロジェクト別 | `/oh-my-claudecode:omc-setup --local` | `./.claude/CLAUDE.md` |
+| グローバル | `/oh-my-claudecode:omc-setup --global` | `~/.claude/CLAUDE.md` |
+
+<Callout type="warn">
+グローバルセットアップは既存の `~/.claude/CLAUDE.md` ファイルを上書きします。すでに設定がある場合は `--local` を使用してください。
+</Callout>
+
+### インストールの検証
+
+診断ツールを使ってインストールが正常に動作していることを確認してください。
+
+```bash
+/oh-my-claudecode:omc-doctor
+```
+
+### アップデート
+
+OMC は 24 時間ごとに自動的にアップデートを確認します。
+手動でアップデートするには、プラグインのインストールコマンドを再実行してください。
+
+<Callout type="info">
+プラグインのアップデート後は `/oh-my-claudecode:omc-setup` を再実行して最新の設定を適用することをお勧めします。
+</Callout>
+
+### アンインストール
+
+```bash
+/plugin uninstall oh-my-claudecode@oh-my-claudecode
+```
+
+---
+
+## 初回セッション
+
+OMC がインストールされたら、すぐに初めてのタスクを実行してください。
+
+`autopilot` は OMC の主力スキルです。1 つのアイデアを与えるだけで、自動的に完全な開発パイプラインが実行されます — 分析からコード作成、テスト、検証まで。
+
+Claude Code を開いて次のように入力してください。
+
+```bash
+autopilot build me a hello world app
+```
+
+OMC が `autopilot` キーワードを検出すると、5 段階のパイプラインが起動します。
+
+<Steps>
+
+### 展開
+
+`analyst` と `architect` エージェントがアイデアを分析します。
+要件を収集して技術仕様書を作成します。
+
+### 計画
+
+`planner` エージェントが実行計画を作成します。
+`critic` エージェントが計画をレビューしてギャップを特定します。
+
+### 実行
+
+`executor` エージェントが計画に従ってコードを作成します。
+必要に応じて複数のエージェントが並列で動作します。
+
+### QA
+
+ビルドが成功し、テストが通ることを検証します。
+失敗を自動的に修正して再検証します。
+
+### 検証
+
+機能、セキュリティ、コード品質の 3 つの観点から最終レビューを実施します。
+すべてのチェックが完了すると、タスクは完了です。
+
+</Steps>
+
+### HUDステータス表示
+
+タスク実行中は、Claude Code のステータスバー（HUD）で現在のステータスを監視できます。
+
+```
+[OMC] autopilot:execution | agents:3 | todos:2/5 | ctx:45%
+```
+
+| フィールド | 意味 |
+|-------|---------|
+| `autopilot:execution` | autopilot パイプラインの現在のステージ |
+| `agents:3` | 現在アクティブなエージェント数 |
+| `todos:2/5` | 完了したタスク / 総タスク数 |
+| `ctx:45%` | コンテキストウィンドウの使用率 |
+
+HUD の設定を変更するには、次のコマンドを実行してください。
+
+```bash
+/oh-my-claudecode:hud setup
+```
+
+---
+
+## 設定
+
+OMC は 2 つのレベルの設定ファイルをサポートします。
+
+| スコープ | ファイルパス | 用途 |
+|-------|-----------|---------|
+| ユーザー（グローバル） | `~/.config/claude-omc/config.jsonc` | すべてのプロジェクトに適用 |
+| プロジェクト | `.claude/omc.jsonc` | 現在のプロジェクトにのみ適用 |
+
+<Callout type="warn">
+設定ファイルの形式は JSONC（コメント付き JSON）です。TypeScript 設定ファイル（omc.config.ts）ではありません。
+</Callout>
+
+### 設定の優先順位
+
+複数のソースから設定が存在する場合、以下の順序でマージされます。下の項目が優先度を持ちます。
+
+```
+Defaults → User config (~/.config/claude-omc/config.jsonc)
+         → Project config (.claude/omc.jsonc)
+         → Environment variables
+```
+
+### 基本設定の構造
+
+```jsonc
+{
+  // エージェント別のモデル設定
+  "agents": {
+    "explore": { "model": "haiku" },
+    "executor": { "model": "sonnet" },
+    "architect": { "model": "opus" }
+  },
+
+  // 機能トグル
+  "features": {
+    "parallelExecution": true,
+    "lspTools": true,
+    "astTools": true,
+    "continuationEnforcement": true,
+    "autoContextInjection": true
+  },
+
+  // MCP サーバー設定
+  "mcpServers": {
+    "exa": { "enabled": true },
+    "context7": { "enabled": true }
+  },
+
+  // パーミッション設定
+  "permissions": {
+    "allowBash": true,
+    "allowEdit": true,
+    "allowWrite": true,
+    "maxBackgroundTasks": 5
+  },
+
+  // マジックキーワードのカスタマイズ
+  "magicKeywords": {
+    "ultrawork": ["ultrawork", "ulw", "uw"],
+    "search": ["search", "find", "locate"],
+    "analyze": ["analyze", "investigate", "examine"],
+    "ultrathink": ["ultrathink", "think", "reason", "ponder"]
+  },
+
+  // 外部モデル設定（オプション）
+  "externalModels": {
+    "defaults": {
+      "codexModel": "gpt-5.3-codex",
+      "geminiModel": "gemini-3.1-pro-preview"
+    }
+  }
+}
+```
+
+### エージェントモデルの上書き
+
+各エージェントが使用する AI モデルを変更できます。
+
+```jsonc
+{
+  "agents": {
+    // explore エージェントを強力なモデルにアップグレード
+    "explore": { "model": "sonnet" },
+
+    // executor を opus にアップグレード（複雑なプロジェクト向け）
+    "executor": { "model": "opus" },
+
+    // コスト削減: ドキュメント作成用に haiku を使用
+    "writer": { "model": "haiku" }
+  }
+}
+```
+
+#### Default Model Mapping
+
+| エージェント | デフォルトモデル | 役割 |
+|-------|---------------|------|
+| `explore` | haiku | コードベース探索 |
+| `writer` | haiku | ドキュメント |
+| `executor` | sonnet | コード実装 |
+| `debugger` | sonnet | デバッグ |
+| `designer` | sonnet | UI/UX デザイン |
+| `verifier` | sonnet | 検証 |
+| `securityReviewer` | sonnet | セキュリティレビュー |
+| `testEngineer` | sonnet | テスト戦略 |
+| `qaTester` | sonnet | QA テスト |
+| `scientist` | sonnet | データ分析 |
+| `tracer` | sonnet | 因果トレース |
+| `gitMaster` | sonnet | Git 管理 |
+| `documentSpecialist` | sonnet | 外部ドキュメント検索 |
+| `omc` | opus | メインオーケストレーター |
+| `analyst` | opus | 要件分析 |
+| `architect` | opus | システム設計 |
+| `planner` | opus | 戦略計画 |
+| `critic` | opus | 計画レビュー |
+| `codeReviewer` | opus | コードレビュー |
+| `codeSimplifier` | opus | コード簡素化 |
+
+### マジックキーワードのカスタマイズ
+
+`config.jsonc` の `magicKeywords` セクションで 4 つのカテゴリのキーワードをカスタマイズできます。
+
+```jsonc
+{
+  "magicKeywords": {
+    // 並列実行モードをトリガー
+    "ultrawork": ["ultrawork", "ulw", "parallel"],
+
+    // コードベース検索モードをトリガー
+    "search": ["search", "find", "locate", "grep"],
+
+    // 分析モードをトリガー
+    "analyze": ["analyze", "debug", "investigate"],
+
+    // 深い推論モードをトリガー
+    "ultrathink": ["ultrathink", "think", "reason", "ponder"]
+  }
+}
+```
+
+<Callout type="info">
+`config.jsonc` の `magicKeywords` は 4 つのカテゴリ（ultrawork、search、analyze、ultrathink）のみ変更可能です。`autopilot`、`ralph`、`ccg` などのキーワードはキーワード検出フックにハードコードされており、設定ファイルから変更できません。
+</Callout>
+
+### モデルルーティング設定
+
+OMC はタスクの複雑さに基づいてモデルティアを自動的に選択します。
+
+```jsonc
+{
+  "routing": {
+    "enabled": true,
+    "defaultTier": "MEDIUM",
+    // 親モデルを継承するよう、すべてのエージェントに強制
+    // （CC Switch、Bedrock、または Vertex AI を使用する場合は自動的に有効になります）
+    "forceInherit": false
+  }
+}
+```
+
+| ティア | モデル | ユースケース |
+|------|-------|----------|
+| LOW | haiku | 高速検索、シンプルなタスク |
+| MEDIUM | sonnet | 標準的な実装、一般的なタスク |
+| HIGH | opus | アーキテクチャ、深い分析 |
+
+### CLAUDE.md設定
+
+OMC のデフォルト動作は `CLAUDE.md` ファイルからも設定されます。
+`/oh-my-claudecode:omc-setup` を実行すると、このファイルが自動的に生成されます。
+
+| スコープ | ファイル | 説明 |
+|-------|------|-------------|
+| グローバル | `~/.claude/CLAUDE.md` | すべてのプロジェクトの共通設定 |
+| プロジェクト | `.claude/CLAUDE.md` | プロジェクト固有のコンテキスト |
+
+### セットアップを再実行するタイミング
+
+- 初期インストール後
+- OMC のアップデート後（最新設定を適用するため）
+- 新しいマシンで OMC を使用する場合
+- 新しいプロジェクトを開始する場合（`--local` オプションを使用）

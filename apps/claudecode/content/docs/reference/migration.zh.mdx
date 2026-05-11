@@ -1,0 +1,136 @@
+---
+title: 迁移指南
+description: Oh My ClaudeCode 版本之间升级的分步说明
+---
+
+## 迁移指南
+
+OMC 版本之间移动的分步升级说明。
+
+### v3.x → v4.0
+
+v4.0 是一次主要的架构改造。升级路径取决于你的安装方法。
+
+#### 插件安装（推荐）
+
+```bash
+# 移除旧版本
+/plugin uninstall oh-my-claudecode
+
+# 安装新版本
+/plugin marketplace add https://github.com/Yeachan-Heo/oh-my-claudecode
+/plugin install oh-my-claudecode
+
+# 重新运行设置
+setup omc
+```
+
+#### NPM 安装
+
+```bash
+npm install -g oh-my-claudecode@latest
+omc setup
+```
+
+#### v4.0 中的破坏性变更
+
+| 区域 | v3.x | v4.0 |
+|------|------|------|
+| 配置格式 | `.omc/config.json` | `config.jsonc`（JSONC）|
+| 智能体数量 | 15 个智能体 | 19 个智能体（4 个泳道）|
+| 技能系统 | 基础技能注册表 | 流水线元数据、层级 |
+| 钩子系统 | 简单事件处理程序 | 11 个生命周期事件 |
+| 状态管理 | 平面文件状态 | 结构化 `.omc/` 目录 |
+
+#### 移除的特性
+
+- `skill-injector`（由基于钩子的注入替代）
+- `legacy-mode`（已弃用的执行路径）
+- 直接智能体调用语法（使用 `oh-my-claudecode:agent-name` 格式）
+
+### v3.3.x → v3.4.0
+
+**并行执行和高级工作流**
+
+- 引入 `ultrawork` 技能用于并行智能体执行
+- 引入 `team` 技能用于 N 个智能体协调
+- 引入 `ccg` 技能用于三模型编排
+
+无破坏性变更。通过标准安装升级。
+
+### v3.0 → v3.1
+
+**Notepad 智慧和增强特性**
+
+- 引入 Notepad 系统（在上下文压缩后存活）
+- 引入 Project memory 系统
+- 引入 `deepinit` 技能
+
+无破坏性变更。通过标准安装升级。
+
+### v2.x → v3.0
+
+**包重命名和自动激活**
+
+#### 破坏性变更
+
+| 区域 | v2.x | v3.0 |
+|------|------|------|
+| 包名 | `claude-code-orchestrator` | `oh-my-claudecode` |
+| 激活 | 手动 `omc start` | 通过钩子自动激活 |
+| 配置位置 | `~/.omc/` | `.omc/`（每个项目）|
+
+#### 迁移步骤
+
+1. 卸载旧包：`npm uninstall -g claude-code-orchestrator`
+2. 安装新包：`npm install -g oh-my-claudecode`
+3. 移动配置：`mv ~/.omc/ .omc/`
+4. 运行设置：`setup omc`
+
+### v3.5.2 → v3.5.3
+
+**技能合并**
+
+8 个技能被移除并合并到现有技能中：
+
+| 移除的技能 | 替代品 |
+|--------------|-------------|
+| `simplify` | `code-simplifier` 智能体 |
+| `codebase-search` | 带 `deepsearch` 关键词的 `explore` 智能体 |
+| `review` | `omc-plan --review` |
+| `build-fix` | `debugger` 智能体 |
+| `analyze` | `debugger` 智能体 |
+| `tdd` | `test-engineer` 智能体 |
+| `security-review` | `security-reviewer` 智能体 |
+| `code-review` | `code-reviewer` 智能体 |
+
+### 常见升级问题
+
+#### 升级后钩子未加载
+
+```bash
+# 运行诊断
+/oh-my-claudecode:omc-doctor
+
+# 重新安装钩子
+/oh-my-claudecode:omc-setup
+```
+
+#### 配置格式错误
+
+v4.0 使用 JSONC 格式。如果你从 v3.x 有 `config.json`：
+
+1. 重命名为 `config.jsonc`
+2. 根据需要添加注释（JSONC 支持 `//` 和 `/* */` 注释）
+
+#### 状态目录冲突
+
+如果从按用户状态升级到按项目状态：
+
+```bash
+# 将状态移动到项目目录
+mv ~/.omc/state/ .omc/state/
+
+# 或设置集中式状态
+export OMC_STATE_DIR="$HOME/.claude/omc"
+```

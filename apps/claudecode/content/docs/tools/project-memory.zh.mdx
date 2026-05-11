@@ -1,0 +1,98 @@
+---
+title: 项目记忆
+description: 用于管理每个项目长期记忆的 MCP 工具组
+---
+
+## 概览
+
+项目记忆是用于管理每个项目长期记忆的工具。它在会话间维持项目结构、规则、学习知识和指令，使智能体能够快速理解项目上下文。
+
+## 存储路径
+
+```
+.omc/project-memory.json
+```
+
+## 工具列表
+
+### project_memory_read
+
+读取项目记忆的完整内容。
+
+```
+project_memory_read()
+```
+
+返回为项目存储的所有笔记和指令。
+
+### project_memory_write
+
+完全覆盖项目记忆。
+
+```
+project_memory_write(content={
+  notes: ["Uses TypeScript strict mode", "Tests use vitest"],
+  directives: ["JSDoc required for all functions"]
+})
+```
+
+注意：完全替换现有内容。使用 `add_note` 或 `add_directive` 进行部分更新。
+
+### project_memory_add_note
+
+添加有关项目的笔记。
+
+```
+project_memory_add_note(note="src/utils/ should contain only pure functions")
+```
+
+记录项目结构、模式和学习知识。
+
+### project_memory_add_directive
+
+添加智能体必须遵循的指令。
+
+```
+project_memory_add_directive(directive="Use structured logging instead of console.log")
+```
+
+记录编码规则、禁止和要求。
+
+## 笔记与指令
+
+| | 笔记 | 指令 |
+|------|-------------|----------------------|
+| 性质 | 信息、观察、学习 | 规则、约束、要求 |
+| 示例 | "This project uses a monorepo structure" | "No PRs without tests" |
+| 智能体行为 | 判断参考 | 必须遵循 |
+
+## 与 Notepad 的区别
+
+| 项目 | Notepad | 项目记忆 |
+|------|---------|----------------|
+| 范围 | 当前会话 | 整个项目（会话间持续） |
+| 目的 | 工作中的笔记 | 项目规则、结构、学习 |
+| 文件 | `.omc/notepad.md` | `.omc/project-memory.json` |
+| 压缩 | 在压缩时恢复 | 始终可用 |
+
+## 使用模式
+
+### 注册项目规则
+
+```
+project_memory_add_directive("This repository uses conventional commits")
+project_memory_add_directive("Files in src/generated/ must not be manually edited")
+```
+
+### 记录代码库结构
+
+```
+project_memory_add_note("API layer: src/api/ → src/services/ → src/repositories/")
+project_memory_add_note("Auth: JWT + passport.js, implemented in src/auth/")
+```
+
+### 记录学习
+
+```
+project_memory_add_note("tsconfig paths settings need to be synchronized with jest.config")
+```

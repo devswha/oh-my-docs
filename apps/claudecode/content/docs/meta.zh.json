@@ -1,0 +1,15 @@
+{
+  "title": "OMC 文档",
+  "pages": [
+    "index",
+    "getting-started",
+    "concepts",
+    "guides",
+    "agents",
+    "skills",
+    "hooks",
+    "tools",
+    "reference",
+    "support"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "title": "ガイド",
+  "pages": [
+    "[Autopilot](/ja/docs/guides#autopilotとは)",
+    "[チームオーケストレーション](/ja/docs/guides#チームモードとは)",
+    "[計画ワークフロー](/ja/docs/guides#なぜ計画が重要か)",
+    "[カスタムスキル](/ja/docs/guides#カスタムスキルとは)",
+    "[デバッグ](/ja/docs/guides#omcデバッグツール)",
+    "[モデルコスト最適化](/ja/docs/guides#モデルコスト最適化)"
+  ]
+}

@@ -1,0 +1,134 @@
+---
+title: 生命周期事件
+description: 解释 Claude Code 的 11 个生命周期事件和连接到每个事件的钩子。
+---
+
+## 什么是生命周期事件?
+
+Claude Code 在会话期间发出多个事件。
+OMC 将钩子连接到这些事件以扩展行为。
+
+以下是 Claude Code 支持的 11 个生命周期事件
+和在每个事件执行的 OMC 钩子。
+
+## UserPromptSubmit
+
+当用户提交提示时触发。
+
+| 脚本 | 角色 | 超时 |
+|---------|------|---------|
+| `keyword-detector.mjs` | 检测魔法关键词并调用相应的技能 | 5s |
+| `skill-injector.mjs` | 注入技能提示 | 3s |
+
+此事件对所有用户输入运行（`matcher: "*"`）。
+当关键词检测器找到 "ultrawork"、"ralph" 或 "autopilot" 等关键词时，
+它通过 `additionalContext` 注入技能调用指令。
+
+## SessionStart
+
+当新会话开始时触发。
+
+| 脚本 | matcher | 角色 | 超时 |
+|---------|---------|------|---------|
+| `session-start.mjs` | `*` | 会话初始化、状态恢复 | 5s |
+| `project-memory-session.mjs` | `*` | 加载项目内存 | 5s |
+| `setup-init.mjs` | `init` | 初始设置向导 | 30s |
+| `setup-maintenance.mjs` | `maintenance` | 维护任务 | 60s |
+
+`init` 和 `maintenance` matcher 仅在特殊情况下运行。
+对于普通会话开始，只有 2 个带 `*` matcher 的脚本运行。
+
+## PreToolUse
+
+在 Claude 使用工具前触发。
+
+| 脚本 | 角色 | 超时 |
+|---------|------|---------|
+| `pre-tool-enforcer.mjs` | 工具使用前验证规则 | 3s |
+
+对所有工具调用运行（`matcher: "*"`）并强制执行智能体权限限制
+（例如，阻止只读智能体的写入/编辑）。
+
+## PermissionRequest
+
+在 Bash 工具执行期间发生权限请求时触发。
+
+| 脚本 | matcher | 角色 | 超时 |
+|---------|---------|------|---------|
+| `permission-handler.mjs` | `Bash` | 处理 Bash 命令权限 | 5s |
+
+仅处理 Bash 工具的权限请求。
+
+## PostToolUse
+
+在工具使用完成后触发。
+
+| 脚本 | 角色 | 超时 |
+|---------|------|---------|
+| `post-tool-verifier.mjs` | 验证工具使用结果并注入额外上下文 | 3s |
+| `project-memory-posttool.mjs` | 更新项目内存 | 3s |
+
+根据工具结果为 Read、Write、Edit、Bash 等注入额外指导。
+例如，读取文件后可能提示 "考虑使用并行读取"。
+
+## PostToolUseFailure
+
+当工具使用失败时触发。
+
+| 脚本 | 角色 | 超时 |
+|---------|------|---------|
+| `post-tool-use-failure.mjs` | 为失败的工具使用提供恢复指导 | 3s |
+
+## SubagentStart
+
+当子智能体生成时触发。
+
+| 脚本 | 角色 | 超时 |
+|---------|------|---------|
+| `subagent-tracker.mjs start` | 跟踪子智能体开始，注入提示 | 3s |
+
+记录子智能体的名称、开始时间和会话信息。
+
+## SubagentStop
+
+当子智能体完成时触发。
+
+| 脚本 | 角色 | 超时 |
+|---------|------|---------|
+| `subagent-tracker.mjs stop` | 跟踪子智能体完成 | 5s |
+| `verify-deliverables.mjs` | 验证子智能体可交付物 | 5s |
+
+## PreCompact
+
+在上下文压缩前触发。
+
+| 脚本 | 角色 | 超时 |
+|---------|------|---------|
+| `pre-compact.mjs` | 压缩前保存状态 | 10s |
+| `project-memory-precompact.mjs` | 保存项目内存 | 5s |
+
+在上下文窗口满时压缩运行前保存重要状态和内存。
+
+## Stop
+
+当 Claude 的响应结束时触发。
+
+| 脚本 | 角色 | 超时 |
+|---------|------|---------|
+| `context-guard-stop.mjs` | 监控上下文使用 | 5s |
+| `persistent-mode.cjs` | 维护活跃模式状态（ralph、ultrawork 等） | 10s |
+| `code-simplifier.mjs` | 自动简化修改的文件（可选） | 5s |
+
+persistent-mode 在存在活跃执行模式时注入强化消息如 "The boulder never stops"
+以鼓励继续工作。
+
+## SessionEnd
+
+当会话结束时触发。
+
+| 脚本 | 角色 | 超时 |
+|---------|------|---------|
+| `session-end.mjs` | 保存会话总结、发送回调通知 | 10s |
+
+将会话中的智能体活动、token 使用等保存到 `.omc/sessions/`，
+如果配置了 Discord/Telegram/Slack，发送完成通知。

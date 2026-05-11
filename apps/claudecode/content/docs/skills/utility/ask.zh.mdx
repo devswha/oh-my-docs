@@ -1,0 +1,53 @@
+---
+title: Ask
+description: 询问 Claude、Codex 或 Gemini 问题并将结果保存为工件
+---
+
+## 概览
+
+Ask 是一个顾问技能，将提示转发到本地安装的 Claude、Codex 或 Gemini CLI，并将结果保存为工件文件。
+
+## 使用
+
+```bash
+/oh-my-claudecode:ask <claude|codex|gemini> <question or task>
+```
+
+## 示例
+
+```bash
+/oh-my-claudecode:ask codex "review this patch from a security perspective"
+/oh-my-claudecode:ask gemini "suggest UX improvements for this flow"
+/oh-my-claudecode:ask claude "draft an implementation plan for issue #123"
+```
+
+## 要求
+
+选定的 CLI 必须已安装和认证。
+
+```bash
+claude --version
+codex --version
+gemini --version
+```
+
+## 工件
+
+结果保存到以下路径：
+
+```
+.omc/artifacts/ask/<provider>-<slug>-<timestamp>.md
+```
+
+## 相关技能
+
+- [ccg](/zh/docs/skills/workflow/ccg) - 同时询问 Codex + Gemini，然后由 Claude 合成
+
+## 参考
+
+| 项目 | 值 |
+|------|-------|
+| 调用 | `/oh-my-claudecode:ask` |
+| 子命令 | `ask codex`, `ask gemini`, `ask claude` |
+| 类别 | 实用工具 |
+| 工件路径 | `.omc/artifacts/ask/` |

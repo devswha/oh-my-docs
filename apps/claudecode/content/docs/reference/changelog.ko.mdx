@@ -1,0 +1,271 @@
+---
+title: 변경 이력
+description: Oh My ClaudeCode의 버전별 변경 사항
+---
+
+## 변경 이력
+
+Oh My ClaudeCode의 주요 변경 사항을 버전별로 정리합니다.
+
+### v4.12.0 (현재)
+
+**신규 기능**
+- Team: canonical 역할별 provider/model 라우팅과 resolved-routing 스냅샷 — `.claude/omc.jsonc`의 `roleRouting`에서 역할별(예: `codex critic`, `gemini reviewer`)로 구성 가능 (#2614)
+- HUD: 추가 사용량(지출) 데이터 표시 (closes #2570)
+- HUD: MiniMax coding plan 사용량 provider 추가
+- HUD: 세션 간 캐시 충돌 제거를 위해 사용량 캐시를 provider별로 분리
+- Release: release 스킬을 generic repo-aware release assistant로 재작성 — 레포 + CI를 분석해 규칙을 `.omc/RELEASE_RULE.md`에 캐시한 뒤 릴리스를 가이드 (#2501)
+- CI: 경고와 오류를 잡아내는 upgrade test 추가
+
+**버그 수정 (선별)**
+- Persistent stop hook: 계약 일관성 맞추고 에이전트 출력 계약을 강화 (#2653)
+- Context-bloat: 중복되는 rule/skill 주입 3개 경로 제거 (#2577)
+- Pre-tool-enforcer: centralized state-root resolver를 통해 `OMC_STATE_DIR`를 존중 (#2621)
+- Ralplan: 자동 시작 전에 명시적 호출 의도를 요구 (#2620)
+- Team: `sendToWorker` 200자 제한에 맞게 트리거 메시지 단축 (#2617)
+- Installer: 업데이트 중에도 OMC 스타일 frontmatter가 있는 사용자 스킬을 보존 (#2573)
+- Permission-handler: 읽기 전용 `gh issue`/`pr` 명령 허용, installer 라이브러리 assertion 추가
+- Deep-interview: 남아 있던 하드코딩된 20%/0.2 임계값 5개를 설정 기반으로 교체 (#2545)
+- State-root: hook 진입점 전반에서 `OMC_STATE_DIR` 해석을 중앙화 (#2532)
+- Keyword-detector: 붙여넣은 transcript 블록 무시, review-seed echo 억제 (#2541)
+- Session-start: stale `CLAUDE_PLUGIN_ROOT`을 최신 버전으로 심볼릭 링크 연결
+- Doctor: 플러그인 캐시 대비 `CLAUDE.md` 버전 drift 감지
+- Tmux: 모든 tmux 실행을 wrapper 함수로 중앙화
+
+**리팩토링**
+- HUD: z.ai `TOKENS_LIMIT`를 reset time이 아닌 단위(unit) 기준으로 분류
+- MCP: standalone-server와 `listtools` 테스트 deslop
+
+**통계:** 121 PR 병합 · 신규 기능 6개 · 버그 수정 67개 · 기타 변경 3개
+
+---
+
+### v4.11.4
+
+> **참고:** Upstream이 v4.11.3 릴리스 본문을 그대로 v4.11.4 태그에 다시
+> 올렸습니다. 아래 수정 내역은 v4.11.3과 동일합니다 — v4.11.4는 중복
+> 태그였기 때문에 여기에 남겨둡니다.
+
+실제 수정 목록은 **v4.11.3** 항목을 참조하세요.
+
+---
+
+### v4.11.3
+
+**버그 수정**
+- 불안정한 `execPath` 대신 PATH의 `node`를 우선 사용 (#2400)
+- `.json`/`.jsonl` 소스 확장자 검사에서 `.js` false positive 방지 (#2395)
+- 중첩 tmux 호환성을 위해 TMUX 환경변수 제거 (#2385)
+- 비대칭 심볼릭 링크 경로 해석 문제 해결 (#2372)
+- `hasEnabledOmcPlugin`에서 Claude Code 1.x의 `enabledPlugins` 감지 (#2371)
+- 합의 완료 후 ralplan stop 강제 비활성화 (#2370)
+- HUD: `package.json`이 없을 때 경로 기반 버전으로 폴백 (#2362)
+
+**문서**
+- `--plugin-dir` 플래그 문서화 및 로컬 개발용 CONTRIBUTING.md 추가 (#2399)
+- 플러그인 + npm CLI 두 표면 공존 구조 문서화 (#2367)
+
+**통계:** 9 PR · 7 bug fixes · 0 new features · 0 security/hardening
+
+---
+
+### v4.11.2
+
+> **참고:** Upstream이 v4.11.1 릴리스 본문을 그대로 v4.11.2 태그에 다시
+> 올렸습니다. 실제 기능/수정 목록은 **v4.11.1** 항목을 참조하세요.
+
+---
+
+### v4.11.1
+
+**새로운 기능**
+- HUD: `gitStatus` 작업 트리 표시 요소 (#2247)
+- HUD: 다중 호스트 SSH 워크플로우용 `hostname` 요소 (#2246)
+- HUD: cwd 폴더 포맷이 단일 leaf 대신 `parent/leaf`를 표시 (#2238)
+
+**보안 강화**
+- `hardMaxIterations` 클램핑 + autopilot 강제 (#2331)
+- gitea URL 검증을 `validateUrlForSSRF`에 위임 (#2336)
+- `omc ask` 명령에서 `disableExternalLLM` 강제 (#2324)
+- tmux send-keys 전 `trigger_message` 제어문자 정화 (#2323)
+- `max_iterations`와 독립적으로 hardMax 직접 검사 (#2322)
+- strict 모드에서 양수가 아닌 `hardMaxIterations` 거부 (#2321)
+- ultrawork persistent 모드에서 `hardMaxIterations` 강제 (#2320)
+- worker 컨텍스트에서 모든 tmux 서브커맨드 차단 (#2316)
+
+**버그 수정 (주요)**
+- Wiki: CJK 텍스트 키워드 검색 0 결과 문제 (#2263)
+- Wiki: 비-ASCII 제목에서 titleToSlug가 빈 `.md` 파일 생성 (#2270)
+- Team: `unregisterMcpWorker`, `registerInConfig` read-modify-write 락 (#2333)
+- i18n: 한국어 키워드 `설명서`, `랄프로렌` false positive 방지 (#2337)
+- Installer: HUD helper 복사 시 `__dirname` 대신 `getPackageDir()` 사용 (#2347)
+- HUD: ANSI regex에서 ST-종료 OSC 8 시퀀스 처리 (#2319)
+- Launch: tmux 세션에 환경변수 전달 + `CLAUDE_CONFIG_DIR` 존중 (#2204)
+
+**통계:** 45 PR · 3 new features · 33 bug fixes · 8 security/hardening · 1 other
+
+---
+
+### v4.11.0
+
+**새로운 기능**
+- `wiki`: LLM Wiki 지식 레이어 — 세션 간 누적되는 영구 마크다운 지식 베이스 (Karpathy의 LLM Wiki 모델 기반) (#2214)
+- ralplan / plan / ralph에 Codex 가용성 주입, 감지 강화 (#2134)
+
+**버그 수정 (주요)**
+- Team: tmux 모드 worker startup 전달 강화 (#2225)
+- Windows: explore wrapper용 PATH에서 bash 해석 (#2216)
+- Team: team 초기화 시 startup inbox 이중 전송 중단 (#2209)
+- Installer: 올바른 권한으로 `hooks/lib` 복사 보장 (#2188)
+- Hooks: preflight context guard에서 `PreToolUse` deny API 사용 (#2177)
+- Scripts: macOS 호환성을 위해 `sed -i` 대신 `perl` 사용 (#2179)
+- Hooks: `estimateContextPercent`에서 fd 누수 방지 (#2178)
+- Team: `sendToWorker` fallback을 fail-open에서 fail-closed로 변경 (#2175)
+- 남은 코드 경로에서 `CLAUDE_CONFIG_DIR` 존중 (#2156)
+- Hooks: Windows 동시 mkdir race에서 `EEXIST` 처리 (#2172)
+
+**통계:** 27 PR · 2 new features · 16 bug fixes · 9 other changes
+
+---
+
+### v4.10.2
+
+**Highlights**
+- HUD: Node 프로젝트 외부에서의 글로벌 npm install 조회 수정 (#2149)
+- HUD 호출 횟수 아이콘 렌더링 설정 가능 (#2151)
+- 글로벌 setup / `CLAUDE.md` 보존 및 덮어쓰기 흐름 강화 (#2144, #2146)
+- Bedrock pre-tool-enforcer가 잘못된 bare Anthropic 모델 ID 차단 (#2107)
+- Cancel flow가 `skill-active` state를 정확히 정리 (#2122)
+- HUD 진단이 명확한 설치 시점 실패 경로 표시 (#2129)
+- Worktree 표시가 변동성 있는 main HEAD 대신 실제 worktree 이름 표시 (#2127)
+- Team pane geometry + bundled agent 경로 해석 수정 (#2137)
+
+---
+
+### v4.10.1
+
+**Patch 릴리스** — v4.10.0의 패키징 실수 수정.
+
+- 누락된 `dist/` HUD 레이아웃 산출물 재빌드 및 배포 — #2083의 레이아웃/worktree 정렬 변경이 실제로 게시 패키지에 포함되도록 함
+- HUD 레이아웃 경로의 `src/`와 `dist/` 사이 게시된 일치 복원
+
+---
+
+### v4.10.0
+
+**Highlights**
+- **HUD & worktree 감지**: worktree 인식 HUD 컨텍스트 + 요소 순서/그룹화 레이아웃 커스터마이제이션
+- **LSP 3.17 지원**: Kotlin 워크플로우 도구 확장
+- **새로운 스킬 — `self-improve`**: 토너먼트 선택 기반 자율 진화 코드 개선 엔진
+- **보안 강화**: Python 샌드박싱 강화, worker 명령 제약, 외부 LLM 강제
+- **런타임 수정**: 세션 지속 안전성, skill-state 정리, CLAUDE config 프로파일 처리, 설치된 HUD fallback 동작
+
+**통계:** 35+ PR · 8 major user-facing features · 20+ bug/runtime fixes
+
+---
+
+### v4.9.3
+
+**버그 수정 및 보안**
+- 보안 취약점, 린트 경고, CJS 런타임 버그 해결 (#1994)
+- stale 릴리스 노트 방지를 위해 release-body.md를 gitignore에 추가
+
+---
+
+### v4.9.2
+
+**개선**
+- dev 브랜치 개선 사항을 메인 릴리스에 병합
+
+---
+
+### v4.9.1
+
+**릴리스**
+- v4.9.0의 누적 수정 및 개선 사항이 포함된 안정 릴리스
+
+---
+
+### v4.9.0
+
+**새로운 스킬**
+- `deep-dive`: trace 조사와 deep-interview 요구사항 결정화를 결합한 2단계 파이프라인
+- `visual-verdict`: 스크린샷-참조 비교를 위한 구조화된 시각적 QA 판정
+- `omc-reference`: 에이전트 카탈로그, 도구, 파이프라인 라우팅을 위한 내부 참조 스킬
+
+**개선**
+- 사용자 호출 가능 스킬 수 30개로 증가 (+ 1개 내부 스킬)
+- 다양한 안정성 및 성능 개선
+
+---
+
+### v4.8.2
+
+**버그 수정**
+- CCG 스킬 중첩 문제 수정 — 어드바이저 호출을 CLI 경로로 라우팅 (#1662)
+- ralph/ralplan stop 훅 자동 계속 실패 수정 (#1660)
+- 사용되지 않는 코드(deprecated 기능 잔재) 제거 (#1659)
+
+**개선**
+- 팀 런타임 강화 6개 백포트 — 워커 안정성, 메일박스 처리, 셸 어피니티, 할당 개선 (#1658)
+- deep-interview에 온톨로지 수렴 추적 추가 (#1657)
+
+---
+
+### v4.8.0
+
+**에이전트 시스템**
+- 19개 전문 에이전트 (Build/Analysis, Review, Domain, Coordination 4개 레인)
+- 에이전트 티어 시스템: LOW (haiku), MEDIUM (sonnet), HIGH (opus)
+- 위임 카테고리: visual-engineering, ultrabrain, artistry, quick, writing
+
+**스킬 시스템**
+- 28개 스킬 (초기 릴리스)
+- 스킬 파이프라인 메타데이터 (preview)
+- learner 스킬로 세션에서 스킬 자동 추출
+
+**훅 시스템**
+- 11개 라이프사이클 이벤트
+- keyword-detector로 매직 키워드 자동 감지
+- persistent-mode로 ralph/ultrawork 지속
+- code-simplifier 훅 (opt-in)
+
+**설정 시스템**
+- `config.jsonc` 설정 파일 (JSONC 포맷)
+- 사용자/프로젝트 2레벨 설정
+- 환경 변수로 모든 설정 오버라이드 가능
+- `forceInherit` 자동 감지 (CC Switch, Bedrock, Vertex AI)
+
+**상태 관리**
+- Notepad: 컨텍스트 압축에서 살아남는 메모
+- Project Memory: 세션 간 프로젝트 지식 유지
+- Plan Notepad: 계획별 학습 캡처
+- `OMC_STATE_DIR`로 중앙 집중식 상태 관리
+
+**팀 오케스트레이션**
+- `omc team` CLI 명령
+- 5단계 파이프라인: plan → prd → exec → verify → fix
+- team ralph: 팀 + 반복 검증 결합
+
+**autopilot**
+- 5단계 자율 실행: expansion → planning → execution → qa → validation
+- 3-type validation: functional, security, quality
+- 취소/재개 지원
+
+**외부 모델 통합**
+- Codex/Gemini CLI 워커 지원
+- CCG (Claude-Codex-Gemini) 3-모델 오케스트레이션
+- 위임 라우팅 (opt-in)
+
+**코드 인텔리전스**
+- LSP 도구 12개 (hover, goto definition, find references, diagnostics 등)
+- AST 도구 2개 (ast-grep search/replace)
+- Directory-level diagnostics
+
+**플랫폼 지원**
+- macOS, Linux: Bash 훅
+- Windows: WSL2 권장, Node.js 훅 (실험적)
+
+<Callout type="info">
+전체 변경 이력은 프로젝트의 [CHANGELOG.md](https://github.com/Yeachan-Heo/oh-my-claudecode) 파일에서 확인할 수 있습니다.
+</Callout>

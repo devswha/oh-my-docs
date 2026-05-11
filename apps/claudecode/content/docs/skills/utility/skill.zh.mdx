@@ -1,0 +1,76 @@
+---
+title: Skill
+description: 用于管理本地技能的 CLI — 列出、添加、删除、搜索、编辑和同步
+---
+
+## 概述
+
+Skill 是用于管理 oh-my-claudecode 技能的元技能。它可以在用户和项目级别列出、添加、删除、搜索、编辑和同步本地技能。
+
+## 使用
+
+```bash
+/oh-my-claudecode:skill list
+/oh-my-claudecode:skill add [name]
+/oh-my-claudecode:skill remove <name>
+/oh-my-claudecode:skill edit <name>
+/oh-my-claudecode:skill search <query>
+/oh-my-claudecode:skill info <name>
+/oh-my-claudecode:skill sync
+/oh-my-claudecode:skill setup
+/oh-my-claudecode:skill scan
+```
+
+## 子命令
+
+### list
+
+显示用户技能（`~/.claude/skills/omc-learned/`）和项目技能（`.omc/skills/`）按作用域组织。
+
+### add
+
+通过交互式向导创建新技能。提示输入名称、描述、触发关键词和作用域（用户/项目），然后生成 SKILL.md 模板。
+
+### remove
+
+按名称查找技能并在确认后删除。从不在不确认的情况下删除。
+
+### edit
+
+交互式修改现有技能的描述、触发器、参数提示和内容。
+
+### search
+
+跨名称、描述、触发器和完整 markdown 内容搜索查询。名称/触发器匹配优先于内容匹配。
+
+### info
+
+显示技能的详细信息和完整内容。
+
+### sync
+
+比较用户和项目作用域之间的技能，允许在它们之间复制。总是在覆盖前确认。
+
+### setup
+
+运行完整设置向导。提供目录验证、技能扫描、添加新技能、对话模式扫描和技能导入。
+
+## 技能存储位置
+
+| 作用域 | 路径 | 目的 |
+|-------|------|---------|
+| 用户 | `~/.claude/skills/omc-learned/` | 在所有项目中可用 |
+| 项目 | `.omc/skills/` | 仅在此仓库中使用（版本控制） |
+
+## 相关技能
+
+- [learner](/zh/docs/skills/utility/learner) - 从当前对话提取技能
+- [deepinit](/zh/docs/skills/workflow/deepinit) - 生成 AGENTS.md 代码库文档
+
+## 参考
+
+| 项目 | 值 |
+|------|-------|
+| 调用 | `/oh-my-claudecode:skill` |
+| 魔法关键词 | - |
+| 分类 | Utility |

@@ -1,0 +1,95 @@
+---
+title: Ralplan
+description: Planner-Architect-Critic の合意プロセスを通じたイテレーティブな計画
+---
+
+## 概要
+
+Ralplan は `/oh-my-claudecode:omc-plan --consensus` のショートカットエイリアスです。Planner、Architect、Critic エージェントが合意に達するまで計画を繰り返し検討・改良する RALPLAN-DR 構造化検討を実行します。
+
+また、曖昧な実行リクエストの事前実行ゲートとして機能します。`ralph add authentication` のような具体性を欠くプロンプトは、まず計画を確立するために ralplan にリダイレクトされます。
+
+## 使用方法
+
+```bash
+/oh-my-claudecode:ralplan "task description"
+/oh-my-claudecode:ralplan --interactive "task description"
+/oh-my-claudecode:ralplan --deliberate "high-risk migration"
+```
+
+マジックキーワードでも起動できます。
+
+```
+ralplan this feature
+```
+
+## オプション / フラグ
+
+| フラグ | 説明 |
+|------|-------------|
+| `--interactive` | キーの決定ポイントでユーザープロンプトを有効化 |
+| `--deliberate` | 高リスク作業向けの深い検討（プレモーテム分析 + 拡張テスト計画） |
+| `--architect codex` | Architect ステージで Codex CLI を使用 |
+| `--critic codex` | Critic ステージで Codex CLI を使用 |
+
+## 合意ワークフロー
+
+1. **Planner** が初期計画 + RALPLAN-DR サマリーを作成
+   - 原則（3～5）、決定ドライバー（上位 3）、実行可能なオプション（2 以上）
+   - `--deliberate`：プレモーテム分析（3 シナリオ）+ 拡張テスト計画を追加
+2. **Architect** が建築学的な妥当性をレビュー（順序実行、反論を含む）
+3. **Critic** が品質基準を評価（Architect 完了後に実行）
+4. 却下時：修正 → Architect → Critic サイクル（最大 5 回）
+5. 承認時：ADR を含む最終計画を出力
+
+## 事前実行ゲート
+
+曖昧なプロンプトが実行モード（ralph、autopilot、team、ultrawork）に渡された場合、ralplan にリダイレクトされます。
+
+### ゲートをパスするプロンプト
+
+プロンプトが少なくとも 1 つの具体的なシグナルを含んでいる場合、ゲートをパスします。
+
+| シグナル | 例 |
+|--------|---------|
+| ファイルパス | `ralph fix src/hooks/bridge.ts` |
+| Issue/PR 番号 | `ralph implement #42` |
+| camelCase シンボル | `ralph fix processKeywordDetector` |
+| 番号付きステップ | `ralph do: 1. Add X 2. Test Y` |
+| エラー参照 | `ralph fix TypeError in auth` |
+
+### ゲートをバイパスする方法
+
+```bash
+force: ralph refactor the auth module
+! autopilot optimize everything
+```
+
+## 例
+
+```bash
+# 基本的な合意計画
+ralplan redesign the database schema
+
+# インタラクティブモード
+ralplan --interactive migrate from REST to GraphQL
+
+# 高リスク作業
+ralplan --deliberate rewrite the authentication system
+```
+
+## 関連スキル
+
+- [plan](/ja/docs/skills/workflow/plan) - 完全な計画スキル（ralplan は合意モード別名）
+- [autopilot](/ja/docs/skills/workflow/autopilot) - 合意計画後の自動実行
+- [team](/ja/docs/skills/workflow/team) - 合意計画後のチーム実行（推奨）
+- [deep-interview](/ja/docs/skills/workflow/deep-interview) - 計画前の深いインタビュー
+
+## リファレンス
+
+| 項目 | 値 |
+|------|-------|
+| 起動 | `/oh-my-claudecode:ralplan` |
+| マジックキーワード | `ralplan` |
+| カテゴリ | Workflow |
+| 出力パス | `.omc/plans/ralplan-*.md` |

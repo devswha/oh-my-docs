@@ -1,0 +1,70 @@
+---
+title: CCG
+description: Claude-Codex-Gemini でマルチパースペクティブな入力を集める 3 モデルオーケストレーション
+---
+
+## 概要
+
+CCG (Claude-Codex-Gemini) は、Codex と Gemini に同時にクエリして、両方の応答を Claude が単一の統合された回答に合成する 3 モデルオーケストレーションです。
+
+`/ask` スキルを使用して、tmux チームワーカーを起動せずに軽量に外部視点を収集します。
+
+## 使用方法
+
+```bash
+/oh-my-claudecode:ccg "Review this PR - architecture/security via Codex and UX/readability via Gemini"
+```
+
+マジックキーワードでも起動できます。
+
+```
+ccg review the authentication flow
+claude-codex-gemini analyze this API design
+```
+
+## 動作方法
+
+1. **リクエスト分解**: Claude がリクエストを 2 つの advisor プロンプトに分割
+   - Codex プロンプト: アーキテクチャ、正確性、バックエンド、リスク、テスト戦略
+   - Gemini プロンプト: UX/コンテンツ明確さ、代替案、エッジケース、ドキュメント
+2. **並列クエリ**: `/ask codex` と `/ask gemini` を同時実行
+3. **アーティファクト収集**: `.omc/artifacts/ask/` から結果を読み込み
+4. **合成**: Claude が両方の出力を単一の統合された回答に結合
+
+## 合成出力フォーマット
+
+- 合意された推奨事項
+- 衝突する推奨事項 (明確にマーク)
+- 選択された最終的な方向と根拠
+- アクションチェックリスト
+
+## 使用する場合
+
+- 単一のリクエストがバックエンド/分析とフロントエンド/UI 作業にまたがる場合
+- アーキテクチャと設計/UX の両方の視点が必要なコードレビュー
+- Codex と Gemini が異なる意見を提供する可能性があるクロスバリデーション
+- チームランタイムオーケストレーションなしで quick advisor 入力が必要な場合
+
+## フォールバック
+
+- 1 つのプロバイダーが利用できない場合、利用可能なプロバイダー + Claude 合成で進行
+- 両方のプロバイダーが利用できない場合、Claude のみの回答にフォールバック
+
+## 要件
+
+- **Codex CLI**: `npm install -g @openai/codex`
+- **Gemini CLI**: `npm install -g @google/gemini-cli`
+
+## 関連スキル
+
+- [ask](/ja/docs/skills/utility/ask) - 個々のプロバイダーをクエリ
+- [omc-teams](/ja/docs/skills/workflow/omc-teams) - チームワーカー経由のより重い並列作業
+- [team](/ja/docs/skills/workflow/team) - Claude ネイティブチームオーケストレーション
+
+## リファレンス
+
+| 項目 | 値 |
+|------|-------|
+| 起動 | `/oh-my-claudecode:ccg` |
+| マジックキーワード | `ccg`, `claude-codex-gemini` |
+| カテゴリ | Workflow |

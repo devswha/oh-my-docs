@@ -1,0 +1,101 @@
+---
+title: Plan
+description: インタビューベースの計画を含む 4 つのモードに対応する戦略的計画スキル
+---
+
+## 概要
+
+Plan は 4 つのモードをサポートする戦略的計画スキルです: interview、direct、consensus、review。リクエストの具体性に基づいて自動的にモードを選択し、コードベースを最初に探索して、ユーザーに質問します。
+
+## 使用方法
+
+```bash
+/oh-my-claudecode:omc-plan "implement user authentication"
+/oh-my-claudecode:omc-plan --consensus "redesign the API layer"
+/oh-my-claudecode:omc-plan --direct "add caching to the search endpoint"
+/oh-my-claudecode:omc-plan --review
+```
+
+マジックキーワードでも起動できます。
+
+```
+plan this feature
+plan the migration
+let's plan the refactoring
+```
+
+## モード選択
+
+| モード | トリガー | 動作 |
+|------|---------|----------|
+| Interview | ブロードなリクエスト (デフォルト) | インタラクティブな要件収集 |
+| Direct | `--direct` または詳細なリクエスト | インタビューをスキップして直ぐに計画を生成 |
+| Consensus | `--consensus` または `ralplan` | 反復的な Planner-Architect-Critic コンセンサス |
+| Review | `--review` | 既存の計画の Critic 評価 |
+
+## インタビューモード
+
+ブロードまたは曖昧なリクエスト用に対話的に要件を収集します。
+
+- コードベースの事実は explore エージェント経由で最初に収集
+- 1 度に 1 つの質問のみ
+- 各質問は前の回答に基づく
+- ユーザーが準備できたときに計画を生成
+
+## コンセンサスモード
+
+RALPLAN-DR 構造化審議を使用するコンセンサスモード。
+
+1. **Planner** が最初の計画と RALPLAN-DR サマリーを記述
+2. **Architect** がアーキテクチャ的な健全性をレビュー (順序実行)
+3. **Critic** が品質基準を評価 (Architect 完了後実行)
+4. 拒否時に最大 5 回反復
+5. 承認時に ADR を伴う最終計画を出力
+
+### RALPLAN-DR サマリー構造
+
+- 原則 (3-5 個)
+- 決定ドライバー (トップ 3)
+- 実行可能なオプション (2 個以上)、各々の長所と短所
+- `--deliberate` モード: 前事後分析 (3 シナリオ) + 拡張テスト計画
+
+## オプション / フラグ
+
+| フラグ | 説明 |
+|------|-------------|
+| `--direct` | インタビューなしに直接計画を生成 |
+| `--consensus` | コンセンサスモードを起動 |
+| `--review` | 既存の計画をレビュー |
+| `--interactive` | コンセンサスモード中のユーザープロンプトを有効化 |
+| `--deliberate` | 高リスク作業用の深い審議モード |
+| `--architect codex` | Architect ステージで Codex を使用 |
+| `--critic codex` | Critic ステージで Codex を使用 |
+
+## 計画出力フォーマット
+
+すべての計画には以下が含まれます:
+
+- 要件サマリー
+- 受け入れ基準 (テスト可能)
+- 実装ステップ (ファイル参照付き)
+- リスクと軽減策
+- 検証ステップ
+- コンセンサスモード: RALPLAN-DR サマリー + ADR
+
+計画は `.omc/plans/` に保存されます。
+
+## 関連スキル
+
+- [ralplan](/ja/docs/skills/workflow/ralplan) - `plan --consensus` のショートカットエイリアス
+- [autopilot](/ja/docs/skills/workflow/autopilot) - 計画後の自律実行
+- [ralph](/ja/docs/skills/workflow/ralph) - 計画後の継続ループ実行
+- [deep-interview](/ja/docs/skills/workflow/deep-interview) - 計画前の深いインタビュー
+
+## リファレンス
+
+| 項目 | 値 |
+|------|-------|
+| 起動 | `/oh-my-claudecode:omc-plan` |
+| マジックキーワード | `plan this`, `plan the`, `let's plan` |
+| カテゴリ | Workflow |
+| 出力パス | `.omc/plans/` |

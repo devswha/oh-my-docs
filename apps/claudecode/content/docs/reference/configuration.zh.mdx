@@ -1,0 +1,308 @@
+---
+title: config.jsonc 参考
+description: OMC 配置文件（config.jsonc）的所有选项、默认值和使用示例
+---
+
+## 配置文件位置
+
+| 范围 | 路径 |
+|------|------|
+| 用户（全局） | `~/.config/claude-omc/config.jsonc` |
+| 项目 | `.claude/omc.jsonc` |
+
+设置按以下顺序合并：`defaults → user config → project config → environment variables`。
+后面的设置覆盖前面的设置。
+
+## agents
+
+为每个智能体指定模型。
+
+```jsonc
+{
+  "agents": {
+    "omc": { "model": "opus" },        // 主编排器
+    "explore": { "model": "haiku" },    // 代码库探索
+    "analyst": { "model": "opus" },     // 需求分析
+    "planner": { "model": "opus" },     // 任务规划
+    "architect": { "model": "opus" },   // 系统设计
+    "debugger": { "model": "sonnet" },  // 调试
+    "executor": { "model": "sonnet" },  // 代码实现
+    "verifier": { "model": "sonnet" },  // 验证
+    "securityReviewer": { "model": "sonnet" }, // 安全审查
+    "codeReviewer": { "model": "opus" },       // 代码审查
+    "testEngineer": { "model": "sonnet" },     // 测试策略
+    "designer": { "model": "sonnet" },  // UI/UX 设计
+    "writer": { "model": "haiku" },     // 文档编写
+    "qaTester": { "model": "sonnet" },  // QA 测试
+    "scientist": { "model": "sonnet" }, // 数据分析
+    "tracer": { "model": "sonnet" },    // 因果追踪
+    "gitMaster": { "model": "sonnet" }, // Git 操作
+    "codeSimplifier": { "model": "opus" },     // 代码简化
+    "critic": { "model": "opus" },      // 计划审查
+    "documentSpecialist": { "model": "sonnet" } // 文档查询
+  }
+}
+```
+
+<Callout type="info">
+配置中带有连字符（-）的智能体名称会被转换为 camelCase。
+示例：`security-reviewer` → `securityReviewer`、`code-reviewer` → `codeReviewer`
+</Callout>
+
+## features
+
+特性开关。
+
+```jsonc
+{
+  "features": {
+    "parallelExecution": true,        // 并行智能体执行
+    "lspTools": true,                 // LSP 工具集成
+    "astTools": true,                 // AST 工具（ast-grep）
+    "continuationEnforcement": true,  // 强制任务完成
+    "autoContextInjection": true      // 自动上下文注入
+  }
+}
+```
+
+| 选项 | 默认值 | 说明 |
+|------|--------|------|
+| `parallelExecution` | `true` | 同时运行多个智能体 |
+| `lspTools` | `true` | 启用语言服务器协议工具 |
+| `astTools` | `true` | 启用 ast-grep 基础的 AST 工具 |
+| `continuationEnforcement` | `true` | 如果有未完成的任务继续执行 |
+| `autoContextInjection` | `true` | 自动注入 CLAUDE.md/AGENTS.md |
+
+## magicKeywords
+
+允许自定义魔法关键词触发器。
+
+```jsonc
+{
+  "magicKeywords": {
+    "ultrawork": ["ultrawork", "ulw", "uw"],
+    "search": ["search", "find", "locate"],
+    "analyze": ["analyze", "investigate", "examine"],
+    "ultrathink": ["ultrathink", "think", "reason", "ponder"]
+  }
+}
+```
+
+为每个类别指定一个字符串数组。当用户输入包含这些字符串之一时，相应的模式被激活。
+
+<Callout type="warn">
+只有上述 4 个类别可以通过 `magicKeywords` 更改。`autopilot`、`ralph` 和 `ccg` 等关键词在 keyword-detector 钩子中是硬编码的，无法通过配置更改。
+</Callout>
+
+## routing
+
+模型路由配置。
+
+```jsonc
+{
+  "routing": {
+    "enabled": true,           // 启用智能模型路由
+    "defaultTier": "MEDIUM",   // 默认层级（LOW | MEDIUM | HIGH）
+    "forceInherit": false,     // 强制父模型继承
+    "escalationEnabled": true, // 允许升级
+    "maxEscalations": 2        // 最大升级数
+  }
+}
+```
+
+| 选项 | 默认值 | 说明 |
+|------|--------|------|
+| `enabled` | `true` | 是否启用模型路由 |
+| `defaultTier` | `"MEDIUM"` | 当没有规则匹配时应用的默认层级 |
+| `forceInherit` | `false` | 为 `true` 时，所有智能体继承父模型 |
+| `escalationEnabled` | `true` | 根据任务复杂度允许自动升级 |
+| `maxEscalations` | `2` | 最大升级数 |
+
+<Callout type="info">
+当使用 CC Switch、自定义 `ANTHROPIC_BASE_URL`、AWS Bedrock 或 Google Vertex AI 时，`forceInherit` 会自动设置为 `true`。这是因为将 Claude 特定的模型名称（sonnet、opus、haiku）传递给这些平台会导致错误。
+</Callout>
+
+## permissions
+
+权限配置。
+
+```jsonc
+{
+  "permissions": {
+    "allowBash": true,          // 允许 Bash 命令执行
+    "allowEdit": true,          // 允许文件编辑
+    "allowWrite": true,         // 允许文件创建
+    "maxBackgroundTasks": 5     // 最大后台任务数（1~50）
+  }
+}
+```
+
+## mcpServers
+
+MCP 服务器配置。
+
+```jsonc
+{
+  "mcpServers": {
+    "exa": {
+      "enabled": true,
+      "apiKey": "your-exa-api-key"  // 或使用 EXA_API_KEY 环境变量
+    },
+    "context7": {
+      "enabled": true
+    }
+  }
+}
+```
+
+## externalModels
+
+外部模型供应商配置。
+
+```jsonc
+{
+  "externalModels": {
+    "defaults": {
+      "codexModel": "gpt-5.3-codex",          // 默认 Codex 模型
+      "geminiModel": "gemini-3.1-pro-preview"  // 默认 Gemini 模型
+    },
+    "fallbackPolicy": {
+      "onModelFailure": "provider_chain",  // provider_chain | cross_provider | claude_only
+      "allowCrossProvider": false,
+      "crossProviderOrder": ["codex", "gemini"]
+    }
+  }
+}
+```
+
+## delegationRouting
+
+委派路由配置至外部模型（可选特性）。
+
+```jsonc
+{
+  "delegationRouting": {
+    "enabled": false,              // 默认禁用
+    "defaultProvider": "claude",   // claude | codex | gemini
+    "roles": {
+      "executor": {
+        "provider": "codex",
+        "tool": "Task"
+      }
+    }
+  }
+}
+```
+
+## startupCodebaseMap
+
+会话启动时的代码库地图生成设置。
+
+```jsonc
+{
+  "startupCodebaseMap": {
+    "enabled": true,
+    "maxFiles": 200,
+    "maxDepth": 4
+  }
+}
+```
+
+## taskSizeDetection
+
+自动任务大小检测设置。
+
+```jsonc
+{
+  "taskSizeDetection": {
+    "enabled": true,
+    "smallWordLimit": 50,                    // 词数少于此的任务是小任务
+    "largeWordLimit": 200,                   // 词数多于此的任务是大任务
+    "suppressHeavyModesForSmallTasks": true  // 为小任务抑制重型模式
+  }
+}
+```
+
+## 完整默认配置
+
+以下是 OMC 的所有默认配置值。
+
+```jsonc
+{
+  "agents": {
+    "omc": { "model": "opus" },
+    "explore": { "model": "haiku" },
+    "analyst": { "model": "opus" },
+    "planner": { "model": "opus" },
+    "architect": { "model": "opus" },
+    "debugger": { "model": "sonnet" },
+    "executor": { "model": "sonnet" },
+    "verifier": { "model": "sonnet" },
+    "securityReviewer": { "model": "sonnet" },
+    "codeReviewer": { "model": "opus" },
+    "testEngineer": { "model": "sonnet" },
+    "designer": { "model": "sonnet" },
+    "writer": { "model": "haiku" },
+    "qaTester": { "model": "sonnet" },
+    "scientist": { "model": "sonnet" },
+    "tracer": { "model": "sonnet" },
+    "gitMaster": { "model": "sonnet" },
+    "codeSimplifier": { "model": "opus" },
+    "critic": { "model": "opus" },
+    "documentSpecialist": { "model": "sonnet" }
+  },
+  "features": {
+    "parallelExecution": true,
+    "lspTools": true,
+    "astTools": true,
+    "continuationEnforcement": true,
+    "autoContextInjection": true
+  },
+  "magicKeywords": {
+    "ultrawork": ["ultrawork", "ulw", "uw"],
+    "search": ["search", "find", "locate"],
+    "analyze": ["analyze", "investigate", "examine"],
+    "ultrathink": ["ultrathink", "think", "reason", "ponder"]
+  },
+  "routing": {
+    "enabled": true,
+    "defaultTier": "MEDIUM",
+    "forceInherit": false,
+    "escalationEnabled": true,
+    "maxEscalations": 2
+  },
+  "permissions": {
+    "allowBash": true,
+    "allowEdit": true,
+    "allowWrite": true,
+    "maxBackgroundTasks": 5
+  },
+  "externalModels": {
+    "defaults": {
+      "codexModel": "gpt-5.3-codex",
+      "geminiModel": "gemini-3.1-pro-preview"
+    },
+    "fallbackPolicy": {
+      "onModelFailure": "provider_chain",
+      "allowCrossProvider": false,
+      "crossProviderOrder": ["codex", "gemini"]
+    }
+  },
+  "delegationRouting": {
+    "enabled": false,
+    "defaultProvider": "claude",
+    "roles": {}
+  },
+  "startupCodebaseMap": {
+    "enabled": true,
+    "maxFiles": 200,
+    "maxDepth": 4
+  },
+  "taskSizeDetection": {
+    "enabled": true,
+    "smallWordLimit": 50,
+    "largeWordLimit": 200,
+    "suppressHeavyModesForSmallTasks": true
+  }
+}
+```

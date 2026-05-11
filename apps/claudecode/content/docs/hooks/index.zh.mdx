@@ -1,0 +1,111 @@
+---
+title: 钩子系统概览
+description: 解释 OMC 钩子系统的工作原理和整体结构。
+---
+
+## 什么是钩子?
+
+钩子是响应 Claude Code 生命周期事件自动运行的脚本。
+oh-my-claudecode 使用多个钩子来扩展 Claude Code 的默认行为。
+
+当用户提交提示、执行工具或会话开始/结束时，
+钩子会自动运行，以注入额外上下文、激活模式或管理状态。
+
+## 工作原理
+
+钩子在 `hooks.json` 文件中定义，每个钩子遵循以下结构：
+
+```json
+{
+  "eventName": [
+    {
+      "matcher": "*",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "node scripts/hook-script.mjs",
+          "timeout": 5
+        }
+      ]
+    }
+  ]
+}
+```
+
+- **eventName**: 钩子响应的生命周期事件
+- **matcher**: 运行钩子的条件（`*` 表示所有情况）
+- **command**: 要执行的 Node.js 脚本
+- **timeout**: 最大执行时间（秒）
+
+钩子输出通过 `<system-reminder>` 标签注入到 Claude。
+额外上下文通过 `hookSpecificOutput.additionalContext` 传递。
+
+## 钩子类别
+
+OMC 钩子分为 4 个主要类别。
+
+### 执行模式钩子
+
+管理执行模式，如自主执行、并行处理和持续化。
+
+| 钩子 | 描述 |
+|----|------|
+| autopilot | 从想法到可工作代码的完全自主执行 |
+| ralph | 持续执行，直到验证完成 |
+| ultrawork | 最大并行智能体执行 |
+| ultraqa | 重复 QA 循环直到目标达成 |
+| persistent-mode | 跨会话保持模式状态 |
+
+### 核心钩子
+
+处理核心功能，包括编排和关键词检测。
+
+| 钩子 | 描述 |
+|----|------|
+| keyword-detector | 检测魔法关键词（ultrawork、ralph 等） |
+| skill-injector | 注入技能提示 |
+| pre-tool-enforcer | 工具使用前验证规则 |
+| post-tool-verifier | 验证工具使用结果 |
+
+### 上下文管理钩子
+
+管理内存、项目状态和压缩。
+
+| 钩子 | 描述 |
+|----|------|
+| notepad | 抗压缩的内存系统 |
+| project-memory | 项目内存管理 |
+| pre-compact | 压缩前处理 |
+
+### 质量/验证钩子
+
+处理代码质量、权限管理和子智能体跟踪。
+
+| 钩子 | 描述 |
+|----|------|
+| permission-handler | 权限请求和验证 |
+| subagent-tracker | 跟踪子智能体生成/完成 |
+| code-simplifier | 停止时自动简化最近修改的文件（可选） |
+
+## 禁用钩子
+
+### 禁用所有
+
+```bash
+export DISABLE_OMC=1
+```
+
+### 选择性禁用
+
+```bash
+export OMC_SKIP_HOOKS="keyword-detector,notepad"
+```
+
+用逗号分隔以仅跳过特定钩子。
+
+## 详细页面
+
+- [生命周期事件](/zh/docs/hooks/lifecycle-events) -- 11 个事件和钩子映射
+- [核心钩子](/zh/docs/hooks/core-hooks) -- 执行模式和编排钩子
+- [上下文管理钩子](/zh/docs/hooks/context-hooks) -- 内存和压缩钩子
+- [魔法关键词](/zh/docs/hooks/magic-keywords) -- 用自然语言激活模式的系统

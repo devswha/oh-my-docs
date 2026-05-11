@@ -1,0 +1,271 @@
+---
+title: Changelog
+description: Version-by-version changes for Oh My ClaudeCode
+---
+
+## Changelog
+
+A summary of major changes to Oh My ClaudeCode by version.
+
+### v4.12.0 (current)
+
+**New Features**
+- Team: per-role provider and model routing with resolved-routing snapshot — configure `roleRouting` per canonical role (e.g., `codex critic`, `gemini reviewer`) in `.claude/omc.jsonc` (#2614)
+- HUD: display extra usage spend data (closes #2570)
+- HUD: add MiniMax coding plan usage provider
+- HUD: split usage cache by provider to eliminate cross-session thrashing
+- Release: rewrite release skill as generic repo-aware release assistant — analyzes repo + CI, caches rules in `.omc/RELEASE_RULE.md`, then walks you through the release (#2501)
+- CI: add upgrade test to catch warnings and errors
+
+**Bug Fixes (selected)**
+- Persistent stop hook: align contract and tighten agent output contracts (#2653)
+- Context-bloat: eliminate three sources of repeated rule/skill injection (#2577)
+- Pre-tool-enforcer: honor `OMC_STATE_DIR` via centralized state-root resolver (#2621)
+- Ralplan: require invocation intent before auto-starting (#2620)
+- Team: shorten trigger messages to fit `sendToWorker` 200-char limit (#2617)
+- Installer: preserve user skills with OMC-style frontmatter during updates (#2573)
+- Permission-handler: allow read-only `gh issue`/`pr` commands; add installer lib assertions
+- Deep-interview: replace five remaining hardcoded 20%/0.2 threshold signals (#2545)
+- State-root: centralize `OMC_STATE_DIR` resolution across hook entrypoints (#2532)
+- Keyword-detector: ignore pasted transcript blocks; suppress review-seed echo (#2541)
+- Session-start: symlink stale `CLAUDE_PLUGIN_ROOT` to latest version
+- Doctor: detect `CLAUDE.md` version drift against plugin cache
+- Tmux: centralize all tmux execution through wrapper functions
+
+**Refactoring**
+- HUD: classify z.ai `TOKENS_LIMIT` by unit instead of reset time
+- MCP: deslop standalone-server and `listtools` test
+
+**Stats:** 121 PRs merged · 6 new features · 67 bug fixes · 3 other changes
+
+---
+
+### v4.11.4
+
+> **Note:** Upstream re-published the v4.11.3 release body unchanged for the
+> v4.11.4 tag. The fixes below are the same set as v4.11.3 — they appear here
+> only because v4.11.4 was a duplicate tag.
+
+See **v4.11.3** for the actual fix list.
+
+---
+
+### v4.11.3
+
+**Bug Fixes**
+- Prefer PATH `node` over unstable `execPath` (#2400)
+- Prevent `.js` false positives in `.json`/`.jsonl` source extension check (#2395)
+- Strip TMUX env for nested tmux compatibility (#2385)
+- Resolve asymmetric symlink path resolution (#2372)
+- Detect `enabledPlugins` (Claude Code 1.x) in `hasEnabledOmcPlugin` (#2371)
+- Deactivate stale ralplan stop enforcement after consensus completion (#2370)
+- HUD: fall back to path-based version when `package.json` is missing (#2362)
+
+**Documentation**
+- Document `--plugin-dir` flag and add CONTRIBUTING.md for local development (#2399)
+- Document plugin + npm CLI as two coexisting surfaces (#2367)
+
+**Stats:** 9 PRs merged · 7 bug fixes · 0 new features · 0 security/hardening
+
+---
+
+### v4.11.2
+
+> **Note:** Upstream re-published the v4.11.1 release body unchanged for the
+> v4.11.2 tag. See **v4.11.1** for the actual feature/fix list.
+
+---
+
+### v4.11.1
+
+**New Features**
+- HUD: `gitStatus` working-tree indicator element (#2247)
+- HUD: `hostname` element for multi-host SSH workflows (#2246)
+- HUD: cwd folder format shows `parent/leaf` instead of just `leaf` (#2238)
+
+**Security & Hardening**
+- Clamp `hardMaxIterations` and enforce in autopilot (#2331)
+- Delegate gitea URL validation to `validateUrlForSSRF` (#2336)
+- Enforce `disableExternalLLM` in `omc ask` command (#2324)
+- Sanitize `trigger_message` control characters before tmux send-keys (#2323)
+- Check iteration directly against hardMax independent of `max_iterations` (#2322)
+- Reject non-positive `hardMaxIterations` in strict mode (#2321)
+- Enforce `hardMaxIterations` for ultrawork persistent mode (#2320)
+- Block all tmux subcommands in worker context (#2316)
+
+**Bug Fixes (selected)**
+- Wiki: keyword search returns 0 results for CJK text (#2263)
+- Wiki: titleToSlug produces bare `.md` for non-ASCII titles (#2270)
+- Team: lock `unregisterMcpWorker` and `registerInConfig` read-modify-write paths (#2333)
+- i18n: prevent Korean keyword false positives for `설명서` and `랄프로렌` (#2337)
+- Installer: use `getPackageDir()` instead of `__dirname` for HUD helper copies (#2347)
+- HUD: handle ST-terminated OSC 8 sequences in ANSI regex (#2319)
+- Launch: forward env vars into tmux sessions and respect `CLAUDE_CONFIG_DIR` (#2204)
+
+**Stats:** 45 PRs merged · 3 new features · 33 bug fixes · 8 security/hardening · 1 other
+
+---
+
+### v4.11.0
+
+**New Features**
+- `wiki`: LLM Wiki knowledge layer — persistent markdown knowledge base that compounds across sessions, inspired by Karpathy's LLM Wiki model (#2214)
+- Inject Codex availability for ralplan / plan / ralph, harden detection (#2134)
+
+**Bug Fixes (selected)**
+- Team: harden worker startup delivery in tmux mode (#2225)
+- Windows: resolve bash from PATH for explore wrapper (#2216)
+- Team: stop double-sending startup inbox on team init (#2209)
+- Installer: ensure `hooks/lib` is copied with correct permissions (#2188)
+- Hooks: use `PreToolUse` deny API in preflight context guard (#2177)
+- Scripts: replace `sed -i` with `perl` for macOS compatibility (#2179)
+- Hooks: prevent fd leak in `estimateContextPercent` (#2178)
+- Team: change `sendToWorker` fallback from fail-open to fail-closed (#2175)
+- Respect `CLAUDE_CONFIG_DIR` across remaining code paths (#2156)
+- Hooks: catch `EEXIST` on Windows concurrent mkdir race (#2172)
+
+**Stats:** 27 PRs merged · 2 new features · 16 bug fixes · 9 other changes
+
+---
+
+### v4.10.2
+
+**Highlights**
+- HUD: global npm install lookup fix outside Node projects (#2149)
+- Configurable HUD call-count icon rendering (#2151)
+- Safer global setup / `CLAUDE.md` preservation and overwrite flow (#2144, #2146)
+- Bedrock pre-tool-enforcer hardening for invalid bare Anthropic model IDs (#2107)
+- Cancel flow now clears `skill-active` state correctly (#2122)
+- HUD diagnostics show a clearer install-time failure path (#2129)
+- Worktree display shows the actual worktree name instead of volatile main HEAD (#2127)
+- Team pane geometry + bundled agent path resolution fixes (#2137)
+
+---
+
+### v4.10.1
+
+**Patch release** for a packaging mistake in v4.10.0.
+
+- Rebuilt and shipped the missing `dist/` HUD layout artifacts so the layout / worktree-ordering changes from #2083 are actually present in the published package
+- Restores released parity between `src/` and `dist/` for the HUD layout path
+
+---
+
+### v4.10.0
+
+**Highlights**
+- **HUD & worktree detection**: worktree-aware HUD context plus layout customization for element ordering and grouping
+- **LSP 3.17 support**: Kotlin workflow tooling expansion
+- **New skill — `self-improve`**: autonomous evolutionary code improvement engine with tournament selection
+- **Security enhancements**: tighter Python sandboxing, worker command constraints, external LLM enforcement
+- **Runtime fixes**: session continuation safety, skill-state cleanup, CLAUDE config profile handling, installed HUD fallback behavior
+
+**Stats:** 35+ PRs merged · 8 major user-facing features · 20+ bug/runtime fixes
+
+---
+
+### v4.9.3
+
+**Bug Fixes & Security**
+- Resolve security vulnerabilities, lint warnings, and CJS runtime bug (#1994)
+- Gitignore release-body.md to prevent stale release notes
+
+---
+
+### v4.9.2
+
+**Improvements**
+- Merge dev branch improvements into main release
+
+---
+
+### v4.9.1
+
+**Release**
+- Stable release with accumulated fixes and improvements from v4.9.0
+
+---
+
+### v4.9.0
+
+**New Skills**
+- `deep-dive`: 2-stage pipeline combining trace investigation with deep-interview requirements crystallization
+- `visual-verdict`: Structured visual QA verdict for screenshot-to-reference comparisons
+- `omc-reference`: Internal reference skill for agent catalog, tools, and pipeline routing
+
+**Improvements**
+- Skill count increased to 30 user-invocable skills (+ 1 internal)
+- Various stability and performance improvements
+
+---
+
+### v4.8.2
+
+**Bug Fixes**
+- Fix CCG skill nesting issue — route advisor calls through CLI path (#1662)
+- Fix ralph/ralplan stop hook auto-continue failure (#1660)
+- Remove unused code (deprecated feature remnants) (#1659)
+
+**Improvements**
+- Backport 6 team runtime enhancements — worker stability, mailbox handling, shell affinity, assignment improvements (#1658)
+- Add ontology convergence tracking to deep-interview (#1657)
+
+---
+
+### v4.8.0
+
+**Agent System**
+- 19 specialized agents (4 lanes: Build/Analysis, Review, Domain, Coordination)
+- Agent tier system: LOW (haiku), MEDIUM (sonnet), HIGH (opus)
+- Delegation categories: visual-engineering, ultrabrain, artistry, quick, writing
+
+**Skill System**
+- 28 skills (initial release)
+- Skill pipeline metadata (preview)
+- learner skill for automatic skill extraction from sessions
+
+**Hook System**
+- 11 lifecycle events
+- keyword-detector for automatic magic keyword detection
+- persistent-mode for ralph/ultrawork persistence
+- code-simplifier hook (opt-in)
+
+**Configuration System**
+- `config.jsonc` configuration file (JSONC format)
+- 2-level user/project configuration
+- All settings overridable via environment variables
+- Automatic `forceInherit` detection (CC Switch, Bedrock, Vertex AI)
+
+**State Management**
+- Notepad: Notes that survive context compaction
+- Project Memory: Maintains project knowledge across sessions
+- Plan Notepad: Captures learnings per plan
+- `OMC_STATE_DIR` for centralized state management
+
+**Team Orchestration**
+- `omc team` CLI command
+- 5-stage pipeline: plan → prd → exec → verify → fix
+- team ralph: combines team + iterative verification
+
+**autopilot**
+- 5-stage autonomous execution: expansion → planning → execution → qa → validation
+- 3-type validation: functional, security, quality
+- Cancel/resume support
+
+**External Model Integration**
+- Codex/Gemini CLI worker support
+- CCG (Claude-Codex-Gemini) 3-model orchestration
+- Delegation routing (opt-in)
+
+**Code Intelligence**
+- 12 LSP tools (hover, goto definition, find references, diagnostics, etc.)
+- 2 AST tools (ast-grep search/replace)
+- Directory-level diagnostics
+
+**Platform Support**
+- macOS, Linux: Bash hooks
+- Windows: WSL2 recommended, Node.js hooks (experimental)
+
+<Callout type="info">
+The full changelog is available in the project's [CHANGELOG.md](https://github.com/Yeachan-Heo/oh-my-claudecode) file.
+</Callout>

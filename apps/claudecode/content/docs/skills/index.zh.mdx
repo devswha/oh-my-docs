@@ -1,0 +1,96 @@
+---
+title: 技能
+description: 介绍全部 37 个 OMC 技能，分为工作流和实用工具两类
+---
+
+## 什么是技能？
+
+技能是以 `/oh-my-claudecode:skill-name` 格式调用的命令。
+它们也可以通过魔法关键词激活，你可以在对话中使用它们而不需要记住命令名称。
+
+> **数量说明：** OMC 内置 **37 个技能**。其中 36 个可通过斜杠命令或魔法关键词用户调用；1 个（`omc-reference`）自动加载内部使用且 `user-invocable: false`。
+
+## 工作流技能
+
+自动化任务的执行模式技能。
+
+| 技能 | 说明 | 魔法关键词 |
+|-------|-------------|----------------|
+| [autopilot](/zh/docs/skills/workflow/autopilot) | 从想法到可运行代码的全自动流水线 | `autopilot`, `build me`, `I want a` |
+| [ralph](/zh/docs/skills/workflow/ralph) | 自我参考循环，重复执行直到完成 | `ralph`, `don't stop` |
+| [ultrawork](/zh/docs/skills/workflow/ultrawork) | 最大并行智能体执行 | `ultrawork`, `ulw` |
+| [ultraqa](/zh/docs/skills/workflow/ultraqa) | QA 循环：测试、验证、修复、重复 | - |
+| [team](/zh/docs/skills/workflow/team) | N 个 Claude 智能体协调流水线 | - |
+| [omc-teams](/zh/docs/skills/workflow/omc-teams) | 在 tmux 中运行 claude/codex/gemini CLI 工作进程 | - |
+| [ccg](/zh/docs/skills/workflow/ccg) | Claude-Codex-Gemini 三模型编排 | `ccg` |
+| [plan](/zh/docs/skills/workflow/plan) | 基于访谈的战略规划 | - |
+| [ralplan](/zh/docs/skills/workflow/ralplan) | Planner-Architect-Critic 共识规划 | `ralplan` |
+| [sciomc](/zh/docs/skills/workflow/sciomc) | 并行科学家智能体研究编排 | - |
+| [external-context](/zh/docs/skills/workflow/external-context) | 并行 document-specialist 外部文档查找 | - |
+| [deepinit](/zh/docs/skills/workflow/deepinit) | 分层 AGENTS.md 代码库文档化 | - |
+| [deep-interview](/zh/docs/skills/workflow/deep-interview) | Socratic 深度访谈，数学模糊度门限 | `deep interview`, `ouroboros` |
+| [deep-dive](/zh/docs/skills/workflow/deep-dive) | 两阶段流水线：trace 调查 → deep-interview 需求澄清 | `deep dive` |
+| [self-improve](/zh/docs/skills/workflow/self-improve) | 自主进化代码改进引擎，采用竞赛选择 | - |
+
+## 实用工具技能
+
+配置、管理和助手技能。
+
+| 技能 | 说明 | 魔法关键词 |
+|-------|-------------|----------------|
+| [cancel](/zh/docs/skills/utility/cancel) | 取消所有活动模式 | `cancelomc`, `stopomc` |
+| [ask](/zh/docs/skills/utility/ask) | 询问 Claude/Codex/Gemini 并保存结果 | - |
+| [ai-slop-cleaner](/zh/docs/skills/utility/ai-slop-cleaner) | 清理 AI 代码冗余 | `deslop`, `anti-slop` |
+| [learner](/zh/docs/skills/utility/learner) | 从当前会话中提取可复用技能 | - |
+| [skill](/zh/docs/skills/utility/skill) | 管理本地技能（列表、添加、删除、搜索） | - |
+| [trace](/zh/docs/skills/utility/trace) | 证据驱动的追踪 lane | - |
+| [hud](/zh/docs/skills/utility/hud) | HUD 显示配置 | - |
+| [configure-notifications](/zh/docs/skills/utility/configure-notifications) | 通知集成（Telegram、Discord、Slack） | `configure telegram`, `configure discord`, `configure slack` |
+| [release](/zh/docs/skills/utility/release) | 自动化发布工作流 | - |
+| [writer-memory](/zh/docs/skills/utility/writer-memory) | Writer 的智能体记忆系统 | - |
+| [project-session-manager](/zh/docs/skills/utility/project-session-manager) | git worktree + tmux 隔离开发环境 | - |
+| [visual-verdict](/zh/docs/skills/utility/visual-verdict) | 截图到参考的结构化视觉 QA 判定 | - |
+| [omc-setup](/zh/docs/skills/utility/omc-setup) | OMC 安装和配置 | - |
+| [mcp-setup](/zh/docs/skills/utility/mcp-setup) | MCP 服务器设置 | - |
+| [omc-doctor](/zh/docs/skills/utility/omc-doctor) | 诊断和修复安装问题 | - |
+| [setup](/zh/docs/skills/utility/setup) | 统一的安装入口 | - |
+| [debug](/zh/docs/skills/utility/debug) | 诊断 OMC 会话、钩子、状态和编排 | - |
+| [verify](/zh/docs/skills/utility/verify) | 声称完成前的证据验证 | - |
+| [remember](/zh/docs/skills/utility/remember) | 将知识路由到项目记忆、notepad 或文档 | - |
+| [skillify](/zh/docs/skills/utility/skillify) | 将会话工作流转换为可复用的 SKILL.md 草稿 | - |
+| [wiki](/zh/docs/skills/utility/wiki) | 持久化 markdown 知识库（Karpathy LLM Wiki） | `wiki`, `wiki add`, `wiki query` |
+| [omc-reference](/zh/docs/skills/utility/omc-reference) | 自动加载的 OMC 目录参考（内部） | - |
+
+## 如何调用技能
+
+### 斜杠命令
+
+```bash
+/oh-my-claudecode:autopilot "书店的 REST API"
+/oh-my-claudecode:ralph "修复所有 TypeScript 错误"
+/oh-my-claudecode:team 3:executor "实现用户认证"
+```
+
+### 魔法关键词
+
+在对话中输入的关键词会自动激活技能。
+
+```
+autopilot build me a todo app with React
+ralph fix the authentication module
+ulw implement user management
+```
+
+## 技能关系图
+
+```
+deep-interview（澄清需求）
+  → ralplan（共识规划）
+    → autopilot（自主执行）
+      → ralph（循环执行）
+        → ultrawork（并行执行）
+      → ultraqa（QA 循环）
+```
+
+更高层级的技能会自动包含较低层级的技能。
+运行 autopilot 会在内部借用 ralph 和 ultrawork 的帮助。

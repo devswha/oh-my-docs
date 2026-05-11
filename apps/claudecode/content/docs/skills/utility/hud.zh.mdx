@@ -1,0 +1,115 @@
+---
+title: HUD
+description: 用于配置和管理 HUD（抬头显示器）的技能，显示实时 OMC 状态
+---
+
+## 概览
+
+HUD 是一个技能，用于配置和管理抬头显示器，在 Claude Code 状态栏中显示实时 OMC 状态。一目了然地查看活动模式、上下文使用、智能体状态、TODO 进度等。
+
+## 使用
+
+```bash
+/oh-my-claudecode:hud              # 显示当前状态（如需要自动配置）
+/oh-my-claudecode:hud setup        # 安装/修复 HUD 状态栏
+/oh-my-claudecode:hud minimal      # 最小显示
+/oh-my-claudecode:hud focused      # 聚焦显示（默认）
+/oh-my-claudecode:hud full         # 完整显示
+/oh-my-claudecode:hud status       # 详细状态
+```
+
+## 预设
+
+### 最小
+
+仅显示基本信息。
+
+```
+[OMC] ralph | ultrawork | todos:2/5
+```
+
+### 聚焦（默认）
+
+显示所有相关元素。
+
+```
+[OMC] branch:main | ralph:3/10 | US-002 | ultrawork | ctx:67% | agents:2 | todos:2/5
+```
+
+### 完整
+
+多行显示，包含详细的智能体信息。
+
+```
+[OMC] repo:omc branch:main | ralph:3/10 | US-002 | ctx:[████░░]67% | agents:3 | todos:2/5
+├─ O architect    2m   analyzing architecture patterns...
+├─ e explore     45s   searching for test files
+└─ s executor     1m   implementing validation logic
+```
+
+## 显示元素
+
+| 元素 | 说明 |
+|---------|-------------|
+| `[OMC]` | 模式标识 |
+| `repo:name` | Git 仓库名 |
+| `branch:name` | Git 分支名 |
+| `ralph:3/10` | Ralph 迭代计数/最大值 |
+| `US-002` | 当前 PRD 故事 ID |
+| `ctx:67%` | 上下文窗口使用率 |
+| `agents:2` | 运行中的子智能体数 |
+| `todos:2/5` | TODO 完成状态 |
+
+## 颜色代码
+
+- **绿色**：正常/健康
+- **黄色**：警告（上下文 > 70%、ralph > 7）
+- **红色**：严重（上下文 > 85%、ralph 在最大值）
+
+## 配置
+
+在 `~/.claude/settings.json` 的 `omcHud` 键下配置。
+
+```json
+{
+  "omcHud": {
+    "preset": "focused",
+    "elements": {
+      "omcLabel": true,
+      "contextBar": true,
+      "agents": true,
+      "todos": true,
+      "ralph": true,
+      "showTokens": false
+    }
+  }
+}
+```
+
+可用预设：`minimal`, `focused`, `full`, `dense`, `analytics`, `opencode`
+
+## 使用提供方
+
+启用 `showTokens` 时，HUD 显示从支持当前会话的提供方提取的使用和花费数据。使用缓存按提供方分割，在会话间切换提供方时消除交叉污染。
+
+支持的提供方：
+
+- **Claude**（claude.ai 订阅、Anthropic API、Bedrock）
+- **z.ai** — 按单位分类的每周 `TOKENS_LIMIT`（尊重 pro+ 等级）
+- **MiniMax** — 编码计划使用，支持 `minimaxi.com` / `minimax.com` 域名；路由独立于凭证存在
+- **Codex / OpenAI**（通过 `omc ask codex` 或团队工作进程路由时）
+
+当提供方公开时显示额外的花费数据。
+
+## 相关技能
+
+- [omc-setup](/zh/docs/skills/utility/omc-setup) - 完整 OMC 配置（包含 HUD）
+
+## 参考
+
+| 项目 | 值 |
+|------|-------|
+| 调用 | `/oh-my-claudecode:hud` |
+| 魔法关键词 | - |
+| 类别 | 实用工具 |
+| 配置位置 | `~/.claude/settings.json`（`omcHud` 键） |

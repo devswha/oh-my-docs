@@ -1,0 +1,93 @@
+---
+title: SciOMC
+description: 並列サイエンティストエージェントを使用した研究オーケストレーション
+---
+
+## 概要
+
+SciOMC は研究オーケストレーションスキルです。研究目標を独立したステップに分解し、並列サイエンティストエージェントで分析を実行します。
+
+分解 → 実行 → 検証 → 合成の 4 段階ワークフローに従い、AUTO モードで完全な自動実行が可能です。
+
+## 使用方法
+
+```bash
+/oh-my-claudecode:sciomc <goal>
+/oh-my-claudecode:sciomc AUTO: <goal>
+/oh-my-claudecode:sciomc status
+/oh-my-claudecode:sciomc resume
+/oh-my-claudecode:sciomc list
+/oh-my-claudecode:sciomc report <session-id>
+```
+
+## 例
+
+```bash
+# 標準的な研究（ユーザーチェックポイント付き）
+/oh-my-claudecode:sciomc What are the performance characteristics of different sorting algorithms?
+
+# 完全に自動実行
+/oh-my-claudecode:sciomc AUTO: Analyze authentication patterns in this codebase
+
+# エラーハンドリング分析
+/oh-my-claudecode:sciomc How does the error handling work across the API layer?
+```
+
+## 研究プロトコル
+
+### 1. ステップ分解
+
+研究目標を 3～7 個の独立したステップに分解します。各ステップに複雑さティア（LOW/MEDIUM/HIGH）を割り当てます。
+
+### 2. 並列実行
+
+サイエンティストエージェントを使用して独立したステップを並列実行します。
+
+| 複雑さ | モデル | ユースケース |
+|------------|-------|----------|
+| LOW | Haiku | ファイル列挙、パターンカウント、単純ルックアップ |
+| MEDIUM | Sonnet | コード分析、パターン検出、ドキュメントレビュー |
+| HIGH | Opus | アーキテクチャ分析、横断的関心事、仮説検証 |
+
+最大 20 個の並列サイエンティストエージェントをサポートしています。
+
+### 3. クロスバリデーション
+
+すべてのステップ完了後、検出結果の一貫性を検証します。
+矛盾、欠落接続、カバレッジギャップ、およびエビデンス品質をチェックします。
+
+### 4. 合成レポート
+
+`.omc/research/{session-id}/report.md` に最終レポートを生成します。
+
+## AUTO モード
+
+`AUTO:` プレフィックスを付けるとユーザー介入なしで完全に自動実行されます。
+
+- 最大 10 イテレーション
+- 各ステップ完了後に状態を保存
+- `/oh-my-claudecode:cancel` でキャンセル可能
+
+## セッション管理
+
+| コマンド | アクション |
+|---------|--------|
+| `status` | 現在のセッション進捗を表示 |
+| `resume` | 中断されたセッションを再開 |
+| `list` | すべてのセッションをリスト |
+| `report <id>` | レポートを生成または再生成 |
+| `cancel` | 現在のセッションをキャンセル（状態は保持） |
+
+## 関連スキル
+
+- [external-context](/ja/docs/skills/workflow/external-context) - 外部ドキュメントルックアップ
+- [trace](/ja/docs/skills/utility/trace) - エビデンス駆動の因果トレース
+
+## リファレンス
+
+| 項目 | 値 |
+|------|-------|
+| 起動 | `/oh-my-claudecode:sciomc` |
+| マジックキーワード | - |
+| カテゴリ | Workflow |
+| セッションパス | `.omc/research/{session-id}/` |

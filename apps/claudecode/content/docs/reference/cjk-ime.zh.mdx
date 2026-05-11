@@ -1,0 +1,81 @@
+---
+title: CJK IME 已知问题
+description: 中文、日文和韩文输入法的已知问题和解决方法
+---
+
+## CJK IME 已知问题
+
+影响在 Claude Code 中使用中文、日文和韩文（CJK）输入法与 OMC 的已知问题。
+
+### 受影响的用户
+
+使用以下输入方法的用户：
+- **韩文**：한글（Hangul）通过 ibus、fcitx 或 macOS 韩文 IM
+- **日文**：かな / 漢字 通过 ibus-anthy、fcitx-mozc 或 macOS 日文 IM
+- **中文**：拼音 / 注音 通过 ibus-pinyin、fcitx 或 macOS 中文 IM
+
+### 已知问题
+
+#### 1. 组合期间字符不可见
+
+**症状**：组合期间字符不可见（在按 Enter/Space 确认之前）。最终组合的字符显示正确，但进行中的组合不可见。
+
+**根本原因**：Claude Code 的终端 UI 使用 React Ink，它不完全支持 IME 组合事件。终端原始模式在 IME 处理之前拦截按键。
+
+**状态**：上游未修复。在多个项目中进行跟踪。
+
+#### 2. 光标位置不匹配
+
+**症状**：确认 CJK 字符后，光标位置可能偏离一个或多个位置。这会导致后续编辑错位。
+
+**根本原因**：CJK 字符通常在终端单元格中占双宽，但光标位置计算可能无法正确考虑这一点。
+
+**状态**：在最近的 Claude Code 版本中部分修复。
+
+#### 3. 大型 IME 词典导致性能下降
+
+**症状**：使用大型词典的 CJK 输入法时出现明显的输入延迟，特别是在使用 ibus 或 fcitx 的 Linux 上。
+
+**根本原因**：终端的原始模式处理与 IME 的词典查询冲突，导致阻塞 I/O。
+
+**状态**：在最近的版本中部分缓解。
+
+### 解决方法
+
+#### 1. 使用外部编辑器
+
+最可靠的解决方法。在外部文本编辑器中编写你的提示，然后将其粘贴到 Claude Code 中。
+
+```bash
+# 示例：使用 vim 组合，然后粘贴
+vim /tmp/prompt.txt
+# 用韩文/日文/中文编写你的提示
+# 复制内容并粘贴到 Claude Code
+```
+
+#### 2. 使用英文提示
+
+OMC 和 Claude Code 完全支持英文输入。在可能的情况下考虑用英文编写提示。Claude 仍会根据你的 CLAUDE.md 设置用你偏好的语言回应。
+
+#### 3. 剪贴板脚本
+
+创建一个从剪贴板读取的辅助脚本：
+
+```bash
+#!/bin/bash
+# paste-prompt.sh
+xclip -selection clipboard -o
+```
+
+#### 4. IDE 集成
+
+通过 IDE 扩展（VS Code、JetBrains）使用 Claude Code，它提供自己的文本输入处理并绕过终端 IME 问题。
+
+### 相关问题
+
+- [anthropics/claude-code#1234](https://github.com/anthropics/claude-code) — CJK 输入支持
+- [vadimdemedes/ink#123](https://github.com/vadimdemedes/ink) — React Ink 中的 IME 组合
+
+<Callout type="info">
+如果你遇到此处未列出的 CJK 输入问题，请在 [oh-my-claudecode issues](https://github.com/Yeachan-Heo/oh-my-claudecode/issues) 中报告。
+</Callout>

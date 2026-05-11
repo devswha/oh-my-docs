@@ -1,0 +1,92 @@
+---
+title: 工具
+description: 介绍 OMC 提供的 MCP 工具，按类别组织。
+---
+
+## MCP 工具是什么？
+
+OMC 为 Claude Code 智能体提供 MCP（Model Context Protocol）工具。智能体使用它们进行状态管理、笔记存储、代码分析和数据处理。
+
+与用户直接调用的[技能](/zh/docs/skills)不同，工具是由智能体在工作期间内部使用的。
+
+## 工具类别
+
+### 状态
+
+用于管理执行模式状态的工具。
+
+`state_read`, `state_write`, `state_clear`, `state_list_active`, `state_get_status`
+
+由 Autopilot、Ralph 和 Ultrawork 等执行模式使用，以保存和读取其当前状态。
+
+### Notepad
+
+一个在上下文压缩后仍能保留的笔记系统。
+
+`notepad_read`, `notepad_write_priority`, `notepad_write_working`, `notepad_write_manual`, `notepad_prune`, `notepad_stats`
+
+重要信息即使在长会话期间被推出上下文窗口，也会被保留在 Notepad 中。
+
+### 项目记忆
+
+管理每个项目的长期记忆。
+
+`project_memory_read`, `project_memory_write`, `project_memory_add_note`, `project_memory_add_directive`
+
+在会话间保持项目结构、规则和学习知识。
+
+### LSP
+
+通过语言服务器协议的代码智能工具。
+
+`lsp_hover`, `lsp_goto_definition`, `lsp_find_references`, `lsp_diagnostics`, `lsp_rename` 及其他 7 个工具
+
+启用类型信息、跳转定义、查找引用、错误诊断、符号搜索等。
+
+### AST Grep
+
+基于 AST 的结构代码搜索和替换工具。
+
+`ast_grep_search`, `ast_grep_replace`
+
+使用代码结构模式而不是正则表达式来搜索和替换。
+
+### Python REPL
+
+使用持久 Python REPL 执行数据分析。
+
+`python_repl`
+
+一个在会话间保持状态的 Python 环境。
+
+### 会话搜索
+
+搜索以前的本地会话历史和记录工件。
+
+`session_search`
+
+返回会话 ID、时间戳、源路径和匹配摘录作为结构化 JSON。
+
+### 追踪
+
+分析智能体流追踪数据。
+
+`trace_timeline`, `trace_summary`
+
+`trace_timeline` 以时间顺序显示钩子、关键字、技能、智能体和工具。`trace_summary` 聚合钩子统计、关键字频率、技能激活、模式转换和工具瓶颈。
+
+### 共享记忆
+
+用于团队协调的跨智能体共享记忆。
+
+`shared_memory_write`, `shared_memory_read`, `shared_memory_list`, `shared_memory_delete`, `shared_memory_cleanup`
+
+使智能体能够在协调工作流期间跨团队边界共享数据。
+
+### 技能
+
+内部技能管理工具。
+
+`load_omc_skills_local`, `load_omc_skills_global`, `list_omc_skills`
+
+从本地项目和全局用户目录加载和列出可用的 OMC 技能。

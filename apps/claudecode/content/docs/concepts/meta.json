@@ -1,0 +1,9 @@
+{
+  "title": "Core Concepts",
+  "pages": [
+    "[Agents](/docs/concepts#what-are-agents)",
+    "[Skills](/docs/concepts#what-are-skills)",
+    "[Hooks](/docs/concepts#what-are-hooks)",
+    "[State Management](/docs/concepts#state-management-overview)"
+  ]
+}

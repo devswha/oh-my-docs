@@ -1,0 +1,93 @@
+---
+title: AST Grep
+description: 基于 AST 的结构代码搜索和替换工具
+---
+
+## 概览
+
+AST Grep 工具使用 [@ast-grep/napi](https://ast-grep.github.io/) 在代码中搜索和替换结构模式。基于 AST（抽象语法树）操作而不是正则表达式，它精确匹配代码结构。
+
+## 工具列表
+
+### ast_grep_search
+
+使用 AST 模式搜索代码。
+
+```
+ast_grep_search(
+  pattern="console.log($$$ARGS)",
+  lang="typescript"
+)
+```
+
+#### 元变量
+
+| 元变量 | 说明 | 示例 |
+|-----------|------|------|
+| `$VAR` | 匹配单个 AST 节点 | `$VAR.map($FUNC)` |
+| `$$$` | 匹配多个 AST 节点 | `console.log($$$ARGS)` |
+
+#### 示例
+
+```
+# 查找所有 console.log 调用
+ast_grep_search(pattern="console.log($$$)", lang="typescript")
+
+# 查找匹配特定模式的函数调用
+ast_grep_search(pattern="fetch($URL, { method: 'POST', $$$REST })", lang="typescript")
+
+# 查找 React useState 使用
+ast_grep_search(pattern="const [$STATE, $SETTER] = useState($INIT)", lang="tsx")
+
+# 查找 try-catch 块
+ast_grep_search(pattern="try { $$$ } catch($ERR) { $$$ }", lang="typescript")
+```
+
+### ast_grep_replace
+
+使用 AST 模式对代码进行结构替换。
+
+```
+ast_grep_replace(
+  pattern="console.log($$$ARGS)",
+  replacement="logger.info($$$ARGS)",
+  lang="typescript",
+  dryRun=true
+)
+```
+
+**始终先使用 `dryRun=true` 运行以查看更改。**
+
+#### 示例
+
+```
+# 将 console.log 转换为 logger.info
+ast_grep_replace(
+  pattern="console.log($$$ARGS)",
+  replacement="logger.info($$$ARGS)",
+  lang="typescript",
+  dryRun=true
+)
+
+# 将同步函数转换为异步函数
+ast_grep_replace(
+  pattern="function $NAME($$$PARAMS) { $$$BODY }",
+  replacement="async function $NAME($$$PARAMS) { $$$BODY }",
+  lang="typescript",
+  dryRun=true
+)
+```
+
+## 与正则表达式的区别
+
+| 项目 | 正则表达式（Grep） | AST Grep |
+|------|--------------|----------|
+| 匹配目标 | 文本模式 | 代码结构 |
+| 空格/换行 | 敏感 | 忽略 |
+| 注释 | 匹配 | 跳过 |
+| 重构 | 危险 | 保持结构 |
+| 用途 | 文本搜索 | 代码转换 |
+
+## 支持的语言
+
+支持主要编程语言，包括 TypeScript、JavaScript、TSX、JSX、Python、Go、Rust、Java、C、C++、C#、Ruby、Swift 和 Kotlin。

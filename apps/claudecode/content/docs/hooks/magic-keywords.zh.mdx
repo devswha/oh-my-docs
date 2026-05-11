@@ -1,0 +1,134 @@
+---
+title: 魔法关键词
+description: 通过自然语言提示激活 OMC 执行模式和技能的魔法关键词系统。
+---
+
+## 什么是魔法关键词?
+
+魔法关键词是一个系统，它检测用户自然语言提示中的特定词或模式
+并自动激活 OMC 技能或执行模式。
+
+无需单独的斜杠命令，在提示中包含关键词会自动激活相应功能。
+
+## keyword-detector 如何工作
+
+`keyword-detector.mjs` 在 UserPromptSubmit 事件运行。
+
+1. 接收用户提示并清理它
+2. 移除代码块、XML 标签、URL 和文件路径以防止误报
+3. 对清理后的文本执行关键词模式匹配
+4. 在冲突解决后注入技能调用指令
+
+### 安全防护
+
+- **清理**: 代码块内的关键词、URL 中的词和文件路径被忽略
+- **Team 工作进程保护**: 设置 `OMC_TEAM_WORKER` 环境变量时禁用（防止无限生成）
+- **禁用**: `DISABLE_OMC=1` 或 `OMC_SKIP_HOOKS=keyword-detector`
+
+## 关键词列表
+
+### 执行模式关键词
+
+调用技能并创建状态文件的关键词。
+
+| 关键词 | 技能 | 描述 |
+|--------|------|------|
+| `cancelomc`、`stopomc` | cancel | 取消所有活跃模式 |
+| `ralph`、`don't stop`、`must complete`、`until done` | ralph | 持续执行直到验证完成 |
+| `autopilot`、`auto pilot`、`auto-pilot`、`autonomous`、`build me`、`I want a`、`create/make me <noun>`、`handle it all`、`full auto`、`fullsend`、`end to end`、`e2e this` | autopilot | 完全自主执行 |
+| `ultrawork`、`ulw`、`uw` | ultrawork | 最大并行执行 |
+| `ccg`、`claude-codex-gemini` | ccg | Claude-Codex-Gemini 三模型编排 |
+| `ralplan` | ralplan | 基于共识的迭代规划 |
+| `deep interview`、`ouroboros` | deep-interview | 苏格拉底式深度访谈 |
+
+### AI 烂代码清理关键词
+
+支持两种类型：显式模式和组合模式。
+
+**显式模式**（自行激活）：
+- `ai-slop`、`anti-slop`、`deslop`、`de-slop`
+
+**组合模式**（当操作 + 特征组合时激活）：
+
+| 操作关键词 | 特征关键词 |
+|------------|------------|
+| `cleanup`、`refactor`、`simplify`、`dedupe`、`prune` | `slop`、`duplicate`、`duplication`、`dead code`、`unused code`、`over-abstraction`、`wrapper layers`、`needless abstractions`、`unnecessary abstractions`、`ai-generated`、`generated code`、`tech debt`、`boundary violations` |
+
+示例："cleanup the duplicate code" → 激活 ai-slop-cleaner 技能
+
+### 智能体快捷关键词
+
+用自然语言激活智能体，而不是斜杠命令。
+
+| 关键词 | 效果 | 行为 |
+|--------|------|------|
+| `tdd`、`test first`、`red green` | TDD 模式 | 强制测试优先编写 |
+| `code review`、`review code` | 代码审查模式 | 运行全面的代码审查 |
+| `security review`、`review security` | 安全审查模式 | 运行以安全为焦点的审查 |
+
+这些关键词注入内联模式消息，而不是调用技能。
+
+### 推理增强关键词
+
+| 关键词 | 效果 |
+|--------|------|
+| `ultrathink`、`think hard`、`think deeply` | 激活扩展推理模式 |
+| `deepsearch`、`search the codebase`、`find in codebase`（也：`search code`、`search files`、`search project`、`find in code`、`find in all files`） | 代码库焦点搜索模式 |
+| `deep-analyze`、`deepanalyze` | 深度分析模式 |
+
+## 优先级和冲突解决
+
+当同时检测到多个关键词时，按以下优先级顺序解决：
+
+```
+cancel（最高优先级，独占）
+  → ralph
+    → autopilot
+      → ultrawork
+        → ccg
+          → ralplan
+            → deep-interview
+              → ai-slop-cleaner
+                → tdd
+                  → code-review
+                    → security-review
+                      → ultrathink
+                        → deepsearch
+                          → analyze
+```
+
+`cancel` 是独占的 -- 它忽略所有其他匹配，仅运行取消。
+其他关键词允许多个匹配并按优先级顺序处理。
+
+## 使用示例
+
+```bash
+# 在 Claude Code 中：
+
+# 自主执行
+autopilot: implement user authentication with OAuth
+
+# 并行执行
+ultrawork write all tests for this module
+
+# 持续执行
+ralph refactor this authentication module
+
+# TDD
+tdd: implement password validation function
+
+# 代码审查
+code review the recent changes
+
+# 取消
+stopomc
+```
+
+## Team 关键词
+
+`team` 不是自动检测的。
+为了防止无限生成，它必须通过 `/team` 斜杠命令明确调用。
+
+```
+/oh-my-claudecode:team 3:executor "build a full-stack todo app"
+```

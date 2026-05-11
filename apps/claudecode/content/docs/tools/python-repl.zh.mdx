@@ -1,0 +1,96 @@
+---
+title: Python REPL
+description: 在持久 Python REPL 环境中执行数据分析和计算
+---
+
+## 概览
+
+Python REPL 是一个状态在会话间保持的 Python 执行环境。用它进行数据分析、统计计算、可视化和原型设计。
+
+## 工具
+
+### python_repl
+
+执行 Python 代码并返回结果。`action` 参数指定行为。
+
+| 动作 | 说明 |
+|--------|------|
+| `execute`（默认） | 执行代码 |
+| `interrupt` | 中断执行 |
+| `reset` | 重置状态 |
+| `get_state` | 检查记忆/变量 |
+
+```
+python_repl(code="import json; data = json.loads('{\"key\": \"value\"}'); print(data)")
+```
+
+## 特性
+
+### 状态持久性
+
+一次定义的变量、函数和导入在后续调用中仍然可用。
+
+```python
+# 第一次调用
+python_repl(code="import pandas as pd; df = pd.read_csv('data.csv')")
+
+# 第二次调用（df 被保留）
+python_repl(code="print(df.describe())")
+```
+
+### 数据分析
+
+```python
+python_repl(code="""
+import json
+with open('.omc/research/session-1/state.json') as f:
+    state = json.load(f)
+print(f"Stages: {len(state['stages'])}")
+print(f"Status: {state['status']}")
+""")
+```
+
+### 计算和转换
+
+```python
+python_repl(code="""
+# Token 成本计算
+input_tokens = 150000
+output_tokens = 50000
+cost = (input_tokens * 0.003 + output_tokens * 0.015) / 1000
+print(f"Estimated cost: ${cost:.4f}")
+""")
+```
+
+### 文件处理
+
+```python
+python_repl(code="""
+import os
+import json
+
+# 项目文件统计
+extensions = {}
+for root, dirs, files in os.walk('src'):
+    for f in files:
+        ext = os.path.splitext(f)[1]
+        extensions[ext] = extensions.get(ext, 0) + 1
+
+for ext, count in sorted(extensions.items(), key=lambda x: -x[1]):
+    print(f"{ext}: {count} files")
+""")
+```
+
+## 用途
+
+| 用途 | 说明 |
+|-----------|------|
+| 数据分析 | CSV、JSON 文件分析、统计计算 |
+| 原型设计 | 算法验证、逻辑测试 |
+| 文件处理 | 文件转换、批处理 |
+| 可视化 | 使用 matplotlib、plotly 的图表生成 |
+| 计算 | 数学计算、成本估算 |
+
+## 与科学家智能体集成
+
+[科学家](/zh/docs/agents/domain/scientist)智能体使用 python_repl 进行数据分析。它用于 [SciOMC](/zh/docs/skills/workflow/sciomc) 研究工作流中的统计分析和可视化。

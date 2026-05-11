@@ -1,0 +1,100 @@
+---
+title: 配置通知
+description: 交互式向导，用于设置 Telegram、Discord 和 Slack 通知集成
+---
+
+## 概览
+
+配置通知是一个交互式向导，设置 Telegram、Discord 和 Slack 集成，以便在会话结束、等待输入或后台任务完成时接收通知。
+
+它通过自然语言对话逐步引导你。
+
+## 使用
+
+```bash
+/oh-my-claudecode:configure-notifications
+/oh-my-claudecode:configure-notifications telegram
+/oh-my-claudecode:configure-notifications discord
+/oh-my-claudecode:configure-notifications slack
+```
+
+## 支持的平台
+
+### Telegram
+
+1. 通过 @BotFather 创建机器人
+2. 输入机器人令牌和聊天 ID
+3. 选择消息格式（Markdown/HTML）
+4. 选择事件
+5. 发送测试通知
+
+也可以通过环境变量配置：
+```bash
+export OMC_TELEGRAM_BOT_TOKEN="123456789:ABCdefGHI..."
+export OMC_TELEGRAM_CHAT_ID="123456789"
+```
+
+### Discord
+
+支持两种方法：
+- **Webhook**（推荐）：从频道设置生成 webhook URL
+- **Bot API**：机器人令牌 + 频道 ID
+
+提及设置：选择用户 ID、角色 ID 或不提及
+
+环境变量：
+```bash
+export OMC_DISCORD_WEBHOOK_URL="https://discord.com/api/webhooks/..."
+export OMC_DISCORD_MENTION="<@1465264645320474637>"
+```
+
+### Slack
+
+1. 创建 Slack 应用 → 启用传入 Webhooks
+2. 输入 webhook URL
+3. 配置提及（用户、@channel、@here）
+4. 覆盖频道（可选）
+
+环境变量：
+```bash
+export OMC_SLACK_WEBHOOK_URL="https://hooks.slack.com/services/..."
+export OMC_SLACK_MENTION="<@U1234567890>"
+```
+
+## 通知事件
+
+| 事件 | 说明 |
+|-------|-------------|
+| session-end | 当 Claude 会话结束时（推荐） |
+| ask-user-question | 当 Claude 等待输入时 |
+| session-start | 当新会话启动时 |
+| session-continuing | 当持久模式保持会话活跃时 |
+
+## 激活平台
+
+即使配置后，你也必须为每个会话启用标志才能发送通知。
+
+```bash
+omc --telegram              # 仅启用 Telegram
+omc --telegram --discord     # 启用 Telegram + Discord
+omc --telegram --slack       # 启用 Telegram + Slack
+```
+
+不带标志运行 `omc` 不发送通知。
+
+## 配置文件
+
+设置存储在 `~/.claude/.omc-config.json`。
+
+## 相关技能
+
+- [omc-setup](/zh/docs/skills/utility/omc-setup) - 完整 OMC 配置
+
+## 参考
+
+| 项目 | 值 |
+|------|-------|
+| 调用 | `/oh-my-claudecode:configure-notifications` |
+| 魔法关键词 | - |
+| 类别 | 实用工具 |
+| 配置文件 | `~/.claude/.omc-config.json` |

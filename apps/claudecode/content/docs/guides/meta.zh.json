@@ -1,0 +1,11 @@
+{
+  "title": "指南",
+  "pages": [
+    "[Autopilot](/zh/docs/guides#什么是-autopilot)",
+    "[团队编排](/zh/docs/guides#什么是团队模式)",
+    "[规划工作流](/zh/docs/guides#为什么规划很重要)",
+    "[自定义技能](/zh/docs/guides#什么是自定义技能)",
+    "[调试](/zh/docs/guides#omc-调试工具)",
+    "[模型成本优化](/zh/docs/guides#模型成本优化)"
+  ]
+}

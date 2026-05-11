@@ -1,0 +1,124 @@
+---
+title: Release
+description: 通用的仓库感知发布助手，分析发布规则，将其缓存在 .omc/RELEASE_RULE.md 中，然后指导发布
+---
+
+## 概述
+
+Release 是一个轻量级的、仓库感知的发布助手。第一次运行时它检查项目和 CI 以推导发布规则，将其存储在 `.omc/RELEASE_RULE.md` 中供将来运行使用，然后使用这些规则引导你完成发布。
+
+它**不**硬编码为任何单一堆栈。它检测 npm / PyPI / Cargo / Docker / GitHub Packages，找到版本所在位置（`package.json`、`pyproject.toml`、`Cargo.toml`、`VERSION` 等），确定发布触发器（标签推送、手动调度、合并），并相应地调整。
+
+## 使用
+
+```bash
+/oh-my-claudecode:release [version]
+/oh-my-claudecode:release --refresh
+```
+
+- `version` 是可选的。接受 `patch`、`minor`、`major` 或显式语义版本如 `2.4.0`。如果省略，技能会询问。
+- `--refresh` 强制重新分析仓库，即使缓存的规则文件存在。
+
+## 执行流程
+
+### 步骤 0 — 加载或构建发布规则
+
+- 如果 `.omc/RELEASE_RULE.md` **不**存在（或传递了 `--refresh`）：运行完整仓库分析并写入文件。
+- 如果**存在**：读取它，然后执行增量检查 — 扫描 `.github/workflows/`、`.circleci/`、`.travis.yml`、`Jenkinsfile`、`bitbucket-pipelines.yml`、`gitlab-ci.yml` 查找比缓存的 `last-analyzed` 时间戳更新的修改。如果 CI 改变，仅刷新这些部分。
+
+### 步骤 1 — 仓库分析
+
+该技能检查：
+
+- **版本来源** — 包含当前版本的文件，加上任何发布自动化脚本（`scripts/release.*`、`bump2version`、`release-it`、`semantic-release`、`changesets`、`goreleaser`、`Makefile` 目标）。
+- **注册表 / 发行** — npm、PyPI、Cargo、Docker、GitHub Packages，以及哪个 CI 任务发布。
+- **发布触发** — 标签推送（`v*`）、手动调度、合并到 main、发布分支合并或提交消息模式。
+- **测试门** — 测试命令以及 CI 是否要求在发布前通过。
+- **发布注释 / 更新日志** — 存在和约定（Keep a Changelog、Conventional Commits、GitHub 自动生成、发布体文件或无）。
+- **首次设置缺口** — 缺失发布工作流、缺失构建工件的 `.gitignore` 项、无 git 标签。
+
+### 步骤 2 — 写入 `.omc/RELEASE_RULE.md`
+
+缓存文件使用此结构：
+
+```markdown
+# Release Rules
+<!-- last-analyzed: YYYY-MM-DDTHH:MM:SSZ -->
+
+## Version Sources
+## Release Trigger
+## Test Gate
+## Registry / Distribution
+## Release Notes Strategy
+## CI Workflow Files
+## First-Time Setup Gaps
+```
+
+### 步骤 3 — 确定版本
+
+如果用户没有传递版本，该技能显示当前版本以及 `patch` / `minor` / `major` 会产生什么，然后询问。
+
+### 步骤 4 — 发前检查清单
+
+在继续之前，该技能确认（最少）：
+
+- 所有预期更改已提交并推送
+- 目标分支上 CI 绿
+- 测试本地通过（运行测试门命令）
+- 版本提升应用于每个版本来源文件
+- 发布注释 / 更新日志已准备
+
+### 步骤 5 — 发布注释指南
+
+应用仓库的检测约定。无约定时，默认为：
+
+- 从**用户的变化**而不是内部细节开始。
+- 按类型分组：`New Features`、`Bug Fixes`、`Breaking Changes`、`Deprecations`、`Internal / Chores`。
+- 每项一句，PR/问题链接，感谢外部贡献者。
+- 破坏性变化排在最前面，附带迁移路径。
+- 省略不可见的变化（重构、CI 调整、仅测试），除非它们影响可重现性。
+
+对于 Conventional Commits 仓库，它从 `git log <prev-tag>..HEAD --no-merges --format="%s"` 按提交类型生成草稿并分组。
+
+### 步骤 6 — 执行发布
+
+1. **提升版本**跨每个来源文件。
+2. **运行测试**通过测试门命令。
+3. **提交** `git add <version files> CHANGELOG.md` → `chore(release): bump version to vX.Y.Z`。
+4. **标签** — 注释：`git tag -a vX.Y.Z -m "vX.Y.Z"`。
+5. **推送**分支 + 标签。
+6. **CI 接管** — 如果发布触发是标签推送，CI 处理发布 + GitHub Release。否则该技能显示手动发布命令（`npm publish --access public`、`twine upload dist/*` 等）。
+
+### 步骤 7 — 首次设置建议
+
+如果步骤 1 标记了缺口，该技能提供：
+
+- 为检测到的堆栈搭建 `.github/workflows/release.yml`
+- 将构建工件添加到 `.gitignore`
+- 为没有标签的仓库解释 git 标签最佳实践
+
+### 步骤 8 — 验证
+
+推送后：
+
+- `gh run list --workflow=<release workflow> --limit=3`（如果安装了 `gh`）
+- 几分钟后检查注册表查看新版本
+- `gh release view vX.Y.Z`
+
+## 注释
+
+- 没有硬编码到特定项目 — 所有内容都从仓库检查派生。
+- `.omc/RELEASE_RULE.md` 是本地缓存。提交它与你的团队共享派生规则，或 `.gitignore` 它如果你希望它本地。
+- Monorepos / 工作区（npm / pnpm / Cargo）被检测和处理。
+
+## 相关技能
+
+- [omc-setup](/zh/docs/skills/utility/omc-setup) — 更新后应用配置
+
+## 参考
+
+| 项目 | 值 |
+|------|-------|
+| 调用 | `/oh-my-claudecode:release` |
+| 魔法关键词 | - |
+| 分类 | Utility |

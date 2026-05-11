@@ -1,0 +1,100 @@
+---
+title: Notepad
+description: 一个在上下文窗口压缩后仍能保留的持久笔记系统
+---
+
+## 概览
+
+Notepad 是一个持久笔记系统，在上下文窗口压缩后仍能保留。在长会话中，即使来自对话早期的重要信息被推出上下文，保存在 Notepad 中的内容在压缩后会被恢复。
+
+## 存储路径
+
+```
+.omc/notepad.md
+```
+
+## 工具列表
+
+### notepad_read
+
+读取当前 notepad 的完整内容。
+
+```
+notepad_read()
+```
+
+### notepad_write_priority
+
+写入到优先级上下文部分。**替换现有内容。** 总在会话开始时加载。保持在 500 个字符以内。
+
+```
+notepad_write_priority(content="This project uses TypeScript strict mode")
+```
+
+用于架构决策、核心约束和必不可忘的信息。
+
+### notepad_write_working
+
+在工作记忆部分追加一个带时间戳的条目。自动在 7 天后修剪。
+
+```
+notepad_write_working(content="Currently refactoring auth module, 3/5 files complete")
+```
+
+用于进度更新、后续步骤和工作期间发现的信息。
+
+### notepad_write_manual
+
+在手动部分追加一个条目。不会自动修剪。
+
+```
+notepad_write_manual(content="Bug: sessionId undefined at session.ts:45")
+```
+
+### notepad_prune
+
+修剪超过 N 天（默认：7 天）的工作记忆条目。
+
+```
+notepad_prune()
+```
+
+### notepad_stats
+
+返回关于 notepad 的统计信息（条目数、大小等）。
+
+```
+notepad_stats()
+```
+
+## 使用模式
+
+### 记录重要决策
+
+```
+notepad_write_priority(content="DB migration: PostgreSQL → MySQL prohibited. Existing query compatibility issues")
+```
+
+### 记录任务进度
+
+```
+notepad_write_working(content="TODO: 1. Fix auth module ✓ 2. Add tests 3. Update docs")
+```
+
+### 恢复会话上下文
+
+```
+notepad_read()
+→ "Currently refactoring auth. src/auth/login.ts complete. Next: src/auth/session.ts"
+```
+
+## 压缩行为
+
+当 Claude Code 压缩上下文时：
+
+1. Notepad 内容包含在压缩结果中
+2. 优先级笔记首先恢复
+3. 工作笔记接下来恢复
+4. 修剪的笔记被排除
+
+核心上下文即使在长会话中也能被维护。

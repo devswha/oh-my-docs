@@ -1,0 +1,216 @@
+---
+title: Oh My ClaudeCode
+description: Claude Code のためのマルチエージェント・オーケストレーション。学習コストゼロ。
+---
+
+![Oh My ClaudeCode](/images/omc-social-preview.jpg)
+
+**Claude Code のためのマルチエージェント・オーケストレーション。学習コストゼロ。**
+
+_Claude Code を学ぶ必要はありません。OMC を使うだけ。_
+
+Oh My ClaudeCode（OMC）は Claude Code の上で動作するマルチエージェント・オーケストレーションレイヤーです。一つのプロンプトで複数の専門エージェントを調整し、複雑な開発タスクをエンドツーエンドで自動化します。
+
+## クイックスタート
+
+### ステップ 1 — インストール
+
+プラグイン経由のインストールを推奨します（ほとんどの Claude Code ユーザー向け）。以下は Claude Code のスラッシュコマンドです — **1 行ずつ**入力してください（2 行をまとめて貼り付けると失敗します）：
+
+```bash
+/plugin marketplace add https://github.com/Yeachan-Heo/oh-my-claudecode
+```
+
+続いて：
+
+```bash
+/plugin install oh-my-claudecode
+```
+
+marketplace フローの代わりに npm CLI / runtime 経路を使いたい場合は：
+
+```bash
+npm i -g oh-my-claude-sisyphus@latest
+```
+
+> **パッケージ名について:** プロジェクトは **oh-my-claudecode** としてブランディングされています（リポジトリ、プラグイン、コマンド）が、npm で公開されているパッケージ名は [`oh-my-claude-sisyphus`](https://www.npmjs.com/package/oh-my-claude-sisyphus) です。
+
+### ステップ 2 — セットアップ
+
+```bash
+# Claude Code / OMC セッション内で
+/setup
+/omc-setup
+
+# ターミナルから
+omc setup
+```
+
+### ステップ 3 — 何かを作ってみる
+
+```bash
+# Claude Code / OMC セッション内で
+/autopilot "build a REST API for managing tasks"
+
+# 自然言語のセッション内ショートカット
+autopilot: build a REST API for managing tasks
+```
+
+これだけです。あとはすべて自動で進みます。
+
+## CLI コマンド vs セッション内スキル
+
+OMC は 2 つの異なる接点を提供します：
+
+- **ターミナル CLI コマンド** — npm でインストール後、シェルから `omc ...` を実行
+- **セッション内スキル** — プラグインをインストールした後、Claude Code セッション内で `/...` を実行
+
+| 機能 | ターミナル CLI | セッション内スキル | 備考 |
+|---|---|---|---|
+| セットアップ | `omc setup` | `/setup` または `/omc-setup` | どちらも正式なエントリポイント。`/setup` はプラグイン優先の最も簡単な経路 |
+| プロバイダーへの問い合わせ | `omc ask codex "…"` | `/ask codex "…"` | どちらも同じ advisor フローを経由します |
+| チームオーケストレーション | `omc team 2:codex "…"` | `/team 3:executor "…"` | ランタイムが異なります: `omc team` は tmux CLI ワーカーを起動、`/team` はセッション内のネイティブチームワークフロー |
+| Autopilot / Ralph / Ultrawork / Deep Interview | — | `/autopilot`、`/ralph`、`/ultrawork`、`/deep-interview` | セッション内専用。`omc autopilot` CLI サブコマンドは存在しません |
+| Autoresearch | `omc autoresearch "…"` | `/deep-interview --autoresearch "…"` | セッション内経路は autoresearch の起動を支援するレーンです |
+
+## どこから始めればいいか分からない場合
+
+要件が曖昧、アイデアがぼんやりしている、または設計を細かく詰めたいとき：
+
+```bash
+/deep-interview "I want to build a task management app"
+```
+
+deep-interview は Socratic な問いかけで思考を整理します — コードを書く前に、隠れた前提を露わにし、加重された複数の次元で明確さを測定することで、実行を開始する前に「何を作るべきか」をきちんと把握できます。
+
+## チームモード（推奨）
+
+**v4.1.7** 以降、**Team** は OMC の canonical なオーケストレーション接点です。レガシーな `swarm` キーワード／スキルは削除されており、直接 `team` を使用します。
+
+```bash
+/team 3:executor "fix all TypeScript errors"
+```
+
+Claude Code のセッション内ネイティブチームワークフローは `/team ...`、ターミナルから tmux CLI ワーカー（`claude` / `codex` / `gemini` panes）を起動するときは `omc team ...`。
+
+Team はステージ型のパイプラインで実行されます：
+
+```
+team-plan → team-prd → team-exec → team-verify → team-fix (loop)
+```
+
+`~/.claude/settings.json` で Claude Code のネイティブチームを有効化する必要があります：
+
+```json
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  }
+}
+```
+
+> チームが無効化されている場合、OMC は警告を出し、可能な範囲で非チーム実行にフォールバックします。
+
+### tmux CLI ワーカー — Codex と Gemini
+
+`omc team ...` を使うと、`claude` / `codex` / `gemini` CLI を動かす本物の tmux ワーカー pane を起動できます：
+
+```bash
+omc team 2:codex "review auth module for security issues"
+omc team 2:gemini "redesign UI components for accessibility"
+omc team 1:claude "implement the payment flow"
+omc team status auth-review
+omc team shutdown auth-review
+```
+
+Codex と Gemini を 1 コマンドで混在させたい場合は **`/ccg`** スキル（`/ask codex` + `/ask gemini` で呼び出し、Claude が結果を合成）：
+
+```bash
+/ccg Review this PR — architecture (Codex) and UI components (Gemini)
+```
+
+| 接点 | ワーカー | 用途 |
+|---|---|---|
+| `omc team N:codex "…"` | Codex CLI の N 個 pane | コードレビュー、セキュリティ分析、アーキテクチャ |
+| `omc team N:gemini "…"` | Gemini CLI の N 個 pane | UI/UX、ドキュメント、大コンテキストタスク |
+| `omc team N:claude "…"` | Claude CLI の N 個 pane | tmux 内で Claude CLI を使う一般タスク |
+| `/ccg` | `/ask codex` + `/ask gemini` | トライモデル advisor の合成 |
+
+ワーカーはオンデマンドで起動し、タスク完了時に終了します — アイドルリソースは消費しません。`codex` / `gemini` CLI のインストールとアクティブな tmux セッションが必要です。
+
+## なぜ oh-my-claudecode なのか？
+
+- **設定ゼロ** — インテリジェントなデフォルトで即座に動作
+- **Team-first オーケストレーション** — Team が canonical なマルチエージェント接点
+- **自然言語インターフェース** — コマンドを覚えずに、やりたいことを言葉で伝える
+- **自動並列化** — 複雑なタスクを専門エージェント間で分散
+- **持続的実行** — タスクが検証完了するまで諦めない
+- **コスト最適化** — スマートなモデルルーティングで 30–50% のトークン削減
+- **経験から学習** — 問題解決パターンを抽出して再利用
+- **リアルタイム可視性** — HUD ステータスラインで内部の動きを確認
+
+## 主要機能
+
+| 機能 | 説明 |
+|---|---|
+| **19 個の専門エージェント** | 役割分担: 探索、計画、実装、検証、レビュー |
+| **37 個のスキル** | autopilot、ralph、ultrawork、team などの自動化ワークフロー |
+| **マジックキーワード** | `autopilot build me X` の一言で完全なパイプラインを実行 |
+| **チームオーケストレーション** | 役割ごとのルーティングで Claude / Codex / Gemini エージェントを調整 |
+| **状態管理** | notepad + project-memory でセッション間のコンテキストを保持 |
+| **マルチ AI** | Claude、Codex、Gemini をクロスバリデーションに活用 |
+
+## アップデート
+
+npm でインストールした場合：
+
+```bash
+npm i -g oh-my-claude-sisyphus@latest
+```
+
+Claude Code の marketplace / プラグインフローでインストールした場合：
+
+```bash
+# 1. marketplace クローンを更新
+/plugin marketplace update omc
+
+# 2. setup を再実行して設定を更新
+/setup
+```
+
+アップデート後に問題が発生した場合、古いプラグインキャッシュをクリーンアップします：
+
+```bash
+/omc-doctor
+```
+
+> marketplace の自動更新が有効でない場合、setup を実行する前に `/plugin marketplace update omc` を手動で実行して最新版に同期してください。
+
+## ドキュメント
+
+<Cards>
+  <Card title="Getting Started" href="/ja/docs/getting-started">
+    インストール、初回セッション、設定
+  </Card>
+  <Card title="Core Concepts" href="/ja/docs/concepts">
+    エージェント、スキル、フック、状態管理
+  </Card>
+  <Card title="Guides" href="/ja/docs/guides">
+    Autopilot、チームモード、デバッグのガイド
+  </Card>
+  <Card title="Agents" href="/ja/docs/agents">
+    19 個のエージェントの詳細リファレンス
+  </Card>
+  <Card title="Skills" href="/ja/docs/skills">
+    37 個のスキルの詳細リファレンス
+  </Card>
+  <Card title="Hooks" href="/ja/docs/hooks">
+    フックシステムとマジックキーワード
+  </Card>
+  <Card title="Tools" href="/ja/docs/tools">
+    MCP ツール（State、Notepad、LSP など）
+  </Card>
+  <Card title="Reference" href="/ja/docs/reference">
+    設定、環境変数、変更履歴
+  </Card>
+</Cards>

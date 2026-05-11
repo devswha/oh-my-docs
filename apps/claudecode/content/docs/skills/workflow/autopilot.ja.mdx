@@ -1,0 +1,130 @@
+---
+title: Autopilot
+description: アイデアから動作するコードまで自律的に実行する完全なパイプラインスキル
+---
+
+## 概要
+
+Autopilot は、シンプルなアイデアの説明から開発ライフサイクル全体を自律的に処理します。要件分析、技術設計、計画、並列実装、QA サイクリング、検証を含みます。
+
+目標は 2～3 行の説明から動作するコードを生成することです。内部的には ralph、ultrawork、ultraqa を使用し、各フェーズの完了に合わせて次のフェーズに移行します。
+
+## 使用方法
+
+```bash
+/oh-my-claudecode:autopilot "REST API for a bookstore with CRUD operations using TypeScript"
+```
+
+マジックキーワードでも起動できます。
+
+```
+autopilot build me a CLI tool that tracks daily habits
+build me a todo app with React and PostgreSQL
+I want a chat application with WebSocket support
+```
+
+## 実行フェーズ
+
+Autopilot は 6 つのフェーズで構成されています。
+
+### Phase 0 - 拡張
+
+ユーザーのアイデアを詳細な仕様に展開します。
+
+- Analyst (Opus) が要件を抽出
+- Architect (Opus) が技術仕様を記述
+- 出力: `.omc/autopilot/spec.md`
+
+ralplan のコンセンサス計画が既に存在する場合、フェーズ 0 と 1 はスキップされます。
+deep-interview の仕様が存在する場合、それがフェーズ 0 の出力として使用されます。
+
+### Phase 1 - 計画
+
+仕様から実装計画を生成します。
+
+- Architect (Opus) が計画を記述
+- Critic (Opus) が計画を検証
+- 出力: `.omc/plans/autopilot-impl.md`
+
+### Phase 2 - 実行
+
+Ralph + Ultrawork を使用して計画を実装します。
+
+- シンプルなタスク: Executor (Haiku)
+- 標準的なタスク: Executor (Sonnet)
+- 複雑なタスク: Executor (Opus)
+- 独立したタスクは並列実行
+
+### Phase 3 - QA
+
+すべてのテストが合格するまで UltraQA モードで反復します。
+
+- ビルド、lint、テスト、失敗の修正
+- 最大 5 回の反復
+- 同じエラーが 3 回繰り返される場合は、根本的な問題として扱われ実行が停止
+
+### Phase 4 - 検証
+
+並列レビューを実行します。
+
+- Architect: 機能の完全性を検証
+- Security-reviewer: セキュリティ脆弱性をチェック
+- Code-reviewer: コード品質をレビュー
+- すべてのレビュアーの承認が必要
+
+### Phase 5 - クリーンアップ
+
+完了時にすべての状態ファイルを削除します。
+
+## 例
+
+```bash
+# 具体的なドメインと技術スタックを指定
+autopilot A REST API for a bookstore inventory with CRUD operations using TypeScript
+
+# 明確な機能説明
+build me a CLI tool that tracks daily habits with streak counting
+
+# 3 段階のパイプライン (最高品質)
+/oh-my-claudecode:deep-interview "vague idea"
+  → /oh-my-claudecode:ralplan --direct
+    → /oh-my-claudecode:autopilot
+```
+
+## オプション
+
+`.claude/settings.json` で設定可能です。
+
+```json
+{
+  "omc": {
+    "autopilot": {
+      "maxIterations": 10,
+      "maxQaCycles": 5,
+      "maxValidationRounds": 3,
+      "pauseAfterExpansion": false,
+      "skipQa": false,
+      "skipValidation": false
+    }
+  }
+}
+```
+
+## 関連スキル
+
+- [ralph](/ja/docs/skills/workflow/ralph) - autopilot 内の実行ループを処理
+- [ultrawork](/ja/docs/skills/workflow/ultrawork) - autopilot 内の並列実行を処理
+- [ultraqa](/ja/docs/skills/workflow/ultraqa) - autopilot のフェーズ 3 QA サイクリング
+- [deep-interview](/ja/docs/skills/workflow/deep-interview) - 曖昧なアイデアを明確にするための事前インタビュー
+- [ralplan](/ja/docs/skills/workflow/ralplan) - コンセンサスベースの計画
+
+## リファレンス
+
+| 項目 | 値 |
+|------|-------|
+| 起動 | `/oh-my-claudecode:autopilot` |
+| マジックキーワード | `autopilot`, `build me`, `I want a` |
+| カテゴリ | Workflow |
+| 状態ファイル | `.omc/state/autopilot-state.json` |
+| キャンセル | `/oh-my-claudecode:cancel` |
+| 再開 | 同じコマンドで再実行 |

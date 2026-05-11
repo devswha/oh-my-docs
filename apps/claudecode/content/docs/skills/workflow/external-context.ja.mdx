@@ -1,0 +1,72 @@
+---
+title: External Context
+description: 並列の document-specialist エージェントを使用して外部ドキュメントとリファレンスを取得
+---
+
+## 概要
+
+External Context はスキルで、外部ドキュメント、リファレンス、コンテキストを取得するためのスキルです。クエリを 2～5 つの独立した検索ファセットに分解し、並列の document-specialist エージェントを生成して同時に調査します。
+
+## 使用方法
+
+```bash
+/oh-my-claudecode:external-context <topic or question>
+```
+
+## 例
+
+```bash
+/oh-my-claudecode:external-context What are the best practices for JWT token rotation in Node.js?
+/oh-my-claudecode:external-context Compare Prisma vs Drizzle ORM for PostgreSQL
+/oh-my-claudecode:external-context Latest React Server Components patterns and conventions
+```
+
+## プロトコル
+
+### 1. ファセット分解
+
+クエリを 2～5 つの独立した検索ファセットに分解します。
+
+```
+Query: "JWT token rotation best practices in Node.js"
+
+Facet 1: JWT rotation official docs and RFCs
+Facet 2: Node.js JWT library comparison (jsonwebtoken, jose)
+Facet 3: Production JWT refresh patterns
+```
+
+### 2. 並列エージェント呼び出し
+
+各ファセット用に document-specialist (Sonnet) エージェントを同時実行します。WebSearch と WebFetch を使用して公式ドキュメントと例を検索します。
+
+最大 5 個の並列エージェントに対応しています。
+
+### 3. 合成出力
+
+ソース引用付き調査結果を合成します。
+
+```markdown
+## 主要な調査結果
+1. **Finding** - Source: [title](url)
+2. **Finding** - Source: [title](url)
+
+## 詳細結果
+...
+
+## ソース
+- [Source 1](url)
+- [Source 2](url)
+```
+
+## 関連スキル
+
+- [sciomc](/ja/docs/skills/workflow/sciomc) - より深い並列研究オーケストレーション
+- [ask](/ja/docs/skills/utility/ask) - 単一プロバイダーをクエリ
+
+## リファレンス
+
+| 項目 | 値 |
+|------|-------|
+| 起動 | `/oh-my-claudecode:external-context` |
+| マジックキーワード | - |
+| カテゴリ | Workflow |

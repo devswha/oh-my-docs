@@ -1,0 +1,49 @@
+---
+title: OMC Reference
+description: 自动加载的 OMC 智能体目录、工具、团队流水线路由、提交协议和技能注册表参考
+---
+
+## 概览
+
+`omc-reference` 是一个 **内部的、自动加载的参考技能**，作为内联上下文提供详细的 OMC 目录。它不是用户调用的工作流 — 当编排器需要详细的目录信息且该信息不需要在每个 `CLAUDE.md` 会话中存在时，它会自动加载。
+
+自动加载参考的用例：
+
+- 委派给智能体
+- 使用 OMC 工具（状态、notepad、项目记忆、LSP、AST）
+- 编排团队
+- 遵循提交协议
+- 调用技能
+
+## Frontmatter
+
+```yaml
+---
+name: omc-reference
+description: OMC agent catalog, available tools, team pipeline routing, commit protocol, and skills registry. Auto-loads when delegating to agents, using OMC tools, orchestrating teams, making commits, or invoking skills.
+user-invocable: false
+---
+```
+
+`user-invocable: false` 意味着 **没有斜杠命令**来直接调用此技能。它的存在是为了保持 `CLAUDE.md` 简洁，同时在重要时刻仍向编排器提供完整的目录。
+
+## 包含内容
+
+- **智能体目录** — 全部 19 个 OMC 智能体，含默认模型
+- **模型路由** — `haiku` / `sonnet` / `opus` 选择指南
+- **工具参考** — 外部 AI 编排、OMC 状态、团队运行时、notepad、项目记忆、代码智能（LSP、AST）
+- **团队流水线** — `team-plan → team-prd → team-exec → team-verify → team-fix` 阶段路由
+- **提交协议** — Git trailer 格式（Constraint、Rejected、Directive、Confidence、Scope-risk、Not-tested）
+- **技能注册表** — 工作流与实用工具分类
+
+## 为什么存在
+
+`CLAUDE.md` 文件被加载到每个 Claude 会话。保持它们精简对上下文预算至关重要。`omc-reference` 携带重大目录细节，使它们仅在实际相关时进入上下文 — 编排器决定委派、提交或调用工具的时刻。
+
+## 参考
+
+| 项目 | 值 |
+|------|-------|
+| 调用 | 自动加载（无斜杠命令） |
+| 用户可调用 | 否 |
+| 类别 | 实用工具（内部） |

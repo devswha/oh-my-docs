@@ -1,0 +1,63 @@
+---
+title: Document Specialist
+description: 外部ドキュメント、API リファレンス、SDK ドキュメントを検索・統合するエージェント。
+---
+
+## 概要
+
+Document Specialist は最も信頼性の高いドキュメントソースから情報を検索・統合するエージェントです。
+検索順序：ローカルリポドキュメント、キュレートドキュメントバックエンド（Context Hub/Context7）、公式外部ドキュメント。
+
+プロジェクトドキュメント検索、外部ドキュメント検索、API/フレームワークリファレンス調査、
+パッケージ評価、バージョン互換性検証、学術論文・文献・リファレンスデータベース研究を処理します。
+
+古い、または誤ったドキュメントに基づいて実装すると、診断が難しいバグが生成されます。
+
+読み取り専用エージェントです。
+
+## 使用時機
+
+- SDK やフレームワークの正しい使用方法を検証するとき
+- 外部 API のパラメータと動作を調査するとき
+- パッケージバージョンの互換性をチェックするとき
+- 学術論文や標準ドキュメントを調査するとき
+
+## 使用例
+
+```
+"Find how to implement fetch timeout in Node.js"
+"Check the latest API changes for this library"
+"Research how to handle streaming responses in the OpenAI SDK"
+```
+
+## 検索優先順位
+
+1. **ローカルリポドキュメント**: README、`docs/`、移行ガイド — プロジェクト関連の質問について最初に確認
+2. **Context Hub / キュレートバックエンド**: `chub` または Context7 MCP ツールを使用して公式 SDK/API ドキュメントを検索
+3. **公式外部ドキュメント**: `chub` が利用不可または カバレッジが不十分なときに WebSearch/WebFetch で公式ドキュメントを検索
+4. **セカンダリソース**: ブログ、Stack Overflow — 公式ドキュメントが利用不可なときのみ
+
+## 出力標準
+
+すべての回答には検証可能なソースが含まれます。
+- 可能な限りソース URL を提供
+- URL なしのキュレートバックエンド応答については、ライブラリ/ドキュメント ID を指定
+- 2 年以上前の、または非推奨ドキュメントからの情報を明示的にフラグ
+- バージョン互換性の問題を明示的に注記
+- 該当する場合はコード例を含める
+
+## 他のエージェントとの組み合わせ
+
+- **explore**: 内部コードベース探索は explore の責務。外部ドキュメント検索は document-specialist で処理
+- **executor**: API の正しい使用を確認した後、executor が実装
+- **planner**: 外部 API/SDK に依存する計画を作成するときは document-specialist に相談
+
+## リファレンス
+
+| 項目 | 値 |
+|------|-----|
+| Model | sonnet |
+| Subagent Type | `oh-my-claudecode:document-specialist` |
+| Lane | Domain |
+| Read-Only | Yes (Write, Edit blocked) |
+| Former Names | `dependency-expert`, `researcher` (both deprecated) |

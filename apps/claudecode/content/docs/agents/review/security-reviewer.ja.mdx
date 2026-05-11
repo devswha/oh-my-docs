@@ -1,0 +1,80 @@
+---
+title: Security Reviewer
+description: OWASP Top 10 に基づいてセキュリティ脆弱性を検出し優先順位付けするエージェント。
+---
+
+## 概要
+
+Security Reviewer はセキュリティ脆弱性を本番環境到達前に特定し優先順位付けするエージェントです。OWASP Top 10 分析、シークレット検出、入力検証レビュー、認証/認可チェック、依存関係セキュリティ監査を実行します。
+
+セキュリティ問題は利用されるまで見えません。レビューで脆弱性を見落とすコストは、徹底的な検査のコストの何倍も高くなります。すべての検出結果は `重大度 x 搾取可能性 x 影響範囲` に基づいて優先順位付けされます。
+
+リードオンリーエージェントです。
+
+## いつ使用するか
+
+- 新しい API エンドポイントが追加されるとき
+- 認証/認可コードが変更されるとき
+- ユーザー入力ハンドリングロジックが変更されるとき
+- データベースクエリが追加または修正されるとき
+- 依存関係が更新されるとき
+- 支払い関連のコードが変更されるとき
+
+## 使用例
+
+```
+"Review this PR for security vulnerabilities"
+"Security review the auth module"
+"security review"  # マジックキーワードで自動起動
+```
+
+## レビュープロセス
+
+1. **スコープ識別**: レビュー対象のファイル/コンポーネントと言語/フレームワークを識別
+2. **シークレットスキャン**: api_key、password、secret、token パターンを使用してハードコードされたシークレットを検索
+3. **依存関係監査**: `npm audit`、`pip-audit`、`cargo audit` などの言語適切なツールを実行
+4. **OWASP Top 10 チェック**: 各カテゴリの関連パターンを確認
+5. **優先順位付け**: 重大度 x 搾取可能性 x 影響範囲でソート
+6. **安全なコード例を提供**: 同言語で脆弱なコードと安全なコードを対比
+
+## OWASP Top 10 チェックリスト
+
+| コード | カテゴリ | チェック項目 |
+|------|---------|----------|
+| A01 | Broken Access Control | すべてのルートの認可、CORS 設定 |
+| A02 | Cryptographic Failures | 強いアルゴリズム（AES-256、RSA-2048+）、鍵管理 |
+| A03 | Injection | パラメータ化クエリ、入力サニタイズ、出力エスケープ |
+| A04 | Insecure Design | 脅威モデリング、安全な設計パターン |
+| A05 | Security Misconfiguration | デフォルト変更、デバッグ無効化、セキュリティヘッダー |
+| A06 | Vulnerable Components | 依存関係監査、CRITICAL/HIGH CVE なし |
+| A07 | Auth Failures | 強力なパスワードハッシング（bcrypt/argon2）、JWT 検証 |
+| A08 | Integrity Failures | 署名されたアップデート、CI/CD パイプライン検証 |
+| A09 | Logging Failures | セキュリティイベントロギング、監視 |
+| A10 | SSRF | URL 検証、アウトバウンドリクエスト許可リスト |
+
+## 重大度定義
+
+| レベル | 説明 | 対応時間 |
+|------|------|----------|
+| CRITICAL | 搾取可能な脆弱性で深刻な影響（データ漏洩、RCE） | 24 時間以内 |
+| HIGH | 特定の条件が必要だが深刻な影響がある | 1 週間以内 |
+| MEDIUM | 影響が限定的または搾取が困難 | 1 ヶ月以内 |
+| LOW | ベストプラクティス違反またはマイナーなセキュリティ懸念 | バックログ |
+
+公開されたシークレットは検出直後に即座にローテーションする必要があります（1 時間以内）。
+
+## 他のエージェントとの組み合わせ
+
+- **code-reviewer**: コード品質とロジックレビューは code-reviewer の責任。専門的なセキュリティレビューは security-reviewer が処理
+- **executor**: 脆弱性修正実装を executor に渡す
+- **architect**: セキュリティアーキテクチャレベルの設計レビューが必要なとき
+
+## リファレンス
+
+| 項目 | 値 |
+|------|-----|
+| Model | sonnet |
+| Subagent Type | `oh-my-claudecode:security-reviewer` |
+| Lane | Review |
+| Read-Only | Yes（Write、Edit はブロック） |
+| Tier Variant | `security-reviewer-low`（haiku） |

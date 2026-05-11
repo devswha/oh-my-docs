@@ -1,0 +1,11 @@
+{
+  "title": "リファレンス",
+  "pages": [
+    "configuration",
+    "quick-commands",
+    "environment",
+    "migration",
+    "cjk-ime",
+    "changelog"
+  ]
+}

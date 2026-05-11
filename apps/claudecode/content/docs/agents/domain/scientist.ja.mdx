@@ -1,0 +1,80 @@
+---
+title: Scientist
+description: Python を使用してデータ/統計分析と研究実行を担当するエージェント。
+---
+
+## 概要
+
+Scientist は Python でデータ分析と研究タスクを実行し、証拠に基づく調査結果を報告するエージェントです。
+データロード/探索、統計分析、仮説検定、ビジュアライゼーション、レポート生成を処理します。
+
+統計的厳密性のないデータ分析は誤解を招く結論を生じます。
+信頼区間のない調査結果は推測、コンテキストのないビジュアライゼーションは誤解を招き、
+制限を認めない結論は危険です。
+
+読み取り専用エージェント — Write/Edit ツールはブロックされています。
+分析結果とレポートは python_repl 経由で生成されます。
+
+## 使用時機
+
+- データセットを探索・統計パターンを分析するとき
+- 仮説をテストして結果を報告するとき
+- ビジュアライゼーションを生成してレポートを作成するとき
+- パフォーマンスベンチマークデータを分析するとき
+
+## 使用例
+
+```
+"Analyze this CSV data"
+"Analyze the correlation between price and sales"
+"Statistically validate this A/B test result"
+```
+
+## 分析プロセス
+
+1. **セットアップ**: Python/パッケージを検証、ワーキングディレクトリを作成（`.omc/scientist/`）、データファイルを特定、目的を述べる（[OBJECTIVE]）
+2. **探索**: データをロード、形状/型/欠損値をチェック、データ特性を出力（[DATA]）`.head()`、`.describe()` で
+3. **分析**: 統計分析を実行。各洞察について、調査結果（[FINDING]）と統計（[STAT:*]）を出力。仮説駆動分析
+4. **統合**: 調査結果を要約、制限をフラグ（[LIMITATION]）、レポート生成、クリーンアップ
+
+## 出力マーカー
+
+Scientist は定義されたマーカーを使用します。
+
+| マーカー | 目的 |
+|------|------|
+| `[OBJECTIVE]` | 分析目標 |
+| `[DATA]` | データ特性 |
+| `[FINDING]` | 調査結果 |
+| `[STAT:ci]` | 信頼区間 |
+| `[STAT:effect_size]` | 効果サイズ |
+| `[STAT:p_value]` | p 値 |
+| `[STAT:n]` | サンプルサイズ |
+| `[LIMITATION]` | 制限/注意事項 |
+
+すべての `[FINDING]` は 10 行以内に少なくとも 1 つの `[STAT:*]` 証拠を含む必要があります。
+
+## 技術的制約
+
+- すべての Python コードは `python_repl` 経由で実行される必要があります（Bash heredocs なし）
+- パッケージインストールなし — stdlib 代替案を使用するか、ユーザーに知らせる
+- DataFrame 全体を出力しない — `.head()`、`.describe()`、集計結果を使用
+- matplotlib Agg バックエンド、`plt.savefig()` が必須（`plt.show()` なし）
+
+## 他のエージェントとの組み合わせ
+
+- **tracer**: データ駆動因果関係トレース分析のための tracer と組み合わせ
+- **document-specialist**: 外部研究資料検索は document-specialist で処理
+- **architect**: 分析結果に基づいてアーキテクチャ決定が必要なとき
+
+## リファレンス
+
+| 項目 | 値 |
+|------|-----|
+| Model | sonnet |
+| Subagent Type | `oh-my-claudecode:scientist` |
+| Lane | Domain |
+| Read-Only | Yes (Write, Edit blocked) |
+| Tier Variant | `scientist-high` (opus) |
+| Output Paths | `.omc/scientist/reports/`, `.omc/scientist/figures/` |
+| Skill Integration | `/oh-my-claudecode:sciomc` |

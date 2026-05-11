@@ -1,0 +1,11 @@
+{
+  "title": "Guides",
+  "pages": [
+    "[Autopilot](/docs/guides#what-is-autopilot)",
+    "[Team Orchestration](/docs/guides#what-is-team-mode)",
+    "[Planning Workflows](/docs/guides#why-planning-matters)",
+    "[Custom Skills](/docs/guides#what-are-custom-skills)",
+    "[Debugging](/docs/guides#omc-debugging-tools)",
+    "[Model Cost Optimization](/docs/guides#model-cost-optimization)"
+  ]
+}

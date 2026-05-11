@@ -1,0 +1,124 @@
+---
+title: Deep Dive
+description: "2 段階パイプライン: trace (原因調査) → deep-interview (要件の明確化)"
+---
+
+## 概要
+
+Deep Dive は 2 段階パイプラインをオーケストレーションします。最初に「なぜそうなったのか」(trace) を調査し、次に「何をすべきか」(deep-interview) を正確に定義します。trace ステージは 3 つの並列原因調査レーンで実行され、その結果は 3 点注入メカニズムを通じてインタビューステージにフィードバックされます。
+
+結果は、仮定ではなく証拠に基づいた結晶性の明確なスペックです。
+
+## 使用方法
+
+```bash
+/oh-my-claudecode:deep-dive "why does the auth token expire early?"
+```
+
+マジックキーワードでも起動できます。
+
+```
+deep dive into the authentication failures
+investigate deeply why the DAG fails intermittently
+```
+
+## 使用する場合
+
+- ユーザーが問題を抱えているが根本原因を知らない — 要件の前に調査が必要
+- バグ調査: 「何か壊れたけど、なぜかを理解する必要がある、その後修正を計画する」
+- 機能探索: 「X を改善したいが、まず現在の動作方法を理解する必要がある」
+- 問題があいまいで、原因的で、証拠が多い
+
+## 使用しない場合
+
+- ユーザーが既に根本原因を知っている — 直接 `/deep-interview` を使用
+- ユーザーが明確で具体的なリクエストとファイルパスを持っている — 直接実行
+- ユーザーが trace のみを望んでいて要件は不要 — `/trace` を直接使用
+- ユーザーが既に PRD またはスペックを持っている — `/ralph` または `/autopilot` を使用
+
+## パイプラインステージ
+
+```
+Stage 1: Deep Dive               Stage 2: Ralplan                Stage 3: Autopilot
+┌─────────────────────┐    ┌───────────────────────────┐    ┌──────────────────────┐
+│ Trace (3 lanes)     │    │ Planner creates plan      │    │ Phase 2: Execution   │
+│ Interview (Socratic)│───>│ Architect reviews         │───>│ Phase 3: QA cycling  │
+│ 3-point injection   │    │ Critic validates          │    │ Phase 4: Validation  │
+│ Spec crystallization│    │ Loop until consensus      │    │ Phase 5: Cleanup     │
+│ Gate: ≤20% ambiguity│    │ ADR + RALPLAN-DR summary  │    │                      │
+└─────────────────────┘    └───────────────────────────┘    └──────────────────────┘
+Output: spec.md            Output: consensus-plan.md        Output: working code
+```
+
+## 実行フェーズ
+
+### Phase 1: 初期化
+
+ユーザーの入力を解析し、brownfield と greenfield を検出し、3 つの trace レーン仮説を生成します:
+
+1. **Code-path / 実装原因**
+2. **Config / 環境 / オーケストレーション原因**
+3. **測定 / アーティファクト / 仮定の不一致原因**
+
+### Phase 2: レーン確認
+
+3 つの仮説をユーザーに確認用に提示します (1 ラウンドのみ)。
+
+### Phase 3: Trace 実行
+
+Claude ビルトインチームモードを使用して 3 つの並列 tracer レーンを実行します。各レーンは:
+
+- 正確に 1 つの仮説を担当
+- **賛成**と**反対**の証拠を収集
+- **重大な未知数**に命名
+- 最善の**判別プローブ**を推奨
+
+反論ラウンドは有力な仮説と最強の代替案の間で実行されます。
+
+### Phase 4: Trace 注入を伴うインタビュー
+
+3 つの初期化オーバーライドを伴う deep-interview プロトコルに従います:
+
+1. **initial_idea 充実**: raw 入力を trace の結果で置き換え
+2. **codebase_context 置き換え**: 再探索の代わりに trace 合成を使用
+3. **initial question queue 注入**: レーンごとの重大な未知数がインタビューの最初の質問になります
+
+インタビューは Socratic 質問を続け、曖昧さが 20% 以下になるまで続きます。
+
+### Phase 5: 実行ブリッジ
+
+実行オプションを提示します:
+
+| オプション | 説明 |
+|--------|-------------|
+| Ralplan → Autopilot (推奨) | コンセンサス-スペック精錬、その後完全な autopilot で実行 |
+| Autopilot (ralplan をスキップ) | 完全な自律パイプライン、より高速だがコンセンサスなし |
+| Ralph | 建築家検証を伴う永続ループ |
+| Team | N 個の並列エージェント |
+| さらに精錬 | インタビューを続行 |
+
+## Trace 出力
+
+Trace 結果は `.omc/specs/deep-dive-trace-{slug}.md` に以下の内容で保存されます:
+
+- 信頼度と証拠強度を伴う順位付けされた仮説
+- レーンごとの証拠サマリー
+- 反論ラウンド結果
+- 最も可能性の高い説明
+- 重大な未知数と推奨される判別プローブ
+
+## 関連スキル
+
+- [trace](/ja/docs/skills/utility/trace) - 調査のみ、要件なし
+- [deep-interview](/ja/docs/skills/workflow/deep-interview) - 要件のみ、調査なし
+- [ralplan](/ja/docs/skills/workflow/ralplan) - コンセンサス計画 (ステージ 2)
+- [autopilot](/ja/docs/skills/workflow/autopilot) - 自律実行 (ステージ 3)
+
+## リファレンス
+
+| 項目 | 値 |
+|------|-------|
+| 起動 | `/oh-my-claudecode:deep-dive` |
+| マジックキーワード | `deep dive`, `deep-dive`, `investigate deeply` |
+| カテゴリ | Workflow |
+| パイプライン | deep-dive → omc-plan → autopilot |

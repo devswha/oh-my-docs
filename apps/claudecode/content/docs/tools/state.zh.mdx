@@ -1,0 +1,117 @@
+---
+title: 状态
+description: 用于管理执行模式状态的 MCP 工具组
+---
+
+## 概览
+
+状态工具管理 OMC 执行模式（autopilot、ralph、ultrawork 等）的状态。每个模式在状态文件中记录其当前进度、活动状态和配置。
+
+## 存储路径
+
+```
+.omc/state/
+├── sessions/{sessionId}/     # 每个会话的状态
+│   ├── autopilot-state.json
+│   ├── ralph-state.json
+│   └── ultrawork-state.json
+├── autopilot-state.json      # 传统兼容性
+├── ralph-state.json
+└── ultrawork-state.json
+```
+
+提供会话 ID 时，使用每个会话的路径；否则使用传统路径作为回退。
+
+## 工具列表
+
+### state_read
+
+读取指定模式的状态。
+
+```
+state_read(mode="ralph")
+state_read(mode="ralph", session_id="abc123")
+```
+
+如果状态文件不存在，返回空响应。
+
+### state_write
+
+保存指定模式的状态。
+
+```
+state_write(mode="ralph", state={
+  active: true,
+  current_phase: "execution",
+  iteration: 3,
+  max_iterations: 10
+})
+```
+
+### state_clear
+
+删除指定模式的状态文件。
+
+```
+state_clear(mode="ralph")
+state_clear(mode="ralph", session_id="abc123")
+```
+
+在没有会话 ID 的情况下调用会清理传统文件。
+
+### state_list_active
+
+列出所有当前活动的模式。
+
+```
+state_list_active()
+```
+
+返回拥有活动状态文件的模式。
+
+### state_get_status
+
+返回特定模式或所有模式的详细状态。
+
+```
+state_get_status(mode="ralph")
+```
+
+包括活动状态、文件路径和状态内容。
+
+## 环境变量
+
+| 变量 | 默认 | 说明 |
+|------|--------|------|
+| `OMC_STATE_DIR` | （未设置） | 集中式状态目录。设置时，即使删除 worktree 状态也会被保留 |
+
+设置 `OMC_STATE_DIR` 时，状态存储在 `$OMC_STATE_DIR/{project-id}/`。
+
+```bash
+export OMC_STATE_DIR="$HOME/.claude/omc"
+```
+
+## 使用模式
+
+### 激活一个模式
+
+```
+state_write(mode="autopilot", state={
+  active: true,
+  current_phase: "expansion",
+  started_at: "2024-01-15T09:00:00Z"
+})
+```
+
+### 停用一个模式
+
+```
+state_clear(mode="autopilot")
+```
+
+### 检查活动模式
+
+```
+state_list_active()
+→ [{session_id: "abc123", mode: "ralph", active: true}]
+```

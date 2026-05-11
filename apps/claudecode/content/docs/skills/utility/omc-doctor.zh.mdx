@@ -1,0 +1,69 @@
+---
+title: OMC Doctor
+description: 诊断 oh-my-claudecode 安装问题并自动修复的技能
+---
+
+## 概览
+
+OMC Doctor 是一个技能，诊断 oh-my-claudecode 的安装状态并自动修复发现的任何问题。
+
+## 使用
+
+```bash
+/oh-my-claudecode:omc-doctor
+```
+
+## 诊断检查
+
+| 检查 | 状态 | 说明 |
+|-------|--------|-------------|
+| Plugin Version | OK / WARN / CRITICAL | 是否已安装、是否最新 |
+| Legacy Hooks (settings.json) | OK / CRITICAL | 导致重复执行的旧钩子 |
+| Legacy Scripts (~/.claude/hooks/) | OK / WARN | 导致混淆的旧脚本 |
+| CLAUDE.md | OK / WARN / CRITICAL | 是否存在 OMC 配置标记 |
+| Plugin Cache | OK / WARN | 是否存在多个缓存版本 |
+| Legacy Agents/Commands/Skills | OK / WARN | curl 安装的残留工件 |
+
+## 诊断报告
+
+```
+## OMC Doctor Report
+
+### Summary
+[HEALTHY / ISSUES FOUND]
+
+### Checks
+| Check              | Status   | Details |
+|--------------------|----------|---------|
+| Plugin Version     | OK       | 4.11.4  |
+| Legacy Hooks       | CRITICAL | ...     |
+| CLAUDE.md          | OK       | ...     |
+```
+
+## 自动修复
+
+发现问题时，提出自动修复。
+
+| 问题 | 修复 |
+|------|-----|
+| Legacy hooks | 从 settings.json 中删除 `hooks` 部分 |
+| Legacy scripts | 删除 `~/.claude/hooks/*.sh` |
+| 过时的插件 | 清理插件缓存 |
+| 缓存重复 | 仅保留最新版本 |
+| 缺失/过时的 CLAUDE.md | 下载最新 CLAUDE.md |
+| 旧安装工件 | 备份并删除 |
+
+修复后需要重启 Claude Code。
+
+## 相关技能
+
+- [omc-setup](/zh/docs/skills/utility/omc-setup) - 完整 OMC 配置
+- [setup](/zh/docs/skills/utility/setup) - 统一的安装入口
+
+## 参考
+
+| 项目 | 值 |
+|------|-------|
+| 调用 | `/oh-my-claudecode:omc-doctor` |
+| 魔法关键词 | - |
+| 类别 | 实用工具 |

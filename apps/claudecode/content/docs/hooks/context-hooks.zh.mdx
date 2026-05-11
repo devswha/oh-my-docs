@@ -1,0 +1,70 @@
+---
+title: 上下文管理钩子
+description: 解释管理内存、项目状态和压缩的 OMC 钩子。
+---
+
+## 为什么需要上下文管理
+
+Claude Code 的上下文窗口是有限的。
+在长会话中，压缩会发生，之前的对话内容被总结。
+OMC 的上下文管理钩子为压缩做准备，保存重要信息，
+并维护项目级内存。
+
+## notepad
+
+抗压缩的内存系统。
+
+- **存储路径**: `.omc/notepad.md`
+- **MCP 工具**: `notepad_read`、`notepad_write_priority`、`notepad_write_working`、`notepad_write_manual`
+- **行为**: 写入 notepad 的信息即使在压缩后也会保留
+
+notepad 支持三个优先级。
+
+| 优先级 | 工具 | 描述 |
+|---------|------|------|
+| 优先级 | `notepad_write_priority` | 绝不能丢失的信息 |
+| 工作中 | `notepad_write_working` | 当前任务进度 |
+| 手动 | `notepad_write_manual` | 手动记录的笔记 |
+
+使用 `notepad_prune` 清理旧条目，使用 `notepad_stats` 检查状态。
+
+## project-memory
+
+管理项目级持续化内存。
+
+- **存储路径**: `.omc/project-memory.json`
+- **MCP 工具**: `project_memory_read`、`project_memory_write`、`project_memory_add_note`、`project_memory_add_directive`
+- **相关钩子**:
+  - `project-memory-session.mjs` (SessionStart): 会话开始时加载项目内存
+  - `project-memory-posttool.mjs` (PostToolUse): 工具使用后更新内存
+  - `project-memory-precompact.mjs` (PreCompact): 压缩前保存内存
+
+在 project-memory 中存储两种类型的数据。
+
+- **笔记**: 关于项目的学到的事实（架构模式、bug 记录等）
+- **指令**: 在项目上工作时必须遵循的说明
+
+## pre-compact
+
+在压缩前保存重要状态。
+
+- **事件**: PreCompact
+- **行为**: 总结/保存当前任务状态、进行中的 TODO 和关键上下文
+- **目的**: 保留本质信息，以便在压缩后继续工作
+
+## 上下文保留策略
+
+OMC 的上下文管理钩子采用以下策略协作：
+
+```
+会话开始
+  → 加载 project-memory (project-memory-session.mjs)
+    → [工作进行中]
+    → 记录重要信息到 notepad
+    → 更新 project-memory (project-memory-posttool.mjs)
+      → [压缩发生]
+      → 压缩前保存状态 (pre-compact.mjs)
+      → 保存 project-memory (project-memory-precompact.mjs)
+        → [压缩后]
+        → 从 notepad/project-memory 恢复
+```

@@ -1,0 +1,602 @@
+---
+title: Core Concepts
+description: OMC でエージェント、スキル、フック、状態管理がどのように連携するのかを理解する
+---
+
+## OMCの構成要素
+
+OMC は 4 つのシステムの上で動作します。
+
+<Mermaid chart={`
+graph TD
+    A["User Input"] --> B["Hooks\nEvent Detection"]
+    B --> C["Skills\nBehavior Injection"]
+    C --> D["Agents\nSpecialized Task Execution"]
+    D --> E["State\nProgress Tracking"]
+`} />
+
+### 各概念のサマリー
+
+#### Agents
+
+19 個の専門エージェントが役割に応じてタスクを実行します。
+各エージェントは適切な AI モデル（haiku、sonnet、opus）で動作します。
+
+例：`explore`（探索）、`executor`（実装）、`architect`（設計）、`verifier`（検証）
+
+#### Skills
+
+37 個のスキルがエージェントの動作を構成・拡張します。
+スラッシュコマンド（`/oh-my-claudecode:skill-name`）またはマジックキーワードで起動されます。
+
+例：`autopilot`（自動実行）、`ralph`（完了まで繰り返す）、`team`（並列協調）
+
+#### Hooks
+
+Claude Code のライフサイクルイベントに反応してスキルとエージェントを起動します。
+ユーザーがプロンプトを送信、ツールを使用、またはセッションが開始・終了するときに発火します。
+
+#### State Management
+
+タスクの進捗、ノート、プロジェクト知識を `.omc/` ディレクトリに保存します。
+コンテキストウィンドウがリセット（圧縮）されても、重要な情報は保持されます。
+
+---
+
+## エージェントとは
+
+エージェントは特定の役割に特化した AI ワーカーです。
+OMC は 19 個のエージェントを 4 つのレーンに整理します。
+
+各エージェントは `oh-my-claudecode:agent-name` 形式で起動されます。
+
+### Build/Analysis レーン
+
+探索から検証までの開発フロー全体を担当します。
+
+| エージェント | デフォルトモデル | 役割 |
+|-------|---------------|------|
+| `explore` | haiku | コードベース探索、ファイルとパターン発見 |
+| `analyst` | opus | 要件分析、隠れた制約の発掘 |
+| `planner` | opus | タスク順序付け、実行計画 |
+| `architect` | opus | システム設計、インターフェース定義、トレードオフ分析 |
+| `debugger` | sonnet | 根本原因分析、ビルドエラー修正 |
+| `executor` | sonnet | コード実装、リファクタリング |
+| `verifier` | sonnet | 完了検証、テスト妥当性確認 |
+| `tracer` | sonnet | エビデンスベースの因果トレース、競合仮説 |
+
+### Review レーン
+
+コード引き継ぎ前のクオリティゲート。品質とセキュリティ問題をキャッチします。
+
+| エージェント | デフォルトモデル | 役割 |
+|-------|---------------|------|
+| `security-reviewer` | sonnet | セキュリティ脆弱性、信頼境界、認証/認可 |
+| `code-reviewer` | opus | 包括的なコードレビュー、API コントラクト、後方互換性 |
+
+### Domain レーン
+
+必要に応じて呼び出されるドメインスペシャリスト。
+
+| エージェント | デフォルトモデル | 役割 |
+|-------|---------------|------|
+| `test-engineer` | sonnet | テスト戦略、カバレッジ、フレーキーテスト対策 |
+| `designer` | sonnet | UI/UX アーキテクチャ、インタラクション設計 |
+| `writer` | haiku | ドキュメント、マイグレーションノート |
+| `qa-tester` | sonnet | CLI/サービスのランタイム検証（tmux 経由） |
+| `scientist` | sonnet | データ分析、統計研究 |
+| `git-master` | sonnet | Git オペレーション、コミット、リベース、履歴管理 |
+| `document-specialist` | sonnet | 外部ドキュメント、API、SDK リファレンス検索 |
+| `code-simplifier` | opus | コード明確性、簡素化、保守性改善 |
+
+### Coordination レーン
+
+他のエージェントが作成した計画に異議を唱えます。ギャップが見つからなければ計画が承認されます。
+
+| エージェント | デフォルトモデル | 役割 |
+|-------|---------------|------|
+| `critic` | opus | 計画と設計のギャップ分析、複数角度のレビュー |
+
+### モデルルーティング
+
+OMC は 3 つのモデルティアを使用します。
+
+| ティア | モデル | 特性 | コスト |
+|------|-------|-----------------|------|
+| LOW | haiku | 高速で廉価 | 低 |
+| MEDIUM | sonnet | パフォーマンスとコストのバランス | 中 |
+| HIGH | opus | 最高レベルの推論 | 高 |
+
+デフォルトティアはエージェントによって異なります。
+
+- haiku：高速検索とシンプルなタスク（explore、writer）
+- sonnet：コード実装、デバッグ、テスト（executor、debugger、test-engineer）
+- opus：アーキテクチャ、戦略分析、レビュー（architect、planner、critic、code-reviewer）
+
+### 委譲ルール
+
+OMC オーケストレーターは、タスクタイプに基づいて適切なエージェントに委譲します。
+
+#### When to Delegate to an Agent
+
+- 複数のファイルを変更する必要があるとき
+- リファクタリングが必要なとき
+- デバッグまたは根本原因分析が必要なとき
+- コードレビューまたはセキュリティレビューが必要なとき
+- 計画または調査が必要なとき
+
+#### When to Handle Directly
+
+- シンプルなファイル検索
+- 率直な質問応答
+- 1 行のコマンド実行
+
+### エージェントワークフローの例
+
+典型的なタスクフローは以下のようになります。
+
+<Mermaid chart={`
+graph LR
+    A["explore\nDiscovery"] --> B["analyst\nRequirements"]
+    B --> C["planner\nPlanning"]
+    C --> D["critic\nReview"]
+    D --> E["executor\nImplementation"]
+    E --> F["verifier\nVerification"]
+`} />
+
+#### Agent Role Boundaries
+
+| エージェント | 実行する | 実行しない |
+|-------|------|----------|
+| `architect` | コード分析、デバッグ、検証 | 要件収集、計画策定 |
+| `analyst` | 要件ギャップの発見 | コード分析、計画策定 |
+| `planner` | タスク計画の作成 | 要件分析、計画レビュー |
+| `critic` | 計画品質のレビュー | 要件分析、コード分析 |
+
+### エージェント選択ガイド
+
+| タスクタイプ | 推奨エージェント | モデル |
+|-----------|-------------------|-------|
+| クイックコード検索 | `explore` | haiku |
+| 機能実装 | `executor` | sonnet |
+| 複雑なリファクタリング | `executor`（model=opus） | opus |
+| シンプルなバグ修正 | `debugger` | sonnet |
+| 複雑なデバッグ | `architect` | opus |
+| UI コンポーネント | `designer` | sonnet |
+| ドキュメント | `writer` | haiku |
+| テスト戦略 | `test-engineer` | sonnet |
+| セキュリティレビュー | `security-reviewer` | sonnet |
+| コードレビュー | `code-reviewer` | opus |
+| データ分析 | `scientist` | sonnet |
+
+---
+
+## スキルとは
+
+スキルは、エージェントの動作方法を定義する動作注入システムです。
+スキルはエージェントに置き換わるのではなく、既存のエージェントに追加の機能を与えます。
+
+スキルは 3 つのレイヤーに分けられます。
+
+<Mermaid chart={`
+graph TD
+    G["Guarantee Layer (optional)\nralph: never stops until verified"]
+    E["Enhancement Layer (0 or more)\nultrawork (parallel) | git-master (commit)"]
+    X["Execution Layer (default)\ndefault (build) | orchestrate (coordinate)"]
+    G --> E --> X
+`} />
+
+スキルは構成できます。
+
+```
+Task: "ultrawork: refactor the API and commit it"
+Active skills: ultrawork + default + git-master
+```
+
+### スキルの呼び出し方
+
+#### Slash Commands
+
+```bash
+/oh-my-claudecode:autopilot build me a todo app
+/oh-my-claudecode:ralph refactor the auth module
+/oh-my-claudecode:team 3:executor "implement a full-stack app"
+```
+
+#### Magic Keywords
+
+自然言語にキーワードを含めると、対応するスキルが自動的に起動します。
+
+```bash
+autopilot build me a todo app          # autopilot スキルを起動
+ralph: refactor the auth module        # ralph スキルを起動
+ultrawork implement OAuth              # ultrawork スキルを起動
+```
+
+### 主要なワークフロースキル
+
+#### autopilot
+
+アイデアから完成したコードまで、5 段階の自動実行パイプライン。
+
+```bash
+autopilot build me a REST API with authentication
+```
+
+トリガーキーワード：`autopilot`、`build me`、`I want a`
+
+#### ralph
+
+タスクが完了と検証されるまで止まらないループ。
+verifier が完了を確認するまで作業を続けます。
+
+```bash
+ralph: refactor the authentication module
+```
+
+トリガーキーワード：`ralph`、`don't stop`、`must complete`
+
+#### ultrawork
+
+複数のエージェントを同時に最大並列度で実行します。
+
+```bash
+ultrawork implement user authentication with OAuth
+```
+
+トリガーキーワード：`ultrawork`、`ulw`
+
+#### team
+
+N 個の Claude エージェントを同時に調整します。
+5 段階のパイプラインで動作します：plan → prd → exec → verify → fix
+
+```bash
+/oh-my-claudecode:team 3:executor "implement a full-stack todo app"
+```
+
+#### ccg（Claude-Codex-Gemini）
+
+Codex と Gemini に同時にクエリして、Claude が結果を合成します。
+
+```bash
+ccg: review this authentication implementation
+```
+
+トリガーキーワード：`ccg`、`claude-codex-gemini`
+
+#### ralplan
+
+Planner、Architect、Critic がコンセンサスに達するまで反復する計画プロセス。
+
+```bash
+ralplan this feature
+```
+
+トリガーキーワード：`ralplan`
+
+### ユーティリティスキル
+
+| スキル | 説明 | コマンド |
+|-------|-------------|---------|
+| `cancel` | 実行中モードをキャンセル | `/oh-my-claudecode:cancel` |
+| `note` | notepad にノートを保存 | `/oh-my-claudecode:note` |
+| `hud` | ステータスバーを設定 | `/oh-my-claudecode:hud` |
+| `omc-setup` | 初期セットアップウィザード | `/oh-my-claudecode:omc-setup` |
+| `omc-doctor` | インストール診断 | `/oh-my-claudecode:omc-doctor` |
+| `learner` | セッションから再利用可能なスキルを抽出 | `/oh-my-claudecode:learner` |
+| `skill` | ローカルスキルを管理（リスト/追加/削除） | `/oh-my-claudecode:skill` |
+| `trace` | エビデンスベースの因果トレース | `/oh-my-claudecode:trace` |
+| `release` | 自動リリースワークフロー | `/oh-my-claudecode:release` |
+| `deepinit` | 階層的な AGENTS.md を生成 | `/oh-my-claudecode:deepinit` |
+| `deep-interview` | ソクラテス的な深いインタビュー | `/oh-my-claudecode:deep-interview` |
+| `sciomc` | 並列 scientist エージェント オーケストレーション | `/oh-my-claudecode:sciomc` |
+| `external-context` | 並列 document specialist 調査 | `/oh-my-claudecode:external-context` |
+| `ai-slop-cleaner` | AI 表現クリーンアップワークフロー | `/oh-my-claudecode:ai-slop-cleaner` |
+| `writer-memory` | ライティングプロジェクト用メモリシステム | `/oh-my-claudecode:writer-memory` |
+
+### 完全なマジックキーワードリスト
+
+| キーワード | 効果 |
+|---------|--------|
+| `ultrawork`、`ulw` | 並列エージェント オーケストレーション |
+| `autopilot`、`build me`、`I want a` | 自動実行パイプライン |
+| `ralph`、`don't stop`、`must complete` | 検証完了まで繰り返す |
+| `ccg`、`claude-codex-gemini` | 3 モデル オーケストレーション |
+| `ralplan` | コンセンサスベースの計画 |
+| `deep interview`、`ouroboros` | ソクラテス的な深いインタビュー |
+| `deepsearch`、`search the codebase` | コードベース検索モード |
+| `deepanalyze`、`deep-analyze` | 深い分析モード |
+| `ultrathink` | 深い推論モード |
+| `tdd`、`test first`、`red green` | TDD ワークフロー |
+| `deslop`、`anti-slop` | AI 表現クリーンアップ |
+| `cancelomc`、`stopomc` | 実行モードをキャンセル |
+
+### config.jsonc 対 keyword-detector
+
+キーワードは 2 つの場所で処理されます。
+
+| ソース | 役割 | カスタマイズ可能 |
+|--------|------|-------------|
+| `config.jsonc` `magicKeywords` | 4 つのカテゴリ（ultrawork、search、analyze、ultrathink） | はい |
+| `keyword-detector` フック | 11 以上のトリガー（autopilot、ralph、ccg など） | いいえ |
+
+`config.jsonc` で変更できるキーワードは限定されています。
+`autopilot`、`ralph`、`ccg` などの主要なトリガーはフックにハードコードされています。
+
+---
+
+## フックとは
+
+フックは Claude Code のライフサイクルイベントに反応するコードです。
+ユーザーがプロンプトを送信、ツールを使用、またはセッションが開始・終了するときに自動的に実行されます。
+
+OMC はこのフックシステムを使ってエージェント委譲、キーワード検出、状態永続化を実装します。
+
+### ライフサイクルイベント
+
+Claude Code は 11 個のライフサイクルイベントを提供し、OMC はそれらに登録します。
+
+| イベント | いつ発火するか | OMC の使用 |
+|-------|--------------|-----------|
+| `UserPromptSubmit` | ユーザーがプロンプトを送信するとき | マジックキーワード検出、スキル注入 |
+| `SessionStart` | セッションが開始するとき | 初期セットアップ、プロジェクトメモリロード |
+| `PreToolUse` | ツール使用前 | パーミッション検証、並列実行ヒント |
+| `PermissionRequest` | パーミッションが要求されるとき | Bash コマンドパーミッション処理 |
+| `PostToolUse` | ツール使用後 | ツール結果検証、プロジェクトメモリ更新 |
+| `PostToolUseFailure` | ツール使用失敗後 | エラーリカバリー処理 |
+| `SubagentStart` | サブエージェントが開始するとき | エージェント追跡 |
+| `SubagentStop` | サブエージェントが停止するとき | エージェント追跡、出力検証 |
+| `PreCompact` | コンテキスト圧縮前 | 重要情報を保存、プロジェクトメモリ保存 |
+| `Stop` | Claude が停止するとき | 永続モード維持、コード簡素化 |
+| `SessionEnd` | セッションが終了するとき | セッションデータクリーンアップ |
+
+### system-reminder インジェクション
+
+フックは `<system-reminder>` タグを使って Claude に追加コンテキストを注入します。
+
+```xml
+<system-reminder>
+hook success: Success
+</system-reminder>
+```
+
+その意味は注入されたパターンに依存します。
+
+| パターン | 意味 |
+|---------|---------|
+| `hook success: Success` | フックが正常に実行されたので、通常どおり続行 |
+| `hook additional context: ...` | 追加コンテキスト情報、注意してください |
+| `[MAGIC KEYWORD: ...]` | マジックキーワードが検出された、指定されたスキルを実行 |
+| `The boulder never stops` | ralph/ultrawork モードがアクティブ |
+
+### 主要なフック説明
+
+#### keyword-detector
+
+`UserPromptSubmit` イベントで発火します。
+ユーザー入力のマジックキーワードを検出し、対応するスキルを起動します。
+
+<Mermaid chart={`
+graph LR
+    A["User\nautopilot build me a todo app"] --> B["keyword-detector\nDetects autopilot keyword"]
+    B --> C["autopilot\nSkill activated"]
+`} />
+
+#### persistent-mode
+
+`Stop` イベントで発火します。
+ralph や ultrawork などの永続モードがアクティブなときに Claude が停止するのを防ぎます。
+
+#### pre-compact
+
+`PreCompact` イベントで発火します。
+コンテキストウィンドウが圧縮される前に重要な情報を notepad に保存します。
+
+#### subagent-tracker
+
+`SubagentStart` と `SubagentStop` イベントで発火します。
+現在実行中のエージェントを追跡し、停止時に出力を検証します。
+
+#### context-guard-stop
+
+`Stop` イベントで発火します。
+コンテキスト使用量を監視し、限界に近づいたときに警告します。
+
+#### code-simplifier
+
+`Stop` イベントで発火します。デフォルトでは無効です。
+有効にすると、Claude が停止するときに変更されたファイルを自動的に簡素化します。
+
+有効にするには：
+
+```json
+{
+  "codeSimplifier": {
+    "enabled": true,
+    "extensions": [".ts", ".tsx", ".js", ".jsx", ".py", ".go", ".rs"],
+    "maxFiles": 10
+  }
+}
+```
+
+### フックの無効化
+
+#### すべてのフックを無効化
+
+```bash
+export DISABLE_OMC=1
+```
+
+#### 特定のフックをスキップ
+
+```bash
+export OMC_SKIP_HOOKS="keyword-detector,persistent-mode"
+```
+
+複数のフックはカンマで区切って同時にスキップできます。
+
+### フック登録構造
+
+OMC フックは `hooks.json` ファイルで宣言的に定義されます。
+各フックは、設定されたタイムアウト付き Node.js スクリプトとして実装されます。
+
+```json
+{
+  "UserPromptSubmit": [
+    {
+      "matcher": "*",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "node scripts/keyword-detector.mjs",
+          "timeout": 5
+        }
+      ]
+    }
+  ]
+}
+```
+
+- `matcher`：フックが応答するパターン（`*` はすべての入力にマッチ）
+- `timeout`：タイムアウト秒数
+- `type`：常に `"command"`（外部コマンドを実行）
+
+---
+
+## 状態管理の概要
+
+OMC はタスクの進捗とプロジェクト知識を `.omc/` ディレクトリに保存します。
+コンテキスト圧縮が発生しても、この状態システムは重要な情報を保持します。
+
+### ディレクトリ構造
+
+```
+.omc/
+├── state/                    # モード別状態ファイル
+│   ├── autopilot-state.json  # autopilot の進捗
+│   ├── ralph-state.json      # ralph ループの状態
+│   ├── team/                 # チームタスク状態
+│   └── sessions/             # セッション別状態
+│       └── {sessionId}/
+├── notepad.md                # 圧縮耐性ノート
+├── project-memory.json       # プロジェクト知識ストア
+├── plans/                    # 実行計画
+├── notepads/                 # 計画別知識キャプチャ
+│   └── {plan-name}/
+│       ├── learnings.md
+│       ├── decisions.md
+│       ├── issues.md
+│       └── problems.md
+├── autopilot/                # autopilot アーティファクト
+│   └── spec.md
+├── research/                 # 調査結果
+└── logs/                     # 実行ログ
+```
+
+### ノートパッド
+
+**ファイル**: `.omc/notepad.md`
+
+notepad はコンテキスト圧縮を乗り越えるメモ帳です。
+Claude のコンテキストウィンドウがリセットされても、notepad に書き込まれたコンテンツは保持されます。
+
+#### Usage
+
+```bash
+# スキルを使ってノートを保存
+/oh-my-claudecode:note "Use /api/v2 for the API endpoint"
+```
+
+#### MCP Tools
+
+| ツール | 説明 |
+|------|-------------|
+| `notepad_read` | notepad コンテンツを読む |
+| `notepad_write_priority` | 優先度の高いノートを保存（永続的に保持） |
+| `notepad_write_working` | 作業中のノートを保存 |
+| `notepad_write_manual` | 手動ノートを保存 |
+| `notepad_prune` | 古いノートをクリーンアップ |
+| `notepad_stats` | notepad 統計を表示 |
+
+#### 動作方法
+
+1. `PreCompact` イベントが発火すると、重要な情報が notepad に保存されます
+2. コンテキスト圧縮後、notepad コンテンツが再注入されます
+3. エージェントは notepad を使って前のコンテキストを復元します
+
+### プロジェクトメモリ
+
+**ファイル**: `.omc/project-memory.json`
+
+プロジェクトメモリはプロジェクトレベルの知識を保存する永続ストアです。
+プロジェクトについての知識はセッション間で保持されます。
+
+#### MCP Tools
+
+| ツール | 説明 |
+|------|-------------|
+| `project_memory_read` | プロジェクトメモリを読む |
+| `project_memory_write` | プロジェクトメモリ全体を書く |
+| `project_memory_add_note` | ノートを追加 |
+| `project_memory_add_directive` | ディレクティブを追加 |
+
+#### ライフサイクル統合
+
+- `SessionStart`：プロジェクトメモリをロードしてコンテキストに注入
+- `PostToolUse`：ツール使用結果からプロジェクト知識を抽出して保存
+- `PreCompact`：コンテキスト圧縮前にプロジェクトメモリを保存
+
+### セッションスコープ
+
+**パス**: `.omc/state/sessions/{sessionId}/`
+
+セッション単位で分離された状態を保存します。
+同じプロジェクトで並列実行する複数のセッションは状態の競合を起こしません。
+
+### 計画ノートパッド（計画単位の知識キャプチャ）
+
+**パス**: `.omc/notepads/{plan-name}/`
+
+各実行計画の学習内容を別に保存します。
+
+| ファイル | コンテンツ |
+|------|----------|
+| `learnings.md` | 発見されたパターン、成功したアプローチ |
+| `decisions.md` | アーキテクチャの決定と根拠 |
+| `issues.md` | 問題とブロッカー |
+| `problems.md` | 技術的債務と注意点 |
+
+すべてのエントリは自動的にタイムスタンプ付けされます。
+
+### 集中型状態管理
+
+デフォルトでは、状態はプロジェクト内の `.omc/` ディレクトリに保存されます。
+worktree が削除されると、その状態も失われます。
+
+worktree 削除後も状態を保持するには、`OMC_STATE_DIR` 環境変数を設定してください。
+
+```bash
+# ~/.bashrc または ~/.zshrc に追加
+export OMC_STATE_DIR="$HOME/.claude/omc"
+```
+
+この設定により、状態は `~/.claude/omc/{project-identifier}/` に保存されます。
+プロジェクト識別子は Git リモート URL のハッシュであるため、同じリポジトリの異なる worktree 間で状態を共有できます。
+
+### 永続メモリ（remember タグ）
+
+特に重要な情報は `<remember>` タグで保存できます。
+
+```xml
+<!-- 7 日間保持 -->
+<remember>API endpoint changed to /v2</remember>
+
+<!-- 永続的に保持 -->
+<remember priority>Never access the production DB directly</remember>
+```
+
+| タグ | 保持期間 |
+|-----|-----------|
+| `<remember>` | 7 日間 |
+| `<remember priority>` | 永続的 |

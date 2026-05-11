@@ -1,0 +1,78 @@
+---
+title: Ultrawork
+description: 独立したタスクを同時に実行する並列実行エンジン
+---
+
+## 概要
+
+Ultrawork は実行エンジンです。複数のエージェントを並列で実行して独立したタスクを並列処理します。スタンドアロンモードではなくコンポーネントとして設計されています — 並列実行とスマートなモデルルーティングを提供しますが、持続化または検証ループはありません。
+
+Ralph と Autopilot は Ultrawork を内部で使用します。
+
+## 使用方法
+
+```bash
+/oh-my-claudecode:ultrawork "implement user authentication with OAuth"
+```
+
+マジックキーワードでも起動できます。
+
+```
+ultrawork implement the API endpoints
+ulw add validation to all forms
+```
+
+## 動作方法
+
+### タスク分類
+
+独立したタスクと依存関係があるタスクを区別します。
+
+### モデルルーティング
+
+タスクの複雑さに基づいて適切なモデルティアを選択します。
+
+| 複雑さ | モデル | ユースケース |
+|------------|-------|----------|
+| シンプルなルックアップ / 定義 | Haiku | 型エクスポートの追加、欠落インポートの修正 |
+| 標準実装 | Sonnet | API エンドポイント実装、テスト作成 |
+| 複雑な分析 / リファクタリング | Opus | OAuth フロー実装、アーキテクチャリファクタリング |
+
+### 並列実行
+
+独立したタスクは同時に実行されます。
+
+```
+Task 1 (Haiku):  Add type exports             ─┐
+Task 2 (Sonnet): Implement API endpoints       ─┤── concurrent
+Task 3 (Sonnet): Auth middleware tests         ─┘
+```
+
+依存関係があるタスクはその前提条件の完了後に実行されます。
+ビルド、インストール、テストなどの長時間実行タスクはバックグラウンドで実行されます。
+
+## 他のモードとの関係
+
+```
+autopilot（自動実行）
+ └── ralph（連続ループ）
+      └── ultrawork（並列実行） ← このスキル
+```
+
+- **Ultrawork を単独で使用**：並列実行だけが必要で、持続化や検証不要な場合
+- **Ralph を推奨**：持続化と検証が必要な場合（ralph は ultrawork を含む）
+- **Autopilot を推奨**：完全なライフサイクルが必要な場合
+
+## 関連スキル
+
+- [ralph](/ja/docs/skills/workflow/ralph) - ultrawork の上に持続化と検証を追加
+- [autopilot](/ja/docs/skills/workflow/autopilot) - ralph を含む完全な自動パイプライン
+
+## リファレンス
+
+| 項目 | 値 |
+|------|-------|
+| 起動 | `/oh-my-claudecode:ultrawork` |
+| マジックキーワード | `ultrawork`、`ulw` |
+| カテゴリ | Workflow |
+| 状態ファイル | `.omc/state/ultrawork-state.json` |

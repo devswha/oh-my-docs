@@ -1,0 +1,9 @@
+{
+  "title": "コアコンセプト",
+  "pages": [
+    "[エージェント](/ja/docs/concepts#エージェントとは)",
+    "[スキル](/ja/docs/concepts#スキルとは)",
+    "[フック](/ja/docs/concepts#フックとは)",
+    "[状態管理](/ja/docs/concepts#状態管理の概要)"
+  ]
+}

@@ -1,0 +1,86 @@
+---
+title: OMC Setup
+description: 安装和配置 oh-my-claudecode 你需要知道的唯一命令
+---
+
+## 概览
+
+OMC Setup 是负责设置和配置 oh-my-claudecode 的技能。初始安装后运行一次，其他一切都会自动工作。更新后，使用此命令应用最新配置。
+
+**这是你需要知道的唯一命令。**
+
+## 使用
+
+```bash
+/oh-my-claudecode:omc-setup              # 初始设置或更新
+/oh-my-claudecode:omc-setup --local      # 仅配置当前项目
+/oh-my-claudecode:omc-setup --global     # 全局配置
+/oh-my-claudecode:omc-setup --force      # 重新运行完整设置向导
+/oh-my-claudecode:omc-setup --help       # 显示帮助
+```
+
+## 配置范围
+
+### 项目范围（`--local`，推荐）
+
+在 `./.claude/CLAUDE.md` 中创建配置。仅适用于当前项目，不影响其他项目。
+
+### 全局范围（`--global`）
+
+在 `~/.claude/CLAUDE.md` 中创建配置。适用于所有 Claude Code 会话。
+
+项目配置优先于全局配置。
+
+## 设置阶段
+
+完整设置通过 4 个阶段进行。
+
+### 阶段 1 - CLAUDE.md 安装
+
+下载并安装最新的 CLAUDE.md。备份任何现有文件。
+
+### 阶段 2 - 环境配置
+
+设置 HUD 状态栏。委派给 HUD 技能进行处理。
+
+### 阶段 3 - 集成设置
+
+配置 MCP 服务器等额外集成。
+
+### 阶段 4 - 完成
+
+显示设置完成消息并指导你完成后续步骤。
+
+## 已配置
+
+如果设置已完成，再次运行会呈现三个选项：
+
+1. **仅更新 CLAUDE.md**：下载最新 CLAUDE.md（快速）
+2. **重新运行完整设置**：从头开始运行向导
+3. **取消**：退出而不做任何更改
+
+## 如何更新
+
+插件更新后：
+
+```bash
+/oh-my-claudecode:omc-setup          # 提供仅更新 CLAUDE.md 的选项
+/oh-my-claudecode:omc-setup --local  # 仅更新项目配置
+/oh-my-claudecode:omc-setup --force  # 重新运行完整向导
+```
+
+## 相关技能
+
+- [setup](/zh/docs/skills/utility/setup) - 统一的安装入口
+- [omc-doctor](/zh/docs/skills/utility/omc-doctor) - 诊断安装问题
+- [mcp-setup](/zh/docs/skills/utility/mcp-setup) - MCP 服务器配置
+- [hud](/zh/docs/skills/utility/hud) - HUD 状态栏配置
+
+## 参考
+
+| 项目 | 值 |
+|------|-------|
+| 调用 | `/oh-my-claudecode:omc-setup` |
+| 魔法关键词 | - |
+| 类别 | 实用工具 |
+| 配置记录 | `~/.claude/.omc-config.json` |

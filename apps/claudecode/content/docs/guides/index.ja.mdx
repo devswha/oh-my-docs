@@ -1,0 +1,760 @@
+---
+title: Guides
+description: OMC を実践で使うためのステップバイステップガイダンス
+---
+
+## 実践ガイド
+
+OMC のコアコンセプトを理解したら、次は実際に使ってみましょう。
+
+### 推奨の学習パス
+
+#### Beginners
+
+1. [初めての autopilot セッション](#what-is-autopilot) - シンプルなプロジェクトで autopilot を体験
+2. [カスタムスキルの作成](#what-are-custom-skills) - 独自のスキルを登録
+3. [ベストプラクティス](#model-cost-optimization) - 効率的な利用パターン
+
+#### Intermediate
+
+1. [チームオーケストレーション](#what-is-team-mode) - 複数のエージェントを同時使用
+2. [計画ワークフロー](#why-planning-matters) - 構造化計画
+3. [OMC でのデバッグ](#omc-debugging-tools) - 複雑なバグの追跡
+
+---
+
+## Autopilotとは
+
+Autopilot は OMC の主力ワークフロー — 1 つのアイデアを与えるだけで完成したコードが自動的に生成されます。
+5 段階のパイプラインを順番に実行します。
+
+### Autopilot の実行
+
+空のディレクトリで Claude Code を開き、次のように入力してください。
+
+```bash
+autopilot build me a todo CLI app
+```
+
+### 5 段階のパイプライン
+
+<Steps>
+
+### 展開
+
+`analyst` と `architect` エージェントがアイデア「todo CLI app」を具体化します。
+
+- 機能要件を収集（追加、削除、リスト、完了マーク）
+- 技術仕様を生成（Node.js CLI、JSON ファイルストレージなど）
+- 出力: `.omc/autopilot/spec.md`
+
+### 計画
+
+`planner` エージェントが実装計画を作成します。
+
+- タスク分割（ファイル構造、各機能の実装順序）
+- `critic` エージェントが計画をレビューしてギャップを特定
+- 出力: `.omc/plans/autopilot-impl.md`
+
+### 実行
+
+`executor` エージェントが計画に従ってコードを記述します。
+
+- 必要に応じて複数の executor が並列で動作
+- `ralph` + `ultrawork` モードで実行して完了まで続行
+
+### QA
+
+ultraqa が品質を検証します。
+
+- ビルドが成功しているか確認
+- テストが通っているか確認
+- 失敗を自動修正して再検証（最大 5 試行）
+
+### 検証
+
+3 つの観点から専門エージェントが最終レビューを実施します。
+
+| 検証タイプ | 確認項目 |
+|----------------|-----------------|
+| Functional | 機能が仕様どおりに動作するか |
+| Security | セキュリティ脆弱性がないか |
+| Quality | コード品質が十分か |
+
+すべてが `APPROVED` を得る必要があります。
+`REJECTED` または `NEEDS_FIX` が返された場合、修正が加えられて再検証が実施されます（最大 3 回）。
+
+</Steps>
+
+### 進捗のモニタリング
+
+#### HUD Status Bar
+
+```
+[OMC] autopilot:planning | agents:2 | todos:1/4 | ctx:32%
+```
+
+#### Checking State Files
+
+autopilot の現在の状態は以下のファイルで確認できます。
+
+```bash
+# 状態ファイル
+.omc/state/autopilot-state.json
+
+# 仕様ドキュメント
+.omc/autopilot/spec.md
+
+# 実行計画
+.omc/plans/autopilot-impl.md
+```
+
+### Autopilot の設定オプション
+
+autopilot の動作を細かく調整できます。
+
+| オプション | デフォルト | 説明 |
+|--------|---------|-------------|
+| `maxIterations` | 10 | 最大反復回数 |
+| `maxQaCycles` | 5 | QA 再試行回数 |
+| `maxValidationRounds` | 3 | 最終検証ラウンド数 |
+| `parallelExecutors` | 5 | 並列 executor エージェント数 |
+| `pauseAfterExpansion` | false | Expansion ステージ後に一時停止 |
+| `pauseAfterPlanning` | false | Planning ステージ後に一時停止 |
+| `skipQa` | false | QA ステージをスキップ |
+| `skipValidation` | false | Validation ステージをスキップ |
+
+### Autopilot のキャンセル
+
+実行中の autopilot を停止するには、次のいずれかを入力してください。
+
+```bash
+cancelomc
+# または
+/oh-my-claudecode:cancel
+```
+
+キャンセル時点までの進捗は保持されるため、後で再開できます。
+
+---
+
+## チームモードとは
+
+Team モードは複数の Claude エージェントを同時に実行して 1 つの目標を達成する協調システムです。
+1 つのエージェントでは対応できない大規模なタスクに向いています。
+
+### 基本的な使い方
+
+```bash
+# 3 個の executor エージェント間で作業を分散
+/oh-my-claudecode:team 3:executor "implement a full-stack todo app"
+
+# CLI コマンドとしても実行可能
+omc team 2:executor "implement API endpoints"
+```
+
+フォーマット：`N:agent-type "task description"`
+
+- `N`：エージェント数（2～5 推奨）
+- `agent-type`：使用するエージェント（executor、codex、gemini など）
+
+### チームパイプライン
+
+Team モードは 5 段階のパイプラインで動作します。
+
+<Steps>
+
+### チーム計画
+
+`explore` と `planner` エージェントがタスクを分析して計画を作成します。
+必要に応じて `analyst` または `architect` も参加します。
+
+### チーム要件定義
+
+`analyst` エージェントが要件を詳細に定義します。
+`critic` が要件をレビューしてギャップをチェックします。
+
+### チーム実行
+
+`executor` エージェントがコードを並列に実装します。
+必要に応じて `designer`、`writer`、`test-engineer` などの専門エージェントが参加します。
+
+### チーム検証
+
+`verifier` とレビュアーエージェントが結果を検証します。
+
+### チーム修正
+
+検証中に見つかった問題が修正されます。
+問題のタイプに応じて `executor`、`debugger` などが参加します。
+最大試行回数でバウンドされた状態で反復されます。
+
+</Steps>
+
+### チーム状態管理
+
+```bash
+# チームステータスをチェック
+omc team status <team-name>
+
+# チームを強制的にシャットダウン
+omc team shutdown <team-name> --force
+```
+
+### team ralph
+
+`team ralph` はチームモードと ralph モードを組み合わせたものです。
+verifier がすべてのタスクの完了を確認するまで、チームパイプラインを繰り返し実行します。
+
+```bash
+# team + ralph を組み合わせ
+team ralph 3:executor "implement the full authentication system"
+```
+
+いずれかのモードをキャンセルすると、もう一方もキャンセルされます。
+
+### エージェント型のユースケース
+
+| エージェントタイプ | ユースケース |
+|-----------|----------|
+| `executor` | 機能実装、リファクタリング |
+| `codex` | OpenAI Codex による実装 |
+| `gemini` | Google Gemini による実装 |
+
+### チームモード対 Autopilot
+
+| 観点 | autopilot | team |
+|--------|-----------|------|
+| 自動化レベル | 完全自動（5 段階） | 半自動（方向性の指定が必要） |
+| エージェント数 | 自動決定 | ユーザーが指定 |
+| 計画 | 自動的に含まれる | 別のステージとして含まれる |
+| 最適な用途 | エンドツーエンドの自動実行 | 特定ステージの並列処理 |
+
+### 備考
+
+<Callout type="warn">
+Team モードは複数のエージェントを同時に実行するため、トークンコストが高い。シンプルなタスクでは単一エージェントがより効率的です。
+</Callout>
+
+---
+
+## なぜ計画が重要か
+
+複雑なタスクで実装に直行すると、方向性を見失いやすくなります。
+OMC はステップバイステップな計画で作業を軌道に乗せるサポートをします。
+
+### 計画ワークフローの選択
+
+| ワークフロー | 最適な使用場面 | コスト |
+|----------|----------|------|
+| `/plan` | クイックな計画が必要なとき | 低 |
+| `/ralplan` | 複数の視点からコンセンサスが必要なとき | 中 |
+| `autopilot` | 計画から実行まで自動化したいとき | 高 |
+
+### /plan（基本計画）
+
+計画を作成する最もシンプルな方法。
+
+```bash
+/oh-my-claudecode:omc-plan "refactor the authentication system"
+```
+
+`planner` エージェントがタスクを分析して実行計画を生成します。
+
+#### オプション
+
+```bash
+# コンセンサスベースの計画（ralplan と同じ）
+/oh-my-claudecode:omc-plan --consensus "refactor the authentication system"
+
+# 既存計画をレビュー
+/oh-my-claudecode:omc-plan --review "analyze problems with the current plan"
+```
+
+### /ralplan（コンセンサスベース計画）
+
+Planner、Architect、Critic の 3 つのエージェントがコンセンサスに達するまで反復する計画プロセス。
+
+```bash
+ralplan this feature
+# または
+/oh-my-claudecode:ralplan "design the payment system"
+```
+
+#### コンセンサスプロセス
+
+```
+Planner（計画を作成）
+    ↓
+Architect（技術レビュー）
+    ↓
+Critic（ギャップ分析）
+    ↓
+コンセンサス達成？ → いいえ → Planner に戻る
+    ↓ はい
+最終計画が確定
+```
+
+#### High-Risk モード（--deliberate）
+
+重大なプロジェクトの場合は、`--deliberate` オプションでより徹底した検討を行います。
+
+```bash
+/oh-my-claudecode:ralplan --deliberate "production database migration"
+```
+
+デフォルトモードとの違い：
+
+| 観点 | デフォルトモード | --deliberate |
+|--------|-------------|-------------|
+| 事前分析 | なし | 事前分析を含む |
+| テスト計画 | 基本的 | Unit/Integration/E2E/Observability テスト |
+| 反復 | 短い検討 | 拡張検討 |
+
+### 計画から実行へ
+
+計画から実装へ移行する方法。
+
+#### オプション 1: 手動実行
+
+```bash
+# 1. 計画を作成
+ralplan "API refactoring"
+
+# 2. 計画をレビューして手動で実装
+ultrawork implement the plan in .omc/plans/
+```
+
+#### オプション 2: autopilot（自動移行）
+
+autopilot は Planning ステージから Execution ステージに自動的に移行します。
+
+```bash
+autopilot refactor the authentication system
+```
+
+#### オプション 3: スキルパイプライン
+
+スキルは次のスキルへのハンドオフをサポートします。
+
+```
+deep-interview → omc-plan → autopilot
+```
+
+deep-interview で要件を明確化し、omc-plan で計画を作成して、autopilot で実装します。
+
+### 計画ファイルの場所
+
+| ファイル | 用途 |
+|------|---------|
+| `.omc/plans/autopilot-impl.md` | autopilot 実行計画 |
+| `.omc/autopilot/spec.md` | autopilot 要件仕様 |
+| `.omc/plans/*.md` | 他の計画ファイル |
+
+<Callout type="info">
+計画ファイルは読み取り専用として扱われます。エージェントが計画ファイルを直接変更しないよう注意してください。
+</Callout>
+
+---
+
+## カスタムスキルとは
+
+OMC の組み込みスキルを超えて、独自のスキルを作成・登録できます。
+繰り返されるタスクパターンをスキルに変えて、1 つのコマンドで実行できるようにします。
+
+### スキル構造
+
+スキルは単一の `SKILL.md` ファイルで定義されます。
+
+```
+~/.claude/skills/
+└── my-skill/
+    └── SKILL.md
+```
+
+#### SKILL.md の作成
+
+```markdown
+---
+name: my-skill
+description: Description of my custom skill
+trigger: "my-skill"
+---
+
+# My Skill
+
+## What This Skill Does
+
+スキルの動作を詳細に説明してください。
+Claude はこのプロンプトを読んで、指示に従って動作します。
+
+## Execution Steps
+
+1. 最初のステップ
+2. 2 番目のステップ
+3. 3 番目のステップ
+
+## Rules
+
+- 従わなければならないルール
+- してはいけないこと
+```
+
+#### フロントマターフィールド
+
+| フィールド | 必須 | 説明 |
+|-------|----------|-------------|
+| `name` | 必須 | スキル名（スラッシュコマンドで使用） |
+| `description` | 必須 | スキルの短い説明 |
+| `trigger` | オプション | マジックキーワードトリガー |
+
+#### パイプラインメタデータ（Advanced）
+
+スキル間の移行を定義できます。
+
+```yaml
+---
+name: my-interview
+pipeline: [my-interview, omc-plan, autopilot]
+next-skill: omc-plan
+next-skill-args: --consensus --direct
+handoff: .omc/specs/my-interview-{slug}.md
+---
+```
+
+| フィールド | 説明 |
+|-------|-------------|
+| `pipeline` | スキル実行の順序 |
+| `next-skill` | 次に呼び出すスキル |
+| `next-skill-args` | 次のスキルに渡す引数 |
+| `handoff` | 次のスキルに渡すアーティファクトのパス |
+
+### スキル管理コマンド
+
+`/oh-my-claudecode:skill` コマンドを使ってスキルを管理します。
+
+```bash
+# インストール済みスキルをリスト
+/oh-my-claudecode:skill list
+
+# 新しいスキルを追加
+/oh-my-claudecode:skill add
+
+# スキルを削除
+/oh-my-claudecode:skill remove my-skill
+
+# スキルを検索
+/oh-my-claudecode:skill search "deploy"
+
+# スキルを編集
+/oh-my-claudecode:skill edit my-skill
+```
+
+### learner でスキルを自動抽出
+
+現在のセッションから繰り返されるタスクパターンをスキルとして自動抽出できます。
+
+```bash
+/oh-my-claudecode:learner
+```
+
+learner が現在の会話で再利用可能なパターンを見つけた場合、`SKILL.md` を自動生成します。
+
+### スキル保存場所
+
+| 場所 | スコープ |
+|----------|-------|
+| `~/.claude/skills/` | すべてのプロジェクト間で利用可能 |
+| `.claude/skills/` | 現在のプロジェクトでのみ利用可能 |
+
+### スキル作成のコツ
+
+1. 実行ステップを具体的にリスト化する
+2. してはいけないことを明確に述べる
+3. 入出力例を含めると精度が向上する
+4. 特定のエージェントが必要な場合は、明示的に記述する
+
+```markdown
+## Execution Steps
+
+1. `explore` エージェントを使って関連ファイルを検索
+2. `executor` エージェントを使って変更を実装
+3. `verifier` エージェントを使って結果を検証
+```
+
+---
+
+## OMCデバッグツール
+
+OMC はデバッグ用の複数の専門エージェントを提供します。
+
+| エージェント | 役割 | モデル |
+|-------|------|-------|
+| `debugger` | 根本原因分析、ビルドエラー修正 | sonnet |
+| `tracer` | エビデンスベースの因果トレース | sonnet |
+| `architect` | システムレベルの設計分析 | opus |
+| `qa-tester` | tmux 経由のランタイム検証 | sonnet |
+
+### クイックデバッグ
+
+シンプルなエラーの場合は、マジックキーワードを使ってすぐに分析を開始できます。
+
+```bash
+analyze why this test is failing
+```
+
+`analyze` キーワードは直接 `debugger` エージェントを起動します。
+
+### /trace スキル: エビデンスベースのトレース
+
+複雑なバグの場合は `/trace` スキルを使用します。
+複数の tracer エージェントが並列で仮説を形成し、エビデンスを収集します。
+
+```bash
+/oh-my-claudecode:trace
+```
+
+#### trace ワークフロー
+
+```
+問題を観察
+    ↓
+仮説 1 ──→ tracer A（エビデンスを収集）
+仮説 2 ──→ tracer B（エビデンスを収集）
+仮説 3 ──→ tracer C（エビデンスを収集）
+    ↓
+エビデンスを合成 → 根本原因を特定
+    ↓
+修正して検証
+```
+
+各 tracer は独立して仮説を検証しながらエビデンスを収集します。
+支持と矛盾の両方のエビデンスを集めた後、最も可能性の高い原因が特定されます。
+
+### Architect + QA-Tester ループ
+
+CLI アプリやサービスのバグをデバッグするのに便利なパターン。
+
+<Steps>
+
+### 設計者による診断
+
+architect エージェントがコードを分析して根本原因を特定します。
+具体的なテスト計画（実行するコマンドと期待される結果）を出力します。
+
+### QAテスターの検証
+
+qa-tester エージェントが tmux でテスト計画を実行します。
+実際の出力をキャプチャします。
+
+### 結果を比較
+
+期待される結果と実際の結果を比較します。
+ミスマッチがある場合は architect にさらなる分析をリクエストします。
+
+### 繰り返す
+
+問題が解決するまで繰り返します。
+
+</Steps>
+
+### 検証の優先度
+
+デバッグ後の修正を検証する際は、最も廉価な方法から開始します。
+
+| 優先度 | 検証方法 | コスト | 使用時期 |
+|----------|-------------------|------|-------------|
+| 1 | 既存テストを実行 | 低 | プロジェクトがテストスイートを持つとき |
+| 2 | コマンドを直接実行（curl など） | 低 | シンプルな動作チェック |
+| 3 | qa-tester（tmux） | 高 | インタラクティブな検証が必要なときのみ |
+
+<Callout type="info">
+qa-tester は tmux でリアルサービスを実行するため、トークンコストが高い。プロジェクトにテストがある場合は、まずそれを実行してください。
+</Callout>
+
+### ビルドエラーの修正
+
+ビルドエラーと型エラーは `debugger` エージェントが処理します。
+
+```bash
+# マジックキーワードで起動
+analyze fix the build errors
+
+# クイックコマンドで起動
+build-fix
+```
+
+`debugger` エージェントが実行すること：
+
+1. エラーメッセージを分析
+2. 根本原因を特定
+3. 修正を適用
+4. ビルドを再実行して検証
+
+### デバッグ組み合わせの例
+
+#### Test Failure
+
+```bash
+# 1. 失敗原因を分析
+analyze why test_auth.py is failing
+
+# 2. 必要に応じてエビデンスを収集
+/oh-my-claudecode:trace
+
+# 3. 修正して検証
+tdd: fix the failing test
+```
+
+#### Production Issue
+
+```bash
+# 1. 深い分析
+deep-analyze the memory leak in the worker process
+
+# 2. エビデンスベースのトレース
+/oh-my-claudecode:trace
+
+# 3. 修正とレビュー
+ralph: fix the memory leak and add regression tests
+```
+
+---
+
+## モデルコスト最適化
+
+OMC は 3 つのモデルティアを使用します。適切なティアを選ぶと大幅にコストを削減できます。
+
+### Haiku ファースト原則
+
+デフォルトで最も軽いモデル（haiku）からすべてのタスクを開始し、必要なときのみ重いモデルにエスカレートします。
+
+| タスクタイプ | 推奨モデル | 理由 |
+|-----------|-------------------|--------|
+| ファイル検索、コード検索 | haiku | 検索はシンプルなタスク |
+| ドキュメント | haiku | 構造化テキスト生成 |
+| 一般的なコード実装 | sonnet | 品質とコストの比率が良い |
+| デバッグ | sonnet | コード理解が必要 |
+| アーキテクチャ設計 | opus | 深い推論が必要 |
+| セキュリティレビュー | opus | 徹底的な分析が必要 |
+
+### 高コスト操作
+
+- `team` モード：複数のエージェントを同時実行
+- `ralph` モード：完了まで繰り返す
+- `autopilot`：完全な 5 段階パイプライン
+- `qa-tester`：tmux セッションベースの検証
+
+<Callout type="warn">
+シンプルなタスクに autopilot や team モードを使うとトークンを無駄にします。タスクのスケールに合ったツールを選んでください。
+</Callout>
+
+### エージェント組み合わせパターン
+
+#### Standard Development Flow
+
+```
+explore → planner → executor → verifier
+```
+
+最も基本的なフロー。探索、計画、実装、検証を順番に実行します。
+
+#### Deep Analysis Then Implement
+
+```
+analyst → architect → planner → critic → executor → verifier
+```
+
+複雑なプロジェクト向け。実装前に要件を十分に分析します。
+
+#### Debugging Loop
+
+```
+debugger → architect → qa-tester → （繰り返す）
+```
+
+根本原因分析、システムレベルレビュー、ランタイム検証を繰り返します。
+
+#### Code Review Pipeline
+
+```
+code-reviewer → security-reviewer → executor（修正）
+```
+
+コード品質とセキュリティをレビューして、見つかった問題を修正します。
+
+### 検証戦略
+
+#### Verification Must Always Be Evidence-Based
+
+完了を宣言する前に、必ず実際のコマンド出力を確認してください。
+
+| 検証タイプ | 方法 |
+|-------------------|--------|
+| BUILD | ビルドコマンドを実行して成功を確認 |
+| TEST | テストを実行してすべてのパスを確認 |
+| LINT | linter を実行してエラーなしを確認 |
+| FUNCTIONALITY | 機能が意図どおりに動作することを確認 |
+
+#### Verification Cost Optimization
+
+1. 既存テストを実行（最安） — プロジェクトがテストを持つ場合は、まずそれを実行
+2. 直接コマンド（安い） — curl、CLI コマンドでのクイックチェック
+3. qa-tester（高い） — 上記の方法では不十分な場合のみ
+
+### アンチパターン
+
+#### Overusing qa-tester
+
+プロジェクトがテストスイートを持つのに qa-tester を使うのは無駄です。
+
+```bash
+# 悪い：テストが存在するのに qa-tester を使用
+qa-tester verify the login feature
+
+# 良い：既存テストを実行
+npm test -- --grep "login"
+```
+
+#### Claiming Completion Without Verification
+
+エージェントが「完了」と言っても、すぐに進まないでください。
+必ずビルド/テスト結果を確認してください。
+
+#### Using Heavy Modes for Simple Tasks
+
+```bash
+# 悪い：1 ファイル編集に autopilot を使用
+autopilot fix the typo in README.md
+
+# 良い：直接編集リクエスト
+Fix the typo in README.md
+```
+
+#### Using opus for Everything
+
+```jsonc
+// 悪い：すべてのエージェントを opus に設定
+{
+  "agents": {
+    "explore": { "model": "opus" },
+    "writer": { "model": "opus" },
+    "executor": { "model": "opus" }
+  }
+}
+
+// 良い：デフォルトを保持し、必要な箇所だけ変更
+{
+  "agents": {
+    "executor": { "model": "opus" }  // 複雑なプロジェクト向けのみ
+  }
+}
+```
+
+### 一般的なヒント
+
+1. 小さく始める — 単一エージェントから開始して、必要に応じて team や autopilot にスケール
+2. 先に計画を立てる — 複雑なタスク実行前に `/plan` や `ralplan` で計画
+3. notepad を活用 — `/note` で重要な情報を保存してコンテキスト圧縮を乗り越える
+4. 状態を監視 — HUD またはステータスファイルで進捗を追跡
+5. キャンセルするタイミングを知る — 不要な作業を素早く止めるのに `cancelomc` を使用

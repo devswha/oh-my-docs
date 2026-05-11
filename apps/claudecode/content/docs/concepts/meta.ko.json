@@ -1,0 +1,9 @@
+{
+  "title": "Core Concepts",
+  "pages": [
+    "[에이전트](/ko/docs/concepts#에이전트란)",
+    "[스킬](/ko/docs/concepts#스킬이란)",
+    "[훅](/ko/docs/concepts#훅이란)",
+    "[상태 관리](/ko/docs/concepts#상태-관리-개요)"
+  ]
+}

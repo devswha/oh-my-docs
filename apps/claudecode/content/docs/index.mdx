@@ -1,0 +1,216 @@
+---
+title: Oh My ClaudeCode
+description: Multi-agent orchestration for Claude Code. Zero learning curve.
+---
+
+![Oh My ClaudeCode](/images/omc-social-preview.jpg)
+
+**Multi-agent orchestration for Claude Code. Zero learning curve.**
+
+_Don't learn Claude Code. Just use OMC._
+
+Oh My ClaudeCode (OMC) is a multi-agent orchestration layer that runs on top of Claude Code. With a single prompt it coordinates specialized agents to automate complex development tasks end-to-end.
+
+## Quick Start
+
+### Step 1 — Install
+
+Plugin install (recommended for most Claude Code users). These are Claude Code slash commands — enter them **one at a time** (pasting both lines at once will fail):
+
+```bash
+/plugin marketplace add https://github.com/Yeachan-Heo/oh-my-claudecode
+```
+
+Then:
+
+```bash
+/plugin install oh-my-claudecode
+```
+
+If you prefer the npm CLI / runtime path instead of the marketplace flow:
+
+```bash
+npm i -g oh-my-claude-sisyphus@latest
+```
+
+> **Package naming note:** The project is branded as **oh-my-claudecode** (repo, plugin, commands), but the published npm package is [`oh-my-claude-sisyphus`](https://www.npmjs.com/package/oh-my-claude-sisyphus).
+
+### Step 2 — Setup
+
+```bash
+# Inside a Claude Code / OMC session
+/setup
+/omc-setup
+
+# From your terminal
+omc setup
+```
+
+### Step 3 — Build something
+
+```bash
+# Inside a Claude Code / OMC session
+/autopilot "build a REST API for managing tasks"
+
+# Natural-language in-session shortcut
+autopilot: build a REST API for managing tasks
+```
+
+That's it. Everything else is automatic.
+
+## CLI Commands vs In-Session Skills
+
+OMC exposes two different surfaces:
+
+- **Terminal CLI commands** — run `omc ...` from your shell after installing via npm.
+- **In-session skills** — run `/...` inside a Claude Code session after installing the plugin.
+
+| Feature | Terminal CLI | In-session skill | Notes |
+|---|---|---|---|
+| Setup | `omc setup` | `/setup` or `/omc-setup` | Both are real entrypoints. `/setup` is the easiest plugin-first path |
+| Ask providers | `omc ask codex "…"` | `/ask codex "…"` | Both route through the same advisor flow |
+| Team orchestration | `omc team 2:codex "…"` | `/team 3:executor "…"` | Different runtimes: `omc team` launches tmux CLI workers; `/team` runs the in-session native team workflow |
+| Autopilot / Ralph / Ultrawork / Deep Interview | — | `/autopilot`, `/ralph`, `/ultrawork`, `/deep-interview` | In-session only; there is no `omc autopilot` CLI subcommand |
+| Autoresearch | `omc autoresearch "…"` | `/deep-interview --autoresearch "…"` | The in-session path is the setup/interview lane that helps you launch it |
+
+## Not Sure Where to Start?
+
+If you're uncertain about requirements, have a vague idea, or want to micromanage the design:
+
+```bash
+/deep-interview "I want to build a task management app"
+```
+
+The deep interview uses Socratic questioning to clarify your thinking before any code is written. It exposes hidden assumptions and measures clarity across weighted dimensions, ensuring you know exactly what to build before execution begins.
+
+## Team Mode (Recommended)
+
+Starting in **v4.1.7**, **Team** is the canonical orchestration surface in OMC. The legacy `swarm` keyword/skill has been removed; use `team` directly.
+
+```bash
+/team 3:executor "fix all TypeScript errors"
+```
+
+Use `/team ...` for Claude Code's in-session native team workflow. Use `omc team ...` for terminal-launched tmux CLI workers (`claude` / `codex` / `gemini` panes).
+
+Team runs as a staged pipeline:
+
+```
+team-plan → team-prd → team-exec → team-verify → team-fix (loop)
+```
+
+Enable Claude Code native teams in `~/.claude/settings.json`:
+
+```json
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  }
+}
+```
+
+> If teams are disabled, OMC warns you and falls back to non-team execution where possible.
+
+### tmux CLI Workers — Codex & Gemini
+
+Use `omc team ...` to spawn real tmux worker panes running `claude` / `codex` / `gemini` CLIs:
+
+```bash
+omc team 2:codex "review auth module for security issues"
+omc team 2:gemini "redesign UI components for accessibility"
+omc team 1:claude "implement the payment flow"
+omc team status auth-review
+omc team shutdown auth-review
+```
+
+For mixed Codex + Gemini work in one command, use the **`/ccg`** skill (routes via `/ask codex` + `/ask gemini`, then Claude synthesizes):
+
+```bash
+/ccg Review this PR — architecture (Codex) and UI components (Gemini)
+```
+
+| Surface | Workers | Best For |
+|---|---|---|
+| `omc team N:codex "…"` | N Codex CLI panes | Code review, security analysis, architecture |
+| `omc team N:gemini "…"` | N Gemini CLI panes | UI/UX, docs, large-context tasks |
+| `omc team N:claude "…"` | N Claude CLI panes | General tasks via Claude CLI in tmux |
+| `/ccg` | `/ask codex` + `/ask gemini` | Tri-model advisor synthesis |
+
+Workers spawn on-demand and die when their task completes — no idle resource usage. Requires `codex` / `gemini` CLIs installed and an active tmux session.
+
+## Why oh-my-claudecode?
+
+- **Zero configuration required** — works out of the box with intelligent defaults
+- **Team-first orchestration** — Team is the canonical multi-agent surface
+- **Natural language interface** — no commands to memorize, just describe what you want
+- **Automatic parallelization** — complex tasks distributed across specialized agents
+- **Persistent execution** — won't give up until the job is verified complete
+- **Cost optimization** — smart model routing saves 30–50% on tokens
+- **Learn from experience** — extracts and reuses problem-solving patterns
+- **Real-time visibility** — HUD statusline shows what's happening under the hood
+
+## Key Features
+
+| Feature | Description |
+|---|---|
+| **19 Specialized Agents** | Role-based division: explore, plan, implement, verify, review |
+| **37 Skills** | Automated workflows like autopilot, ralph, ultrawork, team |
+| **Magic Keywords** | Run full pipelines with a single phrase like `autopilot build me X` |
+| **Team Orchestration** | Coordinate Claude / Codex / Gemini agents with per-role routing |
+| **State Management** | Persist context across sessions via notepad + project-memory |
+| **Multi-AI** | Use Claude, Codex, and Gemini for cross-validation |
+
+## Updating
+
+If you installed via npm:
+
+```bash
+npm i -g oh-my-claude-sisyphus@latest
+```
+
+If you installed via the Claude Code marketplace/plugin flow:
+
+```bash
+# 1. Update the marketplace clone
+/plugin marketplace update omc
+
+# 2. Re-run setup to refresh configuration
+/setup
+```
+
+If you experience issues after updating, clear the old plugin cache:
+
+```bash
+/omc-doctor
+```
+
+> If marketplace auto-update is not enabled, you must manually run `/plugin marketplace update omc` to sync the latest version before running setup.
+
+## Documentation
+
+<Cards>
+  <Card title="Getting Started" href="/docs/getting-started">
+    Installation, first session, and configuration
+  </Card>
+  <Card title="Core Concepts" href="/docs/concepts">
+    Agents, skills, hooks, and state management
+  </Card>
+  <Card title="Guides" href="/docs/guides">
+    Autopilot, team mode, and debugging guides
+  </Card>
+  <Card title="Agents" href="/docs/agents">
+    Detailed reference for all 19 agents
+  </Card>
+  <Card title="Skills" href="/docs/skills">
+    Detailed reference for all 37 skills
+  </Card>
+  <Card title="Hooks" href="/docs/hooks">
+    Hook system and magic keywords
+  </Card>
+  <Card title="Tools" href="/docs/tools">
+    MCP tools (State, Notepad, LSP, etc.)
+  </Card>
+  <Card title="Reference" href="/docs/reference">
+    Configuration, environment variables, changelog
+  </Card>
+</Cards>

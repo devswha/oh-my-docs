@@ -1,0 +1,93 @@
+---
+title: MCP Setup
+description: 配置 MCP 服务器以扩展 Claude Code 功能的技能
+---
+
+## 概览
+
+MCP Setup 是一个技能，配置模型上下文协议（MCP）服务器，为 Claude Code 智能体提供额外工具，如网络搜索、文件系统访问和 GitHub 集成。
+
+配置使用 `claude mcp add` 命令完成。
+
+## 使用
+
+```bash
+/oh-my-claudecode:mcp-setup
+```
+
+## 支持的 MCP 服务器
+
+### Context7
+
+检索库和框架的官方文档。无需 API 密钥。
+
+```bash
+claude mcp add context7 -- npx -y @upstash/context7-mcp
+```
+
+### Exa Web Search
+
+增强的网络搜索功能。
+
+```bash
+claude mcp add -e EXA_API_KEY=<key> exa -- npx -y exa-mcp-server
+```
+
+### Filesystem
+
+扩展文件系统访问功能。
+
+```bash
+claude mcp add filesystem -- npx -y @modelcontextprotocol/server-filesystem <dirs>
+```
+
+### GitHub
+
+GitHub API 集成（issues、PRs、仓库管理）。
+
+```bash
+# Docker（本地）
+claude mcp add -e GITHUB_PERSONAL_ACCESS_TOKEN=<token> github -- docker run -i --rm -e GITHUB_PERSONAL_ACCESS_TOKEN ghcr.io/github/github-mcp-server
+
+# HTTP（远程）
+claude mcp add --transport http github https://api.githubcopilot.com/mcp/
+```
+
+### Custom
+
+添加自定义 MCP 服务器。
+
+```bash
+# stdio 服务器
+claude mcp add <name> -- <command> [args...]
+
+# HTTP 服务器
+claude mcp add --transport http <name> <url>
+```
+
+## 验证安装
+
+```bash
+claude mcp list
+```
+
+## 故障排除
+
+| 问题 | 解决方案 |
+|-------|----------|
+| MCP 服务器未加载 | 验证 Node.js 18+ 已安装 |
+| API 密钥问题 | 检查你的密钥在相应服务仪表板中 |
+| 使用内置工具 | 重启 Claude Code |
+
+## 相关技能
+
+- [omc-setup](/zh/docs/skills/utility/omc-setup) - 完整 OMC 配置（包含 MCP）
+- [setup](/zh/docs/skills/utility/setup) - 统一的安装入口
+
+## 参考
+
+| 项目 | 值 |
+|------|-------|
+| 调用 | `/oh-my-claudecode:mcp-setup` |
+| 魔法关键词 | - |
+| 类别 | 实用工具 |

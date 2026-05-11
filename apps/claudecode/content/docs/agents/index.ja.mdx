@@ -1,0 +1,128 @@
+---
+title: エージェント カタログ
+description: OMC の 19 個の専門エージェントを 4 つのレーンで整理したリスト。
+---
+
+## エージェント システム
+
+oh-my-claudecode には 19 個の専門エージェントがあります。
+各エージェントは定義された役割を持ち、`oh-my-claudecode:agent-name` 形式で呼び出されます。
+
+オーケストレーターはタスクの性質に基づいて自動的に適切なエージェントに委譲し、
+ユーザーは特定のエージェントを直接指定することもできます。
+
+## 4 レーン構造
+
+エージェントは役割に基づいて 4 つのレーンに分かれています。
+
+### Build & Analysis
+
+コードベースの探索から実装、検証までの完全な開発フローをカバーします。
+
+| エージェント | デフォルト モデル | 役割 |
+|----------|-----------|------|
+| [`explore`](/ja/docs/agents/build-analysis/explore) | haiku | コードベース探索、ファイル/シンボル検索 |
+| [`analyst`](/ja/docs/agents/build-analysis/analyst) | opus | 要件分析、受け入れ基準の定義 |
+| [`planner`](/ja/docs/agents/build-analysis/planner) | opus | タスク順序付け、実行計画作成 |
+| [`architect`](/ja/docs/agents/build-analysis/architect) | opus | システム設計、境界、インターフェース定義 |
+| [`debugger`](/ja/docs/agents/build-analysis/debugger) | sonnet | 根本原因分析、ビルド エラー解決 |
+| [`executor`](/ja/docs/agents/build-analysis/executor) | sonnet | コード実装、リファクタリング |
+| [`verifier`](/ja/docs/agents/build-analysis/verifier) | sonnet | 完了証拠の収集、主張の検証 |
+| [`tracer`](/ja/docs/agents/build-analysis/tracer) | sonnet | 証拠ベースの因果トレース、競合仮説 |
+
+### Review
+
+コード品質とセキュリティをレビューします。
+
+| エージェント | デフォルト モデル | 役割 |
+|----------|-----------|------|
+| [`security-reviewer`](/ja/docs/agents/review/security-reviewer) | sonnet | OWASP Top 10、認証/認可 脆弱性レビュー |
+| [`code-reviewer`](/ja/docs/agents/review/code-reviewer) | opus | ロジック欠陥、API コントラクト、後方互換性レビュー |
+
+### Domain
+
+ドメイン固有の専門的なタスクを処理します。
+
+| エージェント | デフォルト モデル | 役割 |
+|----------|-----------|------|
+| [`test-engineer`](/ja/docs/agents/domain/test-engineer) | sonnet | テスト戦略、カバレッジ、TDD |
+| [`designer`](/ja/docs/agents/domain/designer) | sonnet | UI/UX アーキテクチャ、インタラクション設計 |
+| [`writer`](/ja/docs/agents/domain/writer) | haiku | 技術ドキュメント、README、API ドキュメント |
+| [`qa-tester`](/ja/docs/agents/domain/qa-tester) | sonnet | CLI/サービス ランタイム検証（tmux 経由） |
+| [`scientist`](/ja/docs/agents/domain/scientist) | sonnet | データ/統計分析、研究実行 |
+| [`git-master`](/ja/docs/agents/domain/git-master) | sonnet | アトミック コミット、リベース、履歴管理 |
+| [`document-specialist`](/ja/docs/agents/domain/document-specialist) | sonnet | 外部ドキュメント/リファレンス検索 |
+| [`code-simplifier`](/ja/docs/agents/domain/code-simplifier) | opus | コード明確さと一貫性の改善 |
+
+### Coordination
+
+計画と設計を批判的にレビューします。
+
+| エージェント | デフォルト モデル | 役割 |
+|----------|-----------|------|
+| [`critic`](/ja/docs/agents/coordination/critic) | opus | 計画/設計の批判的レビュー、複数視点分析 |
+
+## モデル階層
+
+各エージェントはデフォルト モデル層が割り当てられていますが、呼び出し時に `model` パラメータを使用して変更できます。
+
+| 階層 | モデル | 特性 | 代表的なエージェント |
+|------|------|------|--------------|
+| LOW | haiku | 高速で安価。単純な検索に適している | explore、writer |
+| MEDIUM | sonnet | バランスの取れたパフォーマンス。実装/デバッグに適している | executor、debugger、test-engineer |
+| HIGH | opus | トップレベルの推論。設計/分析に適している | architect、planner、critic、code-reviewer |
+
+一部のエージェントは階層バリアントをサポートしています。
+例えば、`explore` はデフォルトで haiku ですが、`explore-high` は opus 階層を使用します。
+
+## エージェント選択ガイド
+
+| タスク タイプ | 推奨エージェント | モデル |
+|-----------|-------------|------|
+| クイック コード検索 | `explore` | haiku |
+| ファイル/パターン検索 | `explore` | haiku |
+| 機能実装 | `executor` | sonnet |
+| 複雑なリファクタリング | `executor` (model=opus) | opus |
+| シンプルなバグ修正 | `debugger` | sonnet |
+| 複雑なデバッグ | `architect` | opus |
+| UI コンポーネント | `designer` | sonnet |
+| ドキュメント作成 | `writer` | haiku |
+| SDK/API ドキュメント検索 | `document-specialist` | sonnet |
+| テスト戦略 | `test-engineer` | sonnet |
+| セキュリティ レビュー | `security-reviewer` | sonnet |
+| コード レビュー | `code-reviewer` | opus |
+| データ分析 | `scientist` | sonnet |
+| 戦略的計画 | `planner` | opus |
+| 計画レビュー | `critic` | opus |
+
+## エージェント ワークフロー
+
+典型的なタスクでは、エージェントは以下の順序で協力します。
+
+```
+explore（探索）
+  → analyst（要件分析）
+    → planner（計画作成）
+      → critic（計画レビュー）
+        → executor（実装）
+          → verifier（検証）
+```
+
+各レーン内の各エージェントの詳細な説明は、サブページで利用できます。
+
+## 非推奨エージェント エイリアス
+
+以下のエイリアスは後方互換性のために残っています。
+
+| エイリアス | 実際のエージェント |
+|------|-------------|
+| `api-reviewer` | code-reviewer |
+| `performance-reviewer` | code-reviewer |
+| `quality-reviewer` | code-reviewer |
+| `quality-strategist` | code-reviewer |
+| `dependency-expert` | document-specialist |
+| `researcher` | document-specialist |
+| `tdd-guide` | test-engineer |
+| `deep-executor` | executor |
+| `build-fixer` | debugger |
+| `harsh-critic` | critic |

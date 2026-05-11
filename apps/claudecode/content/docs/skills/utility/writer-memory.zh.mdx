@@ -1,0 +1,84 @@
+---
+title: Writer Memory
+description: 为创意作者追踪角色、关系、场景和主题的智能体记忆系统
+---
+
+## 概述
+
+Writer Memory 是为创意作者设计的持久记忆系统。它在 Claude 会话间维护角色的情感弧线、态度、对话语气、关系动态、场景结构和主题。
+
+它对韩文故事工作流有一流支持，所有数据存储在 `.writer-memory/memory.json` 中用于 Git 协作。
+
+## 使用
+
+```bash
+/oh-my-claudecode:writer-memory init <project-name>
+/oh-my-claudecode:writer-memory char add <name>
+/oh-my-claudecode:writer-memory char <name>
+/oh-my-claudecode:writer-memory rel add <char1> <char2> <type>
+/oh-my-claudecode:writer-memory scene add <title>
+/oh-my-claudecode:writer-memory query <question>
+/oh-my-claudecode:writer-memory validate <character> <dialogue>
+/oh-my-claudecode:writer-memory synopsis
+/oh-my-claudecode:writer-memory export
+```
+
+## 记忆类型
+
+### 角色记忆
+
+| 字段 | 中文 | 描述 |
+|-------|--------|-------------|
+| `arc` | 情感弧线 | 情感旅程（例如，"放弃 → 觉醒渴望 → 选择"） |
+| `attitude` | 态度 | 当前处境 |
+| `tone` | 对话语气 | 对话风格（例如，"含蓄"、"直接"） |
+| `speechLevel` | 说话级别 | 说话形式：非正式、正式、随意、混合 |
+| `keywords` | 关键词 | 角色经常使用的词汇 |
+| `taboo` | 禁忌词 | 角色从不使用的词汇 |
+
+### 关系记忆
+
+追踪角色间的动态以及如何随时间变化。
+记录类型（浪漫、家庭、友谊等）、状态、权力动态和事件时间表。
+
+### 场景记忆
+
+追踪场景的情感架构。记录镜头组合、叙述语气、情感标签和前/后变化。
+
+### 主题记忆
+
+捕获贯穿故事的更深含义。记录主题如何表达、相关场景和作者意图。
+
+## 角色验证
+
+检查对话是否匹配角色的既定声音。
+
+```bash
+/writer-memory validate 새랑 "사랑해, 해랑아."
+```
+
+检查说话形式级别、语气匹配、禁忌词违反和情感范围，然后发出 PASS/WARN/FAIL 判决。
+
+## 摘要生成
+
+使用五个基本要素生成以情感为中心的摘要：
+
+1. 主角态度摘要
+2. 核心关系动态
+3. 情感主题
+4. 流派 vs. 真实情感对比
+5. 结尾情感共鸣
+
+## 相关技能
+
+- [learner](/zh/docs/skills/utility/learner) - 从会话提取模式
+- [skill](/zh/docs/skills/utility/skill) - 管理本地技能
+
+## 参考
+
+| 项目 | 值 |
+|------|-------|
+| 调用 | `/oh-my-claudecode:writer-memory` |
+| 魔法关键词 | - |
+| 分类 | Utility |
+| 数据路径 | `.writer-memory/memory.json` |

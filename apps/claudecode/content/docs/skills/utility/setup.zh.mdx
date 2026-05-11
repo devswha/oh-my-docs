@@ -1,0 +1,46 @@
+---
+title: Setup
+description: 一个统一安装、诊断和 MCP 配置在单一入口点的设置技能
+---
+
+## 概述
+
+Setup 是一个将 OMC 的配置相关技能合并为单一入口点的技能。它根据提供的参数路由到适当的子技能。
+
+## 使用
+
+```bash
+/oh-my-claudecode:setup              # 完整设置向导（→ omc-setup）
+/oh-my-claudecode:setup doctor       # 安装诊断（→ omc-doctor）
+/oh-my-claudecode:setup mcp          # MCP 服务器配置（→ mcp-setup）
+/oh-my-claudecode:setup wizard       # 显式向导路径（→ omc-setup）
+/oh-my-claudecode:setup --local      # 本地项目配置（→ omc-setup --local）
+/oh-my-claudecode:setup --global     # 全局配置（→ omc-setup --global）
+```
+
+## 路由规则
+
+| 参数 | 路由到 |
+|----------|-----------|
+| 无、`wizard`、`local`、`global`、`--force` | `/oh-my-claudecode:omc-setup` |
+| `doctor` | `/oh-my-claudecode:omc-doctor` |
+| `mcp` | `/oh-my-claudecode:mcp-setup` |
+
+## 兼容性
+
+`omc-setup`、`omc-doctor` 和 `mcp-setup` 仍可单独调用。
+新文档推荐使用 `/oh-my-claudecode:setup`。
+
+## 相关技能
+
+- [omc-setup](/zh/docs/skills/utility/omc-setup) - 完整 OMC 设置向导
+- [omc-doctor](/zh/docs/skills/utility/omc-doctor) - 安装问题诊断
+- [mcp-setup](/zh/docs/skills/utility/mcp-setup) - MCP 服务器配置
+
+## 参考
+
+| 项目 | 值 |
+|------|-------|
+| 调用 | `/oh-my-claudecode:setup` |
+| 魔法关键词 | - |
+| 分类 | Utility |

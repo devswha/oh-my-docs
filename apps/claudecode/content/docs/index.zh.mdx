@@ -1,0 +1,216 @@
+---
+title: Oh My ClaudeCode
+description: Claude Code 的多智能体编排系统。零学习曲线。
+---
+
+![Oh My ClaudeCode](/images/omc-social-preview.jpg)
+
+**Claude Code 的多智能体编排系统。零学习曲线。**
+
+_无需学习 Claude Code，直接使用 OMC。_
+
+Oh My ClaudeCode（OMC）是运行在 Claude Code 之上的多智能体编排层。通过一条 prompt，它就能调度多个专业智能体，端到端地自动化复杂的开发任务。
+
+## 快速开始
+
+### 第一步 — 安装
+
+推荐通过插件安装（适合大多数 Claude Code 用户）。下面是 Claude Code 的斜杠命令 — 请**一次只输入一条**（两行一起粘贴会失败）：
+
+```bash
+/plugin marketplace add https://github.com/Yeachan-Heo/oh-my-claudecode
+```
+
+然后：
+
+```bash
+/plugin install oh-my-claudecode
+```
+
+如果你更喜欢 npm CLI / runtime 路径而不是 marketplace 流程：
+
+```bash
+npm i -g oh-my-claude-sisyphus@latest
+```
+
+> **包名说明：** 项目以 **oh-my-claudecode** 为品牌（仓库、插件、命令），但在 npm 上发布的包名是 [`oh-my-claude-sisyphus`](https://www.npmjs.com/package/oh-my-claude-sisyphus)。
+
+### 第二步 — 配置
+
+```bash
+# 在 Claude Code / OMC 会话内
+/setup
+/omc-setup
+
+# 在终端里
+omc setup
+```
+
+### 第三步 — 开始构建
+
+```bash
+# 在 Claude Code / OMC 会话内
+/autopilot "build a REST API for managing tasks"
+
+# 会话内自然语言快捷方式
+autopilot: build a REST API for managing tasks
+```
+
+就这样，其余都会自动完成。
+
+## CLI 命令 vs 会话内技能
+
+OMC 提供两种不同的交互面：
+
+- **终端 CLI 命令** — 通过 npm 安装后，在 shell 中运行 `omc ...`
+- **会话内技能** — 通过插件安装后，在 Claude Code 会话中运行 `/...`
+
+| 功能 | 终端 CLI | 会话内技能 | 备注 |
+|---|---|---|---|
+| 配置 | `omc setup` | `/setup` 或 `/omc-setup` | 两者都是真实入口。`/setup` 是插件优先的最简路径 |
+| 向 provider 提问 | `omc ask codex "…"` | `/ask codex "…"` | 两者通过相同的 advisor 流程路由 |
+| 团队编排 | `omc team 2:codex "…"` | `/team 3:executor "…"` | 运行时不同：`omc team` 启动 tmux CLI 工作进程；`/team` 使用会话内原生团队工作流 |
+| Autopilot / Ralph / Ultrawork / Deep Interview | — | `/autopilot`、`/ralph`、`/ultrawork`、`/deep-interview` | 仅限会话内；没有 `omc autopilot` CLI 子命令 |
+| Autoresearch | `omc autoresearch "…"` | `/deep-interview --autoresearch "…"` | 会话内的路径用于协助你发起 autoresearch |
+
+## 不确定从哪里开始？
+
+如果你的需求还不清晰、想法比较模糊，或者想仔细把控设计：
+
+```bash
+/deep-interview "I want to build a task management app"
+```
+
+deep-interview 使用 Socratic 式提问来理清你的思路 — 在写任何代码之前，它会暴露隐藏的假设，并在多个加权维度上测量清晰度，确保你在执行前真正知道"要构建什么"。
+
+## 团队模式（推荐）
+
+从 **v4.1.7** 开始，**Team** 是 OMC 中 canonical 的编排入口。旧的 `swarm` 关键词/技能已被移除，请直接使用 `team`。
+
+```bash
+/team 3:executor "fix all TypeScript errors"
+```
+
+`/team ...` 用于 Claude Code 会话内的原生团队工作流；`omc team ...` 用于在终端启动 tmux CLI 工作进程（`claude` / `codex` / `gemini` panes）。
+
+Team 按 stage 流水线执行：
+
+```
+team-plan → team-prd → team-exec → team-verify → team-fix (loop)
+```
+
+需要在 `~/.claude/settings.json` 中启用 Claude Code 原生团队：
+
+```json
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  }
+}
+```
+
+> 如果团队未启用，OMC 会给出警告并在可能的情况下回退到非团队执行。
+
+### tmux CLI 工作进程 — Codex 与 Gemini
+
+使用 `omc team ...` 启动真正的 tmux 工作 pane，分别运行 `claude` / `codex` / `gemini` CLI：
+
+```bash
+omc team 2:codex "review auth module for security issues"
+omc team 2:gemini "redesign UI components for accessibility"
+omc team 1:claude "implement the payment flow"
+omc team status auth-review
+omc team shutdown auth-review
+```
+
+如果想在一条命令里混用 Codex 与 Gemini，可以使用 **`/ccg`** 技能（通过 `/ask codex` + `/ask gemini` 路由，由 Claude 合成结果）：
+
+```bash
+/ccg Review this PR — architecture (Codex) and UI components (Gemini)
+```
+
+| 接口 | 工作进程 | 适用场景 |
+|---|---|---|
+| `omc team N:codex "…"` | N 个 Codex CLI pane | 代码审查、安全分析、架构评估 |
+| `omc team N:gemini "…"` | N 个 Gemini CLI pane | UI/UX、文档、大上下文任务 |
+| `omc team N:claude "…"` | N 个 Claude CLI pane | tmux 中通过 Claude CLI 的常规任务 |
+| `/ccg` | `/ask codex` + `/ask gemini` | 三模型 advisor 合成 |
+
+工作进程按需启动，任务完成后自动退出 — 不占用空闲资源。需要安装 `codex` / `gemini` CLI，并处于活动的 tmux 会话中。
+
+## 为什么选择 oh-my-claudecode？
+
+- **零配置** — 通过智能默认值开箱即用
+- **Team-first 编排** — Team 是 canonical 的多智能体入口
+- **自然语言界面** — 不需要记忆命令，直接描述你的需求
+- **自动并行化** — 复杂任务在专业智能体之间分发
+- **持续执行** — 任务完成并验证通过之前不会放弃
+- **成本优化** — 智能模型路由节省 30–50% 的 token
+- **从经验中学习** — 抽取并复用问题解决模式
+- **实时可见性** — HUD 状态栏显示底层正在发生的事情
+
+## 核心特性
+
+| 特性 | 说明 |
+|---|---|
+| **19 个专业智能体** | 角色化分工：探索、规划、实施、验证、审查 |
+| **37 个技能** | autopilot、ralph、ultrawork、team 等自动化工作流 |
+| **魔法关键词** | 一句 `autopilot build me X` 运行完整流水线 |
+| **团队编排** | 以角色路由调度 Claude / Codex / Gemini 智能体 |
+| **状态管理** | 通过 notepad + project-memory 跨会话保留上下文 |
+| **多 AI 协作** | 使用 Claude、Codex、Gemini 进行交叉验证 |
+
+## 升级
+
+如果你通过 npm 安装：
+
+```bash
+npm i -g oh-my-claude-sisyphus@latest
+```
+
+如果你通过 Claude Code marketplace / 插件流程安装：
+
+```bash
+# 1. 更新 marketplace 克隆
+/plugin marketplace update omc
+
+# 2. 重新运行 setup 刷新配置
+/setup
+```
+
+如果升级后出现问题，清理旧的插件缓存：
+
+```bash
+/omc-doctor
+```
+
+> 如果 marketplace 自动更新未启用，你必须在 setup 之前先手动执行 `/plugin marketplace update omc` 来同步最新版本。
+
+## 文档
+
+<Cards>
+  <Card title="Getting Started" href="/zh/docs/getting-started">
+    安装、首次会话与配置
+  </Card>
+  <Card title="Core Concepts" href="/zh/docs/concepts">
+    智能体、技能、钩子与状态管理
+  </Card>
+  <Card title="Guides" href="/zh/docs/guides">
+    Autopilot、团队模式与调试指南
+  </Card>
+  <Card title="Agents" href="/zh/docs/agents">
+    全部 19 个智能体的详细参考
+  </Card>
+  <Card title="Skills" href="/zh/docs/skills">
+    全部 37 个技能的详细参考
+  </Card>
+  <Card title="Hooks" href="/zh/docs/hooks">
+    钩子系统与魔法关键词
+  </Card>
+  <Card title="Tools" href="/zh/docs/tools">
+    MCP 工具（State、Notepad、LSP 等）
+  </Card>
+  <Card title="Reference" href="/zh/docs/reference">
+    配置、环境变量与变更日志
+  </Card>
+</Cards>

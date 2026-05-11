@@ -1,0 +1,124 @@
+---
+title: Release
+description: Generic repo-aware release assistant that analyzes release rules, caches them in .omc/RELEASE_RULE.md, then guides the release
+---
+
+## Overview
+
+Release is a thin, repo-aware release assistant. On first run it inspects the project and CI to derive release rules, stores them in `.omc/RELEASE_RULE.md` for future runs, then walks you through a release using those rules.
+
+It is **not** hardcoded to any single stack. It detects npm / PyPI / Cargo / Docker / GitHub Packages, finds where versions live (`package.json`, `pyproject.toml`, `Cargo.toml`, `VERSION`, etc.), figures out the release trigger (tag push, manual dispatch, merge), and adapts accordingly.
+
+## Usage
+
+```bash
+/oh-my-claudecode:release [version]
+/oh-my-claudecode:release --refresh
+```
+
+- `version` is optional. Accepts `patch`, `minor`, `major`, or an explicit semver like `2.4.0`. If omitted the skill asks.
+- `--refresh` forces re-analysis of the repo even when a cached rule file exists.
+
+## Execution Flow
+
+### Step 0 — Load or Build Release Rules
+
+- If `.omc/RELEASE_RULE.md` does **not** exist (or `--refresh` was passed): run the full repo analysis and write the file.
+- If it **does** exist: read it, then do a delta check — scan `.github/workflows/`, `.circleci/`, `.travis.yml`, `Jenkinsfile`, `bitbucket-pipelines.yml`, `gitlab-ci.yml` for modifications newer than the cached `last-analyzed` timestamp. If CI changed, refresh just those sections.
+
+### Step 1 — Repo Analysis
+
+The skill inspects:
+
+- **Version sources** — files containing the current version, plus any release automation script (`scripts/release.*`, `bump2version`, `release-it`, `semantic-release`, `changesets`, `goreleaser`, `Makefile` target).
+- **Registry / distribution** — npm, PyPI, Cargo, Docker, GitHub Packages, and which CI job publishes.
+- **Release trigger** — tag push (`v*`), manual dispatch, merge to main, release-branch merge, or commit-message pattern.
+- **Test gate** — the test command and whether CI requires it to pass before publishing.
+- **Release notes / changelog** — existence and convention (Keep a Changelog, Conventional Commits, GitHub auto-generated, release-body file, or none).
+- **First-time setup gaps** — missing release workflow, missing `.gitignore` entries for build artifacts, no git tags yet.
+
+### Step 2 — Write `.omc/RELEASE_RULE.md`
+
+The cached file uses this structure:
+
+```markdown
+# Release Rules
+<!-- last-analyzed: YYYY-MM-DDTHH:MM:SSZ -->
+
+## Version Sources
+## Release Trigger
+## Test Gate
+## Registry / Distribution
+## Release Notes Strategy
+## CI Workflow Files
+## First-Time Setup Gaps
+```
+
+### Step 3 — Determine Version
+
+If the user did not pass a version, the skill shows the current version and what `patch` / `minor` / `major` would produce, then asks.
+
+### Step 4 — Pre-Release Checklist
+
+Before proceeding, the skill confirms (minimally):
+
+- All intended changes committed and pushed
+- CI green on the target branch
+- Tests pass locally (run the test-gate command)
+- Version bump applied to every version source file
+- Release notes / changelog prepared
+
+### Step 5 — Release Notes Guidance
+
+Applies the repo's detected convention. With no convention, it defaults to:
+
+- Lead with **what changed for users**, not internal details.
+- Group by type: `New Features`, `Bug Fixes`, `Breaking Changes`, `Deprecations`, `Internal / Chores`.
+- One sentence per item, PR/issue link, credit external contributors.
+- Breaking changes go first with a migration path.
+- Omit invisible changes (refactors, CI tweaks, test-only) unless they affect reproducibility.
+
+For Conventional Commits repos it generates a draft from `git log <prev-tag>..HEAD --no-merges --format="%s"` grouped by commit type.
+
+### Step 6 — Execute Release
+
+1. **Bump version** across every source file.
+2. **Run tests** via the test-gate command.
+3. **Commit** `git add <version files> CHANGELOG.md` → `chore(release): bump version to vX.Y.Z`.
+4. **Tag** — annotated: `git tag -a vX.Y.Z -m "vX.Y.Z"`.
+5. **Push** branch + tag.
+6. **CI takes over** — if the release trigger is a tag push, CI handles publish + GitHub Release. Otherwise the skill shows the manual publish command (`npm publish --access public`, `twine upload dist/*`, etc.).
+
+### Step 7 — First-Time Setup Suggestions
+
+If Step 1 flagged gaps, the skill offers to:
+
+- Scaffold a `.github/workflows/release.yml` for the detected stack
+- Add build artifacts to `.gitignore`
+- Explain git-tag best practice for repos with no tags yet
+
+### Step 8 — Verify
+
+After the push:
+
+- `gh run list --workflow=<release workflow> --limit=3` (if `gh` is installed)
+- Check the registry for the new version after a few minutes
+- `gh release view vX.Y.Z`
+
+## Notes
+
+- Nothing is hardcoded to a specific project — everything is derived from repo inspection.
+- `.omc/RELEASE_RULE.md` is a local cache. Commit it to share derived rules with your team, or `.gitignore` it if you prefer it local.
+- Monorepos / workspaces (npm / pnpm / Cargo) are detected and handled.
+
+## Related Skills
+
+- [omc-setup](/docs/skills/utility/omc-setup) — Apply configuration after an update
+
+## Reference
+
+| Item | Value |
+|------|-------|
+| Invocation | `/oh-my-claudecode:release` |
+| Magic Keyword | - |
+| Category | Utility |

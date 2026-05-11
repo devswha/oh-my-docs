@@ -1,0 +1,111 @@
+---
+title: Wiki
+description: LLM Wiki — 在会话中复合的持久 markdown 知识库（Karpathy 模型）
+---
+
+## 概述
+
+`wiki` 是一个**持久的、自维护的 markdown 知识库**用于项目和会话知识。受 Karpathy 的 LLM Wiki 概念启发，它让知识在会话中复合而不是随着聊天历史消失。
+
+页面位于 `.omc/wiki/` 并按类别组织。它们通过 `[[page-name]]` wiki 链接语法支持交叉引用。
+
+## 使用
+
+```bash
+/oh-my-claudecode:wiki
+```
+
+魔法关键词：`wiki`、`wiki this`、`wiki add`、`wiki lint`、`wiki query`
+
+## 操作
+
+### 摄取
+
+将知识处理成 wiki 页面。单个摄取可以触及多个页面。
+
+```
+wiki_ingest({ title: "Auth Architecture", content: "...", tags: ["auth", "architecture"], category: "architecture" })
+```
+
+### 查询
+
+跨所有 wiki 页面按关键词和标签搜索。返回匹配页面与片段 — LLM 用引文合成答案。
+
+```
+wiki_query({ query: "authentication", tags: ["auth"], category: "architecture" })
+```
+
+### Lint
+
+在 wiki 上运行健康检查。检测孤立页面、陈旧内容、破坏的交叉引用、超大页面和结构矛盾。
+
+```
+wiki_lint()
+```
+
+### 快速添加
+
+快速添加单个页面（比摄取更简单）。
+
+```
+wiki_add({ title: "Page Title", content: "...", tags: ["tag1"], category: "decision" })
+```
+
+### 列出 / 读取 / 删除
+
+```
+wiki_list()                                # 显示所有页面（读取 index.md）
+wiki_read({ page: "auth-architecture" })   # 读取特定页面
+wiki_delete({ page: "outdated-page" })     # 删除页面
+```
+
+### 日志
+
+在 `.omc/wiki/log.md` 查看 wiki 操作历史。
+
+## 类别
+
+页面按类别组织：
+
+- `architecture` — 系统设计、组件、数据流
+- `decision` — ADRs 和原理
+- `pattern` — 重复的模式或习语
+- `debugging` — 已知陷阱、根本原因
+- `environment` — 设置、依赖、运行时配置
+- `session-log` — 自动捕获的重要发现
+
+## 存储布局
+
+```
+.omc/wiki/
+├── *.md              # 页面（带 YAML frontmatter 的 markdown）
+├── index.md          # 自维护目录
+└── log.md            # 仅追加操作历史
+```
+
+## 交叉引用
+
+使用 `[[page-name]]` 语法在页面间链接。该技能维护链接图，`wiki_lint()` 报告破坏的引用。
+
+## 自动捕获
+
+在会话结束时，重要发现自动捕获为 `session-log` 页面。通过 `.omc-config.json` 中的 `wiki.autoCapture` 配置（默认：启用）。
+
+## 硬约束
+
+- **无向量嵌入** — 查询仅使用关键词 + 标签匹配
+- Wiki 页面**默认 git 忽略**（`.omc/wiki/` 是项目本地）
+
+## 相关技能
+
+- [remember](/zh/docs/skills/utility/remember) — 将知识路由到正确的记忆表面
+- [learner](/zh/docs/skills/utility/learner) — 从会话中提取可重用技能
+- [writer-memory](/zh/docs/skills/utility/writer-memory) — 写作项目的智能体记忆
+
+## 参考
+
+| 项目 | 值 |
+|------|-------|
+| 调用 | `/oh-my-claudecode:wiki` |
+| 魔法关键词 | `wiki`、`wiki add`、`wiki lint`、`wiki query` |
+| 分类 | Utility |

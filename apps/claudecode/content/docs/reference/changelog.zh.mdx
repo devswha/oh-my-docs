@@ -1,0 +1,270 @@
+---
+title: 变更日志
+description: Oh My ClaudeCode 的版本变更日志
+---
+
+## 变更日志
+
+Oh My ClaudeCode 各个版本的主要变更摘要。
+
+### v4.12.0（当前版本）
+
+**新特性**
+- Team：按角色的供应商和模型路由，支持已解析的路由快照 — 在 `.claude/omc.jsonc` 中按规范角色配置 `roleRouting`（如 `codex critic`、`gemini reviewer`）(#2614)
+- HUD：显示额外的使用花费数据（关闭 #2570）
+- HUD：添加 MiniMax 编码计划使用供应商
+- HUD：按供应商拆分使用缓存以消除跨会话抖动
+- Release：将 release 技能重写为通用仓库感知的发布助手 — 分析仓库 + CI，缓存规则到 `.omc/RELEASE_RULE.md`，然后指导你完成发布过程（#2501）
+- CI：添加升级测试以捕获警告和错误
+
+**缺陷修复（精选）**
+- 持久 stop 钩子：对齐合约并收紧智能体输出合约（#2653）
+- Context 膨胀：消除重复规则/技能注入的三个源（#2577）
+- Pre-tool-enforcer：通过集中式状态根解析器尊重 `OMC_STATE_DIR`（#2621）
+- Ralplan：在自动启动前需要调用意图（#2620）
+- Team：缩短触发消息以适应 `sendToWorker` 200 字符限制（#2617）
+- Installer：在更新期间使用 OMC 风格的 frontmatter 保留用户技能（#2573）
+- Permission-handler：允许只读 `gh issue`/`pr` 命令；添加 installer lib 断言
+- Deep-interview：替换五个剩余的硬编码 20%/0.2 阈值信号（#2545）
+- State-root：跨钩子入口点集中化 `OMC_STATE_DIR` 解析（#2532）
+- Keyword-detector：忽略粘贴的成绩单块；抑制 review-seed 回显（#2541）
+- Session-start：将陈旧的 `CLAUDE_PLUGIN_ROOT` 符号链接到最新版本
+- Doctor：针对插件缓存检测 `CLAUDE.md` 版本漂移
+- Tmux：通过包装函数集中化所有 tmux 执行
+
+**重构**
+- HUD：按单位而不是重置时间分类 z.ai `TOKENS_LIMIT`
+- MCP：清理 standalone-server 和 `listtools` 测试
+
+**统计：** 合并 121 个 PR · 6 个新特性 · 67 个缺陷修复 · 3 个其他变更
+
+---
+
+### v4.11.4
+
+> **注意：** 上游为 v4.11.4 标签重新发布了 v4.11.3 发布说明，内容未改变。
+> 下面的修复与 v4.11.3 的集合相同 — 之所以出现在这里，仅是因为 v4.11.4 是重复的标签。
+
+详见 **v4.11.3**。
+
+---
+
+### v4.11.3
+
+**缺陷修复**
+- 优先使用 PATH 中的 `node` 而不是不稳定的 `execPath`（#2400）
+- 防止 `.json`/`.jsonl` 源扩展检查中 `.js` 误判（#2395）
+- 为嵌套 tmux 兼容性移除 TMUX 环境变量（#2385）
+- 解析不对称符号链接路径解析（#2372）
+- 在 `hasEnabledOmcPlugin` 中检测 `enabledPlugins`（Claude Code 1.x）(#2371)
+- 在共识完成后停用陈旧的 ralplan stop 强制执行（#2370）
+- HUD：当缺少 `package.json` 时回退到基于路径的版本（#2362）
+
+**文档**
+- 记录 `--plugin-dir` 标志并添加用于本地开发的 CONTRIBUTING.md（#2399）
+- 记录插件 + npm CLI 作为两个共存的表面（#2367）
+
+**统计：** 合并 9 个 PR · 7 个缺陷修复 · 0 个新特性 · 0 个安全/加固
+
+---
+
+### v4.11.2
+
+> **注意：** 上游为 v4.11.2 标签重新发布了 v4.11.1 发布说明，内容未改变。
+> 详见 **v4.11.1**。
+
+---
+
+### v4.11.1
+
+**新特性**
+- HUD：`gitStatus` 工作树指示器元素（#2247）
+- HUD：用于多主机 SSH 工作流的 `hostname` 元素（#2246）
+- HUD：当前工作目录文件夹格式显示 `parent/leaf` 而不仅仅是 `leaf`（#2238）
+
+**安全和加固**
+- 限制 `hardMaxIterations` 并在 autopilot 中强制执行（#2331）
+- 将 gitea URL 验证委托给 `validateUrlForSSRF`（#2336）
+- 在 `omc ask` 命令中强制执行 `disableExternalLLM`（#2324）
+- 在发送到 tmux 之前清理 `trigger_message` 控制字符（#2323）
+- 针对 hardMax 独立检查迭代，不依赖 `max_iterations`（#2322）
+- 在严格模式下拒绝非正数的 `hardMaxIterations`（#2321）
+- 为 ultrawork 持久模式强制执行 `hardMaxIterations`（#2320）
+- 在 worker 上下文中阻止所有 tmux 子命令（#2316）
+
+**缺陷修复（精选）**
+- Wiki：CJK 文本的关键词搜索返回 0 结果（#2263）
+- Wiki：titleToSlug 为非 ASCII 标题生成裸露的 `.md`（#2270）
+- Team：锁定 `unregisterMcpWorker` 和 `registerInConfig` 读-修改-写路径（#2333）
+- i18n：防止 `설명서` 和 `랄프로렌` 的韩语关键词误判（#2337）
+- Installer：对 HUD 帮助器副本使用 `getPackageDir()` 而不是 `__dirname`（#2347）
+- HUD：处理 ANSI 正则表达式中的 ST 终止的 OSC 8 序列（#2319）
+- Launch：将环境变量转发到 tmux 会话并尊重 `CLAUDE_CONFIG_DIR`（#2204）
+
+**统计：** 合并 45 个 PR · 3 个新特性 · 33 个缺陷修复 · 8 个安全/加固 · 1 个其他
+
+---
+
+### v4.11.0
+
+**新特性**
+- `wiki`：LLM Wiki 知识层 — 跨会话复合的持久 markdown 知识库，受 Karpathy 的 LLM Wiki 模型启发（#2214）
+- 为 ralplan / plan / ralph 注入 Codex 可用性，加固检测（#2134）
+
+**缺陷修复（精选）**
+- Team：在 tmux 模式下加固 worker 启动交付（#2225）
+- Windows：从 PATH 为 explore 包装器解析 bash（#2216）
+- Team：停止在 team init 时双发 startup inbox（#2209）
+- Installer：确保 `hooks/lib` 以正确的权限复制（#2188）
+- Hooks：在飞行前上下文防护中使用 `PreToolUse` 拒绝 API（#2177）
+- Scripts：用 `perl` 替换 `sed -i` 以实现 macOS 兼容性（#2179）
+- Hooks：防止在 `estimateContextPercent` 中泄漏 fd（#2178）
+- Team：将 `sendToWorker` 回退从故障开放改为故障关闭（#2175）
+- 在剩余代码路径中尊重 `CLAUDE_CONFIG_DIR`（#2156）
+- Hooks：在 Windows 并发 mkdir 竞态条件时捕获 `EEXIST`（#2172）
+
+**统计：** 合并 27 个 PR · 2 个新特性 · 16 个缺陷修复 · 9 个其他变更
+
+---
+
+### v4.10.2
+
+**亮点**
+- HUD：Node 项目外全局 npm install 查询修复（#2149）
+- 可配置的 HUD 调用计数图标渲染（#2151）
+- 更安全的全局设置 / `CLAUDE.md` 保留和覆盖流程（#2144、#2146）
+- Bedrock pre-tool-enforcer 加固，针对无效的裸 Anthropic 模型 ID（#2107）
+- Cancel 流程现在正确清理 `skill-active` 状态（#2122）
+- HUD 诊断显示更清晰的安装时间失败路径（#2129）
+- Worktree 显示实际 worktree 名称而不是易失的 main HEAD（#2127）
+- Team pane 几何 + 捆绑智能体路径解析修复（#2137）
+
+---
+
+### v4.10.1
+
+**补丁发布**，用于修复 v4.10.0 中的打包错误。
+
+- 重建并发布了缺失的 `dist/` HUD 布局工件，以便来自 #2083 的布局 / worktree 排序变更实际上存在于已发布的包中
+- 恢复了 `src/` 和 `dist/` 对 HUD 布局路径的已发布奇偶性
+
+---
+
+### v4.10.0
+
+**亮点**
+- **HUD 和 worktree 检测**：worktree 感知 HUD 上下文加上用于元素排序和分组的布局自定义
+- **LSP 3.17 支持**：Kotlin 工作流工具扩展
+- **新技能 — `self-improve`**：使用竞赛选择的自主进化代码改进引擎
+- **安全增强**：更紧密的 Python 沙盒、worker 命令约束、外部 LLM 强制执行
+- **运行时修复**：会话继续安全性、技能状态清理、CLAUDE 配置文件处理、已安装 HUD 回退行为
+
+**统计：** 合并 35+ 个 PR · 8 个主要面向用户的特性 · 20+ 个缺陷/运行时修复
+
+---
+
+### v4.9.3
+
+**缺陷修复和安全**
+- 解决安全漏洞、lint 警告和 CJS 运行时缺陷（#1994）
+- 将 release-body.md 添加到 gitignore 以防止陈旧的发布说明
+
+---
+
+### v4.9.2
+
+**改进**
+- 将 dev 分支改进合并到主发布版本
+
+---
+
+### v4.9.1
+
+**发布**
+- 稳定发布，包含来自 v4.9.0 的累积修复和改进
+
+---
+
+### v4.9.0
+
+**新技能**
+- `deep-dive`：结合跟踪调查与 deep-interview 需求结晶的两阶段流水线
+- `visual-verdict`：用于截图到参考比较的结构化视觉 QA 判断
+- `omc-reference`：智能体目录、工具和流水线路由的内部参考技能
+
+**改进**
+- 技能计数增加到 30 个用户可调用的技能（+ 1 个内部）
+- 各种稳定性和性能改进
+
+---
+
+### v4.8.2
+
+**缺陷修复**
+- 修复 CCG 技能嵌套问题 — 通过 CLI 路径路由 advisor 调用（#1662）
+- 修复 ralph/ralplan stop 钩子自动继续失败（#1660）
+- 移除未使用的代码（已弃用的特性遗留物）(#1659)
+
+**改进**
+- 反向移植 6 个 team 运行时增强 — worker 稳定性、邮箱处理、shell 亲和性、分配改进（#1658）
+- 为 deep-interview 添加本体收敛跟踪（#1657）
+
+---
+
+### v4.8.0
+
+**智能体系统**
+- 19 个专业智能体（4 个泳道：构建/分析、审查、领域、协调）
+- 智能体层级系统：LOW（haiku）、MEDIUM（sonnet）、HIGH（opus）
+- 委派类别：visual-engineering、ultrabrain、artistry、quick、writing
+
+**技能系统**
+- 28 个技能（初始发布）
+- 技能流水线元数据（预览）
+- learner 技能用于从会话自动提取技能
+
+**钩子系统**
+- 11 个生命周期事件
+- keyword-detector 用于自动魔法关键词检测
+- persistent-mode 用于 ralph/ultrawork 持久性
+- code-simplifier 钩子（可选）
+
+**配置系统**
+- `config.jsonc` 配置文件（JSONC 格式）
+- 2 级用户/项目配置
+- 所有设置都可通过环境变量覆盖
+- 自动 `forceInherit` 检测（CC Switch、Bedrock、Vertex AI）
+
+**状态管理**
+- Notepad：在上下文压缩后仍然存在的笔记
+- Project Memory：跨会话维护项目知识
+- Plan Notepad：捕获每个计划的学习
+- `OMC_STATE_DIR` 用于集中式状态管理
+
+**Team 编排**
+- `omc team` CLI 命令
+- 5 阶段流水线：plan → prd → exec → verify → fix
+- team ralph：结合 team + 迭代验证
+
+**autopilot**
+- 5 阶段自主执行：expansion → planning → execution → qa → validation
+- 3 类型验证：functional、security、quality
+- Cancel/resume 支持
+
+**外部模型集成**
+- Codex/Gemini CLI worker 支持
+- CCG（Claude-Codex-Gemini）三模型编排
+- 委派路由（可选）
+
+**代码智能**
+- 12 个 LSP 工具（hover、goto definition、find references、diagnostics 等）
+- 2 个 AST 工具（ast-grep search/replace）
+- 目录级诊断
+
+**平台支持**
+- macOS、Linux：Bash 钩子
+- Windows：推荐 WSL2，Node.js 钩子（实验性）
+
+<Callout type="info">
+完整的变更日志可在项目的 [CHANGELOG.md](https://github.com/Yeachan-Heo/oh-my-claudecode) 文件中找到。
+</Callout>

@@ -1,0 +1,81 @@
+---
+title: Cancel
+description: 统一的取消技能，自动检测并取消所有活动的 OMC 模式
+---
+
+## 概览
+
+Cancel 是一个统一的取消技能，自动检测并取消当前活动的 OMC 模式。它以正确的顺序清理关联的模式，尊重依赖关系。
+
+这是退出任何 OMC 模式的标准方式，也用于工作完成后清理状态。
+
+## 使用
+
+```bash
+/oh-my-claudecode:cancel
+/oh-my-claudecode:cancel --force
+```
+
+也可以通过魔法关键词激活：
+
+```
+cancelomc
+stopomc
+```
+
+## 自动检测顺序
+
+Cancel 按以下顺序检测并取消活动的模式：
+
+1. Autopilot（包含关联的 ralph/ultraqa）
+2. Ralph（包含关联的 ultrawork）
+3. Ultrawork（独立）
+4. UltraQA（独立）
+5. Ultrapilot（独立）
+6. Pipeline（独立）
+7. Team（Claude Code 原生）
+8. OMC Teams（tmux CLI 工作进程）
+9. Plan Consensus（独立）
+
+## 强制模式
+
+使用 `--force` 或 `--all` 完全删除所有会话和遗留工件。
+
+```bash
+/oh-my-claudecode:cancel --force
+```
+
+当你需要完全重置工作区时使用此选项。
+
+## 按模式的取消行为
+
+### Autopilot
+保存当前阶段并停用。也清理关联的 ralph 和 ultraqa。可恢复。
+
+### Ralph
+停用持久模式。清理关联的 ultrawork（如存在）。
+
+### Team
+向每个团队成员发送 shutdown_request 并等待响应。确认后使用 TeamDelete 进行清理。清理关联的 ralph（如存在）。
+
+## 保留的状态
+
+| 模式 | 保留状态 | 恢复命令 |
+|------|-----------------|----------------|
+| Autopilot | 是（阶段、文件、规格、计划） | `/oh-my-claudecode:autopilot` |
+| Ralph | 否 | - |
+| Ultrawork | 否 | - |
+| Team | 否 | - |
+| Plan Consensus | 是（计划文件路径） | - |
+
+## 相关技能
+
+所有工作流技能都可以用 cancel 终止。
+
+## 参考
+
+| 项目 | 值 |
+|------|-------|
+| 调用 | `/oh-my-claudecode:cancel` |
+| 魔法关键词 | `cancelomc`, `stopomc` |
+| 类别 | 实用工具 |

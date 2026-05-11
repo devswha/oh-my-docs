@@ -1,0 +1,117 @@
+---
+title: Ralph
+description: PRD ベースの連続ループ — すべてのユーザーストーリーが検証されるまで実行を続けます
+---
+
+## 概要
+
+Ralph は PRD（Product Requirements Document）ベースの連続ループです。すべてのユーザーストーリーの受け入れ基準が満たされ、レビュアーが検証するまで実行を続けます。Ultrawork の並列実行の上に、セッション永続化、自動リトライ、構造化されたストーリー追跡、および強制検証を追加します。
+
+タスクが部分的にしか実装されていないのに「完了」と宣言されることを防ぐために作成されました。
+
+## 使用方法
+
+```bash
+/oh-my-claudecode:ralph "fix all TypeScript errors across the project"
+```
+
+マジックキーワードでも起動できます。
+
+```
+ralph refactor the authentication module
+don't stop until all tests pass
+must complete the migration
+```
+
+## オプション / フラグ
+
+| フラグ | 説明 |
+|------|-------------|
+| `--no-prd` | PRD 生成をスキップ（単純なタスク向け） |
+| `--critic=architect` | 完了レビュアーとして architect を使用（デフォルト） |
+| `--critic=critic` | 完了レビュアーとして critic を使用 |
+| `--critic=codex` | 完了レビュアーとして Codex CLI を使用 |
+
+## 実行ステップ
+
+### 1. PRD セットアップ
+
+最初のイテレーション時に、`prd.json` を作成するか既存ファイルを読み込みます。
+自動生成されたスケルトン内の汎用的な受け入れ基準をタスク固有の具体的な基準に置き換えます。
+
+```json
+{
+  "stories": [
+    {
+      "id": "US-001",
+      "title": "Add flag detection helpers",
+      "acceptanceCriteria": [
+        "detectNoPrdFlag('ralph --no-prd fix') returns true",
+        "TypeScript compiles with no errors (npm run build)"
+      ],
+      "passes": false
+    }
+  ]
+}
+```
+
+### 2. ストーリー単位の実装
+
+最優先度の未完了ストーリーを選択して実装します。
+
+- 単純なタスク：LOW ティア（Haiku）
+- 標準的なタスク：MEDIUM ティア（Sonnet）
+- 複雑なタスク：HIGH ティア（Opus）
+- 独立したタスクは並列実行されます
+
+### 3. ストーリー単位の検証
+
+新しいエビデンスで各受け入れ基準を検証します。
+すべての基準が満たされると、`passes: true` とマークします。
+
+### 4. PRD 完了チェック
+
+すべてのストーリーが完了した場合、レビュアー検証に進みます。
+未完了のストーリーが残っている場合、次のストーリーを選択します。
+
+### 5. レビュアー検証
+
+検証ティアは変更のスコープによって決まります。
+
+- 5 ファイル未満、100 行未満：STANDARD（Sonnet）
+- 20 ファイル以上、またはセキュリティ/アーキテクチャ変更：THOROUGH（Opus）
+
+### 6. 完了
+
+承認時に、`/oh-my-claudecode:cancel` で状態をクリーンアップします。
+却下時に、問題を修正して再検証します。
+
+## 例
+
+```bash
+# 基本的な使用方法
+ralph fix all failing tests in the auth module
+
+# PRD なしの単純なタスク
+ralph --no-prd fix the typo in README.md
+
+# Codex レビュアーを使用
+ralph --critic=codex implement the user profile page
+```
+
+## 関連スキル
+
+- [ultrawork](/ja/docs/skills/workflow/ultrawork) - Ralph 内の並列実行エンジン
+- [autopilot](/ja/docs/skills/workflow/autopilot) - Ralph を含む完全な自動パイプライン
+- [cancel](/ja/docs/skills/utility/cancel) - Ralph 実行をキャンセル
+
+## リファレンス
+
+| 項目 | 値 |
+|------|-------|
+| 起動 | `/oh-my-claudecode:ralph` |
+| マジックキーワード | `ralph`、`don't stop`、`must complete` |
+| カテゴリ | Workflow |
+| 状態ファイル | `.omc/state/ralph-state.json` |
+| PRD ファイル | `.omc/prd.json` |
+| 進捗ログ | `.omc/progress.txt` |

@@ -1,0 +1,80 @@
+---
+title: Visual Verdict
+description: 用于屏幕截图到参考比较的结构化视觉 QA 判断
+---
+
+## 概述
+
+Visual Verdict 将生成的 UI 屏幕截图与参考图像进行比较，并返回驱动下一个编辑迭代的严格 JSON 判断。它为视觉保真度需求提供确定的通过/失败指导。
+
+## 使用
+
+```bash
+/oh-my-claudecode:visual-verdict
+```
+
+## 何时使用
+
+- 任务包括视觉保真度需求（布局、间距、排版、组件样式）
+- 你有生成的屏幕截图和至少一个参考图像
+- 在继续编辑前，你需要确定的通过/失败指导
+
+## 输入
+
+- `reference_images[]` — 一个或多个图像路径
+- `generated_screenshot` — 当前输出图像
+- 可选：`category_hint` — 例如，`hackernews`、`sns-feed`、`dashboard`
+
+## 输出格式
+
+返回**仅 JSON**形式：
+
+```json
+{
+  "score": 87,
+  "verdict": "revise",
+  "category_match": true,
+  "differences": [
+    "Top nav spacing is tighter than reference",
+    "Primary button uses smaller font weight"
+  ],
+  "suggestions": [
+    "Increase nav item horizontal padding by 4px",
+    "Set primary button font-weight to 600"
+  ],
+  "reasoning": "Core layout matches, but style details still diverge."
+}
+```
+
+### 字段
+
+| 字段 | 类型 | 描述 |
+|-------|------|-------------|
+| `score` | 整数 0-100 | 视觉保真度分数 |
+| `verdict` | 字符串 | `pass`、`revise` 或 `fail` |
+| `category_match` | 布尔值 | 生成的输出是否与预期 UI 类别匹配 |
+| `differences` | 字符串[] | 具体视觉错配（布局、间距、排版、颜色） |
+| `suggestions` | 字符串[] | 与差异相关的可操作下一步编辑 |
+| `reasoning` | 字符串 | 1-2 句摘要 |
+
+## 通过阈值
+
+- 目标通过阈值是 **90+**
+- 如果 `score < 90`，继续编辑并在任何进一步的视觉审查前重新运行 visual-verdict
+- **不要**将视觉任务视为完整，直到下一个屏幕截图清除阈值
+
+## 调试可视化
+
+当错配诊断困难时：
+
+1. 将 visual-verdict 作为权威决策
+2. 使用像素级差异工具（pixelmatch 叠加）作为**次要调试辅助**来定位热点
+3. 将像素差异热点转换为具体 `differences[]` 和 `suggestions[]` 更新
+
+## 参考
+
+| 项目 | 值 |
+|------|-------|
+| 调用 | `/oh-my-claudecode:visual-verdict` |
+| 魔法关键词 | - |
+| 分类 | Utility |
