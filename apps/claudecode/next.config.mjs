@@ -28,6 +28,12 @@ const config = {
   turbopack: {
     root: resolveTurbopackRoot(configDir),
   },
+  allowedDevOrigins: [
+    'home-server',
+    'home-server.tail1e211e.ts.net',
+    '100.123.228.51',
+    '192.168.0.61',
+  ],
   async headers() {
     return [
       {

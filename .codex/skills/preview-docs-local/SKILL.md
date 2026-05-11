@@ -76,7 +76,7 @@ If a server is already running, use `--smoke-only --port <port>` instead of star
 
 ### 4. Inspect visually
 
-Report both the internal smoke URL and the browser-facing preview URL. On remote servers, tell the user to open the `--public-url` URL or one of the generated LAN/Tailscale candidates. For layout/content changes, inspect the pages manually in a browser or use the current environment’s available screenshot/browser tooling if present. Check sidebar, locale links, code blocks, cards/callouts/tabs, mobile width, and refresh behavior.
+Report both the internal smoke URL and the browser-facing preview URL. On Tailscale servers, tell the user to open the MagicDNS or `100.x` Tailnet URL. If the server logs `Blocked cross-origin request to Next.js dev resource`, add that hostname to the app's `allowedDevOrigins` in `next.config.mjs` and restart the dev server. For layout/content changes, inspect the pages manually in a browser or use the current environment’s available screenshot/browser tooling if present. Check sidebar, locale links, code blocks, cards/callouts/tabs, mobile width, and refresh behavior.
 
 ### 5. Stop cleanly
 

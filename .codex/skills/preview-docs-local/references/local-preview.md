@@ -101,6 +101,21 @@ If the browser cannot connect over Tailscale, first try the `100.x` URL, then th
 - `content/docs/index.ja.mdx` → `/ja/docs`
 - `content/docs/index.zh.mdx` → `/zh/docs`
 
+
+## Next.js dev origin allowlist
+
+Next.js blocks dev resources such as HMR from unknown remote origins. For Tailnet browser access, the app's `next.config.mjs` must include the Tailscale hosts in `allowedDevOrigins`:
+
+```js
+allowedDevOrigins: [
+  'home-server',
+  'home-server.tail1e211e.ts.net',
+  '100.123.228.51',
+]
+```
+
+If the page shell loads but the console or server log shows `Blocked cross-origin request to Next.js dev resource`, add the exact hostname printed in the warning and restart the dev server.
+
 ## Manual visual checklist
 
 For each changed page, inspect at least one desktop width and one narrow/mobile width if layout changed. Check:
