@@ -1,0 +1,158 @@
+---
+title: Oh My OpenAgent
+description: OpenCode 위의 멀티 모델 에이전트 오케스트레이션. 결과만 말하세요.
+---
+
+![Oh My OpenAgent](/images/hero.jpg)
+
+**OpenCode 위의 멀티 모델 에이전트 오케스트레이션. 결과만 말하세요.**
+
+_OpenCode 명령을 외우는 시대는 끝났습니다. 루프는 OmO가 잡습니다._
+
+Oh My OpenAgent(OmO)는 OpenCode 위에서 동작하는 멀티 모델 에이전트 오케스트레이션 레이어입니다. 한 번의 프롬프트로 전문 에이전트들을 조율해 복잡한 개발 작업을 끝까지 자동화합니다.
+
+Claude에 묶이지도, OpenAI에 묶이지도, 누구에게도 묶이지 않습니다.
+
+## 빠른 시작
+
+<Steps>
+
+<Step>
+
+### 설치
+
+권장 방식은 에이전트에게 설치 가이드를 그대로 넘기는 것입니다. Claude Code, OpenCode, Cursor 같은 어떤 LLM 세션에든 아래를 붙여 넣으세요.
+
+```
+Install and configure oh-my-openagent by following the instructions here:
+https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/refs/heads/dev/docs/guide/installation.md
+```
+
+직접 실행하려면 Bun을 쓰세요. npm, yarn, pnpm은 쓰지 마세요.
+
+```bash
+bunx oh-my-openagent install
+```
+
+installer가 사용자가 가진 모델 구독을 묻고, 각 에이전트를 거기에 맞춰 라우팅합니다.
+
+</Step>
+
+<Step>
+
+### 검증
+
+```bash
+bunx oh-my-openagent doctor
+```
+
+`doctor`가 "Using legacy package name" 경고를 띄우면, `opencode.json`의 plugin entry를 `"oh-my-opencode"`에서 `"oh-my-openagent"`로 바꾸세요.
+
+</Step>
+
+<Step>
+
+### 한 번 돌려보기
+
+OpenCode 세션에서 입력하세요.
+
+```bash
+ultrawork build a REST API for managing tasks
+```
+
+짧은 형태로도 됩니다.
+
+```bash
+ulw build a REST API for managing tasks
+```
+
+이게 전부입니다. Sisyphus가 오케스트레이션하고, Hephaestus, Oracle, Librarian, Explore가 각자 레인을 돕니다. 결과가 검증될 때까지 루프가 돕니다.
+
+</Step>
+
+</Steps>
+
+## 잠금에서 빠져나오기
+
+![Sisyphus orchestrating tasks in parallel](/images/orchestrator-atlas.png)
+
+이걸 한때 "Claude Code 강화판"이라고 불렀습니다. 틀린 표현이었습니다.
+
+OmO는 Claude Code를 더 좋게 만드는 게 아닙니다. 한 모델, 한 공급자, 한 가지 방식만으로 충분하다는 생각에서 빠져나오는 게 핵심입니다. Anthropic도, OpenAI도, 다들 사용자를 자기 진영에 가둬두려고 합니다.
+
+OmO는 그 게임을 안 합니다. 모델 사이를 오가며 일에 맞는 두뇌를 고릅니다. 오케스트레이션은 Claude. 깊은 추론은 GPT. 프론트엔드는 Gemini. 비용을 아껴야 할 때는 Kimi나 GLM. 전부 자동으로 같이 움직입니다.
+
+## 작동 방식
+
+OmO는 한 에이전트가 아니라 위임 트리로 모든 요청을 보냅니다.
+
+```text
+User Request
+    ↓
+[IntentGate] — classifies what you actually want
+    ↓
+[Sisyphus] — main orchestrator, plans and delegates
+    ↓
+    ├─→ [Prometheus] — strategic planning (interview mode)
+    ├─→ [Atlas] — todo orchestration and execution
+    ├─→ [Oracle] — read-only architecture consultation
+    ├─→ [Librarian] — docs and OSS-code search
+    ├─→ [Explore] — fast codebase grep
+    └─→ [Category workers] — specialized by task type
+```
+
+Sisyphus는 모델 이름이 아니라 카테고리(`visual-engineering`, `ultrabrain`, `deep`, `quick`, `writing`)로 위임합니다. 카테고리가 알아서 맞는 모델로 라우팅합니다.
+
+## OmO 쓰는 법
+
+전체 사용법은 한 단어로 정리됩니다. **`ulw`** (또는 `ultrawork`)를 입력하세요. Sisyphus가 오케스트레이션하고, Hephaestus, Oracle, Librarian, Explore가 각자 레인을 돕니다. 결과가 검증될 때까지 루프가 돕니다.
+
+기본 경로가 안 맞을 때.
+
+- **모호한 아이디어, 설계 먼저** — Prometheus가 인터뷰로 요구사항을 잠그고 `.sisyphus/plans/*.md` 계획을 쓰면 Atlas가 실행합니다.
+
+  ```bash
+  @plan <description>
+  /start-work
+  ```
+
+- **긴 작업을 손 떼고 맡기기** — Ralph가 acceptance가 잡힐 때까지 스스로 이어갑니다.
+
+  ```bash
+  /ulw-loop
+  ```
+
+- **답이나 작은 수정만 필요할 때** — 평소처럼 프롬프트만 쓰면 됩니다. 명령 필요 없습니다.
+
+- **처음 보는 코드베이스** — 계층형 `AGENTS.md`를 만들어서 다음 에이전트가 처음부터 맥락을 가지고 시작하게 합니다.
+
+  ```bash
+  /init-deep
+  ```
+
+OmO는 각 에이전트를 그 일에 맞는 모델과 짝지웁니다. Sisyphus는 긴 규칙 준수가 강한 모델(Claude Opus, Kimi K2.6, GLM-5.1)이 잘 맞고, Hephaestus는 자율 추론이 강한 GPT-5.5가 잘 맞습니다. ChatGPT Plus($20) + Kimi Code($19) + GLM Coding($10) 조합이면 대부분의 워크로드를 커버합니다. installer가 알아서 연결합니다.
+
+## 왜 Oh My OpenAgent인가
+
+- **공급자에 묶이지 않는 설계** — Sisyphus는 Opus, Kimi K2.6, GLM-5.1에서. Hephaestus는 GPT-5.5에서. 일과 지갑에 맞춰 고르세요.
+- **역할별 에이전트 규율** — Sisyphus는 오케스트레이션, Prometheus는 계획, Atlas는 실행, Oracle은 리뷰, Librarian은 검색, Explore는 코드 탐색. 각 모델의 강점에 맞춰 튜닝되어 있습니다.
+- **IntentGate** — 분류하기 전에 사용자가 진짜로 원하는 게 뭔지 먼저 읽습니다. 글자 그대로 잘못 해석하는 일이 사라집니다.
+- **Hash-anchored edit** — `LINE#ID` 콘텐츠 해시가 모든 변경을 검증합니다. stale-line 오류 0건.
+- **LSP + AST-Grep** — workspace rename, build 전 진단, AST 인지 rewrite. 에이전트에게 IDE 수준의 정밀도를 줍니다.
+- **끝까지 미는 실행** — Ralph 루프, todo 강제, runtime fallback. 검증될 때까지 멈추지 않습니다.
+- **내장 MCP** — Exa(웹 검색), Context7(공식 문서), Grep.app(GitHub 검색). 항상 켜져 있습니다.
+- **tmux 통합** — 인터랙티브 REPL, 디버거, TUI. 스크린샷이 아니라 실제로 들어가서 봅니다.
+- **Claude Code 호환** — 기존 hook, command, skill, MCP, plugin이 그대로 동작합니다.
+
+## 문서 구조
+
+<Cards>
+  <Card title="Getting Started" href="/ko/docs/getting-started">OmO 설치, provider 선택, doctor 검증, 첫 `ulw` 작업.</Card>
+  <Card title="Core Concepts" href="/ko/docs/concepts">Intent Gate, 에이전트, 모델 계열, 카테고리, 스킬, 연속성.</Card>
+  <Card title="Guides" href="/ko/docs/guides">일반 프롬프트, `ultrawork`, Prometheus 계획, Hephaestus 중에서 고르기.</Card>
+  <Card title="Agents" href="/ko/docs/agents">오케스트레이터, planner, consultant, retrieval agent, category worker.</Card>
+  <Card title="Tools" href="/ko/docs/tools">LSP, AST-grep, MCP, tmux, background agent, session tool, hashline edit.</Card>
+  <Card title="Skills" href="/ko/docs/skills">내장 스킬, 커스텀 스킬 위치, docs sync 하네스.</Card>
+  <Card title="Hooks" href="/ko/docs/hooks">Continuation, 복구, 알림, 규칙, comment, slash-command hook.</Card>
+  <Card title="Reference" href="/ko/docs/reference">CLI, config 파일, model resolution, category, 환경 변수.</Card>
+</Cards>

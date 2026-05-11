@@ -1,0 +1,9 @@
+{
+  "title": "Core Concepts",
+  "pages": [
+    "[Mental Model](/ja/docs/concepts#mental-model)",
+    "[Agents](/ja/docs/concepts#agents)",
+    "[Categories and Skills](/ja/docs/concepts#categories-and-skills)",
+    "[Model Families](/ja/docs/concepts#model-families)"
+  ]
+}

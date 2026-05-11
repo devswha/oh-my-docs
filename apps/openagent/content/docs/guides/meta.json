@@ -1,0 +1,11 @@
+{
+  "title": "Guides",
+  "pages": [
+    "[Choosing a Workflow](/docs/guides#choosing-a-workflow)",
+    "[Ultrawork](/docs/guides#ultrawork)",
+    "[Prometheus + Atlas](/docs/guides#prometheus--atlas)",
+    "[Hephaestus vs Sisyphus](/docs/guides#hephaestus-vs-sisyphus)",
+    "[Agent Install](/docs/guides#installation-as-an-agent-task)",
+    "[Model Rule](/docs/guides#model-rule-of-thumb)"
+  ]
+}

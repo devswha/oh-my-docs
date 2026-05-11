@@ -1,0 +1,12 @@
+{
+  "title": "Reference",
+  "pages": [
+    "[Package Names](/docs/reference#package-names)",
+    "[CLI](/docs/reference#cli)",
+    "[Config Files](/docs/reference#config-files)",
+    "[Agent Options](/docs/reference#agent-options)",
+    "[Categories](/docs/reference#categories)",
+    "[Install Flags](/docs/reference#install-flags)",
+    "[Environment](/docs/reference#environment)"
+  ]
+}

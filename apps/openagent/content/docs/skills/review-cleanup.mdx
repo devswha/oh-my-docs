@@ -1,0 +1,20 @@
+---
+title: Review & Cleanup Skills
+description: Skills for post-implementation review, release gates, and AI-slop removal.
+---
+
+Review skills run after implementation. They catch risk and missing evidence, then send the worker back to fix concrete issues.
+
+## Review Lanes
+
+| Skill | What it checks |
+|---|---|
+| `review-work` | Goal compliance, code quality, security, QA evidence, context mining. |
+| `ai-slop-remover` | AI-generated smells: needless abstraction, duplicated code, noisy comments. |
+| `pre-publish-review` | Release readiness through per-change deep review, holistic review, and Oracle synthesis. |
+| `github-triage` | Read-only issue and PR triage with evidence-backed reports. |
+| `work-with-pr` | PR lifecycle from worktree setup through CI/review loop and merge. |
+
+## Rule of Thumb
+
+Run review skills after implementation, not in place of tests. They surface what the implementer missed; they do not replace the work.

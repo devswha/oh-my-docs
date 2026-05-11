@@ -1,0 +1,33 @@
+---
+title: 카테고리 워커
+description: Category dispatch는 모델과 스킬 라우팅이 붙은 focused Sisyphus-Junior 워커를 만듭니다.
+---
+
+`task(category="...")`는 그 도메인에 맞춘 Sisyphus-Junior를 띄웁니다. category가 일을 설명하고 모델 프로필을 고르고, skill이 playbook을 더합니다.
+
+## Category Dispatch
+
+| Category | 어울리는 일 |
+|---|---|
+| `visual-engineering` | 프론트엔드, UI/UX, 스타일링, 애니메이션, 브라우저 검증 시각 작업. |
+| `ultrabrain` | 어려운 추론, 아키텍처, 정확도가 중요한 분석. |
+| `deep` | 자율 조사 + 구현. |
+| `artistry` | 창의적, 비관습적, 패턴을 깨는 작업. |
+| `quick` | 작고 경계가 분명한 변경. |
+| `writing` | 문서와 prose. |
+| `unspecified-low` / `unspecified-high` | 딱 맞는 레인이 없을 때의 fallback 카테고리. |
+| `quick-rust`, `quick-zig`, `git` | 설치된 버전이 켜준 특화 quick 레인. |
+
+## Category + Skill
+
+Category는 워커 프로필을 고릅니다. Skill은 playbook을 더합니다.
+
+```ts
+task({
+  category: "visual-engineering",
+  load_skills: ["frontend-ui-ux", "playwright"],
+  prompt: "Update and browser-verify the docs sidebar.",
+});
+```
+
+Sisyphus-Junior는 일부러 좁습니다. 할당된 한 단위만 실행하고, 돌아가기 전에 검증을 끝내야 합니다.

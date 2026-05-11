@@ -1,0 +1,11 @@
+{
+  "title": "주요 개념",
+  "pages": [
+    "[시스템 형태](/ko/docs/concepts#시스템-형태)",
+    "[의도부터 본다](/ko/docs/concepts#의도부터-본다)",
+    "[계획과 실행](/ko/docs/concepts#계획과-실행을-나눈다)",
+    "[모델 계열](/ko/docs/concepts#모델-계열)",
+    "[Category + Skill](/ko/docs/concepts#category--skill)",
+    "[Continuation](/ko/docs/concepts#하네스-기능으로서의-연속성)"
+  ]
+}

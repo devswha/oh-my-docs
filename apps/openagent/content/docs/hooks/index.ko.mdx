@@ -1,0 +1,39 @@
+---
+title: 훅
+description: OmO 세션을 복구 가능하게, 라우팅되게, 계속 움직이게 하는 lifecycle automation.
+---
+
+Hook은 OpenCode 세션을 감싸는 하네스 레이어입니다. 지시를 넣고, 망가진 state를 고치고, slash command를 라우팅하고, 카테고리/스킬 규칙을 에이전트에게 상기시키고, 끝나지 않은 작업을 다시 잡습니다.
+
+## Hook이 통제하는 것
+
+| 계열 | 예시 | 목적 |
+|---|---|---|
+| Routing | `auto-slash-command`, `keyword-detector`, `category-skill-reminder` | 사용자 의도를 맞는 워크플로우로 보냅니다. |
+| Continuation | `ralph-loop`, `todo-continuation-enforcer`, `task-reminder` | 미완료 작업이 조용히 멈추는 걸 막습니다. |
+| Recovery | `session-recovery`, `edit-error-recovery`, `json-error-recovery` | 흔한 모델/도구 실패 모드를 복구합니다. |
+| Tool integration | `interactive-bash-session`, `claude-code-hooks`, MCP hooks | tmux, 외부 도구, agent별 tooling을 연결합니다. |
+| Context | `directory-agents-injector`, AGENTS-style injection | repo나 directory convention을 더합니다. |
+
+## 실전에서 보는 법
+
+모든 hook을 다 외울 필요는 없습니다. 네 가지 보장으로 보세요.
+
+1. 작업 시작 전에 맞는 지시가 들어왔는가.
+2. 작업에 맞는 specialist 또는 category가 선택됐는가.
+3. 세션이 도구/모델 글리치에서 복구할 수 있는가.
+4. todo와 검증이 끝날 때까지 에이전트가 계속 가는가.
+
+## 안전한 커스터마이징
+
+Hook이나 experimental option을 바꿀 때는.
+
+- 한 번에 하나의 동작만 바꾸세요.
+- config 변경 후 `bunx oh-my-opencode doctor --verbose`를 돌리세요.
+- 하네스 자체를 디버깅하는 게 아니면 continuation hook은 켜 두세요.
+- repo 전용 동작은 project config에 두세요.
+- project hook 가정은 `.opencode/skills/`나 로컬 docs에 남기세요.
+
+## 관련 Config
+
+자주 보이는 experimental option은 context와 recovery 쪽입니다: `aggressive_truncation`, `auto_resume`, `preemptive_compaction`, `truncate_all_tool_outputs`. 지원 여부는 설치된 버전마다 다르니 `doctor`와 생성된 schema를 기준으로 보세요.

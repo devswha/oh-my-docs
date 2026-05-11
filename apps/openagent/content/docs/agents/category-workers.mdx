@@ -1,0 +1,33 @@
+---
+title: Category Workers
+description: Category dispatch creates focused Sisyphus-Junior workers with model and skill routing.
+---
+
+`task(category="...")` spawns a Sisyphus-Junior tuned for that domain. The category describes the work and picks the model profile; skills add the playbook.
+
+## Category Dispatch
+
+| Category | Best for |
+|---|---|
+| `visual-engineering` | Frontend, UI/UX, styling, animation, browser-verified visual work. |
+| `ultrabrain` | Hard reasoning, architecture, high-stakes analysis. |
+| `deep` | Autonomous research plus implementation. |
+| `artistry` | Creative, unconventional, or pattern-breaking work. |
+| `quick` | Small, bounded changes. |
+| `writing` | Documentation and prose. |
+| `unspecified-low` / `unspecified-high` | Fallback categories when no specific lane fits. |
+| `quick-rust`, `quick-zig`, `git` | Specialized quick lanes when enabled by the installed version. |
+
+## Category + Skill
+
+Categories pick the worker profile. Skills add the playbook.
+
+```ts
+task({
+  category: "visual-engineering",
+  load_skills: ["frontend-ui-ux", "playwright"],
+  prompt: "Update and browser-verify the docs sidebar.",
+});
+```
+
+Sisyphus-Junior is intentionally focused: it executes one assigned unit and must verify before returning.

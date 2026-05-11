@@ -1,0 +1,26 @@
+---
+title: 编排智能体
+description: Sisyphus、Hephaestus、Prometheus 和 Atlas 构成主要工作通道。
+---
+
+## Primary Lanes
+
+OmO keeps four primary agents in stable order: Sisyphus, Hephaestus, Prometheus, then Atlas.
+
+| Agent | Lane | Use it when |
+|---|---|---|
+| Sisyphus | Main orchestrator | Read intent, delegate, track todos, and finish the work. |
+| Hephaestus | GPT-native deep worker | Architecture, hard debugging, or cross-domain synthesis needs one deep owner. |
+| Prometheus | Strategic planner | Requirements and scope must be clarified before implementation. |
+| Atlas | Plan executor | A Prometheus plan is ready and `/start-work` should execute it. |
+
+## Flow
+
+```text
+ultrawork -> Sisyphus orchestrates directly
+@plan -> Prometheus writes a plan -> /start-work activates Atlas
+```
+
+## Source Notes
+
+Facts are aligned with upstream `src/agents/AGENTS.md` and `docs/guide/orchestration.md`.

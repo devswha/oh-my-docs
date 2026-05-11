@@ -1,0 +1,23 @@
+---
+title: Engineering Skills
+description: Browser, UI, and git skills that turn focused workers into domain specialists.
+---
+
+Engineering skills add the playbooks an agent needs to actually drive a browser, ship UI, or move git history safely.
+
+## Built-in Engineering Skills
+
+| Skill | Use |
+|---|---|
+| `frontend-ui-ux` | Design-first UI implementation and visual polish. |
+| `playwright` | Browser automation through MCP when available. |
+| `playwright-cli` | Browser automation through shell commands without MCP. |
+| `agent-browser` | Browser automation: navigation, snapshots, clicks, and forms. |
+| `dev-browser` | Persistent browser page state for iterative web development. |
+| `git-master` | Atomic commits, rebases, history search, and release-safe git workflow. |
+
+## Recommended Pairings
+
+- UI change: `category="visual-engineering"`, `load_skills=["frontend-ui-ux", "playwright"]`.
+- Git history or commit work: `category="quick"`, `load_skills=["git-master"]`.
+- Web app QA: a browser skill plus the real local URL.

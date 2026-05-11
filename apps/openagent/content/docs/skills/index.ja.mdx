@@ -1,0 +1,19 @@
+---
+title: Skills
+description: Specialized instruction packs for OmO agents.
+---
+
+## Overview
+
+Skills are reusable instruction packs. They add workflows, constraints, examples, and optional MCP tools without loading every instruction into every agent.
+
+Use project skills in `.opencode/skills/` for repository-specific rules. This docs site includes `sync-openagent-docs` to keep pages aligned with upstream `code-yeongyu/oh-my-openagent`.
+
+## Rules
+
+| Rule | Meaning |
+|---|---|
+| Category chooses model | Use the category that matches the task domain. |
+| Skill adds playbook | Load every skill whose domain overlaps the task. |
+| Project/user first | Prefer repository and user skills over generic built-ins. |
+| Verify output | Run lint, build, and route smoke checks for docs changes. |

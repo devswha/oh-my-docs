@@ -1,0 +1,9 @@
+{
+  "title": "Hooks",
+  "pages": [
+    "[What Hooks Control](/docs/hooks#what-hooks-control)",
+    "[Practical Model](/docs/hooks#practical-model)",
+    "[Safe Customization](/docs/hooks#safe-customization)",
+    "[Related Config](/docs/hooks#related-config)"
+  ]
+}

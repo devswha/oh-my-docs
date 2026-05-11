@@ -1,0 +1,24 @@
+---
+title: Core Concepts
+description: How OmO routes intent, models, agents, categories, skills, and tools.
+---
+
+## Mental Model
+
+OmO is not a single prompt. It is an orchestration layer around OpenCode. A request passes through an Intent Gate, then Sisyphus chooses the right path: answer, investigate, plan, implement, or delegate.
+
+```text
+User Request -> Intent Gate -> Sisyphus -> Specialists -> Verification
+```
+
+## Agents
+
+Core agents are tuned for different responsibilities. Sisyphus orchestrates. Hephaestus executes deep GPT-native work. Prometheus plans. Atlas conducts plan execution. Oracle consults on architecture. Librarian researches docs and open source. Explore searches the codebase quickly.
+
+## Categories and Skills
+
+When Sisyphus delegates to Sisyphus-Junior, it chooses a category instead of hand-picking a model. Categories describe work type: `visual-engineering`, `ultrabrain`, `deep`, `artistry`, `quick`, `unspecified-low`, `unspecified-high`, and `writing`. Skills inject task-specific knowledge and MCP tools.
+
+## Model Families
+
+Claude-like models are strong at structured orchestration. GPT models are strong at explicit reasoning and Hephaestus/Oracle-style work. Gemini is useful for visual/frontend work. Fast models are used for retrieval-heavy agents. The installer writes sensible defaults from your subscriptions.

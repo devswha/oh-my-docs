@@ -1,0 +1,12 @@
+{
+  "title": "Getting Started",
+  "pages": [
+    "[Prerequisites](/docs/getting-started#prerequisites)",
+    "[Install](/docs/getting-started#install)",
+    "[Non-Interactive Install](/docs/getting-started#non-interactive-install)",
+    "[Authenticate Providers](/docs/getting-started#authenticate-providers)",
+    "[Verify](/docs/getting-started#verify)",
+    "[First Task](/docs/getting-started#first-task)",
+    "[Telemetry](/docs/getting-started#telemetry)"
+  ]
+}

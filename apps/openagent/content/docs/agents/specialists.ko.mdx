@@ -1,0 +1,23 @@
+---
+title: 전문 에이전트
+description: Oracle, Librarian, Explore, Multimodal-Looker는 읽기 중심의 좁은 전문가입니다.
+---
+
+Specialist는 구현자가 아닙니다. 사실을 보고해서 Sisyphus가 추측 대신 증거로 결정하고 움직이게 합니다.
+
+## Specialist 지도
+
+| Agent | 전문 분야 | 경계 |
+|---|---|---|
+| Oracle | 아키텍처, 어려운 디버깅, self-review | read-only consultant. 작은 첫 수정에는 과합니다. |
+| Librarian | 외부 문서, OSS 코드, remote repository | research-only. 편집과 위임은 안 합니다. |
+| Explore | 빠른 repo-local 코드 검색과 패턴 매핑 | search-only. 깊은 분석 전에 "X가 어디 있지?"부터 부르세요. |
+| Multimodal-Looker | 이미지, screenshot, PDF, diagram | 시각 정보 추출. 구현 워커가 아닙니다. |
+
+## Sisyphus가 쓰는 방식
+
+Sisyphus는 구현 책임을 들고 있고, specialist에게는 증거를 요청합니다. 흔한 패턴은 이렇습니다. Explore가 로컬 코드를 매핑하고, Librarian이 외부 문서를 확인하고, Oracle이 위험한 결정을 검토하고, Multimodal-Looker가 screenshot이나 diagram을 읽습니다.
+
+## 가드레일
+
+이 에이전트들은 추측을 줄이려고 존재합니다. 사실, 위험, 다음 조치만 보고합니다. 몰래 범위를 넓히거나 production 변경을 쓰면 안 됩니다.

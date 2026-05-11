@@ -1,0 +1,23 @@
+---
+title: 엔지니어링 스킬
+description: 브라우저, UI, git 스킬은 focused 워커를 도메인 specialist로 바꿉니다.
+---
+
+엔지니어링 skill은 에이전트가 실제로 브라우저를 운전하고, UI를 출하하고, git history를 안전하게 옮길 수 있도록 playbook을 더해줍니다.
+
+## 내장 엔지니어링 스킬
+
+| Skill | 용도 |
+|---|---|
+| `frontend-ui-ux` | 디자인 우선 UI 구현과 시각적 마무리. |
+| `playwright` | 가능할 때 MCP로 브라우저 자동화. |
+| `playwright-cli` | MCP 없이 shell 명령으로 브라우저 자동화. |
+| `agent-browser` | 이동, snapshot, click, form 입력 같은 브라우저 자동화. |
+| `dev-browser` | 반복 웹 개발을 위한 persistent page state. |
+| `git-master` | atomic commit, rebase, history search, release-safe git workflow. |
+
+## 추천 조합
+
+- UI 변경: `category="visual-engineering"`, `load_skills=["frontend-ui-ux", "playwright"]`.
+- git history 또는 commit 작업: `category="quick"`, `load_skills=["git-master"]`.
+- 웹 앱 QA: 브라우저 skill에 실제 로컬 URL을 같이 줍니다.

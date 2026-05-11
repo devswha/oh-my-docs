@@ -1,0 +1,128 @@
+---
+title: Getting Started
+description: Install OmO, configure providers, run doctor, and try your first ulw.
+---
+
+OmO runs on top of OpenCode. Install the harness, point it at your model subscriptions, verify with `doctor`, and the loop is ready.
+
+## Prerequisites
+
+| Item | Requirement |
+|---|---|
+| OpenCode | `opencode` 1.0.150 or newer. |
+| Runtime | `bunx` (or `npx`) to bootstrap the installer. The CLI ships standalone binaries afterwards. |
+| Providers | Whatever subset you have: Claude, OpenAI/ChatGPT, Gemini, GitHub Copilot, OpenCode Go/Zen, Kimi for Coding, Z.ai, or Vercel AI Gateway. |
+| OS | macOS ARM64/x64, Linux x64/ARM64 (incl. musl/Alpine), Windows x64. |
+
+## Setup
+
+<Steps>
+
+<Step>
+
+### Install
+
+```bash
+bunx oh-my-openagent install
+```
+
+The compat binary `oh-my-opencode` works too. The installer asks which model subscriptions you have, registers the OpenCode plugin, writes a config file, and prints auth hints for the providers you said yes to.
+
+</Step>
+
+<Step>
+
+### Non-Interactive Install
+
+When an agent runs setup for you, pass flags directly:
+
+```bash
+bunx oh-my-openagent install --no-tui \
+  --claude=yes \
+  --openai=yes \
+  --gemini=no \
+  --copilot=no
+```
+
+| Flag | Meaning |
+|---|---|
+| `--claude=no\|yes\|max20` | Claude subscription. `max20` for Claude Max 20x. |
+| `--openai=no\|yes` | ChatGPT/OpenAI for GPT-backed agents like Oracle. |
+| `--gemini=no\|yes` | Gemini. |
+| `--copilot=no\|yes` | GitHub Copilot. |
+| `--opencode-go=no\|yes` | OpenCode Go (GLM/Kimi/MiniMax). |
+| `--opencode-zen=no\|yes` | `opencode/` model catalog. |
+| `--zai-coding-plan=no\|yes` | Z.ai Coding Plan. |
+| `--kimi-for-coding=no\|yes` | Kimi for Coding. |
+| `--vercel-ai-gateway=no\|yes` | Vercel AI Gateway. |
+| `--skip-auth` | Skip auth hints. |
+
+Provider selection is per-agent — OmO does not use one global priority.
+
+</Step>
+
+<Step>
+
+### Authenticate Providers
+
+```bash
+opencode auth login
+```
+
+For Gemini Antigravity OAuth, install the upstream `opencode-antigravity-auth` plugin. For GitHub Copilot, Z.ai, OpenCode Go, OpenCode Zen, and Kimi, the installer wires defaults from your provider flags.
+
+</Step>
+
+<Step>
+
+### Verify
+
+```bash
+opencode --version
+bunx oh-my-openagent doctor
+```
+
+`doctor` checks four groups:
+
+| Group | What it checks |
+|---|---|
+| System | OpenCode binary, version, plugin registration, legacy-name warnings. |
+| Config | JSONC parsing, schema validation, file detection. |
+| Tools | AST-Grep, LSP servers, GitHub CLI, MCP servers. |
+| Models | Capability cache, normalization, agent/category overrides, fallback availability. |
+
+Use `doctor --verbose` when something looks wrong.
+
+</Step>
+
+<Step>
+
+### First Task
+
+Inside an OpenCode session, type:
+
+```bash
+ulw fix the failing login flow and verify it in the browser
+```
+
+For precision-first work, plan before executing:
+
+```bash
+@plan refactor the auth module without behavior changes
+/start-work
+```
+
+Need GPT-native deep work? Switch to Hephaestus from the agent selector and give him a goal, not a recipe.
+
+</Step>
+
+</Steps>
+
+## Telemetry
+
+Anonymous active-install telemetry is on by default — at most one event per UTC day per machine, hashed installation identifier, no PostHog person profiles. Disable with either:
+
+```bash
+OMO_SEND_ANONYMOUS_TELEMETRY=0
+OMO_DISABLE_POSTHOG=1
+```

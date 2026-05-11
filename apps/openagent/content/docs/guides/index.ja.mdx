@@ -1,0 +1,29 @@
+---
+title: Guides
+description: Choose the right OmO workflow for each kind of work.
+---
+
+## Which Mode Should I Use?
+
+| Situation | Use | Why |
+|---|---|---|
+| Small fix | Normal prompt | Sisyphus can handle it directly. |
+| Complex but you are lazy | `ultrawork` or `ulw` | OmO explores, delegates, implements, and verifies. |
+| Complex and precise | Prometheus, then `/start-work` | You get an interviewed plan and Atlas-led execution. |
+
+## Recommended First Workflow
+
+```text
+ultrawork add the missing test coverage for the payment parser
+```
+
+For higher control:
+
+```text
+@plan migrate the settings page without changing behavior
+/start-work
+```
+
+## Model Setup Guidance
+
+Sisyphus works best with Claude Opus-class or Claude-like models such as Kimi K2.5 and GLM 5. Hephaestus and Oracle prefer GPT-5.4-class reasoning. Explore and Librarian should stay on fast, cheap models. Do not override models unless you know why.

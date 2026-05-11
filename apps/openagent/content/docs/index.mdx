@@ -1,0 +1,158 @@
+---
+title: Oh My OpenAgent
+description: Multi-model agent orchestration for OpenCode. Just tell it the outcome.
+---
+
+![Oh My OpenAgent](/images/hero.jpg)
+
+**Multi-model agent orchestration for OpenCode. Just tell it the outcome.**
+
+_Stop memorizing OpenCode commands. OmO holds the loop._
+
+Oh My OpenAgent (OmO) is a multi-model agent orchestration layer that runs on top of OpenCode. With a single prompt it coordinates specialized agents to automate complex development tasks end-to-end.
+
+Not locked to Claude. Not locked to OpenAI. Not locked to anyone.
+
+## Quick Start
+
+<Steps>
+
+<Step>
+
+### Install
+
+Recommended: hand the installation guide to your agent. Paste this into Claude Code, OpenCode, Cursor, or any other LLM session:
+
+```
+Install and configure oh-my-openagent by following the instructions here:
+https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/refs/heads/dev/docs/guide/installation.md
+```
+
+If you prefer to run it yourself, use Bun (do not use npm, yarn, or pnpm):
+
+```bash
+bunx oh-my-openagent install
+```
+
+The installer asks which model subscriptions you have and routes each agent accordingly.
+
+</Step>
+
+<Step>
+
+### Verify
+
+```bash
+bunx oh-my-openagent doctor
+```
+
+If `doctor` reports a "Using legacy package name" warning, swap your `opencode.json` plugin entry from `"oh-my-opencode"` to `"oh-my-openagent"`.
+
+</Step>
+
+<Step>
+
+### Build something
+
+Inside an OpenCode session, type:
+
+```bash
+ultrawork build a REST API for managing tasks
+```
+
+Or the short form:
+
+```bash
+ulw build a REST API for managing tasks
+```
+
+That's it. Sisyphus orchestrates. Hephaestus, Oracle, Librarian, and Explore work their lanes. The loop runs until the result is verified.
+
+</Step>
+
+</Steps>
+
+## Breaking Free
+
+![Sisyphus orchestrating tasks in parallel](/images/orchestrator-atlas.png)
+
+We used to call this "Claude Code on steroids." That was wrong.
+
+It isn't about making Claude Code better. It's about breaking free from the idea that one model, one provider, one way of working is enough. Anthropic wants you locked in. OpenAI wants you locked in. Everyone wants you locked in.
+
+OmO doesn't play that game. It orchestrates across models, picking the right brain for the right job. Claude for orchestration. GPT for deep reasoning. Gemini for frontend. Kimi or GLM when cost matters. All working together, automatically.
+
+## How It Works
+
+OmO routes every request through a delegation tree, not a single agent.
+
+```text
+User Request
+    ↓
+[IntentGate] — classifies what you actually want
+    ↓
+[Sisyphus] — main orchestrator, plans and delegates
+    ↓
+    ├─→ [Prometheus] — strategic planning (interview mode)
+    ├─→ [Atlas] — todo orchestration and execution
+    ├─→ [Oracle] — read-only architecture consultation
+    ├─→ [Librarian] — docs and OSS-code search
+    ├─→ [Explore] — fast codebase grep
+    └─→ [Category workers] — specialized by task type
+```
+
+Sisyphus delegates by category (`visual-engineering`, `ultrabrain`, `deep`, `quick`, `writing`), not by model name. The category routes to the right model automatically.
+
+## How to Use OmO
+
+The whole pitch is one word: **type `ulw`** (or `ultrawork`). Sisyphus orchestrates. Hephaestus, Oracle, Librarian, and Explore work their lanes. The loop runs until the result is verified.
+
+When the default isn't right:
+
+- **Vague idea, design first** — Prometheus interviews you and writes a `.sisyphus/plans/*.md` plan, then Atlas executes it.
+
+  ```bash
+  @plan <description>
+  /start-work
+  ```
+
+- **Long task, hands-off** — Ralph self-continues until acceptance is met.
+
+  ```bash
+  /ulw-loop
+  ```
+
+- **Just an answer or a small edit** — prompt normally, no command needed.
+
+- **First-time codebase** — generates hierarchical `AGENTS.md` files so future agents start with full context.
+
+  ```bash
+  /init-deep
+  ```
+
+OmO pairs each agent with a model that fits its job. Sisyphus wants long-rule discipline (Claude Opus, Kimi K2.6, or GLM-5.1); Hephaestus wants autonomous reasoning (GPT-5.5). A ChatGPT Plus ($20) + Kimi Code ($19) + GLM Coding ($10) combo covers most workloads — the installer wires it up.
+
+## Why Oh My OpenAgent?
+
+- **Provider-agnostic by design** — Sisyphus on Opus, Kimi K2.6, or GLM-5.1; Hephaestus on GPT-5.5. Pick what fits the work and what fits the wallet.
+- **Discipline agents** — Sisyphus orchestrates, Prometheus plans, Atlas executes, Oracle reviews, Librarian retrieves, Explore searches. Each tuned to its model's strengths.
+- **IntentGate** — reads the user's actual goal before classifying or acting. No more literal misinterpretations.
+- **Hash-anchored edits** — `LINE#ID` content hashes validate every change. Zero stale-line errors.
+- **LSP + AST-Grep** — workspace rename, pre-build diagnostics, AST-aware rewrites. IDE precision for agents.
+- **Persistent execution** — Ralph loops, todo enforcement, runtime fallback. Doesn't stop until verified.
+- **Built-in MCPs** — Exa (web search), Context7 (official docs), Grep.app (GitHub search). Always on.
+- **Tmux integration** — interactive REPLs, debuggers, TUIs. Live, not screenshotted.
+- **Claude Code compatible** — your existing hooks, commands, skills, MCPs, and plugins all work here.
+
+## Documentation Map
+
+<Cards>
+  <Card title="Getting Started" href="/en/docs/getting-started">Install OmO, choose providers, run doctor, and try the first `ulw` task.</Card>
+  <Card title="Core Concepts" href="/en/docs/concepts">Intent Gate, agents, model families, categories, skills, and continuation.</Card>
+  <Card title="Guides" href="/en/docs/guides">Choose between normal prompting, `ultrawork`, Prometheus planning, and Hephaestus.</Card>
+  <Card title="Agents" href="/en/docs/agents">The orchestrators, planners, consultants, retrieval agents, and category workers.</Card>
+  <Card title="Tools" href="/en/docs/tools">LSP, AST-grep, MCP, tmux, background agents, session tools, and hashline edits.</Card>
+  <Card title="Skills" href="/en/docs/skills">Built-in skills, custom skill locations, and the docs sync harness.</Card>
+  <Card title="Hooks" href="/en/docs/hooks">Continuation, recovery, notifications, rules, comments, and slash-command hooks.</Card>
+  <Card title="Reference" href="/en/docs/reference">CLI commands, config files, model resolution, categories, environment variables.</Card>
+</Cards>

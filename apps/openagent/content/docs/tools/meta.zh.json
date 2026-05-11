@@ -1,0 +1,10 @@
+{
+  "title": "Tools",
+  "pages": [
+    "[Background Agents](/zh/docs/tools#background-agents)",
+    "[LSP and AST-Grep](/zh/docs/tools#lsp-and-ast-grep)",
+    "[tmux](/zh/docs/tools#tmux)",
+    "[MCPs](/zh/docs/tools#mcps)",
+    "[Hashline Edits](/zh/docs/tools#hashline-edits)"
+  ]
+}

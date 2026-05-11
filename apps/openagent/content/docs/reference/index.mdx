@@ -1,0 +1,102 @@
+---
+title: Reference
+description: Packages, config files, CLI commands, categories, install flags, and environment variables.
+---
+
+A flat reference for the things you look up mid-session: command names, config paths, agent options, install flags, and the env vars that flip telemetry off.
+
+## Package Names
+
+The upstream rename is transitional. Prefer the upstream-published command when installing; treat OpenAgent names as the public product identity.
+
+| Name | Purpose |
+|---|---|
+| `oh-my-opencode` | Current upstream npm package and primary installer command. |
+| `oh-my-openagent` | Compatibility binary and product name during the rename transition. |
+| `oh-my-openagent` plugin entry | Preferred OpenCode plugin entry when the installer can register it. |
+| `oh-my-opencode` plugin entry | Legacy entry still recognized during transition. |
+
+## CLI
+
+| Command | Purpose |
+|---|---|
+| `bunx oh-my-opencode install` | Interactive installer. |
+| `bunx oh-my-opencode install --no-tui ...` | Non-interactive setup for agent-driven installs. |
+| `bunx oh-my-opencode doctor` | System, config, tool, and model-resolution diagnostics. |
+| `bunx oh-my-opencode run <message>` | OpenCode session runner with completion enforcement. |
+| `bunx oh-my-opencode version` | Version information. |
+| `bunx oh-my-opencode mcp oauth ...` | OAuth helper for remote MCP servers. |
+
+## Config Files
+
+User config loads first; project config can override it. JSONC is supported.
+
+| Scope | Paths |
+|---|---|
+| Project | `.opencode/oh-my-openagent.json[c]`, `.opencode/oh-my-opencode.json[c]` |
+| User | `~/.config/opencode/oh-my-openagent.json[c]`, `~/.config/opencode/oh-my-opencode.json[c]` |
+
+## Quick Config
+
+```jsonc
+{
+  "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/dev/assets/oh-my-opencode.schema.json",
+  "agents": {
+    "oracle": { "model": "openai/gpt-5.4", "variant": "high" },
+    "explore": { "model": "github-copilot/grok-code-fast-1" }
+  },
+  "categories": {
+    "quick": { "model": "opencode/gpt-5-nano" },
+    "visual-engineering": { "model": "google/gemini-3.1-pro" }
+  }
+}
+```
+
+If your installed package exposes a renamed schema, use the path reported by `doctor`.
+
+## Agent Options
+
+| Option | Meaning |
+|---|---|
+| `model` | Explicit `provider/model` override. |
+| `variant` | Variant such as `max`, `high`, `medium`, `low`, or `xhigh`. |
+| `fallback_models` | Ordered chain used when a model or provider fails. |
+| `prompt`, `prompt_append` | Replace or extend an agent prompt; `file://` URIs supported. |
+| `tools` | Restrict the tools available to an agent. |
+| `disable` | Disable a specific agent. |
+| `permission` | Control permissions such as edit, bash, and webfetch. |
+
+## Categories
+
+| Category | Purpose |
+|---|---|
+| `visual-engineering` | Frontend, UI/UX, design, styling, animation. |
+| `ultrabrain` | Hard logic, architecture, deep reasoning. |
+| `deep` | Autonomous research plus end-to-end implementation. |
+| `artistry` | Creative or unconventional work. |
+| `quick` | Trivial single-file changes, typo fixes, simple modifications. |
+| `unspecified-low`, `unspecified-high` | Generic low/high-effort fallback categories. |
+| `writing` | Documentation and prose. |
+
+## Install Flags
+
+| Flag | Meaning |
+|---|---|
+| `--claude=no\|yes\|max20` | Claude provider mode. |
+| `--openai=no\|yes` | OpenAI/ChatGPT provider mode. |
+| `--gemini=no\|yes` | Gemini provider mode. |
+| `--copilot=no\|yes` | GitHub Copilot fallback provider. |
+| `--opencode-go=no\|yes` | OpenCode Go subscription path. |
+| `--opencode-zen=no\|yes` | `opencode/` model catalog path. |
+| `--zai-coding-plan=no\|yes` | Z.ai Coding Plan path. |
+| `--kimi-for-coding=no\|yes` | Kimi for Coding path. |
+| `--vercel-ai-gateway=no\|yes` | Vercel AI Gateway path. |
+| `--skip-auth` | Skip post-install auth guidance. |
+
+## Environment
+
+| Variable | Meaning |
+|---|---|
+| `OMO_SEND_ANONYMOUS_TELEMETRY=0` | Disable anonymous active-install telemetry. |
+| `OMO_DISABLE_POSTHOG=1` | Disable PostHog telemetry. |
+| `OPENCODE_CONFIG_DIR` | Override OpenCode config directory. |

@@ -1,0 +1,22 @@
+---
+title: 워크플로우 스킬
+description: 아이디어에서 검증된 결과까지 일을 밀어주는 OmO 상위 명령과 루프.
+---
+
+Workflow skill은 세션에 직접 입력하는 진입점입니다. 목표를 맞는 루프와 맞는 모델로 묶어줍니다.
+
+## 주요 워크플로우
+
+| Workflow | 목적 |
+|---|---|
+| `ulw` / `ultrawork` | Sisyphus가 끌고 가는 "알아서 끝내라" 자율 루프. |
+| `ralph-loop` / `ulw-loop` | 실행과 검증을 반복하는 self-continuing 개발 루프. |
+| `@plan` / Prometheus mode | 구현 전에 인터뷰로 계획을 만듭니다. |
+| `/start-work` | 최신 Prometheus 계획에 Atlas를 활성화합니다. |
+| `init-deep` | 계층형 프로젝트 지식을 만듭니다. |
+| `handoff` | 다음 세션을 위해 맥락을 보존합니다. |
+| `refactor` | 진단, AST-Grep, 동작 보존 검증이 들어간 리팩터링 레인. |
+
+## 어느 걸 고를까
+
+자율성이 정확도보다 중요할 때는 `ulw`. 오래 남길 계획과 명시적 검증 단계가 필요할 때는 Prometheus + `/start-work`.

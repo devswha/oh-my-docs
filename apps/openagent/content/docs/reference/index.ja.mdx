@@ -1,0 +1,33 @@
+---
+title: Reference
+description: Configuration, commands, environment variables, and compatibility notes.
+---
+
+## Config Files
+
+OmO loads user config first, then project config overrides it. During the rename transition both new and legacy basenames are recognized.
+
+| Scope | Paths |
+|---|---|
+| Project | `.opencode/oh-my-openagent.json[c]`, `.opencode/oh-my-opencode.json[c]` |
+| User | `~/.config/opencode/oh-my-openagent.json[c]`, `~/.config/opencode/oh-my-opencode.json[c]` |
+
+Schema URL:
+
+```json
+{
+  "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/dev/assets/oh-my-opencode.schema.json"
+}
+```
+
+## CLI
+
+| Command | Purpose |
+|---|---|
+| `bunx oh-my-opencode install` | Interactive installer. |
+| `bunx oh-my-opencode install --no-tui ...` | Non-interactive setup. |
+| `bunx oh-my-opencode doctor` | Verify system, config, tools, and model resolution. |
+
+## Telemetry
+
+Anonymous active-install telemetry is enabled by default. Disable it with `OMO_SEND_ANONYMOUS_TELEMETRY=0` or `OMO_DISABLE_POSTHOG=1`.

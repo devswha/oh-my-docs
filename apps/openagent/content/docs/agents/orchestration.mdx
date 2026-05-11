@@ -1,0 +1,33 @@
+---
+title: Orchestration Agents
+description: Sisyphus, Hephaestus, Prometheus, and Atlas are the four lanes you enter on purpose.
+---
+
+![Sisyphus pushing the boulder](/images/sisyphus.png)
+
+OmO registers four primary agents in a stable order: Sisyphus, Hephaestus, Prometheus, then Atlas. These are the lanes you enter intentionally — from the OpenCode UI or through workflow commands.
+
+## Primary Lanes
+
+| Agent | Lane | Use it when |
+|---|---|---|
+| Sisyphus | Main orchestrator | You want OmO to read intent, delegate, track todos, and finish. |
+| Hephaestus | GPT-native deep worker | Architecture, hard debugging, and cross-domain synthesis need a single autonomous owner. |
+| Prometheus | Strategic planner | The problem needs interview-driven requirements, scope boundaries, and a written plan. |
+| Atlas | Plan executor | A Prometheus plan is ready and `/start-work` should turn it into verified tasks. |
+
+## Working Flow
+
+```text
+normal prompt / ultrawork
+  -> Sisyphus orchestrates directly
+
+@plan or Prometheus mode
+  -> Prometheus writes .sisyphus/plans/*.md
+  -> /start-work activates Atlas
+  -> Atlas delegates implementation and verifies progress
+```
+
+## Source Notes
+
+OmO is documented as a multi-model orchestration harness for OpenCode. The agent inventory lives in `src/agents/AGENTS.md`, and the orchestration flow is detailed in `docs/guide/orchestration.md`.

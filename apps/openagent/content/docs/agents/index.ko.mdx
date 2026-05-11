@@ -1,0 +1,67 @@
+---
+title: 에이전트
+description: OmO 에이전트 카탈로그와 일이 어떻게 나뉘는지.
+---
+
+![Sisyphus orchestrating tasks in parallel](/images/sisyphus.png)
+
+OmO에는 작은 캐스팅이 있습니다. 네 명은 사용자가 의도적으로 들어가는 레인이고, 나머지는 Sisyphus가 필요할 때 부르는 specialist입니다.
+
+## 핵심 순서
+
+핵심 에이전트 네 명은 OpenCode에서 Tab 순서가 고정입니다. Sisyphus, Hephaestus, Prometheus, Atlas. 나머지가 그 뒤를 따릅니다.
+
+<Cards>
+  <Card title="Sisyphus" href="/ko/docs/agents/orchestration">메인 오케스트레이터. 의도를 읽고, 위임하고, todo를 추적해서 일을 끝냅니다.</Card>
+  <Card title="Hephaestus" href="/ko/docs/agents/orchestration">아키텍처, 디버깅, 합성 판단을 자율로 처리하는 GPT-native deep worker.</Card>
+  <Card title="Prometheus" href="/ko/docs/agents/planning-review">전략 planner와 interviewer. 계획을 쓰고, production code는 건드리지 않습니다.</Card>
+  <Card title="Atlas" href="/ko/docs/agents/orchestration">승인된 계획을 실행합니다. boulder state를 만들고, 단위를 위임하고, 진행을 검증합니다.</Card>
+  <Card title="Oracle" href="/ko/docs/agents/specialists">아키텍처와 디버깅을 도와주는 read-only consultant.</Card>
+  <Card title="Librarian" href="/ko/docs/agents/specialists">문서, remote repository, OSS 예제. 빠르고 저렴한 retrieval.</Card>
+  <Card title="Explore" href="/ko/docs/agents/specialists">빠른 codebase 검색. "X가 어디 있지?"와 패턴 발견에 강합니다.</Card>
+  <Card title="Multimodal-Looker" href="/ko/docs/agents/specialists">이미지, PDF, diagram, screenshot.</Card>
+  <Card title="Metis" href="/ko/docs/agents/planning-review">계획 전 갭 분석. 숨은 의도, 모호함, 빠진 제약을 끌어냅니다.</Card>
+  <Card title="Momus" href="/ko/docs/agents/planning-review">계획과 결과 reviewer. 모호하거나 검증 불가능한 계획을 거절합니다.</Card>
+  <Card title="Sisyphus-Junior" href="/ko/docs/agents/category-workers">카테고리로 생성되는 executor. 한 단위만 맡고 재위임은 못 합니다.</Card>
+</Cards>
+
+## 도구 경계
+
+이 제약은 하네스의 일부입니다. "똑똑한" 에이전트가 잘못된 역할에서 위험한 일을 하는 걸 막습니다.
+
+| Agent | 제약 |
+|---|---|
+| Oracle | read-only consultation. write, edit, delegation 없음. |
+| Librarian | research-only. write, edit, delegation 없음. |
+| Explore | search-only. write, edit, delegation 없음. |
+| Multimodal-Looker | media analysis 중심, 읽기 위주. |
+| Atlas | 계획 실행을 오케스트레이션하지만 구현 단위는 위임. |
+| Sisyphus-Junior | 한 단위 구현 후 돌아가기 전 검증 필수. |
+
+## Category Worker
+
+`task`에 `category`가 들어오면, OmO가 그 도메인에 맞춘 Sisyphus-Junior 워커를 띄웁니다. category가 모델 프로필을 정하고, skill이 지시와 MCP를 더합니다.
+
+| Category | 워커 동작 |
+|---|---|
+| `visual-engineering` | Frontend/UI/design. `frontend-ui-ux`와 브라우저 검증을 같이 씁니다. |
+| `ultrabrain` | hard reasoning과 architecture. 프롬프트는 목표 중심으로 유지하세요. |
+| `deep` | 자율 조사 + 구현. 복잡하지만 일관된 작업에 좋습니다. |
+| `artistry` | 창의적이거나 비관습적인 접근. |
+| `quick` | 작은 변경. diff가 작다고 시각 작업을 여기로 보내지 마세요. |
+| `writing` | 문서와 prose. |
+
+## Background Agents
+
+메인 세션이 결과 없이도 진행 가능하면 specialist를 background로 돌리세요.
+
+```ts
+task({
+  subagent_type: "explore",
+  load_skills: [],
+  run_in_background: true,
+  prompt: "Find all auth policy implementations and summarize file paths.",
+});
+```
+
+독립적인 조사면 background, 다음 구현 결정을 막는 결과면 동기 모드로 기다리세요.

@@ -1,0 +1,94 @@
+---
+title: Core Concepts
+description: Intent, planning, models, agents, categories, skills, and continuation as one harness.
+---
+
+OmO is not one big prompt. It is a small set of moving parts that decide what the request actually means, who should handle it, and how to keep the loop running until the work is done.
+
+## System Shape
+
+<Mermaid chart={
+`flowchart TD
+    A["User Input"] --> B["Intent Gate"]
+    B --> C["Orchestrators\nSisyphus / Prometheus / Atlas"]
+    C --> D["Specialists\nHephaestus / Oracle / Librarian / Explore / Metis / Momus"]
+    D --> E["Tools\nLSP / AST-Grep / MCP / Tmux / Browser"]
+    E --> F["State & Continuation"]
+    F -.-> C`
+} />
+
+## Intent Before Action
+
+OmO does not treat every prompt as literal text. It first asks what you really need: explanation, investigation, implementation, planning, review, or delegation. The same sentence implies different work depending on context.
+
+| Surface request | Harness interpretation |
+|---|---|
+| "Why is this broken?" | Reproduce, diagnose root cause, fix if feasible. |
+| "Can you look into this?" | Investigate and resolve, not just summarize. |
+| "What's the best way?" | Choose the route and implement when the codebase implies action. |
+| "Review this" | Find bugs, risks, missing tests, and verification gaps first. |
+
+## Planning vs Execution
+
+Prometheus, Metis, Momus, and Atlas exist to keep decisions out of implementation lanes.
+
+| Agent | Boundary |
+|---|---|
+| Prometheus | Interviews, researches, and writes plans. Should not edit production code. |
+| Metis | Surfaces hidden intent, ambiguity, missing constraints, and AI failure points before a plan hardens. |
+| Momus | Rejects vague plans until file references, acceptance criteria, and verification are concrete. |
+| Atlas | Executes an approved plan through focused tasks, accumulates learnings, and verifies each step. |
+| Sisyphus-Junior | Category-spawned executor. Focused on one assigned unit; cannot re-delegate. |
+
+The contract is "Decision Complete": a plan should leave no hidden product or architecture decisions to the implementer.
+
+## Model Families
+
+OmO routes by agent and category because models behave differently.
+
+| Family | Typical use |
+|---|---|
+| Claude-like | Structured orchestration and disciplined instruction following. Claude Opus, Sonnet, Kimi K2.5, GLM 5 fit Sisyphus-style flows. |
+| GPT | Explicit reasoning and architecture. GPT-5.4 powers Hephaestus, Oracle, Momus, and hard logic categories. |
+| Gemini | Visual and frontend work where a different reasoning style helps. |
+| Fast utility | Explore, Librarian, quick fixes, grep-style work, and cheap background research. |
+
+Do not "upgrade" every task to the most expensive model. Explore and Librarian are intentionally fast and cheap because retrieval should not burn orchestration tokens.
+
+## Category + Skill
+
+Categories describe the work. Skills inject the playbook and sometimes MCP servers.
+
+| Category | Use |
+|---|---|
+| `visual-engineering` | Frontend, UI/UX, design, styling, animation. |
+| `ultrabrain` | Hard logic, architecture, deep reasoning. |
+| `deep` | Autonomous research and implementation. |
+| `artistry` | Creative or unconventional problem solving. |
+| `quick` | Trivial single-file changes, typo fixes, simple modifications. |
+| `unspecified-low` | Low-effort work that doesn't fit another category. |
+| `unspecified-high` | High-effort work that doesn't fit another category. |
+| `writing` | Documentation, prose, technical writing. |
+
+A good delegation names both the category and the skills:
+
+```ts
+task({
+  category: "visual-engineering",
+  load_skills: ["frontend-ui-ux", "playwright"],
+  run_in_background: false,
+  prompt: "Implement and browser-verify the responsive sidebar.",
+});
+```
+
+## Continuation as a Harness Feature
+
+The Sisyphus metaphor is literal: the system pushes unfinished work back into motion.
+
+| Mechanism | What it protects against |
+|---|---|
+| Todo continuation | Agent stops while todos remain. |
+| Ralph loop / ulw loop | Long tasks that need repeated self-continuation. |
+| Boulder state | `/start-work` resumes a Prometheus plan across sessions. |
+| Session recovery | Missing tool results, unavailable tools, empty content, context-limit failures. |
+| Runtime fallback | Model or provider failures move to the next configured fallback. |

@@ -1,0 +1,128 @@
+---
+title: 시작하기
+description: OmO를 설치하고, provider를 정하고, doctor를 돌리고, 첫 ulw를 던지기까지.
+---
+
+OmO는 OpenCode 위에서 돌아갑니다. 하네스를 설치하고, 모델 구독을 알려주고, `doctor`로 확인하면 루프가 준비됩니다.
+
+## 사전 요구사항
+
+| 항목 | 요구사항 |
+|---|---|
+| OpenCode | `opencode` 1.0.150 이상. |
+| Runtime | installer 부트스트랩에 `bunx`(또는 `npx`). 이후 CLI는 standalone binary로 동작합니다. |
+| Provider | 가진 것 중 일부면 됩니다: Claude, OpenAI/ChatGPT, Gemini, GitHub Copilot, OpenCode Go/Zen, Kimi for Coding, Z.ai, Vercel AI Gateway. |
+| OS | macOS ARM64/x64, Linux x64/ARM64(musl/Alpine 포함), Windows x64. |
+
+## 설치
+
+<Steps>
+
+<Step>
+
+### Install
+
+```bash
+bunx oh-my-openagent install
+```
+
+호환 binary `oh-my-opencode`로도 됩니다. installer는 사용자가 가진 모델 구독을 묻고, OpenCode plugin을 등록하고, config 파일을 쓰고, 선택한 provider의 인증 안내를 띄웁니다.
+
+</Step>
+
+<Step>
+
+### 비대화형 설치
+
+에이전트에게 설치를 맡길 때는 flag를 직접 넘기세요.
+
+```bash
+bunx oh-my-openagent install --no-tui \
+  --claude=yes \
+  --openai=yes \
+  --gemini=no \
+  --copilot=no
+```
+
+| Flag | 의미 |
+|---|---|
+| `--claude=no\|yes\|max20` | Claude 구독. `max20`은 Claude Max 20x. |
+| `--openai=no\|yes` | Oracle 같은 GPT 기반 에이전트용 ChatGPT/OpenAI. |
+| `--gemini=no\|yes` | Gemini. |
+| `--copilot=no\|yes` | GitHub Copilot. |
+| `--opencode-go=no\|yes` | OpenCode Go (GLM/Kimi/MiniMax). |
+| `--opencode-zen=no\|yes` | `opencode/` model catalog. |
+| `--zai-coding-plan=no\|yes` | Z.ai Coding Plan. |
+| `--kimi-for-coding=no\|yes` | Kimi for Coding. |
+| `--vercel-ai-gateway=no\|yes` | Vercel AI Gateway. |
+| `--skip-auth` | 인증 안내 건너뛰기. |
+
+Provider 선택은 에이전트별입니다. OmO는 전역 priority 하나로 움직이지 않습니다.
+
+</Step>
+
+<Step>
+
+### Provider 인증
+
+```bash
+opencode auth login
+```
+
+Gemini Antigravity OAuth는 upstream `opencode-antigravity-auth` plugin을 설치해서 씁니다. GitHub Copilot, Z.ai, OpenCode Go, OpenCode Zen, Kimi는 installer에서 넘긴 provider flag에 맞춰 기본값이 잡힙니다.
+
+</Step>
+
+<Step>
+
+### 검증
+
+```bash
+opencode --version
+bunx oh-my-openagent doctor
+```
+
+`doctor`는 네 그룹을 봅니다.
+
+| 그룹 | 확인 내용 |
+|---|---|
+| System | OpenCode binary, version, plugin 등록, legacy 이름 경고. |
+| Config | JSONC parsing, schema validation, 파일 감지. |
+| Tools | AST-Grep, LSP server, GitHub CLI, MCP server. |
+| Models | capability cache, normalization, agent/category override, fallback availability. |
+
+뭔가 어긋나 보이면 `doctor --verbose`로 한 번 더 보세요.
+
+</Step>
+
+<Step>
+
+### 첫 작업
+
+OpenCode 세션에서 입력하세요.
+
+```bash
+ulw fix the failing login flow and verify it in the browser
+```
+
+정확도가 먼저라면 실행 전에 계획부터 잠그세요.
+
+```bash
+@plan refactor the auth module without behavior changes
+/start-work
+```
+
+GPT-native deep work가 필요하면 agent selector에서 Hephaestus를 골라 절차가 아니라 목표를 주세요.
+
+</Step>
+
+</Steps>
+
+## Telemetry
+
+익명 active-install telemetry는 기본 ON입니다. UTC 하루에 한 번, hashed installation id만 보내고 PostHog person profile은 만들지 않습니다. 끄려면 둘 중 하나입니다.
+
+```bash
+OMO_SEND_ANONYMOUS_TELEMETRY=0
+OMO_DISABLE_POSTHOG=1
+```

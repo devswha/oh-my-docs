@@ -1,0 +1,57 @@
+---
+title: Skills
+description: Reusable instruction packs that turn focused workers into domain specialists.
+---
+
+Skills are reusable instruction packs. They add workflows, constraints, examples, and MCP tool access without permanently bloating every agent prompt.
+
+## What Skills Do
+
+<Cards>
+  <Card title="Built-in skill">General workflows: browser QA, git discipline, review, AI-slop removal.</Card>
+  <Card title="User skill">Personal conventions stored under your OpenCode config.</Card>
+  <Card title="Project skill">Repository-specific workflows under `.opencode/skills/`.</Card>
+  <Card title="Skill with MCP">Instructions plus a tool server that loads only when needed.</Card>
+</Cards>
+
+## Category + Skill Pattern
+
+Categories pick the model and profile. Skills add the domain playbook.
+
+```ts
+task({
+  category: "writing",
+  load_skills: ["sync-openagent-docs"],
+  run_in_background: false,
+  prompt: "Refresh docs from upstream README and docs/reference facts.",
+});
+```
+
+Rules of thumb:
+
+- Use `visual-engineering` for any UI work, even if the edit looks small.
+- Load every skill whose domain overlaps the task.
+- Prefer project or user skills over built-ins when both apply.
+- Keep skill prompts concrete: context, goal, downstream use, request.
+
+## Documentation Sync Skill
+
+This docs site ships `sync-openagent-docs`, a project skill for keeping content aligned with upstream `code-yeongyu/oh-my-openagent`.
+
+It tells future agents to:
+
+- Read upstream README, docs, package metadata, and relevant `.opencode/skills` files before editing.
+- Preserve the package-name transition: install docs mention `oh-my-opencode`; OpenAgent stays the product identity.
+- Reduce diagram usage unless a diagram clarifies an architecture boundary.
+- Update English and Korean first, then keep Japanese and Chinese routes navigable.
+- Verify with lint, build, and route smoke checks.
+
+## Writing Good Project Skills
+
+| Section | Why it matters |
+|---|---|
+| Purpose | Defines when the skill should be loaded. |
+| Required sources | Prevents stale docs and guessed facts. |
+| Workflow | Gives the agent a repeatable path. |
+| Guardrails | Captures naming, safety, and verification rules. |
+| Output expectations | Makes completion observable. |

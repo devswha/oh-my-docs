@@ -1,0 +1,45 @@
+---
+title: Getting Started
+description: Install Oh My OpenAgent and verify your first OpenCode session.
+---
+
+## Prerequisites
+
+- OpenCode installed and available as `opencode`
+- Provider access for the models you want to use: Claude, OpenAI, Gemini, GitHub Copilot, OpenCode Go, OpenCode Zen, Kimi for Coding, or Z.ai
+- macOS, Linux, WSL, or Windows x64 for the shipped binaries
+
+## Install
+
+For humans, the easiest path is to ask your coding agent to follow the upstream installation guide. For manual setup, run the installer:
+
+```bash
+bunx oh-my-opencode install
+```
+
+For non-interactive setup, pass your subscriptions explicitly:
+
+```bash
+bunx oh-my-opencode install --no-tui --claude=yes --openai=yes --gemini=no --copilot=no
+```
+
+Useful flags include `--claude=yes|no|max20`, `--openai=yes|no`, `--gemini=yes|no`, `--copilot=yes|no`, `--opencode-go=yes|no`, `--opencode-zen=yes|no`, `--zai-coding-plan=yes|no`, `--kimi-for-coding=yes|no`, and `--vercel-ai-gateway=yes|no`.
+
+## Verify
+
+```bash
+opencode --version
+bunx oh-my-opencode doctor
+```
+
+`doctor` checks system setup, plugin registration, tools, and model resolution. If you see a legacy package warning, update your OpenCode plugin entry from `oh-my-opencode` to `oh-my-openagent`.
+
+## First Task
+
+Start OpenCode and type:
+
+```text
+ultrawork
+```
+
+Use `ulw` as the short form. For precise multi-step work, enter Prometheus planning mode with Tab or `@plan`, then run `/start-work`.

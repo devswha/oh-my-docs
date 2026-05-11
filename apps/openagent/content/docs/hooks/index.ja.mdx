@@ -1,0 +1,18 @@
+---
+title: Hooks
+description: Lifecycle automation around OmO sessions.
+---
+
+## Overview
+
+Hooks are the harness layer around OpenCode sessions. They inject instructions, route commands, recover malformed state, and keep unfinished work moving.
+
+| Family | Purpose |
+|---|---|
+| Routing | Map user intent to workflows, categories, and skills. |
+| Continuation | Resume when todos or background tasks remain. |
+| Recovery | Repair common tool/model/session failures. |
+| Tool integration | Connect tmux, MCP servers, and agent-specific tools. |
+| Context | Inject repository or directory conventions. |
+
+Run `bunx oh-my-opencode doctor --verbose` after changing hook-related config.

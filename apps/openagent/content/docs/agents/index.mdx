@@ -1,0 +1,67 @@
+---
+title: Agents
+description: The OmO agent catalog and how the work is split.
+---
+
+![Sisyphus orchestrating tasks in parallel](/images/sisyphus.png)
+
+OmO ships a small cast. Four agents are the lanes you enter on purpose; the rest are specialists Sisyphus calls when it needs them.
+
+## Core Ordering
+
+The four primary agents have a stable tab order in OpenCode: Sisyphus, Hephaestus, Prometheus, then Atlas. Other agents follow.
+
+<Cards>
+  <Card title="Sisyphus" href="/docs/agents/orchestration">Main orchestrator. Reads intent, delegates, tracks todos, finishes the work.</Card>
+  <Card title="Hephaestus" href="/docs/agents/orchestration">GPT-native autonomous deep worker for architecture, debugging, and synthesis.</Card>
+  <Card title="Prometheus" href="/docs/agents/planning-review">Strategic planner and interviewer. Writes plans; does not edit production code.</Card>
+  <Card title="Atlas" href="/docs/agents/orchestration">Executes approved plans, creates boulder state, delegates units, verifies progress.</Card>
+  <Card title="Oracle" href="/docs/agents/specialists">Read-only architecture and debugging consultant.</Card>
+  <Card title="Librarian" href="/docs/agents/specialists">Documentation, remote repositories, OSS examples. Fast and cheap retrieval.</Card>
+  <Card title="Explore" href="/docs/agents/specialists">Fast codebase search. Best for "where is X?" and pattern discovery.</Card>
+  <Card title="Multimodal-Looker" href="/docs/agents/specialists">Images, PDFs, diagrams, screenshots.</Card>
+  <Card title="Metis" href="/docs/agents/planning-review">Pre-plan gap analyzer. Surfaces hidden intent, ambiguity, missing constraints.</Card>
+  <Card title="Momus" href="/docs/agents/planning-review">Plan and result reviewer. Rejects vague or unverifiable plans.</Card>
+  <Card title="Sisyphus-Junior" href="/docs/agents/category-workers">Category-spawned executor. One assigned unit; cannot re-delegate.</Card>
+</Cards>
+
+## Tool Boundaries
+
+These restrictions are part of the harness. They stop "smart" agents from doing unsafe work in the wrong role.
+
+| Agent | Constraint |
+|---|---|
+| Oracle | Read-only consultation. No writes, edits, or delegation. |
+| Librarian | Research-only. No writes, edits, or delegation. |
+| Explore | Search-only. No writes, edits, or delegation. |
+| Multimodal-Looker | Media analysis, read-focused. |
+| Atlas | Orchestrates plan execution but delegates implementation units. |
+| Sisyphus-Junior | Implements one assigned unit and must verify before returning. |
+
+## Category Workers
+
+When `task` receives a `category`, OmO spawns a Sisyphus-Junior-like worker tuned for that domain. The category picks the model profile; skills add instructions and MCPs.
+
+| Category | Worker behavior |
+|---|---|
+| `visual-engineering` | Frontend/UI/design work. Pair with `frontend-ui-ux` and browser verification. |
+| `ultrabrain` | Hard reasoning and architecture. Keep the prompt goal-oriented. |
+| `deep` | Autonomous research plus implementation. Good for hairy but coherent work. |
+| `artistry` | Creative or non-conventional approaches. |
+| `quick` | Small changes. Don't use it for visual work just because the diff is small. |
+| `writing` | Documentation and prose. |
+
+## Background Agents
+
+Run specialists in the background when the main session can keep moving without the result.
+
+```ts
+task({
+  subagent_type: "explore",
+  load_skills: [],
+  run_in_background: true,
+  prompt: "Find all auth policy implementations and summarize file paths.",
+});
+```
+
+Use background mode for independent research. Stay synchronous when the result blocks the next implementation decision.

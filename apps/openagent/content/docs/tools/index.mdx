@@ -1,0 +1,64 @@
+---
+title: Tools
+description: Execution, retrieval, and verification surfaces available to OmO agents.
+---
+
+OmO treats tools as proof surfaces, not conveniences. Agents should use the same surface a real user touches before claiming work is done.
+
+## Tool Stack
+
+| Layer | Tools | What they prove |
+|---|---|---|
+| Code intelligence | LSP diagnostics, definitions, references, workspace rename | Type and symbol correctness before a full build. |
+| Structural search | AST-Grep search/replace | Code-pattern changes without brittle string matching. |
+| File safety | Hashline-aware reads/edits | The file did not drift between read and edit in a shared worktree. |
+| Runtime surface | tmux, browser, HTTP requests, CLI drivers | The feature works where users actually touch it. |
+| External knowledge | Context7, web search, GitHub code search, Librarian | Current docs, OSS examples, and remote repo facts. |
+| Continuation | todos, background task notifications, boulder state | Long work resumes instead of silently stopping. |
+
+## LSP and AST-Grep
+
+Use LSP when the question is about symbols. Use AST-Grep when the question is about code shape.
+
+| Tool | Use |
+|---|---|
+| `lsp_diagnostics` | Check language-server errors and warnings on changed files before build. |
+| `lsp_goto_definition` | Confirm where a referenced symbol is defined. |
+| `lsp_find_references` | Find call sites before changing behavior. |
+| `lsp_rename` | Apply a safe project-wide rename after `lsp_prepare_rename`. |
+| `ast_grep_search` | Find AST patterns such as function calls or component shapes. |
+| `ast_grep_replace` | Rewrite matching AST nodes while preserving captured variables. |
+
+## Manual QA Surfaces
+
+"Source says it should work" is not a passing result.
+
+| Deliverable | Required surface |
+|---|---|
+| Web UI | Browser automation: open the page, click/fill, watch console, inspect visual result. |
+| CLI/TUI | tmux: run `--help`, happy path, and at least one bad input. |
+| HTTP API | Live process plus a request client such as `curl` or a small driver. |
+| Library/SDK | Minimal script that imports and executes the changed path end to end. |
+| Documentation site | Build plus route smoke checks for the changed pages. |
+
+## MCP and Retrieval
+
+| Source | Best for |
+|---|---|
+| Context7 | Official package docs and API examples. |
+| Web search | Current public facts, releases, incidents, and pages. |
+| GitHub code search | Real-world usage patterns from public repositories. |
+| Librarian | Multi-repo or external-library synthesis. |
+| Explore | Internal codebase discovery and pattern maps. |
+
+## Hooks and Continuation
+
+OmO exposes many lifecycle hooks, but most workflows depend on a small set of guarantees.
+
+| Family | Purpose |
+|---|---|
+| Session recovery | Repair missing tool results, empty content, and malformed session state. |
+| Todo continuation | Continue when pending todos remain. |
+| Background notifications | Notify the main agent when delegated work completes or fails. |
+| Interactive shell | Keep CLI/TUI programs alive in tmux instead of one-shot shell calls. |
+| Directory agents | Inject directory-scoped instructions and conventions. |

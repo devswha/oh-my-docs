@@ -1,0 +1,34 @@
+---
+title: Oh My OpenAgent
+description: Multi-model orchestration for OpenCode. Install, type ultrawork, and let the harness work.
+---
+
+![Oh My OpenAgent](/images/hero.jpg)
+
+**Oh My OpenAgent (OmO)** is a batteries-included OpenCode plugin for multi-model agent orchestration. It turns one assistant into a small development team: Sisyphus plans and delegates, specialists research and implement, and verification tools keep the work grounded.
+
+## Quick Start
+
+```bash
+bunx oh-my-opencode install
+bunx oh-my-opencode doctor
+```
+
+Then open OpenCode and type:
+
+```text
+ultrawork
+```
+
+The published package and binary are still `oh-my-opencode`. The preferred OpenCode plugin entry is `oh-my-openagent`; legacy `oh-my-opencode` entries still load during the rename transition.
+
+## Documentation Map
+
+<Cards>
+  <Card title="Getting Started" href="/docs/getting-started">Install OmO, verify it, and run the first task.</Card>
+  <Card title="Core Concepts" href="/docs/concepts">Intent Gate, agents, categories, skills, and model routing.</Card>
+  <Card title="Guides" href="/docs/guides">When to use ultrawork, Prometheus, or a normal prompt.</Card>
+  <Card title="Agents" href="/docs/agents">Sisyphus, Hephaestus, Prometheus, Atlas, and the specialists.</Card>
+  <Card title="Tools" href="/docs/tools">LSP, AST-grep, tmux, MCP, background agents, and hashline edits.</Card>
+  <Card title="Reference" href="/docs/reference">Configuration files, CLI commands, environment variables, telemetry.</Card>
+</Cards>

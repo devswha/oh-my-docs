@@ -1,0 +1,23 @@
+---
+title: Specialist Agents
+description: Oracle, Librarian, Explore, and Multimodal-Looker bring focused read-heavy expertise.
+---
+
+Specialists are not implementers. They report facts so Sisyphus can decide and act with evidence instead of guessing.
+
+## Specialist Map
+
+| Agent | Specialty | Boundary |
+|---|---|---|
+| Oracle | Architecture, hard debugging, self-review | Read-only consultant. Skip for first-attempt simple fixes. |
+| Librarian | External docs, OSS code, remote repositories | Research-only. No edits or delegation. |
+| Explore | Fast repo-local code search and pattern mapping | Search-only. Use before deep analysis to find "where is X?" |
+| Multimodal-Looker | Images, screenshots, PDFs, diagrams | Extracts visual information; not an implementation worker. |
+
+## How Sisyphus Uses Them
+
+Sisyphus keeps implementation ownership and asks specialists for evidence. A common pattern: Explore maps the local code, Librarian checks external docs, Oracle reviews a risky decision, and Multimodal-Looker reads screenshots or diagrams.
+
+## Guardrail
+
+Specialists exist to reduce guessing. They report facts, risks, and recommended next steps. They should not silently expand scope or write production changes.
