@@ -33,6 +33,7 @@ function printHelp() {
 Options:
   --host <host>          Hostname to bind Next dev server (default: 127.0.0.1; remote: 0.0.0.0)
   --remote              Remote-server mode: bind 0.0.0.0, smoke-check via 127.0.0.1, print external URLs.
+  --tailscale           Tailscale mode: implies --remote and prioritizes MagicDNS/100.x Tailnet URLs.
   --public-url <url>    Browser-facing base URL, e.g. http://home-server:3101 or https://docs.example.dev.
   --check-host <host>   Host used for internal smoke checks (default: bound host, or 127.0.0.1 in --remote).
   --protocol <scheme>   URL scheme for generated check URLs (default: http).
@@ -51,6 +52,7 @@ Environment:
 
 Examples:
   node .codex/skills/preview-docs-local/scripts/preview-docs.mjs codex --from-git
+  node .codex/skills/preview-docs-local/scripts/preview-docs.mjs codex --tailscale
   node .codex/skills/preview-docs-local/scripts/preview-docs.mjs codex --remote --public-url http://home-server:3101
   node .codex/skills/preview-docs-local/scripts/preview-docs.mjs codex --path /docs/getting-started --exit-after-smoke
   node .codex/skills/preview-docs-local/scripts/preview-docs.mjs claudecode --smoke-only --port 3102
@@ -75,7 +77,8 @@ if (!existsSync(join(appRoot, 'package.json'))) {
   process.exit(1);
 }
 
-const remote = hasFlag('--remote');
+const tailscale = hasFlag('--tailscale');
+const remote = hasFlag('--remote') || tailscale;
 const protocol = argValue('--protocol', 'http');
 const host = argValue('--host', remote ? '0.0.0.0' : '127.0.0.1');
 const checkHost = argValue(
@@ -100,21 +103,80 @@ function envPublicUrl() {
   return process.env[appSpecific] ?? process.env.DOCS_PREVIEW_PUBLIC_URL ?? process.env.PREVIEW_PUBLIC_URL ?? null;
 }
 
+function unique(values) {
+  return [...new Set(values.filter(Boolean))];
+}
+
+function isTailscaleIpv4(value) {
+  const parts = value.split('.').map(Number);
+  return parts.length === 4 && parts.every((part) => Number.isInteger(part) && part >= 0 && part <= 255)
+    && parts[0] === 100
+    && parts[1] >= 64
+    && parts[1] <= 127;
+}
+
+function tailscaleSelfCandidates() {
+  const candidates = [];
+
+  const status = spawnSync('tailscale', ['status', '--json'], { encoding: 'utf8' });
+  if (status.status === 0 && status.stdout) {
+    try {
+      const parsed = JSON.parse(status.stdout);
+      const dnsName = parsed.Self?.DNSName?.replace(/\.$/, '');
+      if (dnsName) {
+        candidates.push(dnsName);
+        candidates.push(dnsName.split('.')[0]);
+      }
+      for (const ip of parsed.Self?.TailscaleIPs ?? []) {
+        if (isTailscaleIpv4(ip)) candidates.push(ip);
+      }
+    } catch {
+      // Fall through to `tailscale ip -4`.
+    }
+  }
+
+  const ip = spawnSync('tailscale', ['ip', '-4'], { encoding: 'utf8' });
+  if (ip.status === 0) {
+    for (const line of ip.stdout.split('\n').map((item) => item.trim()).filter(Boolean)) {
+      if (isTailscaleIpv4(line)) candidates.push(line);
+    }
+  }
+
+  return unique(candidates);
+}
+
+function interfaceCandidates({ tailscaleOnly = false } = {}) {
+  const candidates = [];
+  for (const addresses of Object.values(networkInterfaces())) {
+    for (const address of addresses ?? []) {
+      if (address.family !== 'IPv4' || address.internal) continue;
+      if (!tailscaleOnly || isTailscaleIpv4(address.address)) candidates.push(address.address);
+    }
+  }
+  return unique(candidates);
+}
+
 function publicBaseUrls() {
   const explicit = normalizeBaseUrl(argValue('--public-url', envPublicUrl()));
   if (explicit) return [explicit];
   if (!remote) return [checkBaseUrl];
 
-  const urls = new Set();
-  for (const addresses of Object.values(networkInterfaces())) {
-    for (const address of addresses ?? []) {
-      if (address.family === 'IPv4' && !address.internal) {
-        urls.add(`${protocol}://${address.address}:${port}`);
-      }
-    }
+  const tailnetHosts = unique([
+    ...tailscaleSelfCandidates(),
+    ...interfaceCandidates({ tailscaleOnly: true }),
+  ]);
+  const tailnetUrls = tailnetHosts.map((hostName) => `${protocol}://${hostName}:${port}`);
+
+  if (tailscale) {
+    return tailnetUrls.length ? tailnetUrls : [`${protocol}://<tailscale-host>:${port}`];
   }
-  urls.add(`${protocol}://<remote-host>:${port}`);
-  return [...urls];
+
+  const lanHosts = interfaceCandidates().filter((hostName) => !isTailscaleIpv4(hostName));
+  return unique([
+    ...tailnetUrls,
+    ...lanHosts.map((hostName) => `${protocol}://${hostName}:${port}`),
+    `${protocol}://<remote-host>:${port}`,
+  ]);
 }
 
 function normalizePath(path) {

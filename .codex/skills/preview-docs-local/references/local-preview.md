@@ -13,13 +13,13 @@
 Start the OMX docs dev server on a remote server and smoke-check changed docs pages from git:
 
 ```bash
-node .codex/skills/preview-docs-local/scripts/preview-docs.mjs codex --remote --from-git
+node .codex/skills/preview-docs-local/scripts/preview-docs.mjs codex --tailscale --from-git
 ```
 
 Use a stable browser-facing URL when available:
 
 ```bash
-node .codex/skills/preview-docs-local/scripts/preview-docs.mjs codex --remote --public-url http://home-server:3101 --from-git
+node .codex/skills/preview-docs-local/scripts/preview-docs.mjs codex --tailscale --public-url http://home-server:3101 --from-git
 ```
 
 Local-only fallback:
@@ -43,32 +43,42 @@ node .codex/skills/preview-docs-local/scripts/preview-docs.mjs codex --smoke-onl
 Dry-run planned commands/URLs:
 
 ```bash
-node .codex/skills/preview-docs-local/scripts/preview-docs.mjs codex --remote --from-git --dry-run
+node .codex/skills/preview-docs-local/scripts/preview-docs.mjs codex --tailscale --from-git --dry-run
 ```
 
 
-## Remote server mode
+## Tailscale / remote server mode
 
-Use `--remote` for the user's normal workflow on a remote development server.
+Use `--tailscale` for the user's normal workflow on a Tailscale-connected remote development server. Use plain `--remote` only for non-Tailscale remote access.
 
 Behavior:
 
 - Binds Next to `0.0.0.0` so a browser outside the server can connect.
 - Uses `127.0.0.1` for internal smoke checks so validation does not depend on DNS, Tailscale, or firewall routing.
 - Prints browser-facing URLs separately from internal smoke URLs.
-- If `--public-url` is omitted, prints detected non-loopback IPv4 candidates plus `http://<remote-host>:<port>`.
+- In Tailscale mode, prints MagicDNS and `100.x` Tailnet URLs first.
+- If `--public-url` is omitted outside Tailscale mode, prints detected non-loopback IPv4 candidates plus `http://<remote-host>:<port>`.
 
 Recommended forms:
 
 ```bash
 # Tailscale/LAN hostname known
-node .codex/skills/preview-docs-local/scripts/preview-docs.mjs codex --remote --public-url http://home-server:3101 --from-git
+node .codex/skills/preview-docs-local/scripts/preview-docs.mjs codex --tailscale --public-url http://home-server:3101 --from-git
 
 # URL from environment, useful for repeated sessions
-DOCS_PREVIEW_CODEX_PUBLIC_URL=http://home-server:3101   node .codex/skills/preview-docs-local/scripts/preview-docs.mjs codex --remote --from-git
+DOCS_PREVIEW_CODEX_PUBLIC_URL=http://home-server:3101   node .codex/skills/preview-docs-local/scripts/preview-docs.mjs codex --tailscale --from-git
 
 # Agent proof only: start, check internally, stop
-node .codex/skills/preview-docs-local/scripts/preview-docs.mjs codex --remote --path /docs --exit-after-smoke
+node .codex/skills/preview-docs-local/scripts/preview-docs.mjs codex --tailscale --path /docs --exit-after-smoke
+```
+
+
+Tailscale detection uses `tailscale status --json` and `tailscale ip -4` when available. Example generated URLs on this host look like:
+
+```text
+http://home-server.tail1e211e.ts.net:3101/docs
+http://home-server:3101/docs
+http://100.123.228.51:3101/docs
 ```
 
 Environment variable precedence for browser-facing URLs:
@@ -78,7 +88,7 @@ Environment variable precedence for browser-facing URLs:
 3. `PREVIEW_PUBLIC_URL`
 4. Auto-detected candidate URLs
 
-If the browser cannot connect, check that the chosen port is open on the remote host, that the firewall/security group permits it, and that the URL uses the same host/port printed by the helper.
+If the browser cannot connect over Tailscale, first try the `100.x` URL, then the full MagicDNS name. Check that Tailscale is connected on both devices, MagicDNS is enabled if using hostnames, and the chosen port is not blocked by the server firewall.
 
 ## Route derivation
 

@@ -1,4 +1,4 @@
 interface:
   display_name: "Preview Docs Local"
-  short_description: "Run local/remote docs previews"
+  short_description: "Run Tailnet docs previews"
   default_prompt: "Use $preview-docs-local to preview docs changes on a local Next.js server and verify changed pages."
