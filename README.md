@@ -17,6 +17,10 @@
 
 초기 import 기록과 향후 `git subtree pull/split` 절차는 [`MIGRATION.md`](./MIGRATION.md)에 정리되어 있습니다.
 
+## Vercel 배포 관리
+
+Vercel 프로젝트 매핑과 배포 스크립트는 [`deploy/vercel/`](./deploy/vercel/)에서 관리합니다. 먼저 `npm run vercel:sync-links`로 앱별 `.vercel/project.json`을 재생성한 뒤 preview/production 배포 스크립트를 사용합니다. 실제 Vercel 프로젝트의 monorepo Root Directory 변경은 `npm run vercel:configure:dry`로 확인하고, `VERCEL_TOKEN`이 있을 때 `npm run vercel:configure:apply`로 적용합니다.
+
 ## 자주 쓰는 명령
 
 ```bash

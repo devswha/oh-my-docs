@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "description": "Vercel project metadata for the oh-my-docs monorepo. IDs are project metadata, not deployment tokens or secrets.",
+  "projects": {
+    "codex": {
+      "path": "apps/codex",
+      "rootDirectory": "apps/codex",
+      "projectName": "oh-my-codex-docs",
+      "projectId": "prj_42NS1zANexT6oZCa7U9tdhbvhCVL",
+      "orgId": "team_66lsrwOyA36bLnIH2eoEXqry",
+      "sourceRepo": "/home/devswha/workspace/oh-my-codex-docs",
+      "sourceRef": "4a70e78ca29f93bfbed9653c324f60352530f29c"
+    },
+    "claudecode": {
+      "path": "apps/claudecode",
+      "rootDirectory": "apps/claudecode",
+      "projectName": "oh-my-claudecode-docs",
+      "projectId": "prj_woLKAzrZReBbRCyQHcK22rpI6ipK",
+      "orgId": "team_66lsrwOyA36bLnIH2eoEXqry",
+      "sourceRepo": "/home/devswha/workspace/oh-my-claudecode-docs",
+      "sourceRef": "b5955764b99e07d9f00008c462b2252b662edc65"
+    },
+    "openagent": {
+      "path": "apps/openagent",
+      "rootDirectory": "apps/openagent",
+      "projectName": "oh-my-openagent-docs",
+      "projectId": "prj_WPsiSDswosectEGfIxagkirSZenB",
+      "orgId": "team_66lsrwOyA36bLnIH2eoEXqry",
+      "sourceRepo": "/home/devswha/workspace/oh-my-openagent-docs",
+      "sourceRef": "e2668564936c9744d26d700014169565a6663ef5"
+    }
+  }
+}

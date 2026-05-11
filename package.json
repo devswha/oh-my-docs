@@ -19,6 +19,16 @@
     "lint:claudecode": "npm --prefix apps/claudecode run lint",
     "lint:openagent": "npm --prefix apps/openagent run lint",
     "install:all": "npm install --prefix apps/codex && npm install --prefix apps/claudecode && npm install --prefix apps/openagent",
-    "status": "git status --short --branch"
+    "status": "git status --short --branch",
+    "vercel:sync-links": "node scripts/vercel-sync-links.mjs",
+    "vercel:configure:dry": "node scripts/vercel-configure-projects.mjs --dry-run",
+    "vercel:configure:apply": "node scripts/vercel-configure-projects.mjs --apply",
+    "vercel:deploy:codex": "node scripts/vercel-deploy.mjs codex",
+    "vercel:deploy:claudecode": "node scripts/vercel-deploy.mjs claudecode",
+    "vercel:deploy:openagent": "node scripts/vercel-deploy.mjs openagent",
+    "vercel:deploy:all": "node scripts/vercel-deploy.mjs all",
+    "vercel:deploy:codex:prod": "node scripts/vercel-deploy.mjs codex --prod",
+    "vercel:deploy:claudecode:prod": "node scripts/vercel-deploy.mjs claudecode --prod",
+    "vercel:deploy:openagent:prod": "node scripts/vercel-deploy.mjs openagent --prod"
   }
 }
