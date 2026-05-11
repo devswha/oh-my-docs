@@ -257,15 +257,83 @@ function handoffSvg(prefix = 'ug-handoff') {
 </svg>`;
 }
 
+function minimalDocsFlowSvg(prefix = 'ug-minimal') {
+  return `<svg width="1200" height="420" viewBox="0 0 1200 420" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="${prefix}-title ${prefix}-desc">
+  <title id="${prefix}-title">Ultragoal minimal workflow diagram</title>
+  <desc id="${prefix}-desc">A minimal line diagram showing an approved plan flowing through durable stories, a ledger, an explicit goal handoff, and a final verification gate.</desc>
+  <style>
+    .outer { stroke: #d4d4d8; }
+    .card { fill: none; stroke: #d4d4d8; }
+    .muted { fill: #71717a; opacity: .10; }
+    .line { stroke: #a1a1aa; }
+    .accent { stroke: #2563eb; }
+    .accent-fill { fill: #2563eb; }
+    .soft-fill { fill: #2563eb; opacity: .08; }
+    .ok { stroke: #16a34a; }
+    @media (prefers-color-scheme: dark) {
+      .outer { stroke: #3f3f46; }
+      .card { fill: none; stroke: #3f3f46; }
+      .muted { fill: #e4e4e7; opacity: .10; }
+      .line { stroke: #71717a; }
+      .accent { stroke: #60a5fa; }
+      .accent-fill { fill: #60a5fa; }
+      .soft-fill { fill: #60a5fa; opacity: .10; }
+      .ok { stroke: #4ade80; }
+    }
+  </style>
+  <rect x="1" y="1" width="1198" height="418" rx="24" class="outer" stroke-width="1"/>
+  <path d="M154 210H1036" class="line" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 10"/>
+  <path d="M250 210H282" class="line" stroke-width="2" stroke-linecap="round"/>
+  <path d="M472 210H504" class="line" stroke-width="2" stroke-linecap="round"/>
+  <path d="M694 210H726" class="line" stroke-width="2" stroke-linecap="round"/>
+  <path d="M916 210H948" class="line" stroke-width="2" stroke-linecap="round"/>
+
+  <g>
+    <rect x="72" y="126" width="156" height="168" rx="18" class="card"/>
+    <path d="M120 160H174M120 188H184M120 216H162" class="line" stroke-width="8" stroke-linecap="round"/>
+    <path d="M112 252L132 272L188 216" class="accent" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <g>
+    <rect x="294" y="126" width="156" height="168" rx="18" class="card"/>
+    <rect x="330" y="158" width="76" height="46" rx="10" class="soft-fill" stroke="#2563eb" stroke-opacity=".32"/>
+    <rect x="350" y="188" width="76" height="46" rx="10" class="muted"/>
+    <rect x="316" y="222" width="76" height="46" rx="10" class="muted"/>
+  </g>
+
+  <g>
+    <rect x="516" y="126" width="156" height="168" rx="18" class="card"/>
+    <path d="M552 166H636M552 210H636M552 254H612" class="line" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="548" cy="166" r="5" class="accent-fill"/>
+    <circle cx="548" cy="210" r="5" class="accent-fill"/>
+    <circle cx="548" cy="254" r="5" class="accent-fill"/>
+  </g>
+
+  <g>
+    <rect x="738" y="126" width="156" height="168" rx="18" class="card"/>
+    <circle cx="816" cy="210" r="48" class="soft-fill"/>
+    <circle cx="816" cy="210" r="34" class="accent" stroke-width="4"/>
+    <circle cx="816" cy="210" r="12" class="accent-fill"/>
+    <path d="M816 156V176M816 244V264M762 210H782M850 210H870" class="accent" stroke-width="4" stroke-linecap="round"/>
+  </g>
+
+  <g>
+    <rect x="960" y="126" width="156" height="168" rx="18" class="card"/>
+    <path d="M1038 160L1082 180V218C1082 246 1066 264 1038 276C1010 264 994 246 994 218V180L1038 160Z" class="muted"/>
+    <path d="M1014 218L1032 236L1064 202" class="ok" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>`;
+}
+
 function candidates() {
   return [
     {
       id: 'rail',
-      title: 'Durable rail',
-      purpose: 'Best for the docs page: shows the full sequence from approved plan to aggregate goal, story ledger, explicit handoff, and quality gate.',
+      title: 'Minimal docs rail',
+      purpose: 'Best for the docs page: a quiet Fumadocs-style line/card diagram that explains the sequence without overpowering prose.',
       alt: 'Ultragoal turns a large approved plan into one aggregate Codex goal, durable story milestones, a ledger, an explicit handoff, and final verification.',
-      prompt: 'Create a language-neutral docs illustration for Ultragoal: a large approved plan becomes one aggregate goal, durable story milestone cards, an append-only ledger, an explicit Codex goal handoff, and a final verification gate. Use clean editorial vector style, navy/blue/cyan palette, no visible text or logos.',
-      svg: workflowRailSvg('ug-rail'),
+      prompt: 'Create a minimal language-neutral docs diagram for Ultragoal: five simple bordered cards connected by a thin line, representing approved plan, durable stories, ledger, goal handoff, and final verification. Match a Fumadocs documentation page: neutral borders, subtle blue accent, no visible words or logos.',
+      svg: minimalDocsFlowSvg('ug-minimal'),
     },
     {
       id: 'orbit',

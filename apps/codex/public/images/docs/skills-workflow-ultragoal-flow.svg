@@ -1,121 +1,65 @@
-<svg width="1536" height="864" viewBox="0 0 1536 864" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="ug-rail-title ug-rail-desc">
-  <title id="ug-rail-title">Ultragoal durable goal workflow</title>
-  <desc id="ug-rail-desc">A large plan becomes one aggregate goal, durable milestone cards, an append-only ledger, an explicit goal handoff, and a final verification gate.</desc>
-  <defs>
-    <linearGradient id="ug-rail-bg" x1="100" y1="80" x2="1420" y2="800" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#07111F"/>
-      <stop offset="0.56" stop-color="#0C1C33"/>
-      <stop offset="1" stop-color="#102E56"/>
-    </linearGradient>
-    <linearGradient id="ug-rail-card" x1="0" y1="0" x2="1" y2="1">
-      <stop stop-color="#163963"/>
-      <stop offset="1" stop-color="#0B223D"/>
-    </linearGradient>
-    <linearGradient id="ug-rail-cyan" x1="0" y1="0" x2="1" y2="1">
-      <stop stop-color="#67E8F9"/>
-      <stop offset="1" stop-color="#3B82F6"/>
-    </linearGradient>
-    <linearGradient id="ug-rail-violet" x1="0" y1="0" x2="1" y2="1">
-      <stop stop-color="#C084FC"/>
-      <stop offset="1" stop-color="#6366F1"/>
-    </linearGradient>
-    <linearGradient id="ug-rail-green" x1="0" y1="0" x2="1" y2="1">
-      <stop stop-color="#86EFAC"/>
-      <stop offset="1" stop-color="#14B8A6"/>
-    </linearGradient>
-    <filter id="ug-rail-shadow" x="-18%" y="-22%" width="136%" height="150%" color-interpolation-filters="sRGB">
-      <feDropShadow dx="0" dy="18" stdDeviation="21" flood-color="#020617" flood-opacity="0.38"/>
-    </filter>
-    <filter id="ug-rail-glow" x="-70%" y="-70%" width="240%" height="240%" color-interpolation-filters="sRGB">
-      <feGaussianBlur stdDeviation="16" result="blur"/>
-      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.24 0 0 0 0 0.76 0 0 0 0 0.98 0 0 0 0.44 0"/>
-      <feBlend in="SourceGraphic" mode="screen"/>
-    </filter>
-    <marker id="ug-rail-arrow" markerWidth="18" markerHeight="18" refX="13" refY="9" orient="auto" markerUnits="strokeWidth">
-      <path d="M3 3L14 9L3 15" stroke="#8BDCF6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-    </marker>
-    <pattern id="ug-rail-grid" width="56" height="56" patternUnits="userSpaceOnUse">
-      <path d="M56 0H0V56" stroke="#93C5FD" stroke-opacity="0.06" stroke-width="1"/>
-    </pattern>
-  </defs>
+<svg width="1200" height="420" viewBox="0 0 1200 420" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="ug-minimal-title ug-minimal-desc">
+  <title id="ug-minimal-title">Ultragoal minimal workflow diagram</title>
+  <desc id="ug-minimal-desc">A minimal line diagram showing an approved plan flowing through durable stories, a ledger, an explicit goal handoff, and a final verification gate.</desc>
+  <style>
+    .outer { stroke: #d4d4d8; }
+    .card { fill: none; stroke: #d4d4d8; }
+    .muted { fill: #71717a; opacity: .10; }
+    .line { stroke: #a1a1aa; }
+    .accent { stroke: #2563eb; }
+    .accent-fill { fill: #2563eb; }
+    .soft-fill { fill: #2563eb; opacity: .08; }
+    .ok { stroke: #16a34a; }
+    @media (prefers-color-scheme: dark) {
+      .outer { stroke: #3f3f46; }
+      .card { fill: none; stroke: #3f3f46; }
+      .muted { fill: #e4e4e7; opacity: .10; }
+      .line { stroke: #71717a; }
+      .accent { stroke: #60a5fa; }
+      .accent-fill { fill: #60a5fa; }
+      .soft-fill { fill: #60a5fa; opacity: .10; }
+      .ok { stroke: #4ade80; }
+    }
+  </style>
+  <rect x="1" y="1" width="1198" height="418" rx="24" class="outer" stroke-width="1"/>
+  <path d="M154 210H1036" class="line" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 10"/>
+  <path d="M250 210H282" class="line" stroke-width="2" stroke-linecap="round"/>
+  <path d="M472 210H504" class="line" stroke-width="2" stroke-linecap="round"/>
+  <path d="M694 210H726" class="line" stroke-width="2" stroke-linecap="round"/>
+  <path d="M916 210H948" class="line" stroke-width="2" stroke-linecap="round"/>
 
-  <rect width="1536" height="864" rx="46" fill="url(#ug-rail-bg)"/>
-  <rect x="48" y="44" width="1440" height="776" rx="40" fill="url(#ug-rail-grid)" opacity="0.8"/>
-  <circle cx="236" cy="146" r="170" fill="#2563EB" opacity="0.13"/>
-  <circle cx="1292" cy="714" r="226" fill="#06B6D4" opacity="0.11"/>
-  <path d="M114 670C272 530 410 594 568 464C742 320 896 294 1064 356C1198 406 1300 344 1428 224" stroke="#7DD3FC" stroke-opacity="0.11" stroke-width="52" stroke-linecap="round"/>
-
-  <path d="M274 452C430 334 566 312 716 332C854 350 974 430 1122 398" stroke="#8BDCF6" stroke-opacity="0.34" stroke-width="7" stroke-linecap="round" marker-end="url(#ug-rail-arrow)"/>
-  <path d="M418 556C568 668 734 678 916 596C1012 552 1090 566 1160 626" stroke="#99F6E4" stroke-opacity="0.30" stroke-width="6" stroke-linecap="round" marker-end="url(#ug-rail-arrow)"/>
-
-  <g filter="url(#ug-rail-shadow)">
-    <rect x="112" y="294" width="258" height="316" rx="34" fill="url(#ug-rail-card)" stroke="#60A5FA" stroke-opacity="0.42" stroke-width="2"/>
-    <rect x="146" y="336" width="190" height="24" rx="12" fill="#BAE6FD" opacity="0.84"/>
-    <rect x="146" y="390" width="150" height="17" rx="8.5" fill="#93C5FD" opacity="0.48"/>
-    <rect x="146" y="432" width="174" height="17" rx="8.5" fill="#93C5FD" opacity="0.40"/>
-    <rect x="146" y="474" width="126" height="17" rx="8.5" fill="#93C5FD" opacity="0.36"/>
-    <circle cx="198" cy="548" r="28" fill="url(#ug-rail-cyan)" opacity="0.22"/>
-    <path d="M178 548L202 572L260 510" stroke="#67E8F9" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+  <g>
+    <rect x="72" y="126" width="156" height="168" rx="18" class="card"/>
+    <path d="M120 160H174M120 188H184M120 216H162" class="line" stroke-width="8" stroke-linecap="round"/>
+    <path d="M112 252L132 272L188 216" class="accent" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
   </g>
 
-  <g filter="url(#ug-rail-shadow)">
-    <circle cx="728" cy="224" r="108" fill="#0B203A" stroke="#60A5FA" stroke-opacity="0.54" stroke-width="2"/>
-    <circle cx="728" cy="224" r="70" fill="url(#ug-rail-cyan)" opacity="0.20" filter="url(#ug-rail-glow)"/>
-    <path d="M672 224C672 193.1 697.1 168 728 168C758.9 168 784 193.1 784 224C784 254.9 758.9 280 728 280C697.1 280 672 254.9 672 224Z" stroke="#BAE6FD" stroke-width="9" opacity="0.92"/>
-    <path d="M726 142V166M726 282V306M808 224H784M672 224H648" stroke="#67E8F9" stroke-width="9" stroke-linecap="round" opacity="0.68"/>
-    <circle cx="812" cy="158" r="16" fill="url(#ug-rail-violet)" opacity="0.92"/>
-    <circle cx="640" cy="286" r="12" fill="url(#ug-rail-green)" opacity="0.9"/>
+  <g>
+    <rect x="294" y="126" width="156" height="168" rx="18" class="card"/>
+    <rect x="330" y="158" width="76" height="46" rx="10" class="soft-fill" stroke="#2563eb" stroke-opacity=".32"/>
+    <rect x="350" y="188" width="76" height="46" rx="10" class="muted"/>
+    <rect x="316" y="222" width="76" height="46" rx="10" class="muted"/>
   </g>
 
-  <g filter="url(#ug-rail-shadow)">
-    <rect x="458" y="412" width="182" height="126" rx="28" fill="#0F2A4D" stroke="#38BDF8" stroke-opacity="0.45" stroke-width="2"/>
-    <circle cx="500" cy="458" r="20" fill="url(#ug-rail-cyan)"/>
-    <rect x="536" y="442" width="70" height="16" rx="8" fill="#DBEAFE" opacity="0.78"/>
-    <rect x="536" y="476" width="88" height="13" rx="6.5" fill="#93C5FD" opacity="0.42"/>
-  </g>
-  <g filter="url(#ug-rail-shadow)">
-    <rect x="678" y="456" width="182" height="126" rx="28" fill="#0F2A4D" stroke="#A78BFA" stroke-opacity="0.50" stroke-width="2"/>
-    <circle cx="720" cy="502" r="20" fill="url(#ug-rail-violet)"/>
-    <rect x="756" y="486" width="82" height="16" rx="8" fill="#EDE9FE" opacity="0.78"/>
-    <rect x="756" y="520" width="60" height="13" rx="6.5" fill="#C4B5FD" opacity="0.44"/>
-  </g>
-  <g filter="url(#ug-rail-shadow)">
-    <rect x="898" y="412" width="182" height="126" rx="28" fill="#0F2A4D" stroke="#5EEAD4" stroke-opacity="0.50" stroke-width="2"/>
-    <circle cx="940" cy="458" r="20" fill="url(#ug-rail-green)"/>
-    <rect x="976" y="442" width="74" height="16" rx="8" fill="#CCFBF1" opacity="0.80"/>
-    <rect x="976" y="476" width="92" height="13" rx="6.5" fill="#5EEAD4" opacity="0.42"/>
+  <g>
+    <rect x="516" y="126" width="156" height="168" rx="18" class="card"/>
+    <path d="M552 166H636M552 210H636M552 254H612" class="line" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="548" cy="166" r="5" class="accent-fill"/>
+    <circle cx="548" cy="210" r="5" class="accent-fill"/>
+    <circle cx="548" cy="254" r="5" class="accent-fill"/>
   </g>
 
-  <g filter="url(#ug-rail-shadow)">
-    <rect x="1160" y="244" width="238" height="324" rx="34" fill="#0E2A3D" stroke="#22D3EE" stroke-opacity="0.44" stroke-width="2"/>
-    <rect x="1200" y="286" width="154" height="22" rx="11" fill="#A5F3FC" opacity="0.82"/>
-    <rect x="1198" y="350" width="160" height="44" rx="16" fill="#164E63" stroke="#67E8F9" stroke-opacity="0.34"/>
-    <circle cx="1228" cy="372" r="10" fill="#67E8F9"/>
-    <rect x="1254" y="364" width="70" height="13" rx="6.5" fill="#CFFAFE" opacity="0.58"/>
-    <rect x="1198" y="416" width="160" height="44" rx="16" fill="#164E63" stroke="#A78BFA" stroke-opacity="0.32"/>
-    <circle cx="1228" cy="438" r="10" fill="#A78BFA"/>
-    <rect x="1254" y="430" width="82" height="13" rx="6.5" fill="#E0E7FF" opacity="0.54"/>
-    <rect x="1198" y="482" width="160" height="44" rx="16" fill="#164E63" stroke="#86EFAC" stroke-opacity="0.30"/>
-    <circle cx="1228" cy="504" r="10" fill="#86EFAC"/>
-    <rect x="1254" y="496" width="58" height="13" rx="6.5" fill="#CCFBF1" opacity="0.54"/>
+  <g>
+    <rect x="738" y="126" width="156" height="168" rx="18" class="card"/>
+    <circle cx="816" cy="210" r="48" class="soft-fill"/>
+    <circle cx="816" cy="210" r="34" class="accent" stroke-width="4"/>
+    <circle cx="816" cy="210" r="12" class="accent-fill"/>
+    <path d="M816 156V176M816 244V264M762 210H782M850 210H870" class="accent" stroke-width="4" stroke-linecap="round"/>
   </g>
 
-  <g filter="url(#ug-rail-shadow)">
-    <path d="M1242 618L1340 662V728C1340 772 1303 796 1242 818C1181 796 1144 772 1144 728V662L1242 618Z" fill="#102C3E" stroke="#86EFAC" stroke-opacity="0.58" stroke-width="2"/>
-    <path d="M1198 720L1228 750L1292 684" stroke="#86EFAC" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+  <g>
+    <rect x="960" y="126" width="156" height="168" rx="18" class="card"/>
+    <path d="M1038 160L1082 180V218C1082 246 1066 264 1038 276C1010 264 994 246 994 218V180L1038 160Z" class="muted"/>
+    <path d="M1014 218L1032 236L1064 202" class="ok" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
   </g>
-
-  <g opacity="0.78">
-    <path d="M376 456H444" stroke="#8BDCF6" stroke-width="5" stroke-linecap="round" marker-end="url(#ug-rail-arrow)"/>
-    <path d="M644 482H672" stroke="#A5F3FC" stroke-width="5" stroke-linecap="round" marker-end="url(#ug-rail-arrow)"/>
-    <path d="M864 482H892" stroke="#99F6E4" stroke-width="5" stroke-linecap="round" marker-end="url(#ug-rail-arrow)"/>
-    <path d="M1088 470C1118 456 1128 414 1150 398" stroke="#8BDCF6" stroke-width="5" stroke-linecap="round" marker-end="url(#ug-rail-arrow)"/>
-    <path d="M1276 574V612" stroke="#99F6E4" stroke-width="5" stroke-linecap="round" marker-end="url(#ug-rail-arrow)"/>
-  </g>
-
-  <circle cx="418" cy="300" r="7" fill="#67E8F9" opacity="0.75"/>
-  <circle cx="422" cy="646" r="6" fill="#A78BFA" opacity="0.74"/>
-  <circle cx="836" cy="652" r="8" fill="#86EFAC" opacity="0.75"/>
-  <circle cx="1106" cy="230" r="7" fill="#67E8F9" opacity="0.70"/>
-  <circle cx="1402" cy="598" r="8" fill="#C084FC" opacity="0.64"/>
 </svg>

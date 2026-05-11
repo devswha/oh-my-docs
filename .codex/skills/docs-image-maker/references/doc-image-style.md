@@ -32,7 +32,7 @@ Use this structure:
 ```text
 Create a docs-ready illustration for <project/app> explaining <concept>.
 Scene: <objects and relationship>.
-Style: clean editorial vector/raster hybrid, high contrast, soft shadows, simple shapes, generous whitespace.
+Style: clean documentation diagram, minimal line/card layout, neutral borders, subtle accent color, generous whitespace.
 Constraints: no text, no labels, no logos, no screenshots, no watermark, accessible contrast, composition works at 16:9 and docs-column widths.
 Mood: helpful, calm, technical, modern.
 ```
@@ -58,6 +58,6 @@ Show three connected zones representing clarify, plan, execute. Use abstract car
 
 ## App visual notes
 
-- `codex`: orchestration, terminal, agent handoff, durable workflow, dark/navy/blue accents are appropriate.
+- `codex`: match the Fumadocs site: rounded cards, thin neutral borders, muted backgrounds, sparse blue accent, and minimal line diagrams. Avoid heavy hero-art gradients unless the target is a social/landing image.
 - `claudecode`: coding assistant, Claude Code workflows, concise IDE-like visual language.
 - `openagent`: orchestration and multi-agent metaphors; existing docs use Sisyphus/orchestrator imagery.
