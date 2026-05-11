@@ -1,0 +1,14 @@
+{
+  "title": "Reference",
+  "pages": [
+    "configuration",
+    "quick-commands",
+    "environment",
+    "migration",
+    "cjk-ime",
+    "changelog",
+    "release-notes",
+    "contracts",
+    "omx-directory"
+  ]
+}

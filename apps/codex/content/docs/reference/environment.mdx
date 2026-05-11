@@ -1,0 +1,51 @@
+---
+title: "Environment"
+description: "OMX environment variable reference — API keys, kill switches, and state directory overrides"
+---
+
+OMX reads environment variables at startup. Export them in your shell profile to apply them to every session.
+
+## Required
+
+| Variable | Description |
+|---|---|
+| `OPENAI_API_KEY` | OpenAI API key. Without it, the CLI will not start. |
+
+## OpenClaw
+
+| Variable | Default | Description |
+|---|---|---|
+| `OMX_OPENCLAW` | unset | Set to `1` to activate the OpenClaw dispatch pipeline. Without this, hook events are not dispatched to any gateway. |
+| `OMX_OPENCLAW_COMMAND` | unset | Enables command-type gateways (e.g. `clawdbot` agent launchers). Requires `OMX_OPENCLAW=1`. |
+| `OMX_OPENCLAW_COMMAND_TIMEOUT_MS` | `5000` | Timeout in milliseconds for command-gateway calls. Set to `120000` or higher for `clawdbot` agent workflows. |
+| `HOOKS_TOKEN` | unset | Bearer token used for OpenClaw HTTP gateway authentication. |
+
+## Kill switches
+
+| Variable | Description |
+|---|---|
+| `OMX_SKIP_HOOKS` | Comma-separated list of hook names to disable. Use `*` to disable all hooks. Useful for debugging or CI where you want raw Codex behavior. |
+| `DISABLE_OMX` | Set to any non-empty value to disable the entire OMX extension layer. Codex runs as if OMX is not installed. |
+
+## State directory override
+
+| Variable | Default | Description |
+|---|---|---|
+| `OMX_STATE_DIR` | `.omx/state/` | Override the directory where OMX writes session and team state. Useful in CI or multi-worktree environments. |
+
+## Example shell profile
+
+```bash
+# Required
+export OPENAI_API_KEY="sk-..."
+
+# OpenClaw (optional — enable if you use hook notifications)
+export OMX_OPENCLAW=1
+export OMX_OPENCLAW_COMMAND=1
+export OMX_OPENCLAW_COMMAND_TIMEOUT_MS=120000
+export HOOKS_TOKEN="your-token-here"
+```
+
+## Related
+
+- [Configuration](/docs/reference/configuration) — config files and CLI flags that complement env vars

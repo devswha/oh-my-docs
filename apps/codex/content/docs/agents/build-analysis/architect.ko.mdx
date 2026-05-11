@@ -1,0 +1,63 @@
+---
+title: architect
+description: "경계, 인터페이스, 컴포넌트 분해를 file-level 근거와 함께 분석하는 읽기 전용 시스템 설계 자문 에이전트."
+---
+
+`architect` 에이전트는 일반적인 설계 조언 대신 실제 코드베이스 근거를 바탕으로 설계 질문을 진단합니다. 컨텍스트 수집 → 가설 수립 → 코드 교차 검증 순서로 움직이고, root cause, 구체적인 권고, 명시적인 tradeoff를 정리해 반환합니다. 모든 주요 주장에는 `file:line` 근거가 따라야 합니다. 파일을 쓰거나 수정하지 않으며, 분석과 권고만 담당합니다.
+
+## 언제 호출되는가
+
+| 상황 | 호출 경로 |
+|---|---|
+| `$autopilot`, `$ralplan`에서 설계 cross-check 필요 | 자동 |
+| `$deep-interview` 중 구조적 분석 없이 답하기 어려운 설계 질문 | 자동 |
+| `planner`나 `executor`가 system boundary·interface contract 문제를 에스컬레이션 | 상위 에이전트 요청 |
+| `executor`가 예상 못 한 failure를 만나 구조적 root cause가 의심될 때 | `executor`에서 위임 |
+
+## 사용 예시
+
+```text
+"이 구조에서 auth boundary가 어디서 새는지 분석해줘"
+"이 모듈 분해가 맞는지 tradeoff를 정리해줘"
+"ralplan 검토 관점에서 이 설계안의 가장 큰 리스크를 짚어줘"
+```
+
+## 분석 프로세스
+
+1. 관련 파일, 인터페이스, 의존성 경계를 수집합니다.
+2. 현재 구조에서 가장 가능성 높은 설계 가설을 세웁니다.
+3. 실제 코드와 교차 검증하면서 `file:line` 근거를 붙입니다.
+4. ranked recommendation과 tradeoff를 정리합니다.
+
+## 설계 검토 / consensus 역할
+
+`$ralplan` 같은 consensus 흐름에서는 단순 자문보다 더 적극적인 역할을 맡습니다.
+
+- **antithesis** — 현재 선호안에 대한 가장 강한 반론 제시
+- **tradeoff tension** — 무시하면 안 되는 비용이나 부작용 강조
+- **synthesis** — 가능하다면 경쟁 옵션의 장점을 보존하는 절충안 제시
+
+consensus 흐름에서 architect는 설계를 지지하는 역할이 아니라, 계획을 더 단단하게 만드는 반증·검토 레이어에 가깝습니다.
+
+## 입력
+
+- 설계 질문, plan draft, 또는 실패한 component 설명
+- Glob, Grep, Read, git history로 접근한 저장소 소스
+- 선택적으로 LSP diagnostics, `explore` 결과, ralplan deliberation context
+
+## 출력
+
+- file:line 근거, root cause, ranked recommendation, tradeoff table이 포함된 분석 문서
+- consensus mode에서는 antithesis(가장 강한 반론), tradeoff tension, 가능하다면 synthesis
+
+## 제한 사항
+
+- 읽기 전용입니다. 어떤 경우에도 파일을 쓰거나 수정하지 않습니다.
+- 실제 코드베이스와 무관한 일반론적 조언을 하지 않습니다.
+- 근거 없이 추측하지 않습니다. 불확실할 때는 추측 대신 uncertainty를 명시합니다.
+
+## 관련 에이전트
+
+- [planner](/ko/docs/agents/build-analysis/planner) — architect 권고를 계획에 반영합니다.
+- [analyst](/ko/docs/agents/build-analysis/analyst) — architect 분석 결과로 요구사항 갭이 드러나면 다시 정리합니다.
+- [critic](/ko/docs/agents/coordination/critic) — consensus mode에서 architect 권고를 비판적으로 검토합니다.

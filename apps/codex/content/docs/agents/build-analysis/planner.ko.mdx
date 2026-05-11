@@ -1,0 +1,46 @@
+---
+title: planner
+description: "명세를 실행 가능한 파일 단위 계획과 acceptance criteria로 바꾸는 작업 순서 설계 에이전트."
+---
+
+`planner` 에이전트는 구현 요청을 받으면 바로 실행하는 대신, 실행 가능한 단계별 작업 계획으로 바꿉니다. 저장소를 직접 확인하고, 실제 범위에 맞게 step 수를 정하고, 검증 가능한 acceptance criteria를 포함한 계획을 만듭니다. 계획과 구현은 엄격히 분리됩니다. planner는 계획을 쓰고, 코드는 쓰지 않습니다.
+
+## 역할
+
+- 명세를 정확한 파일, 함수, expected outcome이 드러나는 순서 있는 작업으로 분해합니다.
+- 계획을 `.omx/plans/*.md`에 쓰고, 열린 질문은 `.omx/plans/open-questions.md`에 정리합니다.
+- 사용자 추측이 아니라 저장소 직접 조사 결과로 코드베이스 사실을 도출합니다.
+- `$ralplan`으로 호출되면 consensus-mode RALPLAN-DR 및 ADR 블록을 포함합니다.
+
+## 언제 호출되는가
+
+| 상황 | 호출 경로 |
+|---|---|
+| `$autopilot`, `$ralplan`에서 실행 전 계획 단계 | 자동 |
+| `$plan`으로 기능·리팩토링·이니셔티브 계획 요청 | 직접 요청 |
+| 요청 범위가 불명확해 executor 투입 전 scoping 필요 | 직접 요청 |
+| ralph loop가 막혀 sequencing을 다시 짜야 할 때 | `ralph`에서 위임 |
+
+## 입력
+
+- 사용자 요청 또는 이슈 설명
+- Glob, Grep, Read로 직접 확인한 저장소 내용
+- 현재 세션의 `.omx/plans/` 또는 `.omx/state/` 맥락
+
+## 출력
+
+- adaptive step count, target file, acceptance criteria가 포함된 `.omx/plans/{name}.md` 계획 파일
+- 범위, 예상 복잡도, 핵심 deliverable을 요약한 plan summary
+- consensus mode에서는 RALPLAN-DR 원칙/driver와 ADR 대안/근거
+
+## 제한 사항
+
+- source file을 직접 수정하지 않습니다. 계획 생산까지가 책임 범위입니다.
+- step count는 실제 범위에 맞춥니다. 무조건 5단계 계획을 만들지 않습니다.
+- 사용자가 intent를 확인하지 않았거나 명시적인 proceed signal이 없으면 계획을 최종 확정하지 않습니다.
+
+## 관련 에이전트
+
+- [architect](/ko/docs/agents/build-analysis/architect) — 계획 안의 시스템 경계와 설계 tradeoff를 검토합니다.
+- [analyst](/ko/docs/agents/build-analysis/analyst) — 계획 전에 요구사항과 acceptance criteria를 명확히 합니다.
+- [executor](/ko/docs/agents/build-analysis/executor) — 완성된 계획을 실제 구현으로 이어갑니다.

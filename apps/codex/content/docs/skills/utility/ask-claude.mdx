@@ -1,0 +1,40 @@
+---
+title: $ask-claude
+description: A bridge skill that delegates sub-questions to Claude from within the current OMX session
+---
+
+Invoke with `$ask-claude`.
+
+A bridge for sending sub-questions to Claude without leaving the current Codex session. Delegated calls run in a separate Claude context, so you get answers that are isolated from the current working flow.
+
+## When to use
+
+- When you want Claude to handle a reasoning-heavy question that Codex isn't well-suited for
+- When you need a summary or analysis that's independent of the current context
+- When comparing perspectives from different models alongside Gemini
+- When you have a short, well-scoped sub-question to resolve quickly
+
+## When to avoid
+
+- Questions that require the current session's codebase context → handle directly in Codex
+- Complex implementation tasks → use `$ralph` or an executor agent
+
+## Commands
+
+```bash
+$ask-claude "What's the safest retry strategy for idempotent HTTP endpoints?"
+$ask-claude --print "summarize this log in five lines"
+$ask-claude --agent-prompt writer "turn this note into release notes"
+```
+
+## How it works
+
+Opens a new Claude context, sends the question, and pipes the response back into the current session. It does not inherit files or state from the current working session.
+
+Use it intentionally for problems where Claude's perspective genuinely adds value — not as a default workflow.
+
+## Related docs
+
+- [`$ask-gemini`](/docs/skills/utility/ask-gemini) — same bridge pattern targeting Gemini
+- [Ask Claude tool](/docs/tools/ask-claude) — internal implementation details
+- [CLI Bridges](/docs/integrations/cli-bridges) — overview of cross-CLI advisory patterns

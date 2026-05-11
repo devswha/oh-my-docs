@@ -1,0 +1,50 @@
+---
+title: $tdd
+description: 테스트를 먼저 작성하고 구현을 뒤에 붙이는 red-green-refactor 사이클을 강제하는 워크플로우
+---
+
+`$tdd`는 프로덕션 코드 작성 전에 반드시 실패하는 테스트가 먼저 존재해야 한다는 규칙을 강제합니다. red-green-refactor 사이클을 각 단계별로 진행하고, 복잡한 테스트 전략이 필요하면 test-engineer 에이전트에 자문합니다. 새 테스트가 통과하고 기존 테스트 전체가 green인 상태에서만 사이클이 종료됩니다.
+
+## 언제 쓰나
+
+- 테스트를 먼저 쓰고 구현을 나중에 붙이고 싶을 때
+- 정확성이 중요한 핵심 도메인 로직을 다룰 때
+- 구현 후 테스트를 추가하는 방식 대신 체계적인 커버리지가 필요할 때
+- 새 코드베이스를 익히면서 테스트로 기대 동작을 문서화하고 싶을 때
+
+트리거 키워드: "tdd", "test first", "red green", "write tests before code"
+
+## 호출 방법
+
+```
+codex
+> tdd add a coupon validation function to the checkout module
+```
+
+```
+codex
+> $tdd implement the password-strength checker with edge cases covered
+```
+
+## 동작 방식
+
+**RED** — 다음 기능 단위에 대한 테스트를 작성하고 실행합니다. 처음 실행에서 통과하면 테스트가 잘못된 것으로 간주하고 다시 작성합니다.
+
+**GREEN** — 테스트를 통과시키기 위한 최소한의 프로덕션 코드만 작성합니다. 테스트 전체가 green이어야 다음으로 넘어갑니다.
+
+**REFACTOR** — 테스트를 green으로 유지하면서 코드 품질을 개선합니다. 변경 후마다 테스트를 실행합니다.
+
+복잡한 도메인 로직이나 낯선 테스트 패턴은 테스트 작성 전에 test-engineer 에이전트가 전략을 검토합니다. 기능이 완성될 때까지 사이클을 반복합니다.
+
+## 출력
+
+- RED 단계에서 작성된 실패 테스트
+- GREEN 단계에서 작성된 최소 프로덕션 코드
+- 전체 테스트 스위트가 green인 상태의 리팩토링된 소스
+- 각 사이클별 RED 실패 → GREEN 통과 → REFACTOR 결과 로그
+
+## 관련 스킬
+
+- [`$autopilot`](/ko/docs/skills/workflow/autopilot) — TDD 사이클을 내부에서 적용하는 전체 실행 파이프라인
+- [`$ultraqa`](/ko/docs/skills/workflow/ultraqa) — 구현 후 깨진 테스트 스위트를 수정하는 QA 사이클
+- [`$ralplan`](/ko/docs/skills/workflow/ralplan) — deliberate 모드에서 확장된 테스트 계획을 포함하는 합의 계획

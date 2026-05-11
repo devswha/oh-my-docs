@@ -1,0 +1,80 @@
+---
+title: "Wiki"
+description: "`.omx/wiki/` 아래에 저장되는 지속형 프로젝트 지식 — 세션이 끝나도 남아야 하는 정보를 쌓는 곳"
+---
+
+Wiki는 현재 실행에만 머물지 않아야 하는 정보를 저장하는 곳입니다. 아키텍처 결정, 디버깅 결과, 반복 패턴처럼 다음 세션에서도 다시 꺼내야 할 내용이 쌓입니다.
+
+## 무엇을 저장하는가
+
+Wiki 페이지는 `.omx/wiki/` 아래의 markdown 파일로 저장됩니다. 다음 유형의 정보에 적합합니다.
+
+- 아키텍처 결정과 그 근거
+- 디버깅 결과
+- 환경 관련 메모
+- 반복되는 구현 패턴
+- 보관할 가치가 있는 레퍼런스
+- 다음 작업에도 필요한 세션 요약
+
+markdown 파일 그대로 저장되므로 OMX 없이도 열어볼 수 있고, 저장소와 함께 이동할 수 있습니다.
+
+## 명령
+
+```bash
+omx wiki wiki_ingest --input '{}' --json
+omx wiki wiki_query --input '{"query":"session-start lifecycle"}' --json
+omx wiki wiki_read --input '{"page":"my-page"}' --json
+omx wiki wiki_list --json
+omx wiki wiki_lint --json
+```
+
+사용 가능한 wiki tool:
+
+- `wiki_add`
+- `wiki_ingest`
+- `wiki_query`
+- `wiki_read`
+- `wiki_list`
+- `wiki_lint`
+- `wiki_refresh`
+- `wiki_delete`
+
+## 각 작업의 용도
+
+| 작업 | 용도 |
+|---|---|
+| `wiki_add` | 단일 페이지를 빠르게 새로 만들기 |
+| `wiki_ingest` | 대량 자료를 분류된 페이지로 변환 |
+| `wiki_query` | 키워드와 태그로 검색 |
+| `wiki_read` | 특정 페이지 열기 |
+| `wiki_list` | 존재하는 페이지 목록 보기 |
+| `wiki_lint` | 상태, 링크, 구조 점검 |
+| `wiki_refresh` | 큰 변경 후 파생 메타데이터 재생성 |
+| `wiki_delete` | 페이지 삭제 및 인덱스 갱신 |
+
+## 언제 쓰는가
+
+세션이 끝난 뒤에도 정보가 남아 다음 세션에서 다시 쓸 수 있어야 한다면 wiki가 맞습니다.
+
+예를 들면:
+
+- "왜 offset 대신 cursor pagination을 선택했는가"
+- "이 저장소에서 tmux team session을 어떻게 재개하는가"
+- "staging proxy 배포에서 알려진 함정"
+- "반복해서 보이는 로그 라인의 의미와 디버깅 방법"
+
+## Wiki vs Notepad vs State
+
+| | 용도 |
+|---|---|
+| **Wiki** | 정리된 지속형 프로젝트 지식 |
+| **Notepad** | 세션용 scratch 메모, compaction resilience용 |
+| **State** | 활성 모드의 런타임 lifecycle 데이터 |
+
+미래 세션에서 다시 꺼내야 하는 정보라면 wiki에 넣을 가능성이 높습니다.
+
+## 관련 문서
+
+- [`.omx` Directory](/ko/docs/reference/omx-directory) — wiki 데이터가 디스크에 저장되는 위치
+- [State](/ko/docs/tools/state) — 활성 모드의 일시적 lifecycle state
+- [Wiki skill](/ko/docs/skills/workflow/wiki) — 이 surface 위에 구축된 사용자 워크플로우

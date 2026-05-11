@@ -1,0 +1,31 @@
+---
+title: $ecomode
+description: "Switch to low-cost mode to reduce token usage."
+---
+
+## Overview
+
+`$ecomode` switches the active OMX session to a low-cost profile. Instead of heavy multi-agent pipelines, it works with a single agent and uses lighter models wherever possible. Turn it on when execution cost matters more than depth of exploration or analysis.
+
+## When to use
+
+- When a large task is already designed and only execution remains
+- For repetitive small edits that don't need parallel agents
+- In environments where API costs need to be controlled
+
+## When to avoid
+
+- Tasks that require design or architecture judgment — ecomode reduces analysis depth and isn't suited for these.
+- Complex changes that touch multiple systems simultaneously
+
+## Example
+
+```text
+$ecomode
+```
+
+After invoking, subsequent runs default to lightweight agents and a single execution path.
+
+## Note
+
+ecomode applies to the current session only. Restarting the session returns to the default mode.

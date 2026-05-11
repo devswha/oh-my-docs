@@ -1,0 +1,37 @@
+---
+title: explore-harness
+description: "包装 explore agent、缓存探索结果并限制探索范围的封装 agent。"
+---
+
+`explore-harness` 不直接调用 `explore` agent，而是作为缓存探索结果并限制范围的封装层。当多个 agent 对同一仓库进行重复探索时，它可以减少冗余工作，并通过明确限制探索范围来降低噪声。
+
+## 职责
+
+- 在会话内缓存 `explore` 的结果，减少重复探索的开销。
+- 将探索范围限制到特定目录、文件模式或符号集合。
+- 在多假设调查中分别管理每个假设的探索结果。
+- 当 `debugger` 或 `planner` 需要同时探索多条路径时，协调并行探索。
+
+## 何时被调用
+
+| 场景 | 调用路径 |
+|---|---|
+| `debugger` 同时追踪多个假设时 | `debugger` 委派 |
+| 在大型仓库中需要避免重复探索时 | 编排器请求 |
+| 需要将探索范围明确限制到特定模块时 | 直接请求 |
+
+## 与 `explore` 的区别
+
+`explore` 是广泛探索仓库的单一 agent。`explore-harness` 在其基础上增加了**范围限制**和**结果复用**。简单探索用 `explore` 就够了，在需要重复或并行探索的复杂调查场景中，`explore-harness` 才能体现价值。
+
+## 范围限制
+
+- 不创建、修改或删除文件。
+- 不做架构判断，不给出修改建议。
+- 缓存仅在当前会话内有效。
+
+## 相关 agent
+
+- [explore](/zh/docs/agents/build-analysis/explore) — `explore-harness` 所封装的基础探索 agent。
+- [debugger](/zh/docs/agents/build-analysis/debugger) — 在多假设调查中利用 `explore-harness`。
+- [planner](/zh/docs/agents/build-analysis/planner) — 基于探索结果规划任务顺序。

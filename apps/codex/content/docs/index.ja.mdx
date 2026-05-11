@@ -1,0 +1,91 @@
+---
+title: Oh My CodeX
+description: "OpenAI Codex CLI 向けマルチエージェントオーケストレーション。学習コストゼロ。"
+---
+
+![Oh My CodeX](/images/omx-social-preview.jpg)
+
+**OpenAI Codex CLI 向けマルチエージェントオーケストレーション。学習コストゼロ。**
+
+_Codex プロンプトを学ぶ必要はありません。OMX をそのまま使ってください。_
+
+Oh My CodeX (OMX) は OpenAI Codex CLI の上で動作するワークフローレイヤーです。1 回の呼び出しで専用エージェントプロンプトを連携させ、複雑な開発タスクをエンドツーエンドで自動化します。
+
+## クイックスタート
+
+### 第 1 ステップ — Codex CLI をインストール
+
+```bash
+npm i -g @openai/codex
+```
+
+### 第 2 ステップ — OMX をインストール
+
+```bash
+npm i -g oh-my-codex
+```
+
+### 第 3 ステップ — セットアップ
+
+```bash
+omx setup
+```
+
+### 第 4 ステップ — 最初のセッションのスモークテストを実行
+
+```bash
+omx doctor
+codex login status
+omx exec --skip-git-repo-check -C . "Reply with exactly OMX-EXEC-OK"
+```
+
+### 第 5 ステップ — 推奨方法で OMX を起動
+
+```bash
+omx --madmax --high
+```
+
+そのセッション内で、標準ワークフローを試してください:
+
+```
+$deep-interview "認証変更の要件を明確にして"
+$ralplan "もっとも安全な実装パスを承認して"
+$ralph "承認済みの計画を完了まで進めて"
+```
+
+承認済みの計画に並列実行が必要なら、`$ralph` の代わりに `$team 3:executor "承認済みの計画を並列実行して"` を使ってください。
+
+## ドキュメント
+
+<Cards>
+  <Card title="Getting Started" href="/ja/docs/getting-started">
+    インストール、セットアップ確認、そして最初の良い OMX セッション
+  </Card>
+  <Card title="Core Concepts" href="/ja/docs/concepts">
+    エージェント、スキル、フック、`.omx/` ランタイム状態
+  </Card>
+  <Card title="Guides" href="/ja/docs/guides">
+    計画、実行、QA、デバッグの推奨ワークフロー
+  </Card>
+  <Card title="Agents" href="/ja/docs/agents">
+    33 個の役割別プロンプトのリファレンス
+  </Card>
+  <Card title="Skills" href="/ja/docs/skills">
+    ワークフロー / ユーティリティスキル、呼び出し規則、利用ガイド
+  </Card>
+  <Card title="Hooks" href="/ja/docs/hooks">
+    Codex ライフサイクル統合、キーワードルーティング、フック動作
+  </Card>
+  <Card title="Tools" href="/ja/docs/tools">
+    State、HUD、Wiki、Visual、プロバイダーブリッジなどランタイムが内部で使う機能層
+  </Card>
+  <Card title="Integrations" href="/ja/docs/integrations">
+    OpenClaw、Clawhip、MCP、クロス CLI 相互運用
+  </Card>
+  <Card title="Reference" href="/ja/docs/reference">
+    設定、クイックコマンド、環境変数、契約
+  </Card>
+  <Card title="Support" href="/ja/docs/support">
+    FAQ、Issue 報告、サポートチャネル
+  </Card>
+</Cards>

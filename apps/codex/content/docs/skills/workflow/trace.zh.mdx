@@ -1,0 +1,48 @@
+---
+title: $trace
+description: 以时间线和统计数据展示当前会话 agent 执行流程的调查工具
+---
+
+`$trace` 提取当前会话的执行记录。调用 `trace_timeline` 和 `trace_summary` MCP 工具，输出时序事件日志和汇总统计。可以了解关键词触发了哪个 skill、agent 委托如何进行、哪个工具是瓶颈。
+
+## 何时使用
+
+- 需要了解复杂多 agent 会话中发生了什么时
+- 调试意外的 skill 激活或模式切换时
+- 找出慢速工具或 agent 以消除瓶颈时
+- 审计 hook 的执行顺序时
+
+触发关键词: "trace", "show trace", "what happened", "flow trace", "session trace"
+
+## 调用方式
+
+```
+codex
+> trace
+```
+
+```
+codex
+> $trace
+```
+
+## 工作方式
+
+不带参数调用 `trace_timeline`，获取最新会话的时序事件日志。时间线按发生顺序显示：hook 执行、关键词检测、skill 激活、agent 委托、模式切换、工具调用。
+
+接着用 `trace_summary` 生成汇总统计，包含每个 hook 的执行次数、检测到的关键词、激活的 skill、模式切换次数、最慢的工具列表。
+
+输出先显示时间线，后跟摘要。模式切换会高亮显示，耗时较多的工具和 agent 会明确标注为瓶颈。关键词 → skill → agent 的因果链也会一并整理。
+
+## 输出
+
+- 当前会话的时序事件时间线
+- hook 执行次数、关键词检测、skill 激活、模式切换汇总
+- 明确标注最慢工具和 agent 的瓶颈报告
+- 关键词 → skill → agent 因果流摘要
+
+## 相关 skill
+
+- [`$deep-interview`](/zh/docs/skills/workflow/deep-interview) — 可用本 skill 审查执行流程的访谈工作流
+- [`$ralplan`](/zh/docs/skills/workflow/ralplan) — agent 顺序会出现在 trace 中的共识计划
+- [`$wiki`](/zh/docs/skills/workflow/wiki) — 将 trace 中获得的洞察保存到下一个会话的知识库

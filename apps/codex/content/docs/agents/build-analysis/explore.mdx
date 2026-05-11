@@ -1,0 +1,47 @@
+---
+title: "explore"
+description: "Read-only codebase discovery agent that maps files, symbols, entry points, and dependency relationships."
+---
+
+The `explore` agent answers "where does X live?" before any other agent touches code. It runs broad-to-narrow parallel searches across the repo and returns a structured report of file paths, symbol locations, and call-graph relationships. Because it is strictly read-only, it is safe to run at any point in a workflow without risk of side effects.
+
+## Role
+
+- Map files, directories, and module boundaries relevant to a query
+- Locate symbols (functions, classes, types) and trace their cross-file relationships
+- Identify entry points, dependency chains, and import graphs
+- Cross-validate findings across Glob, Grep, AST search, and LSP to eliminate false positives
+
+## When invoked
+
+| Situation | How it's triggered |
+|---|---|
+| At the start of `$autopilot`, `$deep-interview`, and `$deepsearch` | Automatic |
+| "Find where X lives", "which files touch Y" | Direct request |
+| When `planner` or `executor` needs concrete file paths | Parent agent request |
+| During debugging when the source location of a symptom is unknown | Delegated from `debugger` |
+
+## Inputs
+
+- Repo root path
+- A search query or scope hint (symbol name, feature area, file pattern, or free-form description)
+- Optional: prior context such as error messages or partially known file paths
+
+## Outputs
+
+- An in-session report listing absolute file paths, matched symbols, and relationship summaries
+- For deep-search runs, findings may be persisted to `.omx/research/<topic>.md` for downstream agents to reference
+- A `next_steps` section indicating which agent should act on the findings
+
+## Limits
+
+- Does not create, modify, or delete any file under any circumstance
+- Does not run tests, execute build commands, or assess code quality
+- Does not make architectural recommendations — that is the `architect` agent's role
+
+## Related agents
+
+- [analyst](/docs/agents/build-analysis/analyst) — consumes exploration results to refine requirements
+- [planner](/docs/agents/build-analysis/planner) — uses file maps from `explore` to sequence tasks
+- [debugger](/docs/agents/build-analysis/debugger) — uses `explore` to locate the source of a defect
+- [executor](/docs/agents/build-analysis/executor) — receives the file list produced by `explore` and `planner` before writing code

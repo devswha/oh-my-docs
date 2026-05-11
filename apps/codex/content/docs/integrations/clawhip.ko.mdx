@@ -1,0 +1,58 @@
+---
+title: "Clawhip"
+description: "OMX 훅 이벤트의 envelope 형식과 normalized event 이름을 정의하는 이벤트 계약 레이어."
+---
+
+Clawhip는 OMX raw 훅 pipeline과 downstream consumer(OpenClaw gateway, notification broker, interop agent) 사이의 이벤트 계약입니다. canonical envelope 형식과 안정적인 normalized event 이름 집합을 고정하기 때문에, consumer는 OMX 내부 이벤트 문자열을 직접 파싱할 필요가 없습니다.
+
+## 무엇인가
+
+별도 프로세스가 아니라 schema 및 routing contract입니다. OMX가 훅을 발생시키면, 그 이벤트 envelope는 이미 clawhip contract를 따릅니다. versioned schema, normalized field를 담은 `context` 블록, 그리고 `context.normalized_event` 문자열이 포함됩니다.
+
+`context.normalized_event`는 OMX가 내부적으로 쓰는 `session-start`, `session-idle` 같은 이름 대신, consumer가 안정적으로 의존할 수 있는 작은 vocabulary로 매핑한 값입니다.
+
+## OMX가 어떻게 사용하는가
+
+- **정규화 이벤트 라우팅** — consumer는 raw `event` field 대신 `context.normalized_event`를 기준으로 분기합니다. 지원하는 값: `started`, `blocked`, `finished`, `failed`, `retry-needed`, `pr-created`, `test-started`, `test-finished`, `test-failed`, `handoff-needed`.
+- **envelope contract** — 모든 이벤트는 `schema_version: "1"`, `event`, `timestamp`, `source`, `context` 블록을 포함합니다. `session_id`, `thread_id`, `turn_id`, `mode` 같은 식별자는 존재할 때만 들어갑니다.
+- **context 블록** — `normalized_event`, `session_name`, `repo_path`, `branch`, `issue_number`, `pr_number`, `pr_url`, `command`, `tool_name`, `status`, `error_summary` 필드를 담습니다.
+- **noise control** — 중복 suppression은 `thread_id + turn_id + type` 조합 기준입니다. idle 이벤트는 idle cooldown gate를 적용합니다. `retry-needed`, `handoff-needed` 같은 operational event는 session lifecycle completion과 별도로 처리됩니다.
+
+## 예시
+
+session-end 이벤트의 clawhip envelope:
+
+```json
+{
+  "schema_version": "1",
+  "event": "session-end",
+  "timestamp": "2025-04-19T10:00:00.000Z",
+  "source": "omx",
+  "session_id": "omx-abc123",
+  "context": {
+    "normalized_event": "finished",
+    "session_name": "omx-abc123",
+    "repo_name": "my-app",
+    "branch": "feat/new-api",
+    "status": "success"
+  }
+}
+```
+
+`normalized_event` 기준 consumer 라우팅:
+
+```js
+switch (event.context.normalized_event) {
+  case "finished": handleSuccess(event); break;
+  case "failed":   handleFailure(event); break;
+  case "blocked":  escalate(event);      break;
+}
+```
+
+raw `event` field(`"session-end"`)가 아니라 `context.normalized_event`(`"finished"`)를 기준으로 분기하는 것이 핵심입니다. OMX가 내부 이벤트 이름을 변경해도 consumer는 영향을 받지 않습니다.
+
+## 관련 문서
+
+- [OpenClaw](/ko/docs/integrations/openclaw) — clawhip envelope를 gateway로 전달하는 dispatch pipeline
+- [MCP](/ko/docs/integrations/mcp) — OMX skill과 훅에서 호출하는 Model Context Protocol 서버
+- [계약](/ko/docs/reference/contracts) — OMX prompt guidance / team mutation contract 설명

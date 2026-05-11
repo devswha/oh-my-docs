@@ -1,0 +1,65 @@
+---
+title: qa-tester
+description: "直接运行实际 CLI 或服务来验证运行时行为的交互式 QA agent。"
+---
+
+## 概述
+
+`qa-tester` agent 通过直接运行来验证自动化测试无法捕获的运行时行为。实际执行 CLI 命令、调用服务端点、手动触发边缘情况。如果说 `verifier` 是收集证据的角色，那 `qa-tester` 更接近于创造证据的一方。
+
+## 何时被调用
+
+- `executor` 实现完成后，需要手动确认实际 CLI/服务是否按预期运行时
+- 需要验证未包含在自动化测试中的用户场景时
+- 在 `$ultraqa` 周期中，需要确认 fix 后功能是否真正恢复时
+- 需要复现 flaky 测试或直接尝试边缘情况时
+
+## 使用示例
+
+```text
+"实际运行 CLI 命令，确认 output 是否正确"
+"手动验证认证流程的边缘情况"
+"确认这个 API 端点是否真的按预期响应"
+```
+
+## 验证范围
+
+| 项目 | 内容 |
+|---|---|
+| CLI 执行 | 实际命令执行及 stdout/stderr 确认 |
+| 服务调用 | HTTP 端点直接调用及响应验证 |
+| 用户场景 | 逐步执行实际使用流程 |
+| 边缘情况 | 边界值、错误输入、失败路径验证 |
+
+## 工作流程
+
+1. 确认需要验证的场景和标准。
+2. 在实际环境中运行 CLI 或服务。
+3. 将输出和状态与期望值进行比较。
+4. 如有异常，记录复现步骤，移交给 `executor` 或 `debugger`。
+
+## 输入
+
+- 需要验证的功能或场景列表
+- CLI 命令或 API 规格
+- `executor` 完成的实现结果
+
+## 输出
+
+- 执行的命令和实际输出的记录
+- PASS / FAIL / PARTIAL 判定及依据
+- 可复现的边缘情况记录
+- 如有失败，包含复现步骤的 bug 报告
+
+## 范围限制
+
+- 编写自动化测试由 `test-engineer` 负责。
+- 完成证据的正式判定由 `verifier` 做出。
+- 根本原因分析交给 `debugger`。
+
+## 相关 agent
+
+- [verifier](/zh/docs/agents/build-analysis/verifier) — 基于 qa-tester 收集的证据做出正式判定。
+- [test-engineer](/zh/docs/agents/domain/test-engineer) — 将 qa-tester 发现的情况固化为自动化测试。
+- [debugger](/zh/docs/agents/build-analysis/debugger) — 分析 qa-tester 复现的失败的根本原因。
+- [executor](/zh/docs/agents/build-analysis/executor) — 基于 qa-tester 的结果进行实际修正。

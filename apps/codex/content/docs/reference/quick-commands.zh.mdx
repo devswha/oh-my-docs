@@ -1,0 +1,54 @@
+---
+title: "快速命令"
+description: "配置、诊断、会话管理、team 操作中常用的 OMX 命令集"
+---
+
+常用 OMX 命令参考。若 `omx` 不在 PATH 中，请使用 `npx oh-my-codex` 或完整安装路径。
+
+## 配置与状态检查
+
+| 命令 | 说明 |
+|---|---|
+| `omx setup` | 安装或更新 OMX 提示词、技能、配置。升级后或在新机器上运行。 |
+| `omx setup --scope user` | 安装到用户全局配置（`~/.codex/`）。 |
+| `omx setup --scope project` | 安装到项目范围配置（`.codex/`）。 |
+| `omx doctor` | 检查安装状态、缺失文件、配置问题、hook pipeline 状态。 |
+| `omx doctor --team` | 执行 team/swarm 运行时相关的额外诊断。 |
+
+## 会话管理
+
+| 命令 | 说明 |
+|---|---|
+| `omx` | 启动交互式 OMX/Codex 会话。 |
+| `omx --madmax` | 以最大并行 team pipeline 启动。 |
+| `omx --madmax --high` | 以最大并行 + 最高 tier 模型启动。 |
+| `omx --skip-git-repo-check` | 在 git 仓库外启动时抑制错误。 |
+| `omx cancel` | 取消当前活跃执行模式（ralph、autopilot、ultrawork 等）。 |
+
+## 帮助
+
+| 命令 | 说明 |
+|---|---|
+| `omx help` | 输出完整 CLI 帮助和可用标志。 |
+| `omx --version` | 输出已安装的 OMX 版本。 |
+
+## Team 操作
+
+| 命令 | 说明 |
+|---|---|
+| `omx team api list-tasks --json` | 以 JSON 输出当前 team 任务列表。 |
+| `omx team api read-task --json` | 读取当前活跃任务。 |
+| `omx team api get-summary --json` | 获取 team state 摘要。 |
+| `omx team await` | 等待直到 team 事件发生。 |
+
+## AGENTS 初始化
+
+| 命令 | 说明 |
+|---|---|
+| `omx agents-init [path]` | 在 `path`（默认：当前目录）生成 `AGENTS.md`。 |
+
+## 相关文档
+
+- [配置](/zh/docs/reference/configuration) — 配置文件与 launch 标志
+- [环境](/zh/docs/reference/environment) — 环境变量
+- [迁移](/zh/docs/reference/migration) — 升级和迁移说明

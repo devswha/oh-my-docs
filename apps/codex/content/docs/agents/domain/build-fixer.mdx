@@ -1,0 +1,42 @@
+---
+title: build-fixer
+description: Diagnoses and resolves build failures, type errors, toolchain misconfigurations, and CI red states.
+---
+
+`build-fixer` turns red builds green. It reads compiler output, type errors, and CI logs, traces each failure to its root cause, applies the minimal fix, and verifies the build passes before finishing. It never masks errors with broad type suppressions or skipped checks.
+
+## Role
+
+- Diagnose build failures from compiler output, type errors, linker errors, and missing dependency messages
+- Trace CI failures to root cause — environment mismatch, missing secrets, flaky test infrastructure, or genuine code breakage
+- Apply minimal targeted fixes that address the root cause without refactoring adjacent code
+- Verify the build passes cleanly after each fix — never assume a change worked without running the build
+
+## When called
+
+- Triggered by the `$build-fix` keyword or when a CI build turns red and needs immediate triage
+- After a dependency upgrade breaks the build in unexpected ways
+- When TypeScript, Rust, or other compiled language type errors block a merge
+- After a rebase or merge introduces compilation failures
+
+## Inputs
+
+Provide the full build or type-check error output, the command that produces the failure, and the files recently changed. For CI failures, include the job name and log URL. The more complete the error output, the faster the root-cause trace.
+
+## Outputs
+
+A root-cause diagnosis for each failure, the fix applied (with file and line references), and fresh build output confirming the error is resolved. If a failure requires changes outside the build-fixer scope (e.g., a logic bug), it is flagged for `executor` or `debugger` rather than silently masked.
+
+## Limits
+
+- Does not refactor code for quality — only makes the minimum change needed to resolve the build error
+- Does not suppress type errors with `any` casts or `@ts-ignore` unless the error is genuinely a false positive
+- Does not debug runtime logic failures — defers to `debugger` for behavioral bugs discovered during the build
+
+## Related agents
+
+| Agent | Relationship |
+|---|---|
+| [`debugger`](/docs/agents/build-analysis/debugger) | Investigates runtime behavioral failures that build-fixer surfaces but cannot fix |
+| [`executor`](/docs/agents/build-analysis/executor) | Implements production code changes when build failures reveal logic gaps |
+| [`dependency-expert`](/docs/agents/domain/dependency-expert) | Assesses dependency-level root causes when a build breaks after an install or upgrade |

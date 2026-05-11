@@ -1,0 +1,69 @@
+---
+title: "Hooks"
+description: An overview of how OMX plugs into the Codex CLI lifecycle and why those hooks matter.
+---
+
+## What are hooks?
+
+Hooks are runtime handlers that react to Codex CLI lifecycle events.
+OMX uses them so skills can activate naturally, state can persist, and long-running workflows can continue without users having to remember internal commands.
+
+In other words, hooks are not user-facing commands. They are the **event layer that makes OMX behave coherently in the background**.
+
+## Why hooks matter
+
+Without hooks, OMX would be much closer to a loose prompt collection.
+Hooks are what let OMX:
+
+- detect magic keywords in user input
+- activate the right skills automatically
+- add guardrails before and after tool calls
+- restore or continue long-running execution modes
+- persist runtime state under `.omx/`
+
+That is why hooks are part of what turns OMX into an explainable workflow layer instead of a bag of prompts.
+
+## Where do hooks intervene?
+
+A simple way to think about it is this:
+
+| Timing | What OMX hooks do |
+|--------|-------------------|
+| Session start | restore state, inject context, run initial checks |
+| User prompt submit | detect magic keywords and activate skills |
+| Before tool execution | apply guards and preflight validation |
+| After tool execution | surface failure hints and run post-processing |
+| Model stop point | decide whether unfinished execution should continue |
+
+## What should you read in this section?
+
+### Lifecycle Events
+
+[Lifecycle Events](/docs/hooks/lifecycle-events) shows which Codex events exist and where OMX intervenes.
+
+### Core Hooks
+
+[Core Hooks](/docs/hooks/core-hooks) covers the central behavior: keyword detection, skill activation, routing, and execution enforcement.
+
+### Context Hooks
+
+[Context Hooks](/docs/hooks/context-hooks) explains session memory and recovery behavior: notepad, project memory, compaction, and state persistence.
+
+### Magic Keywords
+
+[Magic Keywords](/docs/hooks/magic-keywords) explains how natural-language phrases and `$skill` calls map into workflows.
+
+### Codex-native Hooks
+
+[Codex-native Hooks](/docs/hooks/codex-native-hooks) documents the specific Codex CLI hook integration points OMX uses.
+
+## When should you read the hooks docs first?
+
+Hooks are usually the fastest place to look when:
+
+- you want to know why a skill activated automatically
+- you need to understand why execution continued or got blocked
+- you want to see how long-running modes restore state
+- you are trying to connect runtime behavior back to `.omx/` state and lifecycle events
+
+If you ever think, “Why did OMX behave like this?”, the Hooks section is often the right starting point.

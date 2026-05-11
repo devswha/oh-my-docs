@@ -1,0 +1,47 @@
+---
+title: critic
+description: 指出计划与设计弱点并作出 OKAY/REJECT 裁定的对抗性审查智能体
+---
+
+`critic` 智能体从对抗性视角审查计划和设计。直接核实文件引用、推翻假设、识别风险，最终给出带有依据的 OKAY 或 REJECT 裁定。它不是盖章放行的橡皮图章。
+
+## 职责
+
+- 直接核实计划中的所有文件引用，并模拟 2〜3 个代表性任务，验证 executor 是否能在无需猜测的情况下执行。
+- 从清晰性、可验证性、完整性、整体一致性四个维度评估质量。
+- 在 `$ralplan` 共识门控中审查原则与选项的一致性、备选方案的深度以及风险缓解力度。
+- 在 deliberate ralplan 模式下，额外要求 3 个 pre-mortem 场景以及单元/集成/e2e/可观测性测试计划。
+
+## 调用时机
+
+- `$ralplan` 在计划输出与 executor 启动之间作为共识门控调用。
+- `$autopilot` 在执行前检查点调用。
+- 团队负责人在合并计划或设计提案之前需要对抗性审查时直接调用。
+- 需要对 code-reviewer 结果提供第二个批判性视角时。
+
+## 输入
+
+- 待评估的计划文件路径或设计文档
+- 计划引用的仓库源文件（通过 Glob/Grep/Read 直接读取）
+- 可选：ralplan 审议上下文、过去的 architect 或 analyst 输出
+
+## 输出
+
+| 项目 | 内容 |
+|---|---|
+| 裁定 | OKAY（可执行）或 REJECT（存在缺陷）＋依据 |
+| REJECT 时 | 3〜5 项核心改进点，包含具体建议 |
+| ralplan 模式 | 原则与选项一致性、备选方案深度、验证严密性的逐项通过/未通过判定 |
+
+## 约束
+
+- 只读模式。Write/Edit 工具被屏蔽，不直接修改文件。
+- 不凭空制造不存在的问题。计划可执行时给出 OKAY。
+- 不作模糊的否决。所有缺陷均关联到特定文件、具体行号或缺失的细节。
+
+## 关联智能体
+
+- [code-reviewer](/zh/docs/agents/review/code-reviewer) — 全面的代码审查。critic 可在共识模式下发起再次挑战。
+- [quality-strategist](/zh/docs/agents/coordination/quality-strategist) — 负责 critic 裁定后的质量策略和发布门控。
+- [architect](/zh/docs/agents/build-analysis/architect) — 提供结构分析，供 critic 与计划主张进行对照。
+- [planner](/zh/docs/agents/build-analysis/planner) — 收到 REJECT 裁定后修改计划并重新提交。

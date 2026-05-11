@@ -1,0 +1,37 @@
+---
+title: $ask-gemini
+description: 現在のOMXセッションからGeminiにサブ質問を委任するブリッジスキル
+---
+
+`$ask-gemini`で呼び出します。
+
+現在のCodexセッションを離れることなくGeminiにサブ質問を投げるブリッジです。`$ask-claude`と構造は同じで、対象モデルがGeminiになります。
+
+## いつ使うか
+
+- Geminiの長いコンテキスト処理能力が必要な質問があるとき
+- ClaudeとGeminiの回答を並べて比較したいとき
+- 現在のコンテキストと独立したサブ質問を素早く処理したいとき
+
+## いつ避けるか
+
+- 現在のコードベースコンテキストが必要な質問 → Codexで直接処理
+- Claude と Gemini を同じ意思決定ループで比較したい場合は、限定的な `$ask-claude`/`$ask-gemini` 呼び出しを並べるか、明示的な team orchestration で合成してください
+
+## コマンド
+
+```bash
+$ask-gemini "この設計の潜在的なボトルネックを探して"
+$ask-gemini --print "このエラーログを分析して"
+$ask-gemini --agent-prompt analyst "この要件を整理して"
+```
+
+## 動作方式
+
+別のGeminiコンテキストを開いて質問を渡し、結果を現在のセッションに返します。現在のセッションのファイルや状態は引き継ぎません。
+
+## 関連
+
+- [`$ask-claude`](/ja/docs/skills/utility/ask-claude) — Claudeを対象にした同一ブリッジ
+- [Ask Geminiツール](/ja/docs/tools/ask-gemini) — 内部動作の詳細
+- [CLI Bridges](/ja/docs/integrations/cli-bridges) — cross-CLI相談パターン概要

@@ -1,0 +1,63 @@
+---
+title: product-manager
+description: "A Domain agent responsible for clarifying requirements, defining scope, and establishing priorities before implementation begins."
+---
+
+## Overview
+
+The `product-manager` agent owns the stage of deciding what to build. It clarifies requirements, sets priorities, and confirms scope before any implementation begins. It provides product context so that development agents don't run in the wrong direction.
+
+## When to use
+
+- When requirements are vague and scope needs to be established first
+- When trade-offs between feature priorities need to be discussed
+- When product context needs to be organized before `$deep-interview` or `$ralplan`
+- When requests from multiple stakeholders need to be consolidated into a single actionable scope
+
+## Examples
+
+```text
+"Define the MVP scope from this feature list"
+"Document the product requirements for the authentication system change"
+"Decide what should come first in the current roadmap"
+```
+
+## Scope of work
+
+| Area | Description |
+|---|---|
+| Requirements clarification | Translate business goals into actionable criteria |
+| Scope definition | Set boundaries between what is included and what is excluded |
+| Priority judgment | Determine order based on impact and complexity |
+| Acceptance criteria | Specify verifiable conditions that `analyst` can use |
+
+## Process
+
+1. Understand the current situation and goals.
+2. Narrow ambiguous requirements through targeted questions.
+3. Organize an actionable scope and acceptance criteria.
+4. Document priority rationale and hand off to `analyst` or `planner`.
+
+## Inputs
+
+- Feature ideas or business goals provided by the user
+- Existing roadmaps, spec documents, or issue lists
+- Stakeholder requirements or constraints
+
+## Outputs
+
+- Requirements document with confirmed scope
+- Feature definitions including acceptance criteria
+- Roadmap with documented priority rationale
+
+## Limits
+
+- Actual implementation is handled by `executor`.
+- Technical architecture decisions are deferred to `architect`.
+- Detailed acceptance criteria for requirements analysis are developed together with `analyst`.
+
+## Related agents
+
+- [analyst](/docs/agents/build-analysis/analyst) — refines the requirements organized by product-manager into concrete acceptance criteria.
+- [planner](/docs/agents/build-analysis/planner) — plans the execution order based on the confirmed scope.
+- [architect](/docs/agents/build-analysis/architect) — translates product requirements into technical design.

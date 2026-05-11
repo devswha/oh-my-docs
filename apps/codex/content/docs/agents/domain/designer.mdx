@@ -1,0 +1,42 @@
+---
+title: designer
+description: Designs and implements production-grade UI with visual intent and accessibility.
+---
+
+`designer` bridges design thinking and implementation. It commits to a deliberate visual direction before writing a single line of code, detects the project's frontend framework, studies existing patterns, and then implements — delivering UI that is visually distinctive and technically correct for the product context, not generic scaffolding.
+
+## Role
+
+- Design and implement UI components with intentional visual hierarchy, typography, color, and motion
+- Evaluate interaction design — affordances, feedback loops, keyboard navigation, and accessibility compliance
+- Detect the frontend framework from project files and produce idiomatically correct component code
+- Avoid generic defaults — every design decision is justified by the specific product context
+
+## When called
+
+- Triggered by the `$frontend-ui-ux` keyword or any task where UI implementation is the primary focus
+- When a new screen, flow, or component requires both design thinking and implementation
+- After `ux-researcher` delivers a findings report and solutions need to be designed and built
+- When accessibility or visual polish gaps are flagged in a quality review
+
+## Inputs
+
+Provide the UI task description, the target page or component scope, links to existing design references or the current implementation, and any accessibility requirements. Framework auto-detection handles the technical stack — no need to specify unless overriding.
+
+## Outputs
+
+Implemented component files with noted design decisions (aesthetic direction, font choices, color palette, animation approach), and a verification summary showing the component renders without errors, responsive breakpoints confirmed, and ARIA/keyboard accessibility validated.
+
+## Limits
+
+- Does not conduct user research or generate usability evidence — defers to `ux-researcher`
+- Does not design information architecture or navigation taxonomy — defers to `information-architect`
+- Does not implement backend logic or API contracts — defers to `executor` or `architect`
+
+## Related agents
+
+| Agent | Relationship |
+|---|---|
+| [`ux-researcher`](/docs/agents/domain/ux-researcher) | Provides user evidence and usability findings that inform design decisions |
+| [`information-architect`](/docs/agents/domain/information-architect) | Defines content structure and navigation models before visual design begins |
+| [`executor`](/docs/agents/build-analysis/executor) | Handles non-UI code changes required to support new components |

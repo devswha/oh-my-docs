@@ -1,0 +1,54 @@
+---
+title: "매직 키워드"
+description: "키워드 감지기 훅이 인식하는 구문과 각 구문이 어떤 OMX 스킬로 라우팅되는지"
+---
+
+매직 키워드는 `$skill` 명시 없이도 OMX 스킬을 활성화하는 구문입니다. 키워드 감지기 훅은 모든 `UserPromptSubmit` 이벤트에서 이 구문을 스캔하고, 모델이 프롬프트를 받기 전에 스킬 활성화 상태를 `.omx/state/`에 기록합니다. 모델은 스킬 지시사항이 준비된 상태로 실행을 시작합니다.
+
+## 동작 방식
+
+감지 로직은 `src/hooks/keyword-registry.ts`에 우선순위 순으로 정렬된 구문-스킬 매핑으로 정의됩니다. 명시적 `$skill` 호출(좌→우 매치)과 단어 경계 가드를 사용한 암묵적 구문 매칭을 모두 지원합니다.
+
+`team`, `ralph`, `parallel` 같은 키워드는 일반 산문에서 우발적으로 발동하지 않도록 추가 의도 컨텍스트 조건이 붙어 있습니다.
+
+## 키워드 표
+
+| 구문 | 라우팅 대상 | 우선순위 |
+|---|---|---|
+| `ralplan`, `consensus plan` | `ralplan` | 11 |
+| `autopilot`, `build me`, `I want a` | `autopilot` | 10 |
+| `ultrawork`, `ulw`, `parallel` | `ultrawork` | 10 |
+| `ralph`, `don't stop`, `must complete`, `keep going` | `ralph` | 9 |
+| `deep interview`, `interview me`, `gather requirements`, `don't assume`, `ouroboros` | `deep-interview` | 8 |
+| `ultraqa` | `ultraqa` | 8 |
+| `team`, `swarm`, `coordinated team` | `team` | 8 |
+| `plan this`, `plan the`, `let's plan` | `plan` | 8 |
+| `analyze`, `investigate` | `analyze` | 7 |
+| `code review`, `review code` | `code-review` | 6 |
+| `tdd`, `test first` | `tdd` | 6 |
+| `fix build`, `type errors` | `build-fix` | 6 |
+| `wiki query`, `wiki add`, `wiki lint` | `wiki` | 5 |
+| `cancel`, `stop`, `abort` | `cancel` | 5 |
+
+여러 키워드가 동시에 매치되면 우선순위가 높은 쪽이 이깁니다. 명시적 `$skill`은 항상 암묵적 구문 매치보다 우선합니다.
+
+## 예시
+
+암묵적 트리거 — 구문만으로 autopilot이 활성화됩니다:
+
+```
+codex
+> build me a REST API for bookstore inventory in TypeScript
+```
+
+명시적 호출 — `$` 접두사로 스킬을 직접 지정합니다:
+
+```
+codex
+> $ralplan design the new auth system
+```
+
+## 관련 문서
+
+- [코어 훅](/ko/docs/hooks/core-hooks)
+- [라이프사이클 이벤트](/ko/docs/hooks/lifecycle-events)

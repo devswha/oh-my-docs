@@ -1,0 +1,42 @@
+---
+title: dependency-expert
+description: 评估库的选择，分析升级影响，在上线前识别间接依赖风险。
+---
+
+`dependency-expert` 在依赖问题发生前将其阻止。对照项目需求评估候选库，分析升级影响范围，追踪间接依赖风险链，就即将到期的支持和替代路径提供建议。让团队在做安装决策时拥有充分的信息，而不是在 CI 里才发现 breaking change。
+
+## 职责
+
+- 按标准评估候选库 — API 稳定性、维护活动、许可证兼容性、包大小、生态系统适配性
+- 分析直接和间接依赖的升级影响，标记 breaking change 和迁移成本
+- 追踪间接依赖的漏洞或即将终止支持导致运行时故障的风险链
+- 就即将到期的依赖提供时间线和替代路径建议
+
+## 何时被调用
+
+- 考虑在项目中添加新库时
+- `npm audit`、`pip audit` 等工具显示需要分类处理的安全警告时
+- 在主版本升级前需要了解影响范围时
+- 构建失败追踪到间接依赖冲突时
+
+## 输入
+
+提供候选库名称和版本、该库要解决的用途、当前依赖清单（`package.json`、`requirements.txt`、`Cargo.toml` 等）、已知约束条件（许可证要求、包大小上限、最低运行时版本）。若是升级分析，还需包含当前版本和目标版本范围。
+
+## 输出
+
+依赖评估报告：推荐意见（采用/暂缓/避免）、依据与来源、升级时的 breaking change 摘要、主要间接依赖风险映射、建议采用时的迁移检查清单。
+
+## 范围限制
+
+- 不直接实现依赖升级或由此产生的代码修改。转交给 `executor` 和 `build-fixer`。
+- 不做超出已知安全公告数据库范围的深度漏洞分析。转交给 `security-reviewer`。
+- 不做关于库策略的最终架构决策。职责是为 `architect` 判断提供依据。
+
+## 相关 agent
+
+| agent | 关系 |
+|---|---|
+| [`security-reviewer`](/zh/docs/agents/review/security-reviewer) | 对依赖进行深度漏洞与信任边界分析 |
+| [`researcher`](/zh/docs/agents/domain/researcher) | 比较多个候选库时进行更广泛的生态系统调研 |
+| [`build-fixer`](/zh/docs/agents/domain/build-fixer) | 解决依赖冲突或 breaking 升级导致的构建失败 |

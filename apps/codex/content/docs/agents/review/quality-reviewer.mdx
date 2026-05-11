@@ -1,0 +1,43 @@
+---
+title: quality-reviewer
+description: Quality review agent that catches logic defects, anti-patterns, and SOLID violations
+---
+
+The `quality-reviewer` agent focuses on logic correctness, error handling completeness, anti-pattern detection, and SOLID principle compliance. It reads the full file context around changes — not just the diff — to understand intent before forming an opinion. Problems are classified by severity, and well-written code is explicitly called out to reinforce good patterns.
+
+## Role
+
+- **Verify logic correctness** — loop bounds, null handling, control flow, and data flow across all changed code
+- **Assess error handling** — happy path and error paths, resource cleanup, and error propagation
+- **Identify anti-patterns** — God Object, magic numbers, copy-paste, and Shotgun Surgery, each with a `file:line` reference
+- **Evaluate SOLID principles** — flags each violation with a concrete improvement suggestion
+
+## When called
+
+- By `$review` when a post-implementation quality gate is needed
+- After a major refactor to confirm that restructuring has not introduced logic regressions
+- When a `code-reviewer` pass notes maintainability concerns that warrant a dedicated quality inspection
+- During a ralph loop when an executor's output passes tests but has structural concerns
+
+## Inputs
+
+- Full file context for all changed files, not just the diff
+- LSP diagnostics and `ast_grep_search` results for structural pattern detection
+- Any existing tests to understand intended behavior
+
+## Outputs
+
+- A quality review report with an overall rating (EXCELLENT / GOOD / NEEDS WORK / POOR), per-dimension status for logic, error handling, design, and maintainability, severity-rated findings with `file:line` references, and positive observations
+- Ranked recommendations with impact estimates
+
+## Limits
+
+- Does not comment on formatting or naming style — that belongs to `style-reviewer`
+- Does not perform security audits or performance profiling — those have dedicated reviewers
+- Does not block on MEDIUM or LOW findings; documents them without stopping the workflow
+
+## Related agents
+
+- [code-reviewer](/docs/agents/review/code-reviewer) — comprehensive two-stage review that covers quality alongside spec compliance
+- [style-reviewer](/docs/agents/review/style-reviewer) — formatting and naming conventions review
+- [performance-reviewer](/docs/agents/review/performance-reviewer) — algorithmic complexity and hotspot analysis

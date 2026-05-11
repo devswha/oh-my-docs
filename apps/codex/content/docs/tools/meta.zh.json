@@ -1,0 +1,12 @@
+{
+  "title": "工具",
+  "pages": [
+    "state",
+    "hud",
+    "wiki",
+    "catalog",
+    "visual",
+    "ask-claude",
+    "ask-gemini"
+  ]
+}

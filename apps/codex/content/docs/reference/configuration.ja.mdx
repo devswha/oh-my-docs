@@ -1,0 +1,53 @@
+---
+title: "設定"
+description: "`.codex/config.toml`、`.codex/hooks.json`、CLI フラグ リファレンス"
+---
+
+OMX は `~/.codex/`（ユーザーグローバル）と `.codex/`（プロジェクトスコープ）の 2 か所から設定を読み込みます。同じキーが重複した場合、プロジェクトスコープが優先されます。
+
+## `.codex/config.toml`
+
+| フィールド | 型 | 説明 |
+|---|---|---|
+| `model` | string | デフォルトモデル（例: `"gpt-4.1"`、`"o3"`） |
+| `codex_hooks` | bool | OMX フックパイプラインを有効化します。`true` にすると skills、team、OpenClaw が動作します。 |
+| `custom-prompts` | string | OMX デフォルトプロンプトを拡張または置き換えるディレクトリパス |
+| `approval_policy` | string | ツール呼び出し承認ポリシー: `"suggest"`、`"auto-edit"`、`"full-auto"` |
+
+```toml
+model = "gpt-4.1"
+codex_hooks = true
+custom-prompts = "~/.codex/prompts"
+approval_policy = "auto-edit"
+```
+
+## `.codex/hooks.json`
+
+ライフサイクルの各タイミングで実行するフックハンドラーを登録します。各エントリはフック名を command または MCP tool に紐付けます。
+
+```json
+{
+  "hooks": {
+    "session-end": {
+      "command": "~/.codex/scripts/on-session-end.sh {{sessionId}}"
+    }
+  }
+}
+```
+
+フックカタログの全一覧は[アップストリームリポジトリ](https://github.com/Yeachan-Heo/oh-my-codex)を参照してください。
+
+## CLI フラグ
+
+| フラグ | 説明 |
+|---|---|
+| `--madmax` | 最大並列モード。team pipeline 全体を自動で起動します。 |
+| `--high` | 高推論強度。最上位 tier モデルを使用します。 |
+| `--skip-git-repo-check` | git リポジトリ外で実行するときのエラーを無視します。 |
+| `--spark` | team worker をライトな spark tier にルーティングします。 |
+| `--madmax-spark` | `--madmax` と spark worker ルーティングを同時に適用します。 |
+
+## 関連ドキュメント
+
+- [環境](/ja/docs/reference/environment) — 設定ファイルと併用する環境変数
+- [`.omx` ディレクトリ](/ja/docs/reference/omx-directory) — プロジェクトスコープ状態ディレクトリの構造

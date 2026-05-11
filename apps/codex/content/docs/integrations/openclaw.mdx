@@ -1,0 +1,71 @@
+---
+title: "OpenClaw"
+description: "A dispatch pipeline that delivers OMX hook events to external gateways — HTTP endpoints, shell commands, and clawdbot."
+---
+
+OpenClaw is a dispatch pipeline built into OMX. When OMX reaches a hook point — session start, idle, user question, stop, or session end — it wraps the context in a structured envelope and sends it to the configured gateway.
+
+## What it is
+
+OpenClaw is not a separate service you install. It is a dispatch layer inside OMX that activates when `OMX_OPENCLAW=1` is set. Gateway definitions in `.codex/.omx-config.json` determine where and how each event is delivered.
+
+There are two gateway types:
+
+- **HTTP endpoint** — webhook-style delivery with bearer-token auth.
+- **shell command** — calls a local CLI or an agent launcher like `clawdbot`.
+
+## How OMX uses it
+
+- **Session lifecycle hooks** — Fires on `session-start`, `session-idle`, `ask-user-question`, `stop`, and `session-end`. Template variables like `{{sessionId}}`, `{{tmuxSession}}`, `{{projectName}}`, and `{{question}}` are injected at fire time.
+- **Instruction templates** — Each hook carries an `instruction` string that is rendered when the hook fires and becomes the message body delivered to the gateway.
+- **Gateway routing** — Each hook references a named gateway (`local`, `remote`, etc.) defined once in the `gateways` block. Multiple hooks can share the same gateway definition.
+- **Precedence** — When both `notifications.openclaw` and generic aliases (`custom_webhook_command`, `custom_cli_command`) are present, `notifications.openclaw` wins and OMX emits a warning.
+
+## Example
+
+Minimal HTTP gateway configuration that fires on session end and user questions:
+
+```json
+{
+  "notifications": {
+    "enabled": true,
+    "openclaw": {
+      "enabled": true,
+      "gateways": {
+        "local": {
+          "type": "http",
+          "url": "http://127.0.0.1:18789/hooks/agent",
+          "headers": { "Authorization": "Bearer ${HOOKS_TOKEN}" }
+        }
+      },
+      "hooks": {
+        "session-end": {
+          "enabled": true,
+          "gateway": "local",
+          "instruction": "OMX task completed for {{projectPath}} (session {{sessionId}})"
+        },
+        "ask-user-question": {
+          "enabled": true,
+          "gateway": "local",
+          "instruction": "OMX needs input: {{question}}"
+        }
+      }
+    }
+  }
+}
+```
+
+Set the environment variables before launching OMX:
+
+```bash
+export OMX_OPENCLAW=1
+export HOOKS_TOKEN="your-token-here"
+```
+
+For command gateways (clawdbot agent mode), also set `OMX_OPENCLAW_COMMAND=1` and use `type: "command"` with a timeout of at least `120000` ms. Agent turns can take longer than expected, and a short timeout will cut them off frequently.
+
+## Related
+
+- [Clawhip](/docs/integrations/clawhip) — event-contract layer that defines the envelope delivered by OpenClaw
+- [CLI Bridges](/docs/integrations/cli-bridges) — `$ask-claude`, `$ask-gemini`, and team-level cross-CLI workflows
+- [Trace](/docs/skills/workflow/trace) — evidence-driven session event tracing

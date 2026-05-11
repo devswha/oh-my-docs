@@ -1,0 +1,50 @@
+---
+title: $doctor
+description: 诊断OMX安装状态和环境的工具技能
+---
+
+通过 `$doctor` 调用。
+
+检查OMX的安装、依赖关系、环境变量、智能体连接状态。当感觉有异常但不知道问题在哪里时，这是第一个要运行的技能。
+
+## 何时使用
+
+- OMX首次安装后确认是否正常运行时
+- 智能体没有响应或行为不符合预期时
+- 更新后感觉环境被破坏时
+- 提交支持请求前需要获取当前状态快照时
+
+## 命令
+
+```bash
+$doctor
+$doctor --verbose
+$doctor --fix
+```
+
+`--fix` 会自动修复可以修复的问题。无法修复时会提供解决方法。
+
+## 检查项
+
+| 项目 | 说明 |
+|---|---|
+| OMX版本 | 当前安装版本与最新版本比较 |
+| Node.js版本 | 是否满足所需版本 |
+| 环境变量 | API密钥、配置文件是否存在 |
+| 智能体连接 | Claude、Gemini桥接响应情况 |
+| MCP服务器 | 活跃MCP服务器状态 |
+| Hook配置 | settings.json中的Hook注册情况 |
+
+## 如何读取输出
+
+- `OK` — 正常
+- `WARN` — 可以运行但不是推荐配置
+- `ERROR` — 需要立即修复
+
+如果有 `ERROR`，先尝试 `$doctor --fix`，仍无法解决则附上输出结果提交Issue。
+
+## 相关
+
+- [快速开始](/zh/docs/getting-started) — 初始安装指南
+- [`$configure-notifications`](/zh/docs/skills/utility/configure-notifications) — 通知配置
+- [工具技能列表](/zh/docs/skills/utility)

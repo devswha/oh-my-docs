@@ -1,0 +1,50 @@
+---
+title: $tdd
+description: Workflow that enforces the red-green-refactor cycle by writing tests first and attaching implementation after
+---
+
+`$tdd` enforces the rule that a failing test must exist before any production code is written. It runs the red-green-refactor cycle stage by stage, consults the test-engineer agent for complex test strategies, and only exits a cycle when the new test passes and the entire existing test suite is green.
+
+## When to use it
+
+- When you want to write tests first and attach implementation after
+- When working on critical domain logic where correctness matters
+- When you need systematic coverage instead of adding tests after implementation
+- When learning a new codebase and want to document expected behavior with tests
+
+Trigger keywords: "tdd", "test first", "red green", "write tests before code"
+
+## How to invoke
+
+```
+codex
+> tdd add a coupon validation function to the checkout module
+```
+
+```
+codex
+> $tdd implement the password-strength checker with edge cases covered
+```
+
+## How it works
+
+**RED** — Write tests for the next unit of functionality and run them. If they pass on the first run, the test is considered wrong and must be rewritten.
+
+**GREEN** — Write only the minimum production code needed to make the tests pass. The entire test suite must be green before moving on.
+
+**REFACTOR** — Improve code quality while keeping tests green. Run tests after every change.
+
+For complex domain logic or unfamiliar test patterns, the test-engineer agent reviews strategy before tests are written. Repeat the cycle until the feature is complete.
+
+## Outputs
+
+- Failing tests written in the RED phase
+- Minimal production code written in the GREEN phase
+- Refactored source with the entire test suite green
+- Per-cycle log of RED failure → GREEN pass → REFACTOR result
+
+## Related skills
+
+- [`$autopilot`](/docs/skills/workflow/autopilot) — full execution pipeline that applies TDD discipline internally
+- [`$ultraqa`](/docs/skills/workflow/ultraqa) — QA cycle for fixing a broken test suite after implementation
+- [`$ralplan`](/docs/skills/workflow/ralplan) — consensus planning that includes an expanded test plan in deliberate mode

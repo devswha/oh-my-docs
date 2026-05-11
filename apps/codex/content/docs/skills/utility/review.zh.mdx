@@ -1,0 +1,36 @@
+---
+title: $review
+description: "将代码审查委托给code-reviewer智能体的技能。"
+---
+
+## 概述
+
+`$review` 将代码审查委托给 `code-reviewer` 智能体。全面检查逻辑缺陷、可维护性、API契约、向后兼容性等项目。在实现完成后需要独立审查步骤时使用。
+
+## 使用示例
+
+```text
+$review
+$review "审查一下auth模块的变更内容"
+$review "全面检查PR #42"
+```
+
+不带参数调用时审查当前变更（以git diff为基准）。
+
+## 何时使用
+
+- 用 `$executor` 或 `$ralph` 完成实现后需要独立审查时
+- 开PR前的质量检查步骤
+- 有API变更需要确认向后兼容性时
+- 与安全无关的一般代码质量审查
+
+## 何时避免
+
+- 以安全漏洞为重点的检查 — 使用 `$security-review`。
+- 构建/类型错误修复 — 使用 `$build-fix`。
+- 实现前的设计审查 — `$ralplan` 的critic阶段更合适。
+
+## 关联智能体
+
+- [code-reviewer](/zh/docs/agents/review/code-reviewer) — 此技能委托的智能体详细说明
+- [$security-review](/zh/docs/skills/utility/security-review) — 以安全为重点的审查

@@ -1,0 +1,51 @@
+---
+title: "環境"
+description: "OMX 環境変数リファレンス — API キー、kill switch、状態ディレクトリの override"
+---
+
+OMX は起動時に環境変数を読み込みます。シェルプロファイルに `export` しておくと、すべてのセッションで自動適用されます。
+
+## 必須
+
+| 変数 | 説明 |
+|---|---|
+| `OPENAI_API_KEY` | OpenAI API キー。設定がないと CLI が起動しません。 |
+
+## OpenClaw 関連
+
+| 変数 | デフォルト | 説明 |
+|---|---|---|
+| `OMX_OPENCLAW` | unset | `1` に設定すると OpenClaw dispatch pipeline を有効化します。設定しない場合、フックイベントはどの gateway にも転送されません。 |
+| `OMX_OPENCLAW_COMMAND` | unset | command タイプ gateway（例: `clawdbot` agent launcher）を有効化します。`OMX_OPENCLAW=1` が必要です。 |
+| `OMX_OPENCLAW_COMMAND_TIMEOUT_MS` | `5000` | command gateway 呼び出しのタイムアウト（ms）。`clawdbot` agent ワークフローには `120000` 以上に設定してください。 |
+| `HOOKS_TOKEN` | unset | OpenClaw HTTP gateway 認証に使用する bearer token |
+
+## Kill switch
+
+| 変数 | 説明 |
+|---|---|
+| `OMX_SKIP_HOOKS` | 無効化するフック名の一覧（カンマ区切り）。全無効化は `*`。デバッグや CI で raw Codex 動作を確認するときに使います。 |
+| `DISABLE_OMX` | 空でない値を設定すると OMX 拡張レイヤー全体を無効化します。Codex が OMX 未インストール状態として動作します。 |
+
+## 状態ディレクトリの override
+
+| 変数 | デフォルト | 説明 |
+|---|---|---|
+| `OMX_STATE_DIR` | `.omx/state/` | OMX がセッション/チーム状態を記録するディレクトリを変更します。CI や multi-worktree 環境で便利です。 |
+
+## シェルプロファイル例
+
+```bash
+# Required
+export OPENAI_API_KEY="sk-..."
+
+# OpenClaw (optional — enable if you use hook notifications)
+export OMX_OPENCLAW=1
+export OMX_OPENCLAW_COMMAND=1
+export OMX_OPENCLAW_COMMAND_TIMEOUT_MS=120000
+export HOOKS_TOKEN="your-token-here"
+```
+
+## 関連ドキュメント
+
+- [設定](/ja/docs/reference/configuration) — 環境変数と併用する設定ファイルと CLI フラグ

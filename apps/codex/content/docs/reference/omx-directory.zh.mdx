@@ -1,0 +1,52 @@
+---
+title: ".omx 目录"
+description: "项目级 `.omx/` 状态目录的结构与各条目的作用"
+---
+
+使用 OMX 的每个项目在 worktree 根目录下都有一个 `.omx/` 目录。计划、日志、笔记、wiki、研究成果、team coordination 数据均存储于此。计划、wiki、spec 等与团队共享的内容建议提交到版本库；state、logs、sessions 等临时内容则建议加入 gitignore。
+
+## 目录结构
+
+```
+.omx/
+├── state/                  # 运行时状态文件
+│   ├── sessions/           # 按会话划分的状态子目录
+│   │   └── {sessionId}/    # 每个活跃会话一个目录
+│   └── team/               # Team pipeline coordination 状态
+├── plans/                  # $plan / $ralplan 生成的计划文档
+├── logs/                   # Hook pipeline 及 agent 执行日志
+├── notepad.md              # 自由格式记事本（agent 可读取）
+├── project-memory.json     # 结构化项目记忆 — directives 与 notes
+├── research/               # 研究工作流生成的文档
+├── wiki/                   # LLM Wiki 页面（$wiki 技能管理）
+├── specs/                  # 功能/系统规格文档
+└── sessions/               # 归档的会话摘要
+```
+
+## 主要条目
+
+- **`state/`** — OMX runtime 读写的状态。包含 team task queue、worker heartbeat、inbox file、monitor snapshot 等。请勿直接修改，使用 `omx team api` 操作。
+- **`state/sessions/{sessionId}/`** — 按会话划分的临时状态。会话启动时创建，用于同一会话内钩子调用间传递 context。
+- **`plans/`** — `$plan`、`$ralplan` 的输出物。执行 agent 只读，写入仅由 planning skill 完成。
+- **`logs/`** — 钩子执行、OpenClaw command gateway、team event 的原始日志。需要结构化聚合时请追加写入 `.jsonl` 文件。
+- **`notepad.md`** — 通过 `$note` 或手动编写的自由格式笔记。同一 worktree 下运行的 agent 会读取此文件以继承前次会话的 context。
+- **`project-memory.json`** — 包含 `directives`、`notes` 数组的结构化记忆。用于跨会话保存决策和约束条件。
+- **`research/`** — 以研究为主的工作流或 analyst 生成的文档。
+- **`wiki/`** — `$wiki` 管理的 markdown wiki 页面。支持跨会话查询/链接。
+- **`specs/`** — 功能/系统规格文档。可手动编写，也可由 `$autopilot` planning pass 生成。
+
+## 推荐 `.gitignore`
+
+```text
+.omx/state/
+.omx/logs/
+.omx/sessions/
+```
+
+`.omx/plans/`、`.omx/wiki/`、`.omx/specs/`、`.omx/notepad.md`、`.omx/project-memory.json` 建议纳入版本控制以便与团队共享 context。
+
+## 相关文档
+
+- [配置](/zh/docs/reference/configuration) — 与 `.omx/` 配合使用的配置文件
+- [State 工具](/zh/docs/tools/state) — `state_read`、`state_write` 等相关工具
+- [Wiki](/zh/docs/tools/wiki) — 读写 `.omx/wiki/` 的 wiki 工具

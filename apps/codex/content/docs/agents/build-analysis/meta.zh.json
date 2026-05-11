@@ -1,0 +1,13 @@
+{
+  "title": "构建与分析",
+  "pages": [
+    "explore",
+    "analyst",
+    "planner",
+    "architect",
+    "executor",
+    "debugger",
+    "verifier",
+    "explore-harness"
+  ]
+}

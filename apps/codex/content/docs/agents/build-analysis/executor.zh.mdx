@@ -1,0 +1,79 @@
+---
+title: executor
+description: "接收具体计划、编写代码、运行测试并推进到验证结果的实现 agent。"
+---
+
+`executor` agent 是 OMX 工作流中负责实际实现的主要执行者。接收文件级计划后编写代码、运行 diagnostics、修复失败，并将任务推进到完成状态。不在中途停下，持续到产出可验证的结果为止。
+
+## 何时被调用
+
+| 场景 | 调用路径 |
+|---|---|
+| `$autopilot`、`$ralph`、`$team`、`$ralplan` 的执行阶段 | 自动 |
+| `planner` 完成了包含 target file 和 expected outcome 的计划时 | 自动 |
+| `build-fixer` 或 `debugger` 缩小了 root cause 和修复策略时 | 上层 agent 委派 |
+| `$ultrawork` 并行流水线中处理独立 task branch | 自动 |
+
+## 使用示例
+
+```text
+"按照计划中列出的文件进行实现"
+"将已批准的 auth refactor 转化为实际代码"
+"把这个 failing plan step 彻底完成"
+```
+
+## 任务分类
+
+| 分类 | 标准 |
+|---|---|
+| trivial | 单个文件，修改范围明确 |
+| scoped | 2~5 个文件，边界明确但需要验证 |
+| complex | 涉及多个系统，整体验证至关重要 |
+
+该分类用于决定探索范围和验证深度。
+
+## 工作流程
+
+1. 从计划中确认 target file 和 expected outcome。
+2. 必要时先通过仓库探索了解现有模式。
+3. 用小的 diff 实现。
+4. 对每个修改的文件运行 diagnostics。
+5. 运行测试/构建，确认是否真正通过。
+6. 将结果反映到状态和 commit 中。
+
+优先做到小而精确地完成，而不是大刀阔斧地修改。
+
+## 验证标准
+
+在主张完成之前，至少确认以下项目。
+
+- 修改文件的 diagnostics 错误是否为 0
+- 相关测试和构建是否真正通过
+- 是否没有遗留 debug code 或临时 TODO
+- 是否与现有代码库模式基本一致
+
+## 输入
+
+- `planner` 或 `ralplan` 生成的计划文档（包含任务、target file、expected outcome）
+- 显示当前 pending task 的 `.omx/state/` 会话上下文
+- 可选：LSP diagnostics 输出、test failure log、`explore` 结果
+
+## 输出
+
+- 对计划中指定文件的实际代码变更
+- 通过的测试和干净的 LSP diagnostics 等 inline verification evidence
+- 可解释的 git commit
+- 反映已完成任务的 `.omx/state/` 更新
+
+## 范围限制
+
+- 不在没有计划的情况下随意更改架构或引入未被请求的抽象。
+- 不跳过测试或 force-push。
+- 没有 fresh build/test/diagnostic 输出时不主张完成。
+
+## 相关 agent
+
+- [planner](/zh/docs/agents/build-analysis/planner) — 生成 executor 所遵循的任务计划。
+- [verifier](/zh/docs/agents/build-analysis/verifier) — 独立确认 executor 的产出是否满足 acceptance criteria。
+- [build-fixer](/zh/docs/agents/domain/build-fixer) — 专门处理难以解决的 build/type error。
+- [debugger](/zh/docs/agents/build-analysis/debugger) — 在出现意外失败时分析根本原因。

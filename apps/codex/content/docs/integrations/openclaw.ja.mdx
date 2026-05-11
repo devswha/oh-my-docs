@@ -1,0 +1,71 @@
+---
+title: "OpenClaw"
+description: "OMX のフックイベントを外部 gateway（HTTP、shell command、clawdbot）に転送する dispatch pipeline。"
+---
+
+OpenClaw は、OMX がフックポイント — session start、idle、user question、stop、session end — に到達したとき、そのコンテキストを構造化された envelope にラップして、設定済みの gateway に送信する dispatch pipeline です。
+
+## 概要
+
+別途インストールするサービスではありません。`OMX_OPENCLAW=1` を設定することで有効になる OMX 内蔵の dispatch レイヤーです。`.codex/.omx-config.json` 内の gateway 定義が、各イベントをどこへ、どのような方式で送るかを決定します。
+
+gateway は 2 種類あります。
+
+- **HTTP endpoint** — webhook 方式。bearer-token 認証を使用。
+- **shell command** — ローカル CLI、または `clawdbot` のような agent launcher の呼び出し。
+
+## OMX での使われ方
+
+- **セッションライフサイクルフック** — `session-start`、`session-idle`、`ask-user-question`、`stop`、`session-end` のタイミングで実行されます。`{{sessionId}}`、`{{tmuxSession}}`、`{{projectName}}`、`{{question}}` などのテンプレート変数を注入します。
+- **instruction template** — 各フックに `instruction` 文字列を定義すると、フック発火時にレンダリングされて gateway へ送信されるメッセージ本文になります。
+- **gateway routing** — 各フックは `gateways` ブロックに定義された名前付き gateway（`local`、`remote` など）を参照します。gateway 定義は一か所にまとめ、複数のフックから参照する構造です。
+- **優先順位** — `notifications.openclaw` と汎用エイリアス（`custom_webhook_command`、`custom_cli_command`）が共存する場合は `notifications.openclaw` が優先され、OMX が警告を出力します。
+
+## 設定例
+
+session-end と ask-user-question のタイミングで実行される最小構成の HTTP gateway 設定:
+
+```json
+{
+  "notifications": {
+    "enabled": true,
+    "openclaw": {
+      "enabled": true,
+      "gateways": {
+        "local": {
+          "type": "http",
+          "url": "http://127.0.0.1:18789/hooks/agent",
+          "headers": { "Authorization": "Bearer ${HOOKS_TOKEN}" }
+        }
+      },
+      "hooks": {
+        "session-end": {
+          "enabled": true,
+          "gateway": "local",
+          "instruction": "OMX task completed for {{projectPath}} (session {{sessionId}})"
+        },
+        "ask-user-question": {
+          "enabled": true,
+          "gateway": "local",
+          "instruction": "OMX needs input: {{question}}"
+        }
+      }
+    }
+  }
+}
+```
+
+OMX 実行前に環境変数を設定します。
+
+```bash
+export OMX_OPENCLAW=1
+export HOOKS_TOKEN="your-token-here"
+```
+
+command gateway（clawdbot agent mode）を使う場合は `OMX_OPENCLAW_COMMAND=1` も設定し、`type: "command"` と合わせて timeout を最低 `120000` ms 以上に設定することを推奨します。agent のターンが想定より長くかかる場合があり、短い timeout では頻繁に切断されます。
+
+## 関連ドキュメント
+
+- [Clawhip](/ja/docs/integrations/clawhip) — OpenClaw が転送するイベントの envelope 契約レイヤー
+- [CLI Bridges](/ja/docs/integrations/cli-bridges) — `$ask-claude`、`$ask-gemini`、team-level cross-CLI ワークフロー
+- [Trace](/ja/docs/skills/workflow/trace) — セッションイベントをエビデンスベースで追跡するワークフロー

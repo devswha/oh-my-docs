@@ -1,0 +1,54 @@
+---
+title: "魔法关键词"
+description: "关键词检测器钩子识别的短语，以及各短语路由到哪个 OMX 技能"
+---
+
+魔法关键词是无需显式 `$skill` 即可激活 OMX 技能的短语。关键词检测器钩子在每个 `UserPromptSubmit` 事件中扫描这些短语，并在模型收到提示之前将技能激活状态写入 `.omx/state/`。模型在技能指令已就绪的状态下开始执行。
+
+## 工作方式
+
+检测逻辑在 `src/hooks/keyword-registry.ts` 中定义为按优先级排序的短语-技能映射。同时支持显式 `$skill` 调用（从左到右匹配）和带有词边界守卫的隐式短语匹配。
+
+`team`、`ralph`、`parallel` 等关键词附加了意图上下文条件，以避免在普通散文中意外触发。
+
+## 关键词表
+
+| 短语 | 路由到 | 优先级 |
+|---|---|---|
+| `ralplan`, `consensus plan` | `ralplan` | 11 |
+| `autopilot`, `build me`, `I want a` | `autopilot` | 10 |
+| `ultrawork`, `ulw`, `parallel` | `ultrawork` | 10 |
+| `ralph`, `don't stop`, `must complete`, `keep going` | `ralph` | 9 |
+| `deep interview`, `interview me`, `gather requirements`, `don't assume`, `ouroboros` | `deep-interview` | 8 |
+| `ultraqa` | `ultraqa` | 8 |
+| `team`, `swarm`, `coordinated team` | `team` | 8 |
+| `plan this`, `plan the`, `let's plan` | `plan` | 8 |
+| `analyze`, `investigate` | `analyze` | 7 |
+| `code review`, `review code` | `code-review` | 6 |
+| `tdd`, `test first` | `tdd` | 6 |
+| `fix build`, `type errors` | `build-fix` | 6 |
+| `wiki query`, `wiki add`, `wiki lint` | `wiki` | 5 |
+| `cancel`, `stop`, `abort` | `cancel` | 5 |
+
+多个关键词同时匹配时，优先级较高的获胜。显式 `$skill` 始终优先于隐式短语匹配。
+
+## 示例
+
+隐式触发 — 仅凭短语即可激活 autopilot：
+
+```
+codex
+> build me a REST API for bookstore inventory in TypeScript
+```
+
+显式调用 — 用 `$` 前缀直接指定技能：
+
+```
+codex
+> $ralplan design the new auth system
+```
+
+## 相关文档
+
+- [核心钩子](/zh/docs/hooks/core-hooks)
+- [生命周期事件](/zh/docs/hooks/lifecycle-events)

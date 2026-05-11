@@ -1,0 +1,40 @@
+---
+title: "フックライフサイクルイベント"
+description: "Codex CLI が公開する 7 つのイベントと、OMX が各タイミングで行うこと"
+---
+
+Codex CLI はセッションフローの決まったタイミングでイベントを発行します。OMX フックはこのイベントに紐付いて動作します。どのイベントがいつ発生するかを知ると、OMX がそのタイミングで介入した理由を追跡し、`.omx/hooks/*.mjs` プラグインを正しい位置に差し込めます。
+
+## イベント一覧
+
+| イベント | 発生タイミング | OMX が行うこと |
+|---|---|---|
+| `SessionStart` | Codex セッション初期化 | 状態の復元、wiki サマリーのシード、`.omx/` が gitignore に含まれているか確認 |
+| `UserPromptSubmit` | ユーザーがプロンプトを送信 | キーワード検出、スキルルーティング、deep-interview 入力ロック |
+| `PreToolUse` | ツール呼び出し直前 | Bash 安全チェック、インライン `git commit` フォーマットガード |
+| `PostToolUse` | ツール呼び出し完了後 | コマンド未検出ガイダンス、非正常終了出力のレビュー |
+| `Stop` | モデルが 1 ターンを完了 | ralph / autopilot / ultrawork / ultraqa の継続実行、停滞状態の自動ナッジ |
+| `PreCompact` | コンテキストウィンドウの上限に近づいたとき | 予約済み — wiki 圧縮は v2 に延期 |
+| `Notification` | システム通知が発生 | notify-hook 経由で Discord / Slack / Telegram にルーティング |
+
+`PreToolUse` と `PostToolUse` は現在 Bash 呼び出しのみをインターセプトします。Bash 以外のツールはランタイムフォールバックパスで処理されます。完全なカバレッジマトリクスは [Codex ネイティブフック](/ja/docs/hooks/codex-native-hooks) を参照してください。
+
+## プラグインでイベントを購読する
+
+`post-tool-use` イベントを受け取るプラグインの例:
+
+```js
+// .omx/hooks/my-plugin.mjs
+export async function onHookEvent(event, sdk) {
+  if (event.event !== 'post-tool-use') return;
+  sdk.log.info('tool finished', event.context);
+}
+```
+
+イベントエンベロープには常に `schema_version`、`event`、`timestamp`、`source`（`native` または `derived`）、`context` が含まれます。
+
+## 関連ドキュメント
+
+- [コアフック](/ja/docs/hooks/core-hooks)
+- [Codex ネイティブフック](/ja/docs/hooks/codex-native-hooks)
+- [コンテキストフック](/ja/docs/hooks/context-hooks)

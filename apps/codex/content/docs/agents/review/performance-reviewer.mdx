@@ -1,0 +1,41 @@
+---
+title: performance-reviewer
+description: Hot-path analysis agent that identifies algorithmic complexity issues, memory patterns, and I/O bottlenecks with quantified impact estimates
+---
+
+The `performance-reviewer` agent focuses on code that runs frequently or on large data sets. It does not flag micro-optimizations in cold code — instead, it quantifies findings by complexity class and estimated real-world impact, distinguishes "fix now" from "measure first" recommendations, and notes explicitly when current performance is acceptable. An O(n²) loop in a hot path is a finding; a 500 ms startup cost is not.
+
+## Role
+
+- Identify hot paths and analyze their algorithmic complexity (time and space)
+- Detect memory anti-patterns: allocations in hot loops, large object lifetimes, string concatenation in tight loops, unintended closure captures
+- Review I/O patterns: blocking calls on hot paths, N+1 query patterns, unbatched network requests, unnecessary serialization
+- Surface caching and parallelism opportunities, and provide a profiling plan for non-obvious concerns
+
+## When called
+
+- When load-test regressions are reported and the bottleneck has not yet been located
+- On changes to hot-path code where performance is a stated requirement
+- When a `quality-reviewer` pass notes high cyclomatic complexity that may also carry a performance cost
+- By `$review` when the changed code involves large data processing, database queries, or network I/O
+
+## Inputs
+
+- Source files under review, read via Read and Grep
+- `ast_grep_search` results for structural performance anti-patterns (nested loops, `Array.includes` in hot loops, etc.)
+- Optional: benchmark results, profiling output, or load-test logs
+
+## Outputs
+
+- A performance review report with overall status, critical hotspots with complexity class and estimated impact at realistic data volumes, optimization opportunities with expected improvement, a profiling plan for non-obvious concerns, and explicit confirmation of areas where current performance is acceptable
+
+## Limits
+
+- Does not flag cold code (startup paths, rarely-called utilities) unless the cost exceeds a clearly material threshold
+- Does not recommend optimization without quantifying the impact; "slow" is not a finding
+- Does not profile or benchmark code directly; provides a profiling plan and hands execution to `executor` or `qa-tester`
+
+## Related agents
+
+- [quality-reviewer](/docs/agents/review/quality-reviewer) — logic and maintainability review that can surface complexity issues
+- [debugger](/docs/agents/build-analysis/debugger) — investigates confirmed performance regressions when a hot path is already suspected

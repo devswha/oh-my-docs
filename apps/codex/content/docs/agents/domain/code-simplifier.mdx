@@ -1,0 +1,41 @@
+---
+title: code-simplifier
+description: Cleans up code for readability without changing behavior. Removes dead code, collapses unnecessary abstractions, and flattens nested logic.
+---
+
+`code-simplifier` cleans up code after feature work is done. It removes dead paths, collapses single-use abstractions into direct logic, renames symbols to match actual behavior, and restructures complex conditionals into readable sequences — without changing what the code does.
+
+## Role
+
+- Remove dead code — unreachable branches, unused variables, deprecated feature flags, and commented-out blocks
+- Collapse single-use abstractions into direct, readable logic
+- Rename symbols that have drifted from original intent to reflect actual behavior
+- Restructure complex conditionals and deeply nested logic into flat, readable sequences
+
+## When called
+
+- After a feature ships and the implementation has accumulated complexity that no longer needs to exist
+- When a code review identifies sections that are functionally correct but hard to follow
+- During post-sprint cleanup passes the team runs to manage technical debt accumulation
+- When onboarding new developers reveals that key modules require excessive explanation
+
+## Inputs
+
+Provide the file or module to simplify, the specific concerns (dead code, over-abstraction, naming, nesting), and any constraints (public API surface that must not change, performance characteristics that must be preserved). Describing what cognitive-load complaint motivated the task guides where to focus.
+
+## Outputs
+
+Simplified code with a change summary explaining each transformation and why it reduces complexity. The observable behavior contract is unchanged — all existing tests pass without modification. A before/after note highlights the most significant improvements.
+
+## Limits
+
+- Does not change observable behavior — any behavioral change is a bug, not a simplification
+- Does not add new abstractions or utilities not already requested — simplification means less code, not different code
+- Does not perform security or performance optimization — defers to `security-reviewer` and `quality-reviewer`
+
+## Related agents
+
+| Agent | Relationship |
+|---|---|
+| [`executor`](/docs/agents/build-analysis/executor) | Implements new features; code-simplifier cleans up afterward |
+| [`quality-reviewer`](/docs/agents/review/quality-reviewer) | Identifies maintainability issues and logic defects that may precede a simplify pass |

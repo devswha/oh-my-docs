@@ -1,0 +1,41 @@
+---
+title: $ai-slop-cleaner
+description: A utility skill that removes typical AI-generated text patterns
+---
+
+Invoke with `$ai-slop-cleaner`.
+
+A skill that strips repetitive boilerplate from AI-generated text. Use it to clean up documents, code comments, PR descriptions, and any other text that carries visible AI fingerprints.
+
+## When to use
+
+- When code comments or docs are full of AI-style phrasing ("This enables a more enhanced experience...")
+- When PR descriptions, commit messages, or READMEs read like they were written by a bot
+- When you want to make an OMX-generated doc draft read like it was written by a human
+
+## When to avoid
+
+- If the code logic itself needs changing → `$build-fix` or edit directly
+- If the problem is factual accuracy, not style → `$analyze` or `$code-review`
+
+## Commands
+
+```bash
+$ai-slop-cleaner "clean up this PR description"
+$ai-slop-cleaner --file README.md
+```
+
+## What gets removed
+
+| Pattern | Example |
+|---|---|
+| Inflated adverbs | "highly efficiently", "significantly improved" |
+| Redundant summaries | "In summary, ..." appended to every paragraph |
+| Unnecessary preamble | "In this document, we will explore..." |
+| Filler connectives | overuse of "Furthermore", "Additionally", "This enables" |
+| Excessive emphasis | **bolding** every other sentence |
+
+## Related docs
+
+- [Utility skills list](/docs/skills/utility)
+- [writer agent](/docs/agents/domain/writer) — handles document drafting

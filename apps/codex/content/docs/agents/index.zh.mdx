@@ -1,0 +1,74 @@
+---
+title: 智能体
+description: OMX 按职责划分的 33 个智能体分为 4 条通路的参考文档
+---
+
+## 概述
+
+OMX 有 33 个按职责划分的智能体。每个智能体只承担一项职责，编排器根据任务性质将工作路由到合适的智能体。
+
+核心结构不是"一个万能智能体"，而是将**探索 · 计划 · 实现 · 验证 · 审查**按职责拆分处理。这样在失败时可以追踪到具体哪个阶段出了问题，并行时的相互干扰也会减少。
+
+## 通路构成
+
+### Build / Analysis — 主执行线
+
+探索 → 分析 → 计划 → 实现 → 验证的基本流程。
+
+| agent | 职责 |
+|---|---|
+| [`explore`](/zh/docs/agents/build-analysis/explore) | 代码库探索，文件与关系映射 |
+| [`analyst`](/zh/docs/agents/build-analysis/analyst) | 需求分析，整理验收标准 |
+| [`planner`](/zh/docs/agents/build-analysis/planner) | 制定任务顺序与执行计划 |
+| [`architect`](/zh/docs/agents/build-analysis/architect) | 系统设计、边界、接口 |
+| [`debugger`](/zh/docs/agents/build-analysis/debugger) | 根本原因分析 |
+| [`executor`](/zh/docs/agents/build-analysis/executor) | 代码实现与重构 |
+| [`verifier`](/zh/docs/agents/build-analysis/verifier) | 收集完成证据并验证 |
+
+### Review — 质量关卡
+
+交付可运行代码前必须通过的关卡。
+
+| agent | 职责 |
+|---|---|
+| [`quality-reviewer`](/zh/docs/agents/review/quality-reviewer) | 逻辑缺陷、可维护性、反模式 |
+| [`security-reviewer`](/zh/docs/agents/review/security-reviewer) | 漏洞、信任边界、认证路径 |
+| [`code-reviewer`](/zh/docs/agents/review/code-reviewer) | 综合审查 |
+| [`style-reviewer`](/zh/docs/agents/review/style-reviewer) | 风格、命名、格式 |
+| [`api-reviewer`](/zh/docs/agents/review/api-reviewer) | API 契约与向后兼容性 |
+| [`performance-reviewer`](/zh/docs/agents/review/performance-reviewer) | 性能瓶颈与成本 |
+
+### Domain — 专业领域
+
+只在特定领域才被调用的专家。不替代基本执行线，而是**在需要时提供补充**。
+
+- [`test-engineer`](/zh/docs/agents/domain/test-engineer) — 测试策略，消除不稳定测试
+- [`designer`](/zh/docs/agents/domain/designer) — UI/UX 设计
+- [`writer`](/zh/docs/agents/domain/writer) — 文档 · 迁移说明
+- [`researcher`](/zh/docs/agents/domain/researcher) — 外部文档调研
+- [`dependency-expert`](/zh/docs/agents/domain/dependency-expert) — SDK / 包的评估判断
+- [`git-master`](/zh/docs/agents/domain/git-master) — 提交 · rebase · 历史整理
+
+### Coordination — 流程协调
+
+检查其他智能体的计划与执行，减少遗漏。
+
+- [`critic`](/zh/docs/agents/coordination/critic) — 指出计划 · 设计的弱点
+- [`team-executor`](/zh/docs/agents/coordination/team-executor) — `$team` 执行通路辅助
+- [`quality-strategist`](/zh/docs/agents/coordination/quality-strategist) — 质量策略判断
+
+## 应该先想到哪个 agent
+
+大多数任务从 Build / Analysis 开始。
+
+| 当前需要 | 首选 agent |
+|---|---|
+| 快速了解代码库 | `explore` |
+| 需求模糊 | `analyst` |
+| 计划 · 设计 | `planner` · `architect` · `critic` |
+| 实现 | `executor` |
+| 验证是否完成 | `verifier` |
+| 涉及安全 · 质量 · 性能 | Review 通路 |
+| 测试 · UI · 文档等窄专业 | Domain 通路 |
+
+实际上用户直接按名称调用 agent 的情况并不多。`$ralph`、`$team`、`$autopilot` 等 skill 会根据情况自动路由。本页参考文档用于确认"后台在跑什么"，或需要直接调用特定通路时查阅。

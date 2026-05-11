@@ -1,0 +1,54 @@
+---
+title: "クイックコマンド"
+description: "設定、診断、セッション管理、team 操作でよく使う OMX コマンド集"
+---
+
+よく使う OMX コマンドのリファレンスです。`omx` が PATH にない場合は `npx oh-my-codex` またはインストール先のフルパスを使用してください。
+
+## 設定と状態の確認
+
+| コマンド | 説明 |
+|---|---|
+| `omx setup` | OMX プロンプト、スキル、設定をインストールまたは更新します。アップグレード後や新しいマシンで実行してください。 |
+| `omx setup --scope user` | ユーザーグローバル設定（`~/.codex/`）にインストールします。 |
+| `omx setup --scope project` | プロジェクトスコープ設定（`.codex/`）にインストールします。 |
+| `omx doctor` | インストール状態、不足ファイル、設定の問題、hook pipeline の状態を診断します。 |
+| `omx doctor --team` | team/swarm ランタイム関連の追加診断を実行します。 |
+
+## セッション管理
+
+| コマンド | 説明 |
+|---|---|
+| `omx` | インタラクティブな OMX/Codex セッションを開始します。 |
+| `omx --madmax` | 最大並列 team pipeline で開始します。 |
+| `omx --madmax --high` | 最大並列 + 最上位 tier モデルで開始します。 |
+| `omx --skip-git-repo-check` | git リポジトリ外での起動時にエラーを抑制します。 |
+| `omx cancel` | 現在アクティブな実行モード（ralph、autopilot、ultrawork など）をキャンセルします。 |
+
+## ヘルプ
+
+| コマンド | 説明 |
+|---|---|
+| `omx help` | 全 CLI ヘルプと使用可能なフラグを出力します。 |
+| `omx --version` | インストール済みの OMX バージョンを出力します。 |
+
+## Team 操作
+
+| コマンド | 説明 |
+|---|---|
+| `omx team api list-tasks --json` | 現在の team タスク一覧を JSON で出力します。 |
+| `omx team api read-task --json` | 現在のアクティブなタスクを読み取ります。 |
+| `omx team api get-summary --json` | team state のサマリーを取得します。 |
+| `omx team await` | team イベントが発生するまで待機します。 |
+
+## AGENTS 初期化
+
+| コマンド | 説明 |
+|---|---|
+| `omx agents-init [path]` | `path`（デフォルト: カレントディレクトリ）に `AGENTS.md` を生成します。 |
+
+## 関連ドキュメント
+
+- [設定](/ja/docs/reference/configuration) — 設定ファイルと launch フラグ
+- [環境](/ja/docs/reference/environment) — 環境変数
+- [マイグレーション](/ja/docs/reference/migration) — アップグレードおよびマイグレーションノート

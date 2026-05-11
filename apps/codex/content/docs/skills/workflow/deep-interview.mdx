@@ -1,0 +1,45 @@
+---
+title: $deep-interview
+description: Skill that locks down scope with Socratic questions before requirements are clear
+---
+
+## TL;DR
+
+When requirements are fuzzy, questions come before code. `$deep-interview` converses with you in a Socratic style to lock down scope before implementation begins.
+
+## How to invoke
+
+```
+$deep-interview "clarify the auth changes"
+```
+
+Also activated by magic keywords `deep interview`, `interview me`, `gather requirements`, `don't assume`, `ouroboros`.
+
+## When to use it
+
+| Good fit | Avoid |
+|---|---|
+| Requirements not yet organized | Scope is clear and ready to implement |
+| Multiple stakeholders pulling in different directions | Exploration is the goal, like a prototype |
+| Need to pin down "what to build" first | |
+
+## Where it fits in the standard flow
+
+```
+$deep-interview "clarify auth change scope"   ← here
+$ralplan "approve the safest implementation path"
+$ralph "complete the approved plan all the way"
+```
+
+`$deep-interview` always goes first. Once scope is confirmed, use `$ralplan` to plan.
+
+## How it works
+
+- Generates follow-up questions as you answer each one.
+- Outputs a requirements summary once key assumptions become clear.
+- After confirming the summary, you can hand off to `$ralplan` or proceed straight to implementation.
+
+## Related skills
+
+- [`$ralplan`](/docs/skills/workflow/ralplan) — consensus planning from confirmed requirements
+- [`$ralph`](/docs/skills/workflow/ralph) — execute the plan

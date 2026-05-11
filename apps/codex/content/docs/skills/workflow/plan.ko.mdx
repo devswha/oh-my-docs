@@ -1,0 +1,40 @@
+---
+title: $plan
+description: 구현 없이 계획만 먼저 세우는 스킬
+---
+
+## 한 줄 요약
+
+`$plan`은 실행 없이 계획만 먼저 만들 때 씁니다. 합의 기반 계획이 필요하다면 `$ralplan`이 더 적합합니다.
+
+## 호출
+
+```
+$plan "새 인증 시스템 도입 계획을 세워줘"
+```
+
+매직 키워드 `plan this`, `plan the`, `let's plan`으로도 활성화됩니다.
+
+## `$plan` vs `$ralplan`
+
+| 항목 | `$plan` | `$ralplan` |
+|---|---|---|
+| 에이전트 수 | planner 단독 | planner + architect + critic |
+| 합의 과정 | 없음 | 있음 (반복 검토) |
+| 속도 | 빠름 | 느리지만 안정적 |
+| 잘 맞는 경우 | 빠른 초안이 필요할 때 | 방향 합의가 중요한 작업 |
+
+범위가 크거나 실수 비용이 높은 작업이라면 `$ralplan`을 씁니다.
+
+## 언제 쓰나
+
+| 잘 맞는 경우 | 피할 경우 |
+|---|---|
+| 계획 초안을 빠르게 뽑아야 할 때 | 이해관계자 합의가 필요한 작업 |
+| 작은 기능·단기 작업 | 아키텍처 결정이 포함된 작업 |
+
+## 관련 스킬
+
+- [`$ralplan`](/ko/docs/skills/workflow/ralplan) — 합의 기반 계획
+- [`$ralph`](/ko/docs/skills/workflow/ralph) — 계획 실행
+- [`$deep-interview`](/ko/docs/skills/workflow/deep-interview) — 계획 전 요구 정리

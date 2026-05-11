@@ -1,0 +1,40 @@
+---
+title: $ask-claude
+description: 現在のOMXセッションからClaudeにサブ質問を委任するブリッジスキル
+---
+
+`$ask-claude`で呼び出します。
+
+現在のCodexセッションを離れることなくClaudeにサブ質問を投げるブリッジです。委任された呼び出しは別のClaudeコンテキストで実行されるため、現在の作業フローと分離した答えを得られます。
+
+## いつ使うか
+
+- Codexが答えにくい推論集約的な質問をClaudeに任せたいとき
+- 現在のコンテキストと独立した要約や分析が必要なとき
+- Geminiと並べて別のモデルの視点を比較したいとき
+- 短くスコープが明確なサブ質問を素早く処理したいとき
+
+## いつ避けるか
+
+- 現在のセッションのコードベースコンテキストが必要な質問 → Codexで直接処理
+- 複雑な実装作業 → `$ralph` またはexecutorエージェント
+
+## コマンド
+
+```bash
+$ask-claude "冪等HTTPエンドポイントの最も安全なretry戦略は何?"
+$ask-claude --print "このログを5行で要約して"
+$ask-claude --agent-prompt writer "このメモをリリースノートに変えて"
+```
+
+## 動作方式
+
+新しいClaudeコンテキストを開いて質問を渡し、結果を現在のセッションに返します。現在の作業セッションのファイルや状態は引き継ぎません。
+
+デフォルトのワークフローとして頻繁に使うより、Claudeの視点が実際に必要な限られた問題で意図的に使う方がよいです。
+
+## 関連
+
+- [`$ask-gemini`](/ja/docs/skills/utility/ask-gemini) — Geminiを対象にした同一ブリッジ
+- [Ask Claudeツール](/ja/docs/tools/ask-claude) — 内部動作の詳細
+- [CLI Bridges](/ja/docs/integrations/cli-bridges) — cross-CLI相談パターン概要

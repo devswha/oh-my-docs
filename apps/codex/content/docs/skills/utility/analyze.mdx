@@ -1,0 +1,40 @@
+---
+title: $analyze
+description: A utility skill focused on reading and analyzing a codebase without modifying it
+---
+
+Invoke with `$analyze`.
+
+A skill focused on understanding a codebase without touching it. Use it when you need to trace a bug's origin, map dependencies, or understand architecture — any time you need to read first and act later.
+
+## When to use
+
+- When you need to find where a bug is coming from before fixing anything
+- When you need to check the blast radius of a change before making it
+- When you need to gather context before explaining or reviewing code for a teammate
+- When something behaves unexpectedly and you don't know where to look
+
+## When to avoid
+
+- If the goal is to make a fix, use `$build-fix` or an executor agent directly — it's faster
+- If you need to write a plan first, use `$ralplan`
+
+## Commands
+
+```bash
+$analyze "find out why the redirect fails after login"
+$analyze "map all dependencies for the auth module"
+$analyze --scope src/api "summarize error handling patterns in this directory"
+```
+
+## How it works
+
+`$analyze` calls the debugger agent. It does not modify code — it explores files, searches symbols, and traces references to summarize the cause and structure, then returns the findings as text.
+
+To analyze and fix in one go, use `$ralph`.
+
+## Related docs
+
+- [debugger agent](/docs/agents/build-analysis/debugger) — handles root-cause analysis
+- [`$ralph`](/docs/skills/workflow/ralph) — analyze then fix in a continuous run
+- [Utility skills list](/docs/skills/utility)

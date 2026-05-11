@@ -1,0 +1,77 @@
+---
+title: "HUD"
+description: "アクティブな実行のリアルタイムモニタリング — phase、tmux 状態、JSON 出力"
+---
+
+HUD は、現在のセッションが何をしているかを簡潔に表示するモニタリングウィンドウです。raw state ファイルやログを直接覗くことなく、phase の変化や進行状況を一目で確認できます。
+
+HUD はワークフローを開始する場所ではありません。通常は `$ralph`、`$team`、`$ultraqa` などの skill が動いている間、横で状況を見守る用途で使います。
+
+## コマンド
+
+```bash
+omx hud
+omx hud --watch
+omx hud --json
+omx hud --preset=focused
+omx hud --tmux
+```
+
+利用可能な preset:
+
+- `minimal`
+- `focused`
+- `full`
+
+## 各モードの用途
+
+| コマンド | 用途 |
+|---|---|
+| `omx hud` | 現在の HUD 状態を一度だけ出力 |
+| `omx hud --watch` | 現在のターミナルで継続的に更新 |
+| `omx hud --json` | スクリプトや外部ツール向けの構造化出力 |
+| `omx hud --preset=<name>` | 表示情報量を調整 |
+| `omx hud --tmux` | 専用の tmux split を開く |
+
+## 使用例
+
+### 長時間実行中のループを監視する
+
+```bash
+omx hud --watch --preset=focused
+```
+
+`$ralph` や `$ultraqa` が繰り返し実行中のとき、ログを開かずに phase の変化を確認したい場合に使います。
+
+### 外部スクリプトに接続する
+
+```bash
+omx hud --json
+```
+
+シェルダッシュボード、自動化、外部状態統合に使います。
+
+### tmux pane に常時表示する
+
+```bash
+omx hud --tmux --preset=minimal
+```
+
+tmux 内で OMX を実行中に、横に状態 pane を表示しておきたい場合に使います。
+
+## 他のモニタリング surface との違い
+
+| surface | 表示する内容 |
+|---|---|
+| **HUD** | 今何が起きているか |
+| **State** | ランタイム記録に何が書かれているか |
+| **Trace** | 時間の経過とともに何が起きたか |
+| **Logs** | raw の詳細内容 |
+
+最も素早い運用ビューが必要なときは、まず HUD を確認するのが近道です。
+
+## 関連ドキュメント
+
+- [State](/ja/docs/tools/state) — HUD の下にある lifecycle record
+- [Quick Commands](/ja/docs/reference/quick-commands) — 運用コマンドリファレンス
+- [Trace skill](/ja/docs/skills/workflow/trace) — 実行タイムラインとサマリービュー

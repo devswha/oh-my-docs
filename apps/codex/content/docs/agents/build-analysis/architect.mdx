@@ -1,0 +1,63 @@
+---
+title: "architect"
+description: "Read-only system design advisor that provides evidence-backed analysis of boundaries, interfaces, and component decomposition."
+---
+
+The `architect` agent diagnoses system design questions from actual codebase evidence rather than generic advice. It gathers context, forms hypotheses, cross-checks them against real code, and returns a summary with root cause, concrete recommendations, and explicit tradeoffs. Every significant claim must cite a `file:line` reference. It never writes or edits files — analysis and recommendation only.
+
+## When invoked
+
+| Situation | How it's triggered |
+|---|---|
+| Design cross-check needed in `$autopilot` or `$ralplan` | Automatic |
+| Design question during `$deep-interview` that requires structural analysis | Automatic |
+| `planner` or `executor` escalates a system boundary or interface contract concern | Parent agent request |
+| `executor` hits an unexpected failure suspected to have a structural root cause | Delegated from `executor` |
+
+## Example prompts
+
+```text
+"Analyze where the auth boundary leaks in this structure"
+"Summarize the tradeoffs to verify this module decomposition is correct"
+"Point out the biggest risks in this design from a ralplan review perspective"
+```
+
+## Analysis process
+
+1. Gather relevant files, interfaces, and dependency boundaries
+2. Form the most plausible design hypotheses from the current structure
+3. Cross-check against actual code, attaching `file:line` evidence
+4. Produce ranked recommendations and a tradeoffs summary
+
+## Design review / consensus role
+
+In consensus flows like `$ralplan`, it takes a more active role than simple advisory:
+
+- **Antithesis** — present the strongest counter-argument to the currently preferred option
+- **Tradeoff tension** — highlight costs or side-effects that cannot be ignored
+- **Synthesis** — where possible, propose a compromise that preserves the strengths of competing options
+
+In consensus flows, the architect acts less as a design advocate and more as a falsification and review layer that makes plans more robust.
+
+## Inputs
+
+- A design question, plan draft, or failing component description
+- Repository source accessed via Glob, Grep, Read, and git history
+- Optional: LSP diagnostics, prior `explore` results, or ralplan deliberation context
+
+## Outputs
+
+- An analysis document with file:line evidence, root cause, ranked recommendations, and a tradeoffs table
+- In consensus mode: antithesis (strongest counter-argument), tradeoff tension, and synthesis where viable
+
+## Limits
+
+- Read-only — never writes, edits, or creates files under any circumstances
+- Does not offer generic advice detached from the actual codebase being reviewed
+- Does not speculate without evidence; acknowledges uncertainty explicitly rather than guessing
+
+## Related agents
+
+- [planner](/docs/agents/build-analysis/planner) — incorporates architect recommendations into the plan
+- [analyst](/docs/agents/build-analysis/analyst) — re-clarifies requirements when architect findings reveal scope gaps
+- [critic](/docs/agents/coordination/critic) — critically challenges architect recommendations in consensus mode

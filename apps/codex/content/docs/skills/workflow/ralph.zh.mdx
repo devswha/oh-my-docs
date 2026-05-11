@@ -1,0 +1,58 @@
+---
+title: $ralph
+description: 循环执行直到出现完成证据的 skill
+---
+
+## 一句话概述
+
+`$ralph` 会持续执行任务直到确认完成证据。用于一次可能无法完成或中途可能卡住的工作。
+
+## 调用方式
+
+```
+$ralph "按审批计划执行到完成"
+```
+
+也可通过魔法关键词 `ralph`、`don't stop`、`must complete`、`keep going` 激活。
+
+## 何时使用
+
+| 适合 | 避免 |
+|---|---|
+| 有计划需要一推到底时 | 需求还模糊时 |
+| 需要自动修复构建或测试失败时 | 需要先达成方向共识的工作 |
+| 需要多次尝试的工作 | 可拆分为并行 lane 的工作 |
+
+## 工作方式
+
+1. 将任务状态记录在 `.omx/state/`。
+2. 循环执行：执行 → 验证 → 失败时修复 → 再执行。
+3. verifier 确认完成证据后终止循环。
+
+完成证据通常是构建通过、测试通过，或指定产出物存在。
+
+## 在标准流程中的位置
+
+```
+$deep-interview "..."      ← 确定需求
+$ralplan "..."             ← 达成计划共识
+$ralph "..."               ← 在这里执行
+```
+
+## `$ralph` vs `$team`
+
+两者都是执行 skill，但方向不同。
+
+| 项目 | `$ralph` | `$team` |
+|---|---|---|
+| 执行方式 | 单一所有者，循环执行 | 多 lane 并行 |
+| 适合场景 | 需要始终保持上下文时 | 工作可拆分为独立单元时 |
+| 冲突风险 | 低 | lane 设计不当时会升高 |
+
+需求模糊或 lane 之间可能冲突时，`$ralph` 更安全。
+
+## 相关 skill
+
+- [`$ralph-init`](/zh/docs/skills/workflow/ralph-init) — ralph 启动前初始化状态
+- [`$ralplan`](/zh/docs/skills/workflow/ralplan) — ralph 执行前达成计划共识
+- [`$team`](/zh/docs/skills/workflow/team) — 并行 lane 执行

@@ -1,0 +1,53 @@
+---
+title: "Configuration"
+description: "Reference for `.codex/config.toml`, `.codex/hooks.json`, and CLI flags"
+---
+
+OMX reads configuration from `~/.codex/` (user-level) and `.codex/` (project-level). When the same key appears in both, the project-level value takes precedence.
+
+## `.codex/config.toml`
+
+| Field | Type | Description |
+|---|---|---|
+| `model` | string | Default model (e.g. `"gpt-4.1"`, `"o3"`) |
+| `codex_hooks` | bool | Enable the OMX hook pipeline. Set to `true` to activate skills, team, and OpenClaw. |
+| `custom-prompts` | string | Path to a directory that extends or overrides OMX default prompts |
+| `approval_policy` | string | Tool-call approval policy: `"suggest"`, `"auto-edit"`, or `"full-auto"` |
+
+```toml
+model = "gpt-4.1"
+codex_hooks = true
+custom-prompts = "~/.codex/prompts"
+approval_policy = "auto-edit"
+```
+
+## `.codex/hooks.json`
+
+Registers hook handlers that run at each lifecycle point. Each entry maps a hook name to a command or MCP tool.
+
+```json
+{
+  "hooks": {
+    "session-end": {
+      "command": "~/.codex/scripts/on-session-end.sh {{sessionId}}"
+    }
+  }
+}
+```
+
+For the full hook catalog, see the [upstream repository](https://github.com/Yeachan-Heo/oh-my-codex).
+
+## CLI Flags
+
+| Flag | Description |
+|---|---|
+| `--madmax` | Maximum parallelism mode — spawns the full team pipeline automatically. |
+| `--high` | High-effort mode — uses the highest-tier model available. |
+| `--skip-git-repo-check` | Suppresses the error when launching outside a git repository. |
+| `--spark` | Routes team workers through the spark worker tier. |
+| `--madmax-spark` | Combines `--madmax` with spark worker routing. |
+
+## Related
+
+- [Environment](/docs/reference/environment) — environment variables that complement config files
+- [.omx Directory](/docs/reference/omx-directory) — per-project state directory layout

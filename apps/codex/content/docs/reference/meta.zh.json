@@ -1,0 +1,14 @@
+{
+  "title": "参考",
+  "pages": [
+    "configuration",
+    "quick-commands",
+    "environment",
+    "migration",
+    "cjk-ime",
+    "changelog",
+    "release-notes",
+    "contracts",
+    "omx-directory"
+  ]
+}

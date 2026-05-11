@@ -1,0 +1,41 @@
+---
+title: $cancel
+description: 终止当前正在运行的OMX模式的工具技能
+---
+
+通过 `$cancel` 调用。
+
+中断 `$ralph`、`$autopilot`、`$team` 等活跃执行模式。当工作方向有误或不再需要继续推进时使用。
+
+## 何时使用
+
+- `$ralph` 正在循环但需要中断时
+- `$autopilot` 朝着与预期不同的方向推进时
+- 需要停止 `$team` 的某个特定lane时
+- 任务已完成或需求变更，不再需要继续时
+
+## 何时避免
+
+- 不是暂停而是要开始完全不同的任务 → 直接调用新技能即可
+- 任务仍在进行中 → 建议不要取消，等待完成
+
+## 命令
+
+```bash
+$cancel
+$cancel --force
+```
+
+`--force` 会初始化所有活跃状态。通常不带参数使用即可。
+
+## 工作方式
+
+读取当前活跃执行模式的状态并发送中断信号。正在进行的智能体工作会完成当前步骤后停止。部分完成的文件会保留其现有状态。
+
+`$cancel` 后若想恢复，从中断时间点重新调用技能即可。
+
+## 相关
+
+- [`$ralph`](/zh/docs/skills/workflow/ralph) — 迭代执行模式
+- [`$autopilot`](/zh/docs/skills/workflow/autopilot) — 全流程批量执行
+- [`$team`](/zh/docs/skills/workflow/team) — 并行lane执行

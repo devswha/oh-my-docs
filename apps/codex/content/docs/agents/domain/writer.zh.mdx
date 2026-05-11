@@ -1,0 +1,63 @@
+---
+title: writer
+description: "负责编写用户文档、迁移说明、变更通知的 Domain agent。"
+---
+
+## 概述
+
+`writer` agent 写的是文档而非代码。用户指南、API 文档、迁移说明、release 变更点整理是主要工作。实现完成后，如何说明它就是这个 agent 的领域。
+
+## 何时被调用
+
+- 功能实现后需要编写用户文档或 API 参考资料时
+- 包含 breaking change 的 release 需要迁移指南时
+- 需要将变更点整理为用户能理解的语言时
+- 在 `$release` skill 中需要编写 release notes 时
+
+## 使用示例
+
+```text
+"将这个 API 变更写成迁移指南"
+"编写新认证功能的用户指南"
+"制作从 v2 升级到 v3 的迁移说明"
+```
+
+## 工作范围
+
+| 项目 | 内容 |
+|---|---|
+| 用户指南 | 功能说明、使用示例、配置方法 |
+| API 文档 | 端点、参数、响应示例 |
+| 迁移说明 | breaking change 列表、升级步骤 |
+| Release notes | 变更点摘要、主要功能介绍 |
+
+## 工作流程
+
+1. 了解需要文档化的功能或变更点。
+2. 确认读者是谁（开发者、终端用户等）。
+3. 结合使用示例编写清晰实用的内容。
+4. 技术术语要准确，说明要具体。
+
+## 输入
+
+- 需要文档化的功能或变更点说明
+- `executor` 实现的代码或 API 规格
+- 目标读者和文档目的
+
+## 输出
+
+- 用户指南或 API 参考文档
+- 迁移指南或 release notes
+- 包含代码示例的实用说明
+
+## 范围限制
+
+- 代码实现由 `executor` 负责。
+- 外部文档调查交给 `researcher`。
+- 安全或性能相关的判断使用对应的 reviewer agent。
+
+## 相关 agent
+
+- [executor](/zh/docs/agents/build-analysis/executor) — 负责 writer 需要文档化的实现。
+- [researcher](/zh/docs/agents/domain/researcher) — 调查外部参考资料和官方文档来支持 writer。
+- [product-manager](/zh/docs/agents/domain/product-manager) — 决定文档的范围和方向。

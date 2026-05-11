@@ -1,0 +1,35 @@
+---
+title: $hud
+description: "A skill for checking or configuring HUD display options."
+---
+
+## Overview
+
+`$hud` controls the HUD (status bar) displayed at the top of an OMX session. Use it to check what information is currently shown or to toggle individual display items on and off.
+
+The HUD shows session information in real time — active mode, agent status, and current task progress.
+
+## Example
+
+```text
+$hud
+$hud off
+$hud on
+$hud status
+```
+
+Running without arguments prints the current HUD configuration.
+
+## When to use
+
+- When you want to check whether session state is showing in the HUD
+- When the HUD is cluttering output during a long run and you want to turn it off
+- When tracking progress during long-running modes like `$ralph` or `$team`
+
+## When to avoid
+
+- For anything unrelated to the HUD — `$hud` only handles display settings. It does not control execution modes or agents.
+
+## Related
+
+- [Quick commands](/docs/reference/quick-commands) — commands for controlling OMX sessions from the CLI

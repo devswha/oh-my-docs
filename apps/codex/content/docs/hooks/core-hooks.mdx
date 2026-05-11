@@ -1,0 +1,51 @@
+---
+title: "Core Hooks"
+description: "The four built-in hooks installed by omx setup — keyword detector, ralph stop-gate, Bash safety guard, and exit-code advisor."
+---
+
+Core hooks are the hook handlers installed automatically when you run `omx setup`. They wire OMX workflow skills into Codex lifecycle events without any additional configuration. Each hook has a single responsibility and does nothing when its concern is inactive.
+
+## Structure
+
+All four hooks are registered in `.codex/hooks.json` and share `dist/scripts/codex-native-hook.js` as a single entrypoint. That entrypoint inspects the Codex event type and dispatches to the correct handler. The activation condition is `[features] codex_hooks = true` in `.codex/config.toml`.
+
+Plugin hooks in `.omx/hooks/*.mjs` extend this interface but do not replace it.
+
+## The four built-in hooks
+
+**keyword-detector** (`UserPromptSubmit`)
+
+Scans every user prompt for magic keyword phrases. On a match it writes skill activation state to `.omx/state/` and can prepend developer context. Supports both explicit `$skill` invocations and implicit phrase matching with word-boundary guards. Intent guards prevent accidental triggering on ordinary prose containing words like "team" or "parallel". See [Magic Keywords](/docs/hooks/magic-keywords).
+
+**ralph stop-gate** (`Stop`)
+
+Checks whether a ralph, autopilot, ultrawork, or ultraqa run is still active when the model stops. If active and not yet terminal, it returns `decision: "block"` to keep the run going. Reads state from `.omx/state/{mode}-state.json`.
+
+**pre-tool-use guard** (`PreToolUse`, Bash-only)
+
+Cautions on destructive commands (`rm -rf dist`) and blocks inline `git commit` calls that lack the required trailer (`Co-authored-by: OmX <omx@oh-my-codex.dev>`).
+
+**post-tool-use advisor** (`PostToolUse`, Bash-only)
+
+Interprets non-zero exit codes, permission-denied errors, and missing-path messages, then injects corrective guidance into the next prompt context.
+
+## Checking hook status
+
+Verify that hooks are installed correctly:
+
+```bash
+omx doctor
+```
+
+Inspect hook state directly after a keyword fires:
+
+```bash
+cat .omx/state/skill-active-state.json
+```
+
+## Related
+
+- [Lifecycle Events](/docs/hooks/lifecycle-events)
+- [Context Hooks](/docs/hooks/context-hooks)
+- [Magic Keywords](/docs/hooks/magic-keywords)
+- [Codex-Native Hooks](/docs/hooks/codex-native-hooks)

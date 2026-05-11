@@ -1,0 +1,46 @@
+---
+title: "上下文钩子"
+description: "通过 system-reminder 标签将项目记忆、会话提醒、wiki 摘要和模式状态注入 Codex 提示的钩子"
+---
+
+上下文钩子是 OMX 钩子中负责将结构化知识插入下一个提示的子集。它们不直接修改用户消息，而是发出 Codex 读取的 `<system-reminder>` 标签。这样既保持用户消息原样，又确保模型始终携带最新的项目记忆和活动指令启动。
+
+## 注入的来源
+
+**项目记忆**
+
+通过 `project_memory_write` 或 `project_memory_add_directive` 写入的核心事实和指令。在 `SessionStart` 时注入，当指令处于活动状态时也会在后续轮次中选择性注入。
+
+**会话提醒**
+
+通过 `notepad_write_working` 或 `notepad_write_priority` 写入的短期备注。持续注入直至过期或被清除。
+
+**Wiki 摘要**
+
+当 wiki 页面存在时，在 `SessionStart` 时显示 `.omx/wiki/` 的简短摘录。收集、重建等写密集型操作被延迟处理，以避免阻塞钩子路径。
+
+**模式状态**
+
+当检测到 ralph、team、ultrawork 等活动工作流模式时，一并注入当前阶段和继续指令，使模型能从中断点正确恢复。
+
+## 使用示例
+
+注册要求所有提交包含尾注的永久指令：
+
+```bash
+omx memory add-directive "All git commits must include Co-authored-by: OmX <omx@oh-my-codex.dev>"
+```
+
+下次会话启动时，此指令会自动作为 `<system-reminder>` 块注入。
+
+查看当前 notepad 内容：
+
+```bash
+cat .omx/notepad.md
+```
+
+## 相关文档
+
+- [核心钩子](/zh/docs/hooks/core-hooks)
+- [Wiki 工具](/zh/docs/tools/wiki)
+- [State 工具](/zh/docs/tools/state)

@@ -1,0 +1,40 @@
+---
+title: "Lifecycle Events"
+description: "The seven events Codex CLI emits and what OMX does at each point."
+---
+
+Codex CLI emits events at fixed points in a session. OMX hooks attach to these events to do their work. Knowing which event fires when lets you trace why OMX intervened at a given moment and slot your own `.omx/hooks/*.mjs` plugins into the right place.
+
+## Events
+
+| Event | Fires when | What OMX does |
+|---|---|---|
+| `SessionStart` | Codex session initialises | Restore state, seed wiki summary, verify `.omx/` is gitignored |
+| `UserPromptSubmit` | User sends a prompt | Keyword detection, skill routing, deep-interview input lock |
+| `PreToolUse` | Before a tool call executes | Bash safety checks, inline `git commit` format guard |
+| `PostToolUse` | After a tool call completes | Command-not-found guidance, non-zero output review |
+| `Stop` | Model finishes a turn | Ralph / autopilot / ultrawork / ultraqa continuation, auto-nudge on stalls |
+| `PreCompact` | Context window nears limit | Reserved — wiki compaction deferred to v2 |
+| `Notification` | System notification emitted | Routing to Discord / Slack / Telegram via notify-hook |
+
+`PreToolUse` and `PostToolUse` currently intercept Bash only. Non-Bash tool interception falls back to runtime paths. See [Codex-Native Hooks](/docs/hooks/codex-native-hooks) for the full coverage matrix.
+
+## Subscribing to events in a plugin
+
+An example plugin that reacts to `post-tool-use` events:
+
+```js
+// .omx/hooks/my-plugin.mjs
+export async function onHookEvent(event, sdk) {
+  if (event.event !== 'post-tool-use') return;
+  sdk.log.info('tool finished', event.context);
+}
+```
+
+The event envelope always includes `schema_version`, `event`, `timestamp`, `source` (`native` or `derived`), and `context`.
+
+## Related
+
+- [Core Hooks](/docs/hooks/core-hooks)
+- [Codex-Native Hooks](/docs/hooks/codex-native-hooks)
+- [Context Hooks](/docs/hooks/context-hooks)

@@ -1,0 +1,50 @@
+---
+title: $configure-notifications
+description: Discord、Slack、Telegramなど通知チャンネルを設定するユーティリティスキル
+---
+
+`$configure-notifications`で呼び出します。
+
+OMX作業完了、エラー、状態変更時に通知を受け取るチャンネルを設定します。`$ralph` のように時間のかかる作業をバックグラウンドで動かすとき、完了時点を見逃さないために使います。
+
+## いつ使うか
+
+- `$ralph` や `$autopilot` のような長時間作業をモニタリングせず他のことをするとき
+- チームチャンネルにOMX作業状態を共有しなければならないとき
+- エラー発生時に即座に通知を受け取らなければならないとき
+
+## いつ避けるか
+
+- 短く終わる作業は通知設定なしにそのまま待つ方が早い
+
+## コマンド
+
+```bash
+$configure-notifications
+$configure-notifications discord
+$configure-notifications slack
+$configure-notifications telegram
+```
+
+引数なしで使うと対話形式でチャンネルを選択します。
+
+## 対応チャンネル
+
+| チャンネル | 必要なもの |
+|---|---|
+| Discord | Webhook URL |
+| Slack | Webhook URL または Bot Token |
+| Telegram | Bot Token + Chat ID |
+
+## どんなイベントを受け取るか
+
+- 作業完了
+- エラー発生および再試行
+- ステップごとの進行状況（ralph、autopilot）
+- 手動確認が必要な中断ポイント
+
+## 関連
+
+- [`$ralph`](/ja/docs/skills/workflow/ralph) — 長時間反復実行モード
+- [`$autopilot`](/ja/docs/skills/workflow/autopilot) — 全工程一括実行
+- [ユーティリティスキル一覧](/ja/docs/skills/utility)

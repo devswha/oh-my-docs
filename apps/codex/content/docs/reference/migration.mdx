@@ -1,0 +1,61 @@
+---
+title: "Migration"
+description: "Breaking changes and upgrade steps between OMX versions"
+---
+
+Check this page before upgrading to a new major or minor version. For the full release history, see the [changelog](/docs/reference/changelog).
+
+## Post-v0.4.4 mainline
+
+This version includes catalog consolidation, setup scope changes, and tmux hardening. For the full upstream guide, see [`docs/migration-mainline-post-v0.4.4.md`](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/migration-mainline-post-v0.4.4.md).
+
+### Removed prompts
+
+- `deep-executor` — use `/prompts:executor` instead
+- `scientist` — use `/prompts:researcher` for research workflows
+
+### Removed skills
+
+| Removed | Replacement |
+|---|---|
+| `$pipeline` | `$team` (default orchestrator) |
+| `$ultrapilot` | `$team` |
+| `$deepinit` | `omx agents-init [path]` (CLI command) |
+| `$psm` / `$project-session-manager` | No in-repo replacement — remove from automation |
+| `$release` | No in-repo replacement — use your project release process |
+| `$learn-about-omx` / `$learner` / `$writer-memory` | No in-repo replacement — remove stale references |
+
+### Setup scope changes
+
+`omx setup` now supports `--scope user` and `--scope project`. Legacy `project-local` values are migrated automatically.
+
+```bash
+omx help | grep -e "--scope"
+```
+
+### Verification checklist
+
+After upgrading, confirm that removed references are gone:
+
+```bash
+rg -n "deep-executor|scientist|pipeline|project-session-manager|ultrapilot" \
+  README.md docs scripts .omx -S
+```
+
+Then check team health:
+
+```bash
+omx doctor --team
+```
+
+## General upgrade steps
+
+1. Install the latest version: `npm install -g oh-my-codex`
+2. Run `omx doctor` to check for configuration issues
+3. Run `omx setup` if the doctor reports missing prompts or skills
+4. Check this page and the changelog for any version-specific steps
+
+## Related
+
+- [Changelog](/docs/reference/changelog) — full release history
+- [Configuration](/docs/reference/configuration) — config files affected by migrations

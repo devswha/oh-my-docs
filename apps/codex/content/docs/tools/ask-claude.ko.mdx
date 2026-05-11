@@ -1,0 +1,33 @@
+---
+title: "Ask Claude"
+description: "활성 Codex 컨텍스트 바깥에서 Claude에게 서브 질문을 위임하는 브리지"
+---
+
+Ask Claude는 현재 OMX 세션이 Claude에게 서브 질문을 위임할 때 쓰는 브리지입니다. 위임된 호출은 새로운 Claude 컨텍스트에서 실행되므로, 현재 작업 세션의 맥락을 물려받지 않고 서브 질문에만 집중한 답을 얻을 수 있습니다.
+
+## 언제 쓰는가
+
+- 다른 모델의 빠른 second opinion이 필요할 때
+- 범위가 명확한 질문을 현재 컨텍스트와 분리해서 처리할 때
+- 구현 컨텍스트 바깥에서 요약이나 synthesis가 필요할 때
+- Codex 또는 Gemini와 나란히 비교할 때
+
+## 명령
+
+```bash
+omx ask claude "What is the safest retry strategy for idempotent HTTP endpoints?"
+omx ask claude --print "Summarize these logs in five bullets"
+omx ask claude --agent-prompt writer "Turn these notes into release notes"
+```
+
+## 왜 브리지가 필요한가
+
+모델마다 강점이 다릅니다. OMX는 Codex를 주 실행 엔진으로 유지하지만, 필요할 때 다른 모델의 시각을 참고할 수 있도록 이 브리지를 제공합니다.
+
+Ask Claude를 기본 워크플로우처럼 자주 쓰기보다는, Claude의 관점이 실제로 필요한 범위가 분명한 하위 문제에서 의도적으로 사용하는 편이 좋습니다.
+
+## 관련 문서
+
+- [CLI Bridges](/ko/docs/integrations/cli-bridges) — cross-CLI consultation 패턴 개요
+- [ask-claude skill](/ko/docs/skills/utility/ask-claude) — 사용자용 워크플로우 안내
+- [Ask Gemini](/ko/docs/tools/ask-gemini) — Gemini를 대상으로 하는 동일한 브리지

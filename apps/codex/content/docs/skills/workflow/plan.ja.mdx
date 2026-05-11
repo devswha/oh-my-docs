@@ -1,0 +1,40 @@
+---
+title: $plan
+description: 実装なしに計画だけ先に立てるスキル
+---
+
+## 一行要約
+
+`$plan` は実行なしに計画だけ先に作るときに使います。合意ベースの計画が必要なら `$ralplan` がより適しています。
+
+## 呼び出し
+
+```
+$plan "新しい認証システム導入の計画を立てて"
+```
+
+マジックキーワード `plan this`、`plan the`、`let's plan` でも起動します。
+
+## `$plan` vs `$ralplan`
+
+| 項目 | `$plan` | `$ralplan` |
+|---|---|---|
+| エージェント数 | planner 単独 | planner + architect + critic |
+| 合意プロセス | なし | あり（繰り返しレビュー） |
+| 速度 | 速い | 遅いが安定 |
+| 合う場合 | 素早いドラフトが必要なとき | 方向合意が重要な作業 |
+
+範囲が大きかったり失敗コストが高い作業には `$ralplan` を使います。
+
+## いつ使うか
+
+| 合う | 避ける |
+|---|---|
+| 計画ドラフトを素早く出す必要があるとき | ステークホルダー合意が必要な作業 |
+| 小さな機能・短期作業 | アーキテクチャ決定が含まれる作業 |
+
+## 関連スキル
+
+- [`$ralplan`](/ja/docs/skills/workflow/ralplan) — 合意ベースの計画
+- [`$ralph`](/ja/docs/skills/workflow/ralph) — 計画を実行
+- [`$deep-interview`](/ja/docs/skills/workflow/deep-interview) — 計画前に要件整理

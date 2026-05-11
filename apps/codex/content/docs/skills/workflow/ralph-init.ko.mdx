@@ -1,0 +1,38 @@
+---
+title: $ralph-init
+description: ralph 실행 전 상태를 초기화하는 스킬
+---
+
+## 한 줄 요약
+
+`$ralph-init`은 `$ralph` 루프를 시작하기 전에 상태를 초기화합니다. ralph가 이전 세션 상태를 물고 이상하게 동작할 때 먼저 씁니다.
+
+## 호출
+
+```
+$ralph-init
+```
+
+## 언제 쓰나
+
+- `$ralph`가 이전 작업 상태를 이어받아 잘못 동작할 때
+- 세션을 새로 시작하면서 ralph 루프를 깨끗하게 초기화하고 싶을 때
+- ralph 루프가 중간에 멈추거나 상태가 꼬인 경우
+
+## 동작 방식
+
+1. `.omx/state/`에서 ralph 관련 상태 파일을 정리합니다.
+2. 루프 카운터와 완료 증거 추적을 초기화합니다.
+3. 초기화 완료 후 `$ralph`를 실행할 준비가 됩니다.
+
+## 일반 순서
+
+```
+$ralph-init
+$ralph "승인된 계획을 끝까지 완료해줘"
+```
+
+## 관련 스킬
+
+- [`$ralph`](/ko/docs/skills/workflow/ralph) — 완료까지 반복 실행
+- [`$cancel`](/ko/docs/skills/utility/cancel) — 활성 모드 강제 종료

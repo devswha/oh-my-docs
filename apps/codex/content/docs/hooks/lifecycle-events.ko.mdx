@@ -1,0 +1,40 @@
+---
+title: "훅 라이프사이클 이벤트"
+description: "Codex CLI가 노출하는 7가지 이벤트와 OMX가 각 시점에 무엇을 하는지"
+---
+
+Codex CLI는 세션 흐름의 정해진 시점마다 이벤트를 발행합니다. OMX 훅은 이 이벤트에 붙어서 동작합니다. 어떤 이벤트가 언제 발생하는지 알면, OMX가 왜 그 시점에 개입했는지 추적하고 `.omx/hooks/*.mjs` 플러그인을 올바른 위치에 끼울 수 있습니다.
+
+## 이벤트 목록
+
+| 이벤트 | 발생 시점 | OMX가 하는 일 |
+|---|---|---|
+| `SessionStart` | Codex 세션 초기화 | 상태 복원, 위키 요약 시드, `.omx/`가 gitignore에 포함됐는지 확인 |
+| `UserPromptSubmit` | 사용자가 프롬프트를 전송 | 키워드 감지, 스킬 라우팅, deep-interview 입력 잠금 |
+| `PreToolUse` | 도구 호출 직전 | Bash 안전성 검사, 인라인 `git commit` 형식 가드 |
+| `PostToolUse` | 도구 호출 완료 후 | 명령어 미발견 안내, 비정상 종료 출력 검토 |
+| `Stop` | 모델이 한 턴을 완료 | ralph / autopilot / ultrawork / ultraqa 계속 실행, 정지 상태 자동 넛지 |
+| `PreCompact` | 컨텍스트 창 한도 근접 | 예약됨 — 위키 압축은 v2로 연기 |
+| `Notification` | 시스템 알림 발생 | notify-hook을 통해 Discord / Slack / Telegram으로 라우팅 |
+
+`PreToolUse`와 `PostToolUse`는 현재 Bash 호출만 인터셉트합니다. Bash 이외의 도구는 런타임 폴백 경로로 처리됩니다. 전체 커버리지 매트릭스는 [Codex 네이티브 훅](/ko/docs/hooks/codex-native-hooks)을 참고하세요.
+
+## 플러그인에서 이벤트 구독하기
+
+`post-tool-use` 이벤트를 받는 플러그인 예시:
+
+```js
+// .omx/hooks/my-plugin.mjs
+export async function onHookEvent(event, sdk) {
+  if (event.event !== 'post-tool-use') return;
+  sdk.log.info('tool finished', event.context);
+}
+```
+
+이벤트 봉투에는 항상 `schema_version`, `event`, `timestamp`, `source`(`native` 또는 `derived`), `context`가 포함됩니다.
+
+## 관련 문서
+
+- [코어 훅](/ko/docs/hooks/core-hooks)
+- [Codex 네이티브 훅](/ko/docs/hooks/codex-native-hooks)
+- [컨텍스트 훅](/ko/docs/hooks/context-hooks)

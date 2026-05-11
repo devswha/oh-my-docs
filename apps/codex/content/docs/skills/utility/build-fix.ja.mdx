@@ -1,0 +1,40 @@
+---
+title: $build-fix
+description: ビルドエラーと型エラーを自動修正するユーティリティスキル
+---
+
+`$build-fix`で呼び出します。
+
+ビルド失敗、型エラー、リントエラーを診断して修正するスキルです。build-fixerエージェントを呼び出してコンパイラ出力とエラーメッセージを分析し、コードを直接修正します。
+
+## いつ使うか
+
+- `npm run build` または `tsc` が失敗したとき
+- 型エラーが複数ファイルにまたがっているとき
+- リントエラーが溜まっていて一度に整理したいとき
+- `$ralph` や `$autopilot` の途中でビルドが壊れたとき
+
+## いつ避けるか
+
+- エラーの原因がロジックバグの場合 → `$analyze` で原因把握を先に
+- アーキテクチャレベルの変更が必要な場合 → `$ralplan` で計画立案を先に
+
+## コマンド
+
+```bash
+$build-fix
+$build-fix "TypeScriptエラーを全部直して"
+$build-fix --scope src/api
+```
+
+## 動作方式
+
+build-fixerエージェントがビルドコマンドを実行してエラー出力をパースします。エラー位置を追跡して最小限の修正で通過できる状態を作り、修正後に再ビルドして検証します。
+
+ロジック変更ではなく**コンパイル可能な状態の復旧**に焦点を当てます。ビルドは通過するが動作が疑わしければ `$code-review` で確認してください。
+
+## 関連
+
+- [build-fixerエージェント](/ja/docs/agents/domain/build-fixer) — 内部動作の詳細
+- [`$analyze`](/ja/docs/skills/utility/analyze) — エラー原因の分析
+- [`$code-review`](/ja/docs/skills/utility/code-review) — 修正後のレビュー

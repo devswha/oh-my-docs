@@ -1,0 +1,24 @@
+---
+title: "統合"
+description: "外部エコシステムとの OMX 統合：OpenClaw (Codex↔Claude ブリッジ)、Clawhip イベントコントラクト、MCP サーバー、CLI ブリッジ。"
+---
+
+統合ドキュメントでは、OMX の Codex 中心ランタイムがイベントゲートウェイ、相互運用コントラクト、MCP サーバー、クロス CLI ワークフローとどう接続されるかを説明します。
+
+## 統合ページ
+
+| ページ | 内容 |
+|---|---|
+| [OpenClaw](/ja/docs/integrations/openclaw) | OMX のフックイベントを外部ゲートウェイへ送る通知/ディスパッチブリッジ |
+| [Clawhip](/ja/docs/integrations/clawhip) | 下流コンシューマーが基準にすべき正規化イベントコントラクト |
+| [MCP](/ja/docs/integrations/mcp) | OMX が Model Context Protocol サーバーを発見して呼び出す方法 |
+| [CLI Bridges](/ja/docs/integrations/cli-bridges) | `$ask-claude`、`$ask-gemini`、複数 CLI 相談ワークフロー |
+
+## このセクションを使う場面
+
+次のようなときに統合ドキュメントを参照してください。
+
+- OMX のフックイベントを別システムへ接続したいとき
+- 外部コンシューマーが受け取るイベント envelope を理解したいとき
+- MCP ベースのツールやサーバーを設定したいとき
+- Codex、Claude、Gemini の間で意図的に作業を振り分けたいとき

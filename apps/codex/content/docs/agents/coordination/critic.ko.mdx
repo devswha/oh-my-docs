@@ -1,0 +1,47 @@
+---
+title: critic
+description: 계획과 설계의 약점을 지적하고 OKAY/REJECT 판정을 내리는 적대적 검토 에이전트
+---
+
+`critic` 에이전트는 계획과 설계를 적대적 시각으로 검토합니다. 파일 레퍼런스를 직접 확인하고, 전제를 뒤집어 보고, 위험을 끄집어낸 뒤 OKAY 또는 REJECT 판정을 근거와 함께 냅니다. 통과 도장만 찍는 역할이 아닙니다.
+
+## 역할
+
+- 계획의 모든 파일 레퍼런스를 직접 확인하고, 대표 작업 2~3개를 시뮬레이션해서 executor가 추측 없이 실행 가능한지 검증합니다.
+- 명확성, 검증 가능성, 완전성, 큰 그림 일관성 — 네 축으로 품질을 평가합니다.
+- `$ralplan` 합의 게이트에서 원칙-옵션 일관성, 대안 깊이, 리스크 완화 강도를 심사합니다.
+- deliberate ralplan 모드에서는 pre-mortem 시나리오 3개와 단위/통합/e2e/관측 가능성 테스트 계획을 추가로 요구합니다.
+
+## 호출 시점
+
+- `$ralplan`이 계획 출력과 executor 시작 사이 합의 게이트로 호출합니다.
+- `$autopilot`이 실행 직전 점검 지점에서 호출합니다.
+- 팀 리드가 계획이나 설계 제안을 병합하기 전에 적대적 검토를 원할 때 직접 호출합니다.
+- code-reviewer 결과에 두 번째 비판적 시각이 필요할 때.
+
+## 입력
+
+- 평가할 계획 파일 경로 또는 설계 문서
+- 계획이 참조하는 저장소 소스 파일 (Glob/Grep/Read로 직접 읽음)
+- 선택 사항: ralplan 심의 컨텍스트, 이전 architect 또는 analyst 출력
+
+## 출력
+
+| 항목 | 내용 |
+|---|---|
+| 판정 | OKAY(실행 가능) 또는 REJECT(결함 있음) + 근거 |
+| REJECT 시 | 핵심 개선 사항 3~5개, 구체적 제안 포함 |
+| ralplan 모드 | 원칙-옵션 일관성, 대안 깊이, 검증 엄밀성 항목별 통과/실패 |
+
+## 제약
+
+- 읽기 전용입니다. Write/Edit 도구는 차단되어 있으며 파일을 직접 수정하지 않습니다.
+- 실제로 없는 문제를 만들어 내지 않습니다. 계획이 실행 가능하면 OKAY를 냅니다.
+- 모호한 반려는 없습니다. 모든 결함은 특정 파일, 줄, 또는 누락된 세부 사항에 연결됩니다.
+
+## 관련 에이전트
+
+- [code-reviewer](/ko/docs/agents/review/code-reviewer) — 종합 코드 리뷰. critic이 합의 모드에서 재도전할 수 있습니다.
+- [quality-strategist](/ko/docs/agents/coordination/quality-strategist) — critic 판정 이후 품질 전략과 릴리스 게이트를 담당합니다.
+- [architect](/ko/docs/agents/build-analysis/architect) — 구조 분석을 제공하고, critic이 계획 주장과 대조합니다.
+- [planner](/ko/docs/agents/build-analysis/planner) — REJECT 판정을 받아 계획을 수정한 뒤 재제출합니다.

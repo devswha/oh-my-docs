@@ -1,0 +1,13 @@
+{
+  "title": "빌드 & 분석",
+  "pages": [
+    "explore",
+    "analyst",
+    "planner",
+    "architect",
+    "executor",
+    "debugger",
+    "verifier",
+    "explore-harness"
+  ]
+}

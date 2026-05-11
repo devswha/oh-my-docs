@@ -1,0 +1,36 @@
+---
+title: $review
+description: "A skill that delegates code review to the code-reviewer agent."
+---
+
+## Overview
+
+`$review` delegates code review to the `code-reviewer` agent. It reviews comprehensively — logic defects, maintainability, API contracts, and backward compatibility. Use it when you need an independent review step after implementation is complete.
+
+## Example
+
+```text
+$review
+$review "review the auth module changes"
+$review "review all of PR #42"
+```
+
+Running without arguments reviews the current changes (based on git diff).
+
+## When to use
+
+- When you need an independent review after finishing implementation with `$executor` or `$ralph`
+- As a quality check step before opening a PR
+- When there are API changes and you need to verify backward compatibility
+- For general code quality checks unrelated to security
+
+## When to avoid
+
+- Security-focused review → use `$security-review`
+- Build or type error fixes → use `$build-fix`
+- Design review before implementation → the critic stage in `$ralplan` is more appropriate
+
+## Related agent
+
+- [code-reviewer](/docs/agents/review/code-reviewer) — detailed description of the agent this skill delegates to
+- [$security-review](/docs/skills/utility/security-review) — security-focused review

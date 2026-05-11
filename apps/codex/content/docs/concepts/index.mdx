@@ -1,0 +1,229 @@
+---
+title: Core Concepts
+description: How OMX's agents, skills, hooks, and state management fit together
+---
+
+## What makes up OMX
+
+OMX is four systems meshing together.
+
+<Mermaid chart={`
+graph TD
+    A["User input"] --> B["Hooks\nEvent detection and routing"]
+    B --> C["Skills\nBehavior injection and workflow composition"]
+    C --> D["Agents\nExecuting specialist work"]
+    D --> E["State\nProgress and knowledge retention"]
+`} />
+
+### Each concept in a line
+
+#### Agents
+
+OMX ships 33 role-specific agents. Each one owns a single responsibility.
+
+Examples: `explore` (discovery), `planner` (planning), `architect` (design), `executor` (implementation), `verifier` (verification).
+
+#### Skills
+
+Skills are the workflow entrypoints that combine and extend agent behavior. You call them by name with `$autopilot`, `$ralph`, `$team`, and so on.
+
+Examples: `$deep-interview` (requirement clarification), `$ralplan` (consensus planning), `$ralph` (runs until verified).
+
+#### Hooks
+
+Hooks fire on Codex CLI lifecycle events and activate skills and runtime behavior. They can intervene on session start, prompt submit, tool use, and stop.
+
+#### State
+
+Task progress and cross-session memory are stored under `.omx/`. That lets important information survive context compaction.
+
+---
+
+## What are agents?
+
+An agent is a work surface tuned for a specific role. OMX groups them into four lanes.
+
+<Mermaid chart={`
+graph LR
+    A["explore\nCodebase discovery"] --> B["analyst\nRequirement analysis"]
+    B --> C["planner / architect\nPlanning and design"]
+    C --> D["critic\nPlan review"]
+    D --> E["executor\nImplementation"]
+    E --> F["verifier\nCompletion verification"]
+`} />
+
+### Build / Analysis lane
+
+The core development flow: discovery → analysis → planning → implementation → verification.
+
+| Agent | Role |
+|----------|------|
+| `explore` | Codebase discovery, mapping files, patterns, and relationships |
+| `analyst` | Requirement analysis, surfacing hidden constraints |
+| `planner` | Sequencing work and producing execution plans |
+| `architect` | System design, interfaces, tradeoff analysis |
+| `debugger` | Root-cause analysis |
+| `executor` | Code implementation and refactoring |
+| `verifier` | Completion evidence and test adequacy |
+
+### Review lane
+
+Inspects quality and risk before implementation results move forward.
+
+| Agent | Role |
+|----------|------|
+| `quality-reviewer` | Logic defects, maintainability, anti-patterns |
+| `security-reviewer` | Vulnerabilities, trust boundaries, auth |
+| `code-reviewer` | Comprehensive code review |
+| `style-reviewer` | Naming, formatting, style consistency |
+| `api-reviewer` | API contracts and backward compatibility |
+| `performance-reviewer` | Performance bottlenecks and cost |
+
+### Domain lane
+
+Specialists in narrower areas. Called in when needed.
+
+Examples:
+
+- `test-engineer` — test strategy
+- `designer` — UI / UX design
+- `writer` — docs and user guidance
+- `researcher` — external documentation and references
+- `build-fixer` — build and toolchain error repair
+- `git-master` — Git operations and history management
+
+### Coordination lane
+
+Reviews and coordinates the plans and outputs the other agents produce.
+
+Examples:
+
+- `critic` — reviews gaps in plans and designs
+- `team-executor` — supports the team execution lane
+- `quality-strategist` — quality strategy decisions
+
+### Picking an agent
+
+As a simple guide:
+
+| Kind of work | Agent to reach for first |
+|-----------|----------------------|
+| Want to read the codebase fast | `explore` |
+| Requirements unclear | `analyst` |
+| Need a plan before code | `planner`, `architect`, `critic` |
+| Need actual implementation | `executor` |
+| Need to confirm completion | `verifier` |
+| Worried about security / quality / performance | review lane |
+
+The full list lives in the [agents catalog](/docs/agents).
+
+---
+
+## What are skills?
+
+Skills are the workflow system that composes agent behavior. They don't replace agents — they define **which role to call in what order**.
+
+<Mermaid chart={`
+graph TD
+    G["Entry skills\n$deep-interview / $ralplan / $ralph / $team"] --> H["Role selection\nDecide when to call which agent"]
+    H --> I["Execution\nInvoke agents, update state, verification loop"]
+    I --> J["Completion\nExit once verified"]
+`} />
+
+### How do you call a skill?
+
+In OMX you usually invoke with a `$` prefix:
+
+```bash
+$deep-interview "clarify the auth requirements"
+$ralplan "produce the safest implementation plan"
+$ralph "carry the approved plan to completion"
+```
+
+Matching magic keywords can also activate a skill automatically.
+
+### Core workflow skills
+
+| Skill | Role |
+|------|------|
+| `$deep-interview` | Clarify fuzzy requirements through guided questioning |
+| `$ralplan` | Build a planner / architect / critic consensus plan |
+| `$ralph` | Keep running until completion is verified |
+| `$team` | Coordinate work that benefits from parallel execution |
+| `$autopilot` | Run from idea through implementation, QA, and validation |
+| `$ultraqa` | Iterate through testing, verification, and fixes |
+
+### When do you reach for which?
+
+- **Requirements are still fuzzy** → `$deep-interview`
+- **Want a plan before implementation** → `$ralplan`
+- **Need one owner to push to completion** → `$ralph`
+- **Parallel execution makes sense** → `$team`
+- **Hand off the full pipeline in one call** → `$autopilot`
+
+The full list lives in the [skills catalog](/docs/skills).
+
+---
+
+## What are hooks?
+
+Hooks are runtime handlers that react to Codex CLI lifecycle events. They intervene automatically when the user submits a prompt, when a tool executes, and when a session starts or stops.
+
+<Mermaid chart={`
+graph TD
+    A["SessionStart"] --> B["Restore state / inject context"]
+    C["UserPromptSubmit"] --> D["Detect magic keyword / activate skill"]
+    E["PreToolUse / PostToolUse"] --> F["Guards / post-processing / surface hints"]
+    G["Stop"] --> H["Decide whether unfinished execution should continue"]
+`} />
+
+OMX uses hooks to implement keyword detection, skill activation, state restoration, stop-gating, and similar behavior.
+
+### Main events and what OMX does
+
+| Event | What OMX does |
+|--------|---------------|
+| `SessionStart` | Restore state, inject developer context, run initial `.omx/` checks |
+| `UserPromptSubmit` | Detect magic keywords, activate the matching skill |
+| `PreToolUse` | Warn on destructive commands, apply pre-execution guards |
+| `PostToolUse` | Surface failure hints, post-processing |
+| `Stop` | Block or continue long-running modes |
+
+In other words, hooks are not user-invoked features — they are **the event layer that lets OMX behave coherently in the background**.
+
+More detail lives in the [Hooks](/docs/hooks) section.
+
+---
+
+## State management overview
+
+OMX stores in-flight state and cross-session memory under `.omx/`.
+
+<Mermaid chart={`
+graph TD
+    A["Current session"] --> B[".omx/state\nActive mode state"]
+    A --> C[".omx/notepad.md\nWorking notes"]
+    A --> D[".omx/project-memory.json\nDurable knowledge"]
+    A --> E[".omx/wiki\nAccumulated docs knowledge"]
+`} />
+
+| Path | Role |
+|------|------|
+| `.omx/state/` | Active mode state |
+| `.omx/plans/` | Plan outputs from `$ralplan` and similar |
+| `.omx/logs/` | Session and execution logs |
+| `.omx/notepad.md` | Freeform notes |
+| `.omx/project-memory.json` | Long-lived project directives and notes |
+| `.omx/wiki/` | Accumulated wiki knowledge |
+
+### Why it matters
+
+State management is what lets OMX:
+
+- not lose progress after context compaction
+- resume long-running workflows
+- carry project knowledge across sessions
+
+If hooks and skills are the "behavior", state management is the foundation that keeps that behavior from getting cut off.
+
+More detail lives in the [`.omx/` directory reference](/docs/reference/omx-directory) and the [State tool](/docs/tools/state).

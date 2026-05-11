@@ -1,0 +1,52 @@
+---
+title: ".omx ディレクトリ"
+description: "プロジェクトごとの `.omx/` 状態ディレクトリの構造と各エントリの役割"
+---
+
+OMX を使用する各プロジェクトは worktree ルートに `.omx/` ディレクトリを持ちます。計画、ログ、メモ、wiki、研究結果、team coordination データがここに保存されます。計画・wiki・spec のようにチームと共有するものはコミットし、state・logs・sessions のような一時的なものは gitignore にするのが一般的です。
+
+## ディレクトリ構造
+
+```
+.omx/
+├── state/                  # ランタイム状態ファイル
+│   ├── sessions/           # セッションごとの状態サブディレクトリ
+│   │   └── {sessionId}/    # アクティブセッションごとに 1 つのディレクトリ
+│   └── team/               # Team pipeline coordination 状態
+├── plans/                  # $plan / $ralplan が生成した計画文書
+├── logs/                   # Hook pipeline および agent 実行ログ
+├── notepad.md              # 自由形式のメモ帳（agent が読み取り可能）
+├── project-memory.json     # 構造化プロジェクトメモリ — directives と notes
+├── research/               # 研究ワークフローが生成したドキュメント
+├── wiki/                   # LLM Wiki ページ（$wiki スキル管理）
+├── specs/                  # 機能/システム仕様書
+└── sessions/               # アーカイブされたセッションサマリー
+```
+
+## 主要エントリ
+
+- **`state/`** — OMX runtime が読み書きする状態。team task queue、worker heartbeat、inbox file、monitor snapshot などが含まれます。直接変更せず、`omx team api` で操作してください。
+- **`state/sessions/{sessionId}/`** — セッションごとのスクラッチ状態。セッション開始時に作成され、同じセッション内でフック呼び出し間の context を受け渡すときに使います。
+- **`plans/`** — `$plan`、`$ralplan` の出力物。実行 agent は読み取りのみ行い、書き込みは planning skill のみが行います。
+- **`logs/`** — フック実行、OpenClaw command gateway、team event の raw ログ。構造化集計が必要な場合は `.jsonl` ファイルに追記してください。
+- **`notepad.md`** — `$note` またはマニュアルで作成する自由形式メモ。同じ worktree で実行される agent がこのファイルを読み取って、前のセッションの context を引き継ぎます。
+- **`project-memory.json`** — `directives`、`notes` 配列を持つ構造化メモリ。セッションをまたぐ決定や制約を保存します。
+- **`research/`** — 研究中心のワークフローや analyst が生成したドキュメント。
+- **`wiki/`** — `$wiki` が管理する markdown wiki ページ。セッション間でのクエリ/リンクが可能です。
+- **`specs/`** — 機能/システム仕様書。手動で作成するか、`$autopilot` の planning pass が生成できます。
+
+## 推奨 `.gitignore`
+
+```text
+.omx/state/
+.omx/logs/
+.omx/sessions/
+```
+
+`.omx/plans/`、`.omx/wiki/`、`.omx/specs/`、`.omx/notepad.md`、`.omx/project-memory.json` はチームと context を共有するためにバージョン管理に含めてください。
+
+## 関連ドキュメント
+
+- [設定](/ja/docs/reference/configuration) — `.omx/` と一緒に使う設定ファイル
+- [State ツール](/ja/docs/tools/state) — `state_read`、`state_write` などの関連ツール
+- [Wiki](/ja/docs/tools/wiki) — `.omx/wiki/` を読み書きする wiki ツール

@@ -1,0 +1,41 @@
+---
+title: $omx-setup
+description: "安装或更新OMX提示词、技能和配置的技能。"
+---
+
+## 概述
+
+`$omx-setup` 初始化或更新OMX环境。将技能文件、智能体提示词、Hook配置按照安装路径放置到位。首次安装时和升级后更新配置时使用。
+
+在CLI中可以通过 `omx setup` 同样执行。
+
+## 使用示例
+
+```text
+$omx-setup
+$omx-setup --scope user
+$omx-setup --scope project
+```
+
+| 选项 | 说明 |
+|---|---|
+| （无） | 安装到默认范围 |
+| `--scope user` | 全局安装到 `~/.codex/` |
+| `--scope project` | 以项目范围安装到 `.codex/` |
+
+## 何时使用
+
+- 首次安装OMX时
+- 升级 `oh-my-codex` 包后需要同步配置时
+- 在新机器上与现有环境保持一致时
+- 技能或Hook无法正常工作时重新安装
+
+## 何时避免
+
+- 诊断环境异常 — 怀疑安装问题时，请在 `$omx-setup` 之前先用 `$doctor` 确认。
+
+## 相关项目
+
+- [快速开始](/zh/docs/getting-started) — 安装完整流程
+- [$doctor](/zh/docs/skills/utility/doctor) — 安装状态和配置问题诊断
+- [快速命令](/zh/docs/reference/quick-commands) — `omx setup` CLI参考

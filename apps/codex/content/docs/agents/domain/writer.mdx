@@ -1,0 +1,63 @@
+---
+title: writer
+description: "A Domain agent that writes user documentation, migration notes, and change summaries."
+---
+
+## Overview
+
+The `writer` agent writes text, not code. User guides, API documentation, migration notes, and release change summaries are its main work. Once implementation is done, explaining it clearly is this agent's domain.
+
+## When to use
+
+- After a feature is implemented, when user documentation or API reference needs to be written
+- When a release with breaking changes needs a migration guide
+- When changes need to be organized in language that users can understand
+- When release note writing is needed in the `$release` skill
+
+## Examples
+
+```text
+"Write a migration guide for these API changes"
+"Write a user guide for the new authentication feature"
+"Create migration notes for upgrading from v2 to v3"
+```
+
+## Scope of work
+
+| Item | Description |
+|---|---|
+| User guides | Feature descriptions, usage examples, configuration instructions |
+| API documentation | Endpoints, parameters, response examples |
+| Migration notes | Breaking change list, upgrade procedures |
+| Release notes | Change summary, key feature announcements |
+
+## Process
+
+1. Understand the feature or change to document.
+2. Confirm who the audience is (developers, end users, etc.).
+3. Write clear, practical content with usage examples.
+4. Use technical terms accurately and keep explanations concrete.
+
+## Inputs
+
+- Description of the feature or change to document
+- Code or API spec implemented by `executor`
+- Target audience and documentation purpose
+
+## Outputs
+
+- User guide or API reference document
+- Migration guide or release notes
+- Practical explanations with code examples
+
+## Limits
+
+- Code implementation is handled by `executor`.
+- External documentation research is deferred to `researcher`.
+- Security or performance judgments use the relevant reviewer agents.
+
+## Related agents
+
+- [executor](/docs/agents/build-analysis/executor) — handles the implementation that writer documents.
+- [researcher](/docs/agents/domain/researcher) — researches external references and official docs to support writer.
+- [product-manager](/docs/agents/domain/product-manager) — determines the scope and direction of documentation work.

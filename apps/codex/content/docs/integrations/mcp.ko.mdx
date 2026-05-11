@@ -1,0 +1,57 @@
+---
+title: "MCP"
+description: "OMX가 Model Context Protocol 서버를 발견하고 호출하는 방식."
+---
+
+Model Context Protocol(MCP)은 AI 클라이언트가 공통 인터페이스로 외부 도구를 호출하는 개방형 표준입니다. OMX는 MCP 클라이언트로 동작하며, skill · hook · agent workflow 안에서 등록된 MCP 서버를 호출해 파일 시스템, API, 전문 서비스에 접근합니다.
+
+## 무엇인가
+
+MCP 클라이언트(OMX/Codex)가 구조화된 tool-call 요청을 보내면, MCP 서버가 구조화된 응답을 반환하는 client-server 프로토콜입니다. 각 MCP 서버는 이름이 붙은 도구 집합을 노출합니다. OMX는 시작 시 설정된 서버를 발견하고, 그 도구들을 skill과 hook 안에서 직접 호출합니다.
+
+## OMX가 어떻게 사용하는가
+
+- **skill-level tool call** — `$wiki`, `$trace`, `$team` 같은 skill이 실행 중 `wiki_add`, `state_read`, `TeamCreate` 같은 MCP tool을 호출합니다.
+- **hook-level integration** — hook script가 OMX 작업 전후에 상태를 읽거나 쓰기 위해 MCP tool을 호출합니다.
+- **지원 서버** — OMX는 아래 서버를 기본으로 인식합니다.
+  - `filesystem` — 로컬 파일 읽기/쓰기
+  - `github` — issue, PR, code search
+  - `context7` — 라이브러리 문서 조회
+  - `oh-my-claudecode_t` — OMX plugin 서버. state, notepad, wiki, LSP, AST, team 도구를 노출합니다.
+- **설정 위치** — Claude Code 설정 파일(`~/.claude/settings.json`)의 `mcpServers` 키 아래에 등록합니다. 각 항목은 `command`, 선택적 `args`, 선택적 `env` override를 가집니다.
+
+## 설정 예시
+
+filesystem과 GitHub MCP 서버 등록:
+
+```json
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/home/user/projects"]
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": { "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}" }
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"]
+    }
+  }
+}
+```
+
+등록 후에는 skill 안에서 해당 서버의 도구를 직접 호출합니다.
+
+```
+codex
+> $wiki add "the DB schema lives in src/db/schema.ts"
+```
+
+## 관련 문서
+
+- [OpenClaw](/ko/docs/integrations/openclaw) — MCP 기반 action을 촉발할 수 있는 훅 이벤트 gateway
+- [CLI Bridges](/ko/docs/integrations/cli-bridges) — MCP와 shell bridge 위에서 동작하는 cross-CLI 단축 명령

@@ -1,0 +1,41 @@
+---
+title: $frontend-ui-ux
+description: Skill dedicated to UI/UX design and frontend implementation
+---
+
+## TL;DR
+
+`$frontend-ui-ux` handles frontend-specific work like screen design, component structure, and interaction flow. It runs with the designer agent at the center.
+
+## How to invoke
+
+```
+$frontend-ui-ux "design the dashboard layout and filter component"
+```
+
+## When to use it
+
+| Good fit | Avoid |
+|---|---|
+| UI structure and interaction design | Work that only touches backend logic |
+| Defining component hierarchy and state flow | Data model and API design |
+| Accessibility and responsive layout requirements | |
+
+## How it works
+
+1. Derives screens and components from requirements.
+2. Decides interaction flow and state management direction.
+3. Outputs results as code or design documents.
+
+## Using with `$team`
+
+If frontend and backend can proceed in parallel, you can combine with `$team`.
+
+```
+$team 2:executor "implement components per frontend-ui-ux spec, write backend API in parallel"
+```
+
+## Related skills
+
+- [`$autopilot`](/docs/skills/workflow/autopilot) — full pipeline in one shot
+- [`$ralph`](/docs/skills/workflow/ralph) — implement the design result all the way through

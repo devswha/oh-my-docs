@@ -1,0 +1,61 @@
+---
+title: "迁移"
+description: "OMX 版本间 breaking change 与升级步骤"
+---
+
+升级到新 major/minor 版本前，请先查阅本页。完整发布历史见[变更日志](/zh/docs/reference/changelog)。
+
+## Post-v0.4.4 mainline
+
+包含 catalog 整合、setup scope 变更、tmux hardening 的版本。完整上游指南参阅 [`docs/migration-mainline-post-v0.4.4.md`](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/migration-mainline-post-v0.4.4.md)。
+
+### 已移除的提示词
+
+- `deep-executor` — 改用 `/prompts:executor`
+- `scientist` — 研究工作流改用 `/prompts:researcher`
+
+### 已移除的技能
+
+| 已移除 | 替代方法 |
+|---|---|
+| `$pipeline` | `$team`（默认 orchestrator） |
+| `$ultrapilot` | `$team` |
+| `$deepinit` | `omx agents-init [path]`（CLI 命令） |
+| `$psm` / `$project-session-manager` | 仓库内无替代 — 从自动化中移除 |
+| `$release` | 仓库内无替代 — 使用项目发布流程 |
+| `$learn-about-omx` / `$learner` / `$writer-memory` | 仓库内无替代 — 删除旧引用 |
+
+### setup scope 变更
+
+`omx setup` 现支持 `--scope user` 和 `--scope project`。已有的 `project-local` 值将自动迁移。
+
+```bash
+omx help | grep -e "--scope"
+```
+
+### 验证清单
+
+升级后确认是否残留已删除的引用。
+
+```bash
+rg -n "deep-executor|scientist|pipeline|project-session-manager|ultrapilot" \
+  README.md docs scripts .omx -S
+```
+
+同时检查 team 状态。
+
+```bash
+omx doctor --team
+```
+
+## 一般升级步骤
+
+1. 安装最新版本：`npm install -g oh-my-codex`
+2. 运行 `omx doctor` 检查配置问题
+3. 若报告缺失提示词/技能，重新运行 `omx setup`
+4. 在本页和变更日志中查看各版本的额外步骤
+
+## 相关文档
+
+- [变更日志](/zh/docs/reference/changelog) — 完整发布历史
+- [配置](/zh/docs/reference/configuration) — 受迁移影响的配置文件

@@ -1,0 +1,74 @@
+---
+title: 에이전트
+description: OMX의 역할별 에이전트 33종을 4개 레인으로 정리한 레퍼런스
+---
+
+## 개요
+
+OMX에는 역할별 에이전트가 33개 있습니다. 각자 하나의 책임만 맡고, 오케스트레이터가 작업 성격에 따라 적절한 에이전트로 라우팅합니다.
+
+"모든 걸 하는 범용 에이전트 하나"가 아니라 **탐색 · 계획 · 구현 · 검증 · 리뷰**를 역할별로 쪼개 처리하는 구조가 핵심입니다. 실패했을 때 어느 단계에서 실패했는지 추적 가능하고, 병렬화할 때 간섭이 줄어듭니다.
+
+## 레인별 구성
+
+### Build / Analysis — 메인 실행 라인
+
+탐색 → 분석 → 계획 → 구현 → 검증의 기본 흐름입니다.
+
+| 에이전트 | 역할 |
+|---|---|
+| [`explore`](/ko/docs/agents/build-analysis/explore) | 코드베이스 탐색, 파일과 관계 매핑 |
+| [`analyst`](/ko/docs/agents/build-analysis/analyst) | 요구 분석, 수락 기준 정리 |
+| [`planner`](/ko/docs/agents/build-analysis/planner) | 작업 순서와 실행 계획 수립 |
+| [`architect`](/ko/docs/agents/build-analysis/architect) | 시스템 설계, 경계, 인터페이스 |
+| [`debugger`](/ko/docs/agents/build-analysis/debugger) | 근본 원인 분석 |
+| [`executor`](/ko/docs/agents/build-analysis/executor) | 코드 구현과 리팩토링 |
+| [`verifier`](/ko/docs/agents/build-analysis/verifier) | 완료 증거 수집과 검증 |
+
+### Review — 품질 게이트
+
+동작하는 코드를 넘기기 전에 통과해야 하는 관문입니다.
+
+| 에이전트 | 역할 |
+|---|---|
+| [`quality-reviewer`](/ko/docs/agents/review/quality-reviewer) | 논리 결함, 유지보수성, 안티패턴 |
+| [`security-reviewer`](/ko/docs/agents/review/security-reviewer) | 취약점, 신뢰 경계, 인증 경로 |
+| [`code-reviewer`](/ko/docs/agents/review/code-reviewer) | 종합 리뷰 |
+| [`style-reviewer`](/ko/docs/agents/review/style-reviewer) | 스타일, 네이밍, 포맷 |
+| [`api-reviewer`](/ko/docs/agents/review/api-reviewer) | API 계약과 하위 호환성 |
+| [`performance-reviewer`](/ko/docs/agents/review/performance-reviewer) | 성능 병목과 비용 |
+
+### Domain — 전문 영역
+
+특정 분야에만 불려 나오는 스페셜리스트. 기본 실행 라인을 대체하지 않고 **필요할 때 보강**합니다.
+
+- [`test-engineer`](/ko/docs/agents/domain/test-engineer) — 테스트 전략, 플레이키 테스트 해소
+- [`designer`](/ko/docs/agents/domain/designer) — UI/UX 설계
+- [`writer`](/ko/docs/agents/domain/writer) — 문서 · 마이그레이션 노트
+- [`researcher`](/ko/docs/agents/domain/researcher) — 외부 문서 조사
+- [`dependency-expert`](/ko/docs/agents/domain/dependency-expert) — SDK / 패키지 판단
+- [`git-master`](/ko/docs/agents/domain/git-master) — 커밋 · rebase · 히스토리 정리
+
+### Coordination — 흐름 조정
+
+다른 에이전트의 계획과 실행을 점검하고 빈틈을 줄입니다.
+
+- [`critic`](/ko/docs/agents/coordination/critic) — 계획 · 설계의 약점 지적
+- [`team-executor`](/ko/docs/agents/coordination/team-executor) — `$team` 실행 lane 보조
+- [`quality-strategist`](/ko/docs/agents/coordination/quality-strategist) — 품질 전략 판단
+
+## 어떤 에이전트를 먼저 떠올릴까
+
+대부분의 작업은 Build / Analysis에서 시작됩니다.
+
+| 지금 필요한 것 | 먼저 꺼낼 에이전트 |
+|---|---|
+| 코드베이스 빠르게 파악 | `explore` |
+| 요구가 모호 | `analyst` |
+| 계획 · 설계 | `planner` · `architect` · `critic` |
+| 구현 | `executor` |
+| 끝난 건지 검증 | `verifier` |
+| 보안 · 품질 · 성능이 걸림 | Review 레인 |
+| 테스트 · UI · 문서처럼 좁은 전문성 | Domain 레인 |
+
+실제로 사용자가 에이전트를 직접 이름으로 호출하는 경우는 많지 않습니다. `$ralph`, `$team`, `$autopilot` 같은 스킬이 상황을 보고 알아서 라우팅해 줍니다. 이 페이지의 레퍼런스는 "뭐가 뒤에서 돌고 있는지" 확인할 때나, 특정 레인을 직접 호출하고 싶을 때 봅니다.

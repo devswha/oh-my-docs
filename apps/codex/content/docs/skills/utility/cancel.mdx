@@ -1,0 +1,41 @@
+---
+title: $cancel
+description: A utility skill that stops the currently active OMX execution mode
+---
+
+Invoke with `$cancel`.
+
+Stops active execution modes such as `$ralph`, `$autopilot`, and `$team`. Use it when a task is heading in the wrong direction or no further progress is needed.
+
+## When to use
+
+- When `$ralph` is looping and you need to stop it
+- When `$autopilot` is going in an unexpected direction
+- When you need to stop a specific `$team` lane
+- When a task is done or requirements have changed and there's no reason to continue
+
+## When to avoid
+
+- If you want to start a completely different task rather than pause — just call a new skill
+- If a task is still in progress, it's better to wait for it to finish than cancel early
+
+## Commands
+
+```bash
+$cancel
+$cancel --force
+```
+
+`--force` resets all active state. In most cases, running without arguments is enough.
+
+## How it works
+
+Reads the state of the current active execution mode and sends a stop signal. In-progress agent tasks finish their current step before halting. Partially completed files are left as-is.
+
+To resume after `$cancel`, call the skill again from where it left off.
+
+## Related docs
+
+- [`$ralph`](/docs/skills/workflow/ralph) — repeating execution mode
+- [`$autopilot`](/docs/skills/workflow/autopilot) — full end-to-end execution
+- [`$team`](/docs/skills/workflow/team) — parallel lane execution

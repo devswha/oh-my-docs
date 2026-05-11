@@ -1,0 +1,36 @@
+---
+title: $security-review
+description: "보안 취약점과 신뢰 경계를 검토하는 스킬."
+---
+
+## 개요
+
+`$security-review`는 보안 중심 코드 리뷰를 `security-reviewer` 에이전트에 위임합니다. 취약점, 신뢰 경계, 인증·인가 흐름, 입력 검증 같은 보안 항목을 검토합니다. 일반 코드 품질보다 보안 위협에 초점을 맞춥니다.
+
+## 사용 예시
+
+```text
+$security-review
+$security-review "auth 미들웨어 변경 사항 보안 검토해줘"
+$security-review "결제 처리 모듈 전체 검토해줘"
+```
+
+인자 없이 호출하면 현재 변경 사항(git diff 기준)을 검토합니다.
+
+## 언제 쓰는가
+
+- 인증·인가 로직을 변경했을 때
+- 외부 입력을 처리하는 코드가 추가되거나 바뀌었을 때
+- 결제, 개인정보, 권한 관련 기능을 구현했을 때
+- 보안 감사 전 사전 점검이 필요할 때
+
+## 언제 피하는가
+
+- 일반 코드 품질 검토 — `$review`를 쓰세요.
+- 빌드·타입 오류 — `$build-fix`를 쓰세요.
+- 보안과 무관한 리팩터링 — `$review`로 충분합니다.
+
+## 관련 에이전트
+
+- [security-reviewer](/ko/docs/agents/review/security-reviewer) — 이 스킬이 위임하는 에이전트 상세 설명
+- [$review](/ko/docs/skills/utility/review) — 보안 외 일반 코드 리뷰

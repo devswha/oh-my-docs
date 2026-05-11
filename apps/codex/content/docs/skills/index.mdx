@@ -1,0 +1,111 @@
+---
+title: Skills
+description: An overview of the skills that actually drive work in OMX, split into workflow and utility categories.
+---
+
+## What are skills?
+
+Skills are the entrypoints that start work in OMX. Users usually invoke them with `$name`, and matching keywords can also activate them automatically.
+
+In other words, a skill is not just a command name. It is a **workflow unit** that defines what roles get called and in what sequence.
+
+## Two big categories
+
+OMX skills broadly fall into two kinds.
+
+### Workflow skills
+
+These are execution modes that move real work forward.
+
+| Skill | Role |
+|------|------|
+| [`$deep-interview`](/docs/skills/workflow/deep-interview) | Clarify fuzzy requirements through guided questioning |
+| [`$ralplan`](/docs/skills/workflow/ralplan) | Build a planner / architect / critic consensus plan |
+| [`$ralph`](/docs/skills/workflow/ralph) | Keep working until completion is verified |
+| [`$team`](/docs/skills/workflow/team) | Coordinate work that benefits from parallel execution |
+| [`$autopilot`](/docs/skills/workflow/autopilot) | Run the full path from idea through implementation, QA, and validation |
+| [`$ultraqa`](/docs/skills/workflow/ultraqa) | Iterate through testing, verification, and fixes |
+
+Workflow skills are mainly about deciding **how a task should move forward**.
+
+### Utility skills
+
+These are support skills that help operate, inspect, or extend the main workflow.
+
+For example:
+
+- [`$analyze`](/docs/skills/utility/analyze) — read-only analysis
+- [`$ask-claude`](/docs/skills/utility/ask-claude) / [`$ask-gemini`](/docs/skills/utility/ask-gemini) — external model consultation
+- [`$doctor`](/docs/skills/utility/doctor) — installation and environment diagnostics
+- [`$hud`](/docs/skills/utility/hud) — HUD visibility and monitoring
+- [`$note`](/docs/skills/utility/note) — persistent working notes
+- [`$cancel`](/docs/skills/utility/cancel) — stop active execution modes
+
+Utility skills are less about driving the main workflow and more about **support, inspection, cleanup, and operations**.
+
+## Which skills should you learn first?
+
+At the beginning, it is better to learn the representative flow than to memorize every skill.
+
+### The baseline workflow
+
+```bash
+$deep-interview "clarify the authentication change"
+$ralplan "approve the safest implementation path"
+$ralph "carry the approved plan to completion"
+```
+
+This baseline makes the role of each skill much easier to understand.
+
+| Skill | When to use it |
+|------|----------------|
+| `$deep-interview` | The task is still fuzzy |
+| `$ralplan` | You need agreement on the plan before implementation |
+| `$ralph` | One persistent owner should carry the work all the way through |
+| `$team` | There is real value in splitting work across parallel lanes |
+| `$autopilot` | You want the full path handled in one go |
+
+## `$autopilot` vs the plan-driven path
+
+This is the distinction users most often need.
+
+### `$autopilot`
+
+```bash
+$autopilot "build me a todo app in next.js"
+```
+
+- Good when you want to see a full result quickly
+- Good when you do not want to manually manage planning, execution, and QA
+- Good for prototypes and smaller features
+
+### `$deep-interview → $ralplan → $ralph`
+
+```bash
+$deep-interview "clarify what we need to build"
+$ralplan "produce the safest implementation plan"
+$ralph "carry out that plan to completion"
+```
+
+- Better when requirements are not fully shaped yet
+- Better when the plan needs explicit agreement first
+- Better when you want more control over the flow
+
+So `$autopilot` is the **fast full-path workflow**, while the plan-driven path is the **more controllable default route**.
+
+## When should you use `$team`?
+
+`$team` is at its best when the approved plan contains work that is genuinely worth splitting into parallel lanes.
+
+```bash
+$team 3:executor "execute the approved plan in parallel"
+```
+
+Good fit when:
+
+- work can be split across frontend / backend / testing lanes
+- the task spans multiple files or subsystems
+- sequential execution would be unnecessarily slow
+- you already have a plan that can be distributed across workers
+
+If the requirements are still fuzzy, or parallelism would create more collisions than speed, `$ralph` is often the better choice.

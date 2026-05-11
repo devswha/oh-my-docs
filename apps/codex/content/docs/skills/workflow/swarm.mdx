@@ -1,0 +1,40 @@
+---
+title: $swarm
+description: Skill that distributes work to multiple agents in parallel (legacy variant of $team)
+---
+
+## TL;DR
+
+`$swarm` distributes tasks to multiple agents simultaneously. Since `$team` now handles the same role, `$team` is recommended for new work.
+
+## How to invoke
+
+```
+$swarm "implement frontend, backend, and tests in parallel"
+```
+
+Also activated by magic keywords `swarm`, `team`, `coordinated team`.
+
+## `$swarm` vs `$team`
+
+| Item | `$swarm` | `$team` |
+|---|---|---|
+| Status | Legacy / variant | Current standard |
+| Capabilities | Parallel agent execution | Parallel lanes + stage routing |
+| Recommended | Existing workflow compatibility | New work |
+
+`$team` supports stage-aware routing (plan → exec → verify → fix). Use `$team` for new work.
+
+## When to use it
+
+| Good fit | Avoid |
+|---|---|
+| Parallel tasks that split independently | Requirements still unclear |
+| Need to maintain existing `$swarm` workflows | When lanes might conflict |
+
+For work that needs a single owner over parallelization, `$ralph` is safer.
+
+## Related skills
+
+- [`$team`](/docs/skills/workflow/pipeline) — current standard parallel execution
+- [`$ralph`](/docs/skills/workflow/ralph) — single-owner repeat execution

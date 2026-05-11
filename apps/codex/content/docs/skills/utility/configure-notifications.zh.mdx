@@ -1,0 +1,50 @@
+---
+title: $configure-notifications
+description: 配置Discord、Slack、Telegram等通知渠道的工具技能
+---
+
+通过 `$configure-notifications` 调用。
+
+配置在OMX任务完成、发生错误、状态变更时接收通知的渠道。在后台运行 `$ralph` 等耗时任务时，用于不错过完成时间点。
+
+## 何时使用
+
+- 运行 `$ralph` 或 `$autopilot` 等长时间任务时不想盯着屏幕，想去做其他事情时
+- 需要向团队频道共享OMX任务状态时
+- 需要在发生错误时立即收到通知时
+
+## 何时避免
+
+- 短时间结束的任务 → 不设置通知直接等待更快
+
+## 命令
+
+```bash
+$configure-notifications
+$configure-notifications discord
+$configure-notifications slack
+$configure-notifications telegram
+```
+
+不带参数时以交互方式选择渠道。
+
+## 支持的渠道
+
+| 渠道 | 所需内容 |
+|---|---|
+| Discord | Webhook URL |
+| Slack | Webhook URL 或 Bot Token |
+| Telegram | Bot Token + Chat ID |
+
+## 接收哪些事件
+
+- 任务完成
+- 错误发生及重试
+- 逐步骤进度（ralph、autopilot）
+- 需要手动确认的中断点
+
+## 相关
+
+- [`$ralph`](/zh/docs/skills/workflow/ralph) — 长时间迭代执行模式
+- [`$autopilot`](/zh/docs/skills/workflow/autopilot) — 全流程批量执行
+- [工具技能列表](/zh/docs/skills/utility)

@@ -1,0 +1,91 @@
+---
+title: Oh My CodeX
+description: "Multi-agent orchestration for OpenAI Codex CLI. Zero learning curve."
+---
+
+![Oh My CodeX](/images/omx-social-preview.jpg)
+
+**Multi-agent orchestration for OpenAI Codex CLI. Zero learning curve.**
+
+_Don't learn Codex prompts. Just use OMX._
+
+Oh My CodeX (OMX) is a workflow layer that runs on top of OpenAI Codex CLI. With a single invocation it coordinates specialized agent prompts to automate complex development tasks end-to-end.
+
+## Quick Start
+
+### Step 1 — Install Codex CLI
+
+```bash
+npm i -g @openai/codex
+```
+
+### Step 2 — Install OMX
+
+```bash
+npm i -g oh-my-codex
+```
+
+### Step 3 — Setup
+
+```bash
+omx setup
+```
+
+### Step 4 — Run the first-session smoke test
+
+```bash
+omx doctor
+codex login status
+omx exec --skip-git-repo-check -C . "Reply with exactly OMX-EXEC-OK"
+```
+
+### Step 5 — Launch OMX the recommended way
+
+```bash
+omx --madmax --high
+```
+
+Then, in that session, try the canonical workflow:
+
+```
+$deep-interview "clarify the authentication change"
+$ralplan "approve the safest implementation path"
+$ralph "carry the approved plan to completion"
+```
+
+If the approved plan needs coordinated parallel execution, use `$team 3:executor "execute the approved plan in parallel"` instead of `$ralph`.
+
+## Documentation
+
+<Cards>
+  <Card title="Getting Started" href="/docs/getting-started">
+    Installation, setup verification, and a good first OMX session
+  </Card>
+  <Card title="Core Concepts" href="/docs/concepts">
+    Agents, skills, hooks, and `.omx/` runtime state
+  </Card>
+  <Card title="Guides" href="/docs/guides">
+    Recommended workflows for planning, execution, QA, and debugging
+  </Card>
+  <Card title="Agents" href="/docs/agents">
+    Reference for the 33 role-specific prompt surfaces
+  </Card>
+  <Card title="Skills" href="/docs/skills">
+    Workflow and utility skills, invocation rules, and usage guidance
+  </Card>
+  <Card title="Hooks" href="/docs/hooks">
+    Codex lifecycle integrations, keyword routing, and hook behavior
+  </Card>
+  <Card title="Tools" href="/docs/tools">
+    Runtime capability surfaces such as State, HUD, Wiki, Visual, and provider bridges
+  </Card>
+  <Card title="Integrations" href="/docs/integrations">
+    OpenClaw, Clawhip, MCP, and cross-CLI interoperability
+  </Card>
+  <Card title="Reference" href="/docs/reference">
+    Configuration, quick commands, environment variables, and contracts
+  </Card>
+  <Card title="Support" href="/docs/support">
+    FAQ, issue reporting, and support channels
+  </Card>
+</Cards>

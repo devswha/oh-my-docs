@@ -1,0 +1,19 @@
+{
+  "title": "Domain",
+  "pages": [
+    "test-engineer",
+    "qa-tester",
+    "writer",
+    "designer",
+    "researcher",
+    "ux-researcher",
+    "information-architect",
+    "product-analyst",
+    "product-manager",
+    "dependency-expert",
+    "git-master",
+    "build-fixer",
+    "code-simplifier",
+    "vision"
+  ]
+}

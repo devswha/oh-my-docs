@@ -1,0 +1,33 @@
+---
+title: "Ask Gemini"
+description: "활성 Codex 컨텍스트 바깥에서 Gemini에게 서브 질문을 위임하는 브리지"
+---
+
+Ask Gemini는 활성 OMX 세션이 Gemini에게 서브 질문을 보내고 답을 가져올 때 쓰는 브리지입니다. Claude bridge와 마찬가지로 새로운 subprocess 컨텍스트에서 실행되므로, 전체 대화 맥락보다 서브 질문 자체에 집중한 답을 얻을 수 있습니다.
+
+## 언제 쓰는가
+
+- 설계나 구현 질문에 다른 모델의 시각이 필요할 때
+- Gemini의 large-context 처리가 유용한 경우
+- 접근 방식을 확정하기 전에 Claude 또는 Codex와 빠르게 비교할 때
+- 현재 컨텍스트와 분리해서 처리해야 하는 위임 작업
+
+## 명령
+
+```bash
+omx ask gemini "Summarize the tradeoffs between RSA and ECDSA for JWT signing"
+omx ask gemini --prompt "Review this migration plan for missing risks"
+omx ask gemini --agent-prompt researcher "Extract the key constraints from this API documentation"
+```
+
+## 왜 브리지가 필요한가
+
+OMX는 Codex 중심으로 설계되어 있지만, 모든 서브 질문을 하나의 모델이 처리해야 한다고 가정하지는 않습니다. Ask Gemini를 쓰면 세션을 버리거나 CLI 사이에서 컨텍스트를 수동으로 옮기지 않고도 다른 모델을 참고할 수 있습니다.
+
+현재 OMX 워크플로우가 질문에 직접 답할 수 있다면 메인 레인에 머무는 것이 더 단순합니다. 의도적으로 필요한 경우에만 쓰는 편이 좋습니다.
+
+## 관련 문서
+
+- [CLI Bridges](/ko/docs/integrations/cli-bridges) — cross-CLI consultation 패턴 개요
+- [ask-gemini skill](/ko/docs/skills/utility/ask-gemini) — 사용자용 워크플로우 안내
+- [Ask Claude](/ko/docs/tools/ask-claude) — Claude를 대상으로 하는 동일한 브리지

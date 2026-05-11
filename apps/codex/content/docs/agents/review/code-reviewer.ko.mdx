@@ -1,0 +1,46 @@
+---
+title: code-reviewer
+description: 스펙 준수와 로직 정확성, API 계약을 심각도별로 검증하는 종합 리뷰 에이전트
+---
+
+`code-reviewer`는 변경 사항이 프로덕션에 닿기 전 1차 게이트 역할을 합니다. 스펙 준수 확인 → 코드 품질 검사의 2단계 리뷰를 엄격하게 진행합니다. 발견 사항은 심각도(CRITICAL / HIGH / MEDIUM / LOW)별로 분류하고 구체적인 수정 제안을 붙입니다. CRITICAL·HIGH가 하나라도 있으면 승인하지 않으며, 구현이 요청을 실제로 충족하는지 확인하기 전에 스타일 지적으로 넘어가지 않습니다.
+
+## 역할
+
+- 구현이 요구 사항을 모두 커버하고 올바른 문제를 해결하는지 확인 (1단계)
+- 수정된 파일 전체에 `lsp_diagnostics`를 실행하고 타입 오류를 판정 전에 제거 (2단계)
+- 발견 사항마다 심각도를 매기고 실행 가능한 수정 제안 제공
+- APPROVE / REQUEST CHANGES / COMMENT 중 명확한 판정 내리기
+
+## 언제 호출되나
+
+- `$code-review`로 머지 전 종합 리뷰가 요청될 때
+- `$autopilot`이 executor 작업 완료 후 지정된 리뷰 체크포인트에서
+- API 계약, 인증, 데이터 처리를 건드리는 PR
+- `verifier` 패스에서 정확성 의문이 제기되어 심층 검사가 필요할 때
+
+## 입력
+
+- 변경 사항의 git diff
+- 의도 확인을 위한 스펙, PR 설명, 이슈 설명
+- Grep·Read로 읽은 수정 영역 주변의 전체 파일 컨텍스트
+- 변경된 파일 전체의 LSP diagnostics 출력
+
+## 출력
+
+- `file:line` 참조와 수정 제안이 포함된 심각도별 발견 사항 리뷰 보고서
+- 심각도 계층별 이슈 수(CRITICAL / HIGH / MEDIUM / LOW)
+- 최고 심각도 기준의 최종 판정(APPROVE / REQUEST CHANGES / COMMENT)
+
+## 범위 제한
+
+- 읽기 전용 — 리뷰 중 Write·Edit 도구는 사용하지 않습니다
+- CRITICAL·HIGH 발견 사항이 미해결 상태인 변경 사항은 승인하지 않습니다
+- 1단계(스펙 준수)를 건너뛰고 스타일 피드백을 먼저 내지 않습니다
+
+## 관련 에이전트
+
+- [quality-reviewer](/ko/docs/agents/review/quality-reviewer) — 로직 결함과 유지보수성에 집중하는 심층 리뷰
+- [security-reviewer](/ko/docs/agents/review/security-reviewer) — 보안 깊이가 필요할 때 전담 OWASP·시크릿 스캔
+- [style-reviewer](/ko/docs/agents/review/style-reviewer) — 포맷·네이밍 전담 경량 패스
+- [api-reviewer](/ko/docs/agents/review/api-reviewer) — 하위 호환성과 버저닝 전문 분석

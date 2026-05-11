@@ -1,0 +1,54 @@
+---
+title: "Magic Keywords"
+description: "Phrases the keyword-detector hook recognises and which OMX skill each phrase routes to."
+---
+
+Magic keywords are phrases that activate OMX skills without an explicit `$skill` invocation. The keyword-detector hook scans every `UserPromptSubmit` event for these phrases and writes skill activation state to `.omx/state/` before the model sees the prompt. The model then starts with its skill instructions already in place.
+
+## How it works
+
+Detection logic is defined as a priority-ordered phrase-to-skill mapping in `src/hooks/keyword-registry.ts`. It supports both explicit `$skill` calls (matched left-to-right) and implicit phrase matching with word-boundary guards.
+
+Keywords like `team`, `ralph`, and `parallel` have additional intent context conditions to avoid firing on incidental prose.
+
+## Keyword table
+
+| Phrase(s) | Routes to | Priority |
+|---|---|---|
+| `ralplan`, `consensus plan` | `ralplan` | 11 |
+| `autopilot`, `build me`, `I want a` | `autopilot` | 10 |
+| `ultrawork`, `ulw`, `parallel` | `ultrawork` | 10 |
+| `ralph`, `don't stop`, `must complete`, `keep going` | `ralph` | 9 |
+| `deep interview`, `interview me`, `gather requirements`, `don't assume`, `ouroboros` | `deep-interview` | 8 |
+| `ultraqa` | `ultraqa` | 8 |
+| `team`, `swarm`, `coordinated team` | `team` | 8 |
+| `plan this`, `plan the`, `let's plan` | `plan` | 8 |
+| `analyze`, `investigate` | `analyze` | 7 |
+| `code review`, `review code` | `code-review` | 6 |
+| `tdd`, `test first` | `tdd` | 6 |
+| `fix build`, `type errors` | `build-fix` | 6 |
+| `wiki query`, `wiki add`, `wiki lint` | `wiki` | 5 |
+| `cancel`, `stop`, `abort` | `cancel` | 5 |
+
+When multiple keywords match, the higher priority wins. Explicit `$skill` references always beat implicit phrase matches.
+
+## Example
+
+Implicit trigger — the phrase alone activates autopilot:
+
+```
+codex
+> build me a REST API for bookstore inventory in TypeScript
+```
+
+Explicit invocation — use the `$` prefix to specify a skill directly:
+
+```
+codex
+> $ralplan design the new auth system
+```
+
+## Related
+
+- [Core Hooks](/docs/hooks/core-hooks)
+- [Lifecycle Events](/docs/hooks/lifecycle-events)

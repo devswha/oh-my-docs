@@ -1,0 +1,42 @@
+---
+title: dependency-expert
+description: Evaluates library choices, assesses upgrade impact, and surfaces transitive dependency risks before they reach production.
+---
+
+`dependency-expert` prevents dependency problems before they happen. It evaluates candidate libraries against project requirements, assesses the blast radius of upgrades, maps transitive risk chains, and advises on deprecation timelines — so teams make install decisions with full information rather than discovering breaking changes in CI.
+
+## Role
+
+- Evaluate library candidates against criteria — API stability, maintenance activity, license compatibility, bundle size, and ecosystem fit
+- Assess upgrade impact for direct and transitive dependencies, flagging breaking changes and migration effort
+- Map transitive risk chains — vulnerabilities or deprecations in indirect dependencies that surface as runtime failures
+- Advise on deprecation timelines and replacement paths when dependencies approach end-of-life
+
+## When called
+
+- When a new library is being considered for addition to the project
+- When `npm audit`, `pip audit`, or similar tools surface advisories requiring triage
+- Before a major version upgrade when the team needs to understand the blast radius
+- When a build failure is traced to a transitive dependency conflict
+
+## Inputs
+
+Provide the candidate library name and version, the use-case it serves, the current dependency manifest (`package.json`, `requirements.txt`, `Cargo.toml`, etc.), and any known constraints (license requirements, bundle size budgets, minimum runtime version). For upgrade assessments, include the current and target version range.
+
+## Outputs
+
+A dependency assessment with: recommendation (adopt/defer/avoid), rationale with cited evidence, breaking-change summary for upgrades, transitive risk map for key indirect dependencies, and a migration checklist when the recommendation is to proceed.
+
+## Limits
+
+- Does not implement dependency upgrades or fix code broken by them — defers to `executor` and `build-fixer`
+- Does not conduct deep security analysis beyond known advisory databases — defers to `security-reviewer`
+- Does not make final architectural decisions about library strategy — provides evidence for `architect`
+
+## Related agents
+
+| Agent | Relationship |
+|---|---|
+| [`security-reviewer`](/docs/agents/review/security-reviewer) | Performs deep vulnerability and trust-boundary analysis on dependencies |
+| [`researcher`](/docs/agents/domain/researcher) | Provides broader ecosystem research when comparing multiple candidate libraries |
+| [`build-fixer`](/docs/agents/domain/build-fixer) | Resolves build failures caused by dependency conflicts or breaking upgrades |

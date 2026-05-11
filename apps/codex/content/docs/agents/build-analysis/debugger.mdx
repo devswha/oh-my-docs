@@ -1,0 +1,66 @@
+---
+title: "debugger"
+description: "Root-cause analysis agent that isolates bugs and regressions through evidence-driven hypothesis testing."
+---
+
+The `debugger` agent traces failures to their root cause rather than patching symptoms. It establishes reproducibility before investigating, reads full error messages and stack traces, forms one hypothesis at a time, and tests it. After three failed hypotheses it stops and escalates upward rather than repeating variations of the same broken approach.
+
+## When invoked
+
+| Situation | How it's triggered |
+|---|---|
+| Test suite fails and root cause is not immediately obvious | Direct request |
+| "Debug X" request where the bug location is not yet known | Direct request |
+| A `ralph` or `$autopilot` loop repeatedly stalls on the same failure | Automatic |
+| A regression arrives and the offending change needs to be isolated | Direct request |
+
+## Example prompts
+
+```text
+"Find the root cause of this error"
+"Track down why this test suddenly broke"
+"Narrow down this build error by cause, not symptom"
+```
+
+## Runtime bug investigation protocol
+
+1. Reproduce the failure reliably
+2. Collect the stack trace, error messages, and recent change history
+3. Form one hypothesis at a time
+4. Validate that hypothesis with the smallest possible change
+5. If it doesn't fit, move to the next hypothesis
+
+Do not bundle multiple fixes at once. Maintain one hypothesis, one change at a time.
+
+## Build / compile error resolution protocol
+
+- Classify the type of error first
+- Distinguish import/export issues, type inference issues, and configuration issues
+- Reduce them one at a time with the smallest possible fix
+- After each fix, re-run diagnostics / build to confirm the issue is actually resolved
+
+Do not stop at reading the error message — repeat the **classify → hypothesize → minimal fix → re-verify** loop.
+
+## Inputs
+
+- Error messages, stack traces, or failing test output
+- Access to the full codebase via Grep, Read, and git log/blame
+- Optional: reproduction steps, environment details, or prior hypothesis notes
+
+## Outputs
+
+- A bug report naming the root cause with `file:line` evidence, minimal reproduction steps, a one-change fix recommendation, and a verification method
+- A list of other codebase locations where the same pattern may exist
+
+## Limits
+
+- Applies a three-hypothesis circuit breaker — after three failed hypotheses it escalates with evidence rather than continuing to iterate
+- Does not bundle multiple fixes; one hypothesis, one change at a time
+- Does not produce a diagnosis without `file:line` evidence; "probably" and "seems like" are not findings
+
+## Related agents
+
+- [explore](/docs/agents/build-analysis/explore) — performs lightweight read-only lookup when the bug location is unknown
+- [verifier](/docs/agents/build-analysis/verifier) — confirms the fix actually resolves the failure with full evidence
+- [test-engineer](/docs/agents/domain/test-engineer) — designs regression tests once the root cause is confirmed
+- [explore-harness](/docs/agents/build-analysis/explore-harness) — used for deep multi-hypothesis causal investigations

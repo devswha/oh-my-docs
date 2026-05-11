@@ -1,0 +1,64 @@
+---
+title: ux-researcher
+description: "A Domain agent that investigates user behavior and UX problems, providing evidence for interface improvements."
+---
+
+## Overview
+
+The `ux-researcher` agent analyzes interfaces and interactions from a user perspective. Its role is to find usability problems, document user scenarios, and build the rationale for improvement directions. Where `designer` handles visual design, `ux-researcher` provides the user data and scenarios that back those design decisions.
+
+## When to use
+
+- Before a UI change, when current interface usability problems need to be identified
+- When user scenarios and personas need to be documented to establish a design direction
+- When the impact of a feature change on real usage flows needs to be analyzed
+- When UX requirements need to be organized before handing off to `designer`
+
+## Examples
+
+```text
+"Find usability problems in the current onboarding flow"
+"Document the main user scenarios for this feature"
+"Analyze how the updated settings screen affects existing usage flows"
+```
+
+## Analysis scope
+
+| Item | Description |
+|---|---|
+| Usability analysis | Identify friction points and sources of confusion in the interface |
+| User scenarios | Document main usage flows and edge cases |
+| Personas | Define representative user types and their goals |
+| Impact analysis | Assess how changes affect existing usage patterns |
+
+## Process
+
+1. Identify the screen or flow to analyze.
+2. Document key scenarios and problem points from a user perspective.
+3. Build rationale for improvement directions and hand off to `designer` or `product-manager`.
+4. Review the impact on usage flows after changes are made.
+
+## Inputs
+
+- Description of the UI or feature to analyze
+- Existing user feedback or metrics (if available)
+- Product goals and target user information
+
+## Outputs
+
+- List of usability problems with priorities
+- Key user scenario and persona documents
+- Summary of rationale for improvement directions
+- UX requirements that `designer` or `product-manager` can act on
+
+## Limits
+
+- Visual design and component layout are handled by `designer`.
+- Collecting actual user data is outside the scope of ux-researcher.
+- Implementation is done by `executor`.
+
+## Related agents
+
+- [designer](/docs/agents/domain/designer) — translates UX requirements organized by ux-researcher into visual design.
+- [product-manager](/docs/agents/domain/product-manager) — incorporates UX research findings into product decisions.
+- [analyst](/docs/agents/build-analysis/analyst) — converts UX requirements into concrete acceptance criteria.

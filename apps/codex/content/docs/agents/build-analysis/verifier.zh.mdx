@@ -1,0 +1,68 @@
+---
+title: verifier
+description: "用实际命令输出和产物验证完成声明的基于证据的验证 agent。"
+---
+
+`verifier` agent 将所有完成声明视为一个假设。运行测试、查看 diff、读取 build log，基于实际输出作出 PASS / FAIL / PARTIAL 判定。仅凭「已完成」这句话是不够的，必须能够指出具体的 artifact 来证明该声明。
+
+## 何时被调用
+
+| 场景 | 调用路径 |
+|---|---|
+| `$autopilot`、`$ralph`、`$ultraqa` 周期的 end-of-task 检查点 | 自动 |
+| `executor` 将任务标记为完成后确认 acceptance criteria | 自动 |
+| `$ultraqa` fix loop 中前一周期的 verdict 为 FAIL 或 PARTIAL | 自动 |
+| 需要对功能是否正常工作进行独立 second opinion 时 | 直接请求 |
+
+## 使用示例
+
+```text
+"executor 说已经完成了，用实际证据验证一下"
+"确认这个功能是否满足所有 acceptance criteria"
+"测试通过了，但从 evidence 标准看是否达到 release 水平"
+```
+
+## 验证流程
+
+1. 重新确立需要证明什么——即 acceptance criteria。
+2. 运行或读取用于确认该标准的命令（测试、构建、smoke check）的结果。
+3. 区分证据是否充分，以及是否还有遗漏。
+4. 作出 PASS / FAIL / PARTIAL 判定。
+
+判断标准是「实际上什么构成证据」，而非「看起来像那么回事」。
+
+## 立即拒绝条件
+
+以下情况下不向批准方向倾斜。
+
+- 只有「should」「probably」「seems to」等推测性表达时
+- 没有最新测试输出时
+- 只有「所有测试通过」的声明而没有实际结果时
+- TypeScript 变更但没有类型检查证据时
+- 编译语言变更但没有构建验证时
+
+## 输入
+
+- 需要验证的声明（例如：「all tests pass」「the API returns 200 on valid input」）
+- test output、build log、diff、route smoke result、已有 verifier report 等相关 artifact
+- 可选：`analyst` 生成的 `.omx/specs/` 中的 acceptance criteria
+
+## 输出
+
+- 输出到 stdout 或 `.omx/verification/<topic>.md` 的 PASS / FAIL / PARTIAL verdict report
+- 执行的命令及其输出的 evidence 列表
+- 列出缺失证据或无法判断区域的 gaps 章节
+- 列出剩余 uncertainty 和后续跟进的 risks 章节
+
+## 范围限制
+
+- 不直接修复失败。将其转给 `executor`、`build-fixer` 或 `debugger`。
+- 不完全替代主观质量、UX 或安全判断。
+- 不复用过时输出，尽可能重新收集 fresh evidence。
+
+## 相关 agent
+
+- [executor](/zh/docs/agents/build-analysis/executor) — verifier 所验证的实际实现负责人。
+- [test-engineer](/zh/docs/agents/domain/test-engineer) — 设计 verifier 所依赖的测试策略和覆盖率。
+- [quality-reviewer](/zh/docs/agents/review/quality-reviewer) — 审查 verifier 不涉及的主观质量维度。
+- [critic](/zh/docs/agents/coordination/critic) — 在执行前审查计划和设计，补充 post-execution verification。

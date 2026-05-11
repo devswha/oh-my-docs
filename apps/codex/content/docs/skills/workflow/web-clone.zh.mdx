@@ -1,0 +1,54 @@
+---
+title: $web-clone
+description: 用 Playwright 提取公开 URL 的 UI，重构为本地框架代码的网页克隆工作流
+---
+
+`$web-clone` 接收公开 URL，创建可在本地运行的克隆。用 Playwright MCP 提取 DOM 结构、计算样式、交互元素，重构为目标框架代码，然后通过 `$visual-verdict` 迭代，直到分数达到 85 以上。
+
+## 何时使用
+
+- 想提供 URL，用自己的框架技术栈创建本地克隆时
+- 不仅需要视觉精度，还需要复现链接、表单、切换开关等功能行为时
+- 想从真实设计而非空白画布开始原型开发时
+
+如果只有静态截图，请直接使用 `$visual-verdict`。
+
+触发关键词: "web-clone", "clone site", "clone website", "copy webpage", "replicate this URL"
+
+## 调用方式
+
+```
+codex
+> web-clone https://news.ycombinator.com
+```
+
+```
+codex
+> $web-clone https://example.com/pricing output_dir=./clones/pricing tech_stack=react
+```
+
+## 工作方式
+
+分 5 个 pass 进行。
+
+**Pass 1 (提取)** 用 Playwright 访问 URL，截取全页截图作为参考基线，通过无障碍树了解结构，提取 DOM 和计算样式，列出交互元素。
+
+**Pass 2 (构建计划)** 分析提取结果，将页面区域映射到组件，提取颜色调色板、字体栈、间距单位等设计 token，设计克隆的文件结构。
+
+**Pass 3 (生成克隆)** 按顺序逐组件实现：设计 token → 布局框架 → 从上到下各区域 → 导航、表单、下拉、切换交互。
+
+**Pass 4 (验证)** 在本地提供克隆服务并截取全页截图，用 `$visual-verdict` 与原始进行比较。用 Playwright 检查 2-3 个交互。
+
+**Pass 5 (迭代)** 应用 verdict 中影响较大的修改并重新验证。直到判定为 pass 或达到 5 次上限为止重复。
+
+## 输出
+
+- `output_dir` 中以请求技术栈生成的克隆项目文件
+- `.omx/state/{scope}/web-clone-extraction.json` — 包含地标和交互数量的提取摘要
+- `.omx/state/{scope}/web-clone-verdicts.json` — 每次验证 pass 后的累积判定
+- 汇总克隆成功项目和剩余差异的最终报告
+
+## 相关 skill
+
+- [`$frontend-ui-ux`](/zh/docs/skills/workflow/frontend-ui-ux) — 在克隆 pass 中用于组件生成的 UI skill
+- [`$visual-verdict`](/zh/docs/skills/workflow/visual-verdict) — 判定每次克隆迭代的视觉 QA 工具

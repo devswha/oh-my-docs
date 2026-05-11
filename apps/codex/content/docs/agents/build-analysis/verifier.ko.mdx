@@ -1,0 +1,68 @@
+---
+title: verifier
+description: "완료 주장을 실제 명령 출력과 산출물로 검증하는 evidence-based verification 에이전트."
+---
+
+`verifier` 에이전트는 모든 완료 주장을 하나의 가설로 취급합니다. 테스트를 돌리고, diff를 보고, build log를 읽고, 실제 출력을 바탕으로 PASS / FAIL / PARTIAL 판정을 내립니다. "끝났다"는 말로는 부족하고, 무엇이 그 주장을 증명하는지 구체적 artifact를 가리킬 수 있어야 합니다.
+
+## 언제 호출되는가
+
+| 상황 | 호출 경로 |
+|---|---|
+| `$autopilot`, `$ralph`, `$ultraqa` 사이클의 end-of-task checkpoint | 자동 |
+| `executor`가 task를 완료 처리한 뒤 acceptance criteria 확인 | 자동 |
+| `$ultraqa` fix loop에서 이전 cycle verdict가 FAIL 또는 PARTIAL | 자동 |
+| 기능 동작 여부에 대한 독립적인 second opinion 필요 | 직접 요청 |
+
+## 사용 예시
+
+```text
+"executor가 끝났다고 했는데 실제 증거로 검증해줘"
+"이 기능이 acceptance criteria를 모두 만족하는지 확인해줘"
+"테스트는 통과했지만 release 가능 수준인지 evidence 기준으로 봐줘"
+```
+
+## 검증 프로세스
+
+1. 무엇을 증명해야 하는지 acceptance criteria를 다시 세웁니다.
+2. 그 기준을 확인할 명령 (테스트, 빌드, smoke check)을 실행하거나 결과를 읽습니다.
+3. 증거가 충분한지, 아직 빠진 것이 있는지 구분합니다.
+4. PASS / FAIL / PARTIAL 판정을 내립니다.
+
+"그럴듯해 보인다"가 아니라 실제로 무엇이 증거인지를 판단 기준으로 씁니다.
+
+## 즉시 거부 조건
+
+다음 상황에서는 승인 쪽으로 기울지 않습니다.
+
+- "should", "probably", "seems to"처럼 추측성 표현만 있을 때
+- 최신 테스트 출력이 없을 때
+- "모든 테스트 통과"라는 주장만 있고 실제 결과가 없을 때
+- TypeScript 변경인데 타입 체크 증거가 없을 때
+- 컴파일 언어 변경인데 빌드 검증이 없을 때
+
+## 입력
+
+- 검증할 주장 (예: "all tests pass", "the API returns 200 on valid input")
+- test output, build log, diff, route smoke result, 기존 verifier report 같은 관련 artifact
+- 선택적으로 `analyst`가 만든 `.omx/specs/` acceptance criteria
+
+## 출력
+
+- stdout 또는 `.omx/verification/<topic>.md`에 남기는 PASS / FAIL / PARTIAL verdict report
+- 실행한 명령과 그 출력의 evidence 목록
+- 빠진 증거나 판단 불가 영역을 적은 gaps section
+- 남아 있는 uncertainty와 follow-up을 적은 risks section
+
+## 제한 사항
+
+- 실패를 직접 고치지 않습니다. `executor`, `build-fixer`, `debugger`로 넘깁니다.
+- 주관적 품질, UX, 보안 판단을 완전히 대체하지 않습니다.
+- stale output을 재사용하지 않고 가능한 한 fresh evidence를 다시 모읍니다.
+
+## 관련 에이전트
+
+- [executor](/ko/docs/agents/build-analysis/executor) — verifier가 검증하는 실제 구현 담당자.
+- [test-engineer](/ko/docs/agents/domain/test-engineer) — verifier가 의존하는 테스트 전략과 커버리지를 설계합니다.
+- [quality-reviewer](/ko/docs/agents/review/quality-reviewer) — verifier가 다루지 않는 주관적 품질 차원을 검토합니다.
+- [critic](/ko/docs/agents/coordination/critic) — 실행 전 계획과 설계를 검토해 post-execution verification을 보완합니다.

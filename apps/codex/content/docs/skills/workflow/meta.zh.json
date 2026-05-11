@@ -1,0 +1,24 @@
+{
+  "title": "工作流技能",
+  "pages": [
+    "autopilot",
+    "ralph",
+    "ralph-init",
+    "ralplan",
+    "team",
+    "swarm",
+    "worker",
+    "pipeline",
+    "ultrawork",
+    "ultraqa",
+    "deep-interview",
+    "plan",
+    "tdd",
+    "trace",
+    "deepsearch",
+    "frontend-ui-ux",
+    "visual-verdict",
+    "web-clone",
+    "wiki"
+  ]
+}

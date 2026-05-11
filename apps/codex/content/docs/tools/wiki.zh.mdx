@@ -1,0 +1,80 @@
+---
+title: "Wiki"
+description: "存储在 `.omx/wiki/` 下的持久化项目知识 — 积累 session 结束后仍需保留的信息"
+---
+
+Wiki 是存储不应只停留在当前执行中的信息的地方。架构决策、调试结果、反复出现的模式等需要在下一个 session 中再次使用的内容都会积累在这里。
+
+## 存储什么
+
+Wiki 页面以 markdown 文件形式保存在 `.omx/wiki/` 下。适合以下类型的信息。
+
+- 架构决策及其依据
+- 调试结果
+- 环境相关备注
+- 反复出现的实现模式
+- 值得保存的参考资料
+- 下次任务也需要的 session 摘要
+
+以 markdown 文件直接保存，即使没有 OMX 也能打开，并可随仓库一起迁移。
+
+## 命令
+
+```bash
+omx wiki wiki_ingest --input '{}' --json
+omx wiki wiki_query --input '{"query":"session-start lifecycle"}' --json
+omx wiki wiki_read --input '{"page":"my-page"}' --json
+omx wiki wiki_list --json
+omx wiki wiki_lint --json
+```
+
+可用的 wiki tool：
+
+- `wiki_add`
+- `wiki_ingest`
+- `wiki_query`
+- `wiki_read`
+- `wiki_list`
+- `wiki_lint`
+- `wiki_refresh`
+- `wiki_delete`
+
+## 各操作用途
+
+| 操作 | 用途 |
+|---|---|
+| `wiki_add` | 快速新建单个页面 |
+| `wiki_ingest` | 将大量资料转换为分类页面 |
+| `wiki_query` | 通过关键词和标签搜索 |
+| `wiki_read` | 打开特定页面 |
+| `wiki_list` | 查看现有页面列表 |
+| `wiki_lint` | 检查状态、链接、结构 |
+| `wiki_refresh` | 大幅修改后重新生成派生元数据 |
+| `wiki_delete` | 删除页面并更新索引 |
+
+## 何时使用
+
+如果需要信息在 session 结束后仍然保留并可在下一个 session 中复用，wiki 是合适的选择。
+
+例如：
+
+- 「为什么选择 cursor pagination 而不是 offset」
+- 「在这个仓库中如何恢复 tmux team session」
+- 「staging proxy 部署中已知的陷阱」
+- 「反复出现的日志行的含义及调试方法」
+
+## Wiki vs Notepad vs State
+
+| | 用途 |
+|---|---|
+| **Wiki** | 整理好的持久化项目知识 |
+| **Notepad** | session 用 scratch 备注，用于 compaction resilience |
+| **State** | 活动模式的运行时 lifecycle 数据 |
+
+需要在未来 session 中再次取用的信息，大概率应放入 wiki。
+
+## 相关文档
+
+- [`.omx` Directory](/zh/docs/reference/omx-directory) — wiki 数据在磁盘上的存储位置
+- [State](/zh/docs/tools/state) — 活动模式的临时 lifecycle state
+- [Wiki skill](/zh/docs/skills/workflow/wiki) — 构建在此 surface 之上的用户工作流

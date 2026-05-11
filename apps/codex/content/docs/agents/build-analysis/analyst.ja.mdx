@@ -1,0 +1,51 @@
+---
+title: analyst
+description: "プロダクトのスコープを実装可能な受け入れ基準に変換する、計画前要件分析エージェント。"
+---
+
+`analyst` エージェントは漠然とした要求と計画策定の間で動作します。要件を読み、まだ答えられていない質問を引き出し、テスト可能な acceptance criteria として整理します。実装が始まってから「思っていたのとは違う」という会話を減らす役割です。
+
+## 役割
+
+- 要求の中に欠けている質問、定義されていない guardrail、検証されていない前提を見つけます。
+- エッジケース（特殊入力、race condition、境界値）を含む scope risk を整理します。
+- PASS/FAIL で確認できる acceptance criteria を作ります。
+- 何が含まれ何が除外されるかの scope boundary を明確にします。
+
+## いつ呼ばれるか
+
+| 状況 | 呼び出し経路 |
+|---|---|
+| `$autopilot`、`$plan` 開始時に `planner` の前段階 | 自動 |
+| `$deep-interview` で目標自体が曖昧なとき | 自動 |
+| タスク説明が曖昧、相互に矛盾する、または成功基準がないとき | 直接要求 |
+| 既存の計画を実行する前の要件監査 | 直接要求 |
+
+## 入力
+
+- ユーザーのタスク説明または機能要求
+- オプションで `explore` エージェントが作成したリポジトリのコンテキストレポート
+- オプションで仕様書や既存の acceptance criteria
+
+## 出力
+
+`.omx/specs/<date>-<topic>.md` に構造化された分析文書を残します。
+
+- 影響度順に並べた missing question
+- 具体的な境界値の提案を含む undefined guardrail
+- mitigation 戦略を含む scope risk
+- 検証方法が付いた assumption list
+- テスト可能な acceptance criteria
+
+## 範囲の限界
+
+- 実装設計はしません。その役割は `architect` です。
+- production code や test code を直接書いたり修正したりしません。
+- 市場価値や優先度の判断はしません。実装可能性と完全性に集中します。
+
+## 関連エージェント
+
+- [explore](/ja/docs/agents/build-analysis/explore) — コードベースのコンテキストを提供して要件分析が抽象的にならないようにします。
+- [planner](/ja/docs/agents/build-analysis/planner) — `analyst` が作成した acceptance criteria をもとに作業順序を作ります。
+- [architect](/ja/docs/agents/build-analysis/architect) — 要件が整理された後に実装設計を担当します。
+- [critic](/ja/docs/agents/coordination/critic) — 計画と設計を批判的に検討します。

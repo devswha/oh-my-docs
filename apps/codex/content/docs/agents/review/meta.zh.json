@@ -1,0 +1,11 @@
+{
+  "title": "审核",
+  "pages": [
+    "code-reviewer",
+    "security-reviewer",
+    "quality-reviewer",
+    "style-reviewer",
+    "api-reviewer",
+    "performance-reviewer"
+  ]
+}

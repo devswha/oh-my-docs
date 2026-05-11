@@ -1,0 +1,77 @@
+---
+title: "HUD"
+description: "活动执行的实时监控 — phase、tmux 状态、JSON 输出"
+---
+
+HUD 是简洁展示当前 session 正在做什么的监控窗口。无需直接查看 raw state 文件或日志，即可一眼确认 phase 变化和进行状态。
+
+HUD 不是启动工作流的地方。通常在 `$ralph`、`$team`、`$ultraqa` 等 skill 运行期间，在旁边观察状态时使用。
+
+## 命令
+
+```bash
+omx hud
+omx hud --watch
+omx hud --json
+omx hud --preset=focused
+omx hud --tmux
+```
+
+可用的 preset：
+
+- `minimal`
+- `focused`
+- `full`
+
+## 各模式用途
+
+| 命令 | 用途 |
+|---|---|
+| `omx hud` | 输出一次当前 HUD 状态 |
+| `omx hud --watch` | 在当前终端持续更新 |
+| `omx hud --json` | 面向脚本或外部工具的结构化输出 |
+| `omx hud --preset=<name>` | 调整显示信息量 |
+| `omx hud --tmux` | 打开专用 tmux split |
+
+## 使用示例
+
+### 监视长时间运行的循环
+
+```bash
+omx hud --watch --preset=focused
+```
+
+`$ralph` 或 `$ultraqa` 循环运行时，不打开日志也能查看 phase 变化。
+
+### 连接外部脚本
+
+```bash
+omx hud --json
+```
+
+用于 shell 仪表盘、自动化、外部状态集成。
+
+### 在 tmux pane 中持续显示
+
+```bash
+omx hud --tmux --preset=minimal
+```
+
+在 tmux 中运行 OMX 时，在旁边保留一个状态 pane。
+
+## 与其他监控 surface 的区别
+
+| surface | 显示内容 |
+|---|---|
+| **HUD** | 现在正在发生什么 |
+| **State** | 运行时记录中写了什么 |
+| **Trace** | 随时间推移发生了什么 |
+| **Logs** | raw 详细内容 |
+
+需要最快的运维视图时，首先查看 HUD。
+
+## 相关文档
+
+- [State](/zh/docs/tools/state) — HUD 底层的 lifecycle record
+- [Quick Commands](/zh/docs/reference/quick-commands) — 运维命令参考
+- [Trace skill](/zh/docs/skills/workflow/trace) — 执行时间线与摘要视图

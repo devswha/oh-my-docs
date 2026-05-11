@@ -1,0 +1,53 @@
+---
+title: "Codex-Native Hooks"
+description: "How OMX uses the Codex CLI native hook interface directly, and the boundary between native coverage and runtime fallback."
+---
+
+Codex CLI reads registrations from `.codex/hooks.json` and invokes external handlers at defined lifecycle points when `[features] codex_hooks = true` is set in `.codex/config.toml`. OMX uses this interface directly rather than wrapping the Codex binary in a shell script.
+
+## Installation structure
+
+`omx setup` writes two files.
+
+- `.codex/config.toml` — enables `codex_hooks`
+- `.codex/hooks.json` — registers the OMX handler `dist/scripts/codex-native-hook.js`
+
+User-managed hook entries already present in `.codex/hooks.json` are preserved during installation. `omx uninstall` removes only the OMX-managed entries and leaves user hooks in place.
+
+The shell wrapper around the Codex binary is still supported via `omx tmux-hook`, but it is not the primary path for native events.
+
+## Coverage matrix
+
+| OMX concern | Codex event | Status |
+|---|---|---|
+| Session bookkeeping, wiki startup context | `SessionStart` | Native |
+| Keyword detection, skill state seeding | `UserPromptSubmit` | Native |
+| Bash safety checks, commit format guard | `PreToolUse` (Bash only) | Native-partial |
+| Command-not-found guidance, exit-code review | `PostToolUse` (Bash only) | Native-partial |
+| Ralph / autopilot / ultrawork / ultraqa continuation | `Stop` | Native-partial |
+| Auto-nudge on stalled turns | `Stop` | Native-partial |
+| Session-end wiki capture, `session-idle` | — | Runtime-fallback |
+| Non-Bash tool interception | — | Runtime-fallback |
+
+"Native-partial" means the native path handles the common case; edge cases fall back to the notify-hook or tmux runtime path.
+
+## How to verify
+
+Check that hooks are installed correctly:
+
+```bash
+omx doctor
+```
+
+Smoke test that the native hook path executes end-to-end:
+
+```bash
+omx exec --skip-git-repo-check -C . "Reply with exactly OMX-EXEC-OK"
+```
+
+Plugin dispatch logs are written to `.omx/logs/hooks-YYYY-MM-DD.jsonl`.
+
+## Related
+
+- [Lifecycle Events](/docs/hooks/lifecycle-events)
+- [Core Hooks](/docs/hooks/core-hooks)

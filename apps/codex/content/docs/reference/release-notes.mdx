@@ -1,0 +1,101 @@
+---
+title: "Release Notes"
+description: "Detailed OMX release notes with user impact, compatibility, verification evidence, and upstream links."
+---
+
+The [changelog](/docs/reference/changelog) is the short version. Use this page when you need the practical details behind recent releases: what changed, whether you need to migrate, and what was verified before release.
+
+## v0.14.4 — Frontier default moves to GPT-5.5
+
+[Upstream release notes](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/release-notes-0.14.4.md) · [CHANGELOG entry](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#0144---2026-04-24)
+
+### User impact
+
+- Fresh/default frontier-managed paths now prefer `gpt-5.5`.
+- Runtime defaults, Codex agent defaults, and `omx explore` fallback behavior resolve the frontier lane to `gpt-5.5`.
+- Generated setup config and executor worker launch defaults use medium reasoning instead of high.
+- Standard/mini and spark lanes remain pinned: `gpt-5.4-mini` and `gpt-5.3-codex-spark` keep their exact semantics.
+
+### Compatibility
+
+No migration is required. Existing explicit `gpt-5.4-mini` and `gpt-5.3-codex-spark` overrides keep working as before.
+
+### Verification noted upstream
+
+The upstream release notes record `npm run build`, targeted model/default Node suites, lint/no-unused checks, and Cargo workspace tests, with full evidence in `docs/qa/release-readiness-0.14.4.md`.
+
+## v0.14.3 — Operator reliability hardening
+
+[Upstream release notes](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/release-notes-0.14.3.md) · [CHANGELOG entry](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#0143---2026-04-22)
+
+### User impact
+
+- `omx question` better preserves the invoking leader pane across tool-launched prompts, prompt reseeding, renderer paths, and metadata races.
+- Deep-interview reconciles answered question records before re-prompting and adds summary gates for oversized clarification flows.
+- Project-local setup is honored during explore launches by resolving project-local `CODEX_HOME` from persisted setup scope.
+- Setup refresh handles multiline root TOML assignments more safely.
+- HUD reconciliation targets the emitting tmux window instead of drifting across windows.
+- Team/runtime surfaces add canonical supervisor events and native Windows psmux pane bootstrap hardening.
+
+### Compatibility
+
+No migration is required. `omx question` intentionally fails closed when there is no visible/returnable tmux pane.
+
+### Verification noted upstream
+
+The upstream notes record `npm test` with 3910 passing tests, no-unused checks, Cargo workspace tests, lint, build, and targeted changed-path suites.
+
+## v0.14.2 — Fast-follow question/deep-interview fixes
+
+[Upstream release notes](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/release-notes-0.14.2.md) · [CHANGELOG entry](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#0142---2026-04-21)
+
+### User impact
+
+- `omx question` fails visibly outside attached tmux instead of creating an unseen detached renderer.
+- Duplicate MCP stdio siblings can self-exit after a safe post-traffic idle window.
+- Deep-interview state clearing is safer and failed question launches clear pending obligations.
+- Korean `ulw` keyboard drift (`ㅕㅣㅈ`) normalizes to the ultrawork shorthand before activation.
+- Question answer injection reuses shared tmux submit semantics.
+- Deep-interview guidance now tells agents to wait for background `omx question` terminals and read JSON answers before continuing.
+- TypeScript and Biome baselines were refreshed.
+
+### Remaining risk noted upstream
+
+The upstream notes call out real tmux/reused-session behavior as the highest-value post-release observation surface.
+
+## v0.14.1 — Interactive orchestration reliability follow-through
+
+[Upstream release notes](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/release-notes-0.14.1.md) · [CHANGELOG entry](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#0141---2026-04-21)
+
+### User impact
+
+- Pending deep-interview question obligations keep Stop blocked until the question is resolved.
+- Question panes are more resilient across tmux environments and fail closed when startup cannot be made reliable.
+- `omx update` can refresh setup state even when the installed version is already current.
+- Lifecycle compatibility code reuses the shared runtime run-outcome contract.
+- Code-review guidance was strengthened and lightweight fallback lanes were kept lean.
+
+### Remaining risk noted upstream
+
+Real multi-session tmux/operator behavior around `omx question`, Stop gating, and upgraded-install setup refresh remains the most valuable observation surface.
+
+## v0.14.0 — Structured questions and explicit runtime outcomes
+
+[Upstream release notes](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/release-notes-0.14.0.md) · [CHANGELOG entry](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#0140---2026-04-19)
+
+### User impact
+
+- `omx question` becomes the owned interactive question surface with JSON input, UI rendering, persistent question state, and structured answers.
+- Deep-interview rounds create and satisfy question obligations instead of relying on ad-hoc plain-text fallback.
+- Autoresearch becomes skill-first and validator-gated; direct `omx autoresearch` is hard-deprecated.
+- PASS/LIGHT/HEAVY advisory triage hints can steer non-keyword prompts without implicitly activating a workflow.
+- Runtime run outcomes are normalized so Stop/continuation behavior stays consistent.
+- Specialist routing guidance is narrower and clearer.
+
+### Verification noted upstream
+
+The upstream notes record build, lint, TypeScript, affected interactive/runtime suites, catalog checks, packed-install smoke testing, and pack dry-run verification.
+
+## Legacy docs signal
+
+The older [`oh-my-codex.dev/docs.html`](https://oh-my-codex.dev/docs.html) page is useful as a historical signal because it collected release-style operational topics in one long page: team worktrees, mixed Codex/Claude/Gemini workers, notifications, recommended workflows, and team CLI API examples. This docs site now splits those topics into focused pages under [Skills](/docs/skills), [Tools](/docs/tools), [Integrations](/docs/integrations), and [Reference](/docs/reference), while this page keeps the release-note thread explicit.

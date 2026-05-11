@@ -1,0 +1,101 @@
+---
+title: "发布说明"
+description: "包含用户影响、兼容性、验证证据与上游链接的 OMX 详细发布说明。"
+---
+
+[变更日志](/zh/docs/reference/changelog) 是简短摘要。需要了解最近版本的实际影响、是否需要迁移、以及发布前验证证据时，请阅读本页。
+
+## v0.14.4 — Frontier 默认值迁移到 GPT-5.5
+
+[上游发布说明](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/release-notes-0.14.4.md) · [CHANGELOG 条目](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#0144---2026-04-24)
+
+### 用户影响
+
+- 新建或遵循默认值的 frontier-managed paths 现在优先使用 `gpt-5.5`。
+- runtime defaults、Codex agent defaults 与 `omx explore` fallback behavior 的 frontier lane 会解析为 `gpt-5.5`。
+- 生成的 setup config 与 executor worker launch defaults 现在使用 medium reasoning，而不是 high。
+- standard/mini lane 与 spark lane 保持固定：`gpt-5.4-mini` 和 `gpt-5.3-codex-spark` 的语义不变。
+
+### 兼容性
+
+无需迁移。已有显式 `gpt-5.4-mini` 与 `gpt-5.3-codex-spark` overrides 会保持原有语义。
+
+### 上游验证证据
+
+上游发布说明记录了 `npm run build`、面向 model/default 变更的 Node suites、lint/no-unused、Cargo workspace tests，并在 `docs/qa/release-readiness-0.14.4.md` 保留完整证据。
+
+## v0.14.3 — Operator reliability hardening
+
+[上游发布说明](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/release-notes-0.14.3.md) · [CHANGELOG 条目](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#0143---2026-04-22)
+
+### 用户影响
+
+- `omx question` 在 tool-launched prompts、prompt reseeding、renderer paths 与 metadata races 中更好地保留 invoking leader pane。
+- Deep-interview 在重新提问前会先协调已回答的 question records，并为过大的 clarification flow 添加 summary gates。
+- 存在 project-local setup scope 时，explore launch 会使用 project-local `CODEX_HOME`。
+- setup refresh 更安全地处理 multiline root TOML assignments。
+- HUD reconciliation 只作用于 emitting tmux window。
+- team/runtime surfaces 增加 canonical supervisor events 与 native Windows psmux pane bootstrap hardening。
+
+### 兼容性
+
+无需迁移。没有 visible/returnable tmux pane 时，`omx question` 会有意 fail-closed。
+
+### 上游验证证据
+
+上游说明记录了 `npm test` 3910 个测试通过、no-unused、Cargo workspace tests、lint、build，以及面向变更路径的 suites。
+
+## v0.14.2 — Fast-follow question/deep-interview fixes
+
+[上游发布说明](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/release-notes-0.14.2.md) · [CHANGELOG 条目](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#0142---2026-04-21)
+
+### 用户影响
+
+- attached tmux 外部的 `omx question` 不再创建不可见 detached renderer，而是以清晰错误失败。
+- duplicate MCP stdio siblings 可以在安全的 post-traffic idle 后自行退出。
+- deep-interview state clear 更安全，question launch 失败时会清理 pending obligations。
+- 韩语 2-set keyboard 中将 `ulw` 输入为 `ㅕㅣㅈ` 时，会归一化为 ultrawork shorthand。
+- question answer injection 复用共享 tmux submit semantics。
+- deep-interview guidance 明确要求等待后台 `omx question` terminal 完成并读取 JSON answer 后再继续。
+- TypeScript 与 Biome baseline 已刷新。
+
+### 上游留下的风险
+
+真实 tmux/reused-session 环境中的 `omx question`、prompt submit、workflow/state clear、duplicate MCP cleanup 与多语言输入 activation 仍是最有价值的观察面。
+
+## v0.14.1 — Interactive orchestration reliability follow-through
+
+[上游发布说明](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/release-notes-0.14.1.md) · [CHANGELOG 条目](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#0141---2026-04-21)
+
+### 用户影响
+
+- pending deep-interview question obligations 会一直阻止 Stop，直到问题被解决。
+- question panes 对 tmux 环境差异更健壮，无法可靠启动时会 fail-closed，而不是静默失败。
+- `omx update` 即使在安装版本已是最新时，也可以刷新 setup state。
+- lifecycle compatibility code 复用共享 runtime run-outcome contract。
+- code-review guidance 更强，lightweight fallback lanes 保持轻量。
+
+### 上游留下的风险
+
+`omx question`、Stop gating、升级后的 setup refresh 在真实 multi-session tmux/operator 环境中仍值得观察。
+
+## v0.14.0 — Structured questions and explicit runtime outcomes
+
+[上游发布说明](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/release-notes-0.14.0.md) · [CHANGELOG 条目](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#0140---2026-04-19)
+
+### 用户影响
+
+- `omx question` 成为具备 JSON input、UI rendering、persistent question state 与 structured answers 的官方 interactive question surface。
+- deep-interview rounds 不再依赖 ad-hoc plain-text fallback，而是创建并满足 question obligations。
+- autoresearch 变为 skill-first 且 validator-gated，direct `omx autoresearch` 被 hard-deprecated。
+- PASS/LIGHT/HEAVY advisory triage hints 可以在不隐式激活 workflow 的情况下引导 non-keyword prompts。
+- runtime run outcomes 被规范化，Stop/continuation behavior 更一致。
+- specialist routing guidance 更窄、更明确。
+
+### 上游验证证据
+
+上游说明记录了 build、lint、TypeScript、affected interactive/runtime suites、catalog check、packed-install smoke test 与 pack dry-run。
+
+## Legacy docs signal
+
+旧版 [`oh-my-codex.dev/docs.html`](https://oh-my-codex.dev/docs.html) 将 team worktrees、Codex/Claude/Gemini mixed workers、notifications、recommended workflows、team CLI API examples 等 release-style operational topics 汇集在一个长页面。当前 docs site 将这些内容拆分到 [Skills](/zh/docs/skills)、[Tools](/zh/docs/tools)、[Integrations](/zh/docs/integrations) 与 [Reference](/zh/docs/reference) 下的专门页面，而本页保留明确的 release-note thread。

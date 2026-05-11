@@ -1,0 +1,53 @@
+---
+title: "설정"
+description: "`.codex/config.toml`, `.codex/hooks.json`, CLI 플래그 레퍼런스"
+---
+
+OMX는 `~/.codex/`(사용자 전역)와 `.codex/`(프로젝트 범위) 두 곳에서 설정을 읽습니다. 같은 키가 겹치면 프로젝트 범위가 우선합니다.
+
+## `.codex/config.toml`
+
+| 필드 | 타입 | 설명 |
+|---|---|---|
+| `model` | string | 기본 모델 (예: `"gpt-4.1"`, `"o3"`) |
+| `codex_hooks` | bool | OMX 훅 파이프라인 활성화. `true`이면 skills, team, OpenClaw가 동작합니다. |
+| `custom-prompts` | string | OMX 기본 프롬프트를 확장하거나 교체할 디렉터리 경로 |
+| `approval_policy` | string | 도구 호출 승인 정책: `"suggest"`, `"auto-edit"`, `"full-auto"` |
+
+```toml
+model = "gpt-4.1"
+codex_hooks = true
+custom-prompts = "~/.codex/prompts"
+approval_policy = "auto-edit"
+```
+
+## `.codex/hooks.json`
+
+라이프사이클 시점마다 실행할 훅 핸들러를 등록합니다. 각 항목은 훅 이름을 command 또는 MCP tool에 연결합니다.
+
+```json
+{
+  "hooks": {
+    "session-end": {
+      "command": "~/.codex/scripts/on-session-end.sh {{sessionId}}"
+    }
+  }
+}
+```
+
+전체 훅 카탈로그는 [업스트림 저장소](https://github.com/Yeachan-Heo/oh-my-codex)를 참고하세요.
+
+## CLI 플래그
+
+| 플래그 | 설명 |
+|---|---|
+| `--madmax` | 최대 병렬성 모드. team pipeline 전체를 자동으로 띄웁니다. |
+| `--high` | 높은 추론 강도. 가장 높은 tier 모델을 사용합니다. |
+| `--skip-git-repo-check` | git 저장소 밖에서 실행할 때 발생하는 오류를 무시합니다. |
+| `--spark` | team worker를 가벼운 spark tier로 라우팅합니다. |
+| `--madmax-spark` | `--madmax`와 spark worker 라우팅을 함께 적용합니다. |
+
+## 관련 문서
+
+- [환경](/ko/docs/reference/environment) — 설정 파일과 함께 쓰는 환경 변수
+- [`.omx` 디렉터리](/ko/docs/reference/omx-directory) — 프로젝트 범위 상태 디렉터리 구조

@@ -1,0 +1,37 @@
+---
+title: $ask-gemini
+description: A bridge skill that delegates sub-questions to Gemini from within the current OMX session
+---
+
+Invoke with `$ask-gemini`.
+
+A bridge for sending sub-questions to Gemini without leaving the current Codex session. Same structure as `$ask-claude`, with Gemini as the target model.
+
+## When to use
+
+- When you have a question that benefits from Gemini's long-context handling
+- When you want to compare answers from Claude and Gemini side by side
+- When you need to resolve a short, well-scoped sub-question independently of the current context
+
+## When to avoid
+
+- Questions that require the current codebase context → handle directly in Codex
+- If you want Claude and Gemini in the same decision loop, run bounded `$ask-claude`/`$ask-gemini` calls or use explicit team orchestration and synthesize in Codex
+
+## Commands
+
+```bash
+$ask-gemini "find potential bottlenecks in this design"
+$ask-gemini --print "analyze this error log"
+$ask-gemini --agent-prompt analyst "structure these requirements"
+```
+
+## How it works
+
+Opens a separate Gemini context, sends the question, and pipes the response back into the current session. It does not inherit files or state from the current session.
+
+## Related docs
+
+- [`$ask-claude`](/docs/skills/utility/ask-claude) — same bridge pattern targeting Claude
+- [Ask Gemini tool](/docs/tools/ask-gemini) — internal implementation details
+- [CLI Bridges](/docs/integrations/cli-bridges) — overview of cross-CLI advisory patterns

@@ -1,0 +1,32 @@
+---
+title: $git-master
+description: "委托git操作的技能。将提交、分支、历史整理交给智能体处理。"
+---
+
+## 概述
+
+`$git-master` 将git相关工作委托给 `git-master` 智能体。提交消息撰写、分支管理、历史整理、PR准备等工作不需要亲自处理，交给智能体来完成。
+
+## 何时使用
+
+- 实现完成后需要创建提交和PR时
+- 提交历史混乱需要整理时
+- 需要决定分支策略或合并方式时
+- 需要将多个变更按逻辑单元分批提交时
+
+## 何时避免
+
+- 简单的 `git add && git commit` 一行操作 — 直接做更快。
+- 临时保存进行中工作的用途 — 直接使用 `git stash`。
+
+## 使用示例
+
+```text
+$git-master "把到目前为止的变更按功能单元分批提交"
+$git-master "准备PR，顺便整理一下提交消息"
+$git-master "从main切分支，用feature/auth开始"
+```
+
+## 关联智能体
+
+- [git-master](/zh/docs/agents/domain/git-master) — 此技能委托的智能体详细说明

@@ -1,0 +1,48 @@
+---
+title: "Catalog"
+description: "OMX 管理的 capability 列表，用于将提示词、skill 和工具以一致的布局组织在一起"
+---
+
+Catalog 是保持 OMX 所公开的 capability 一致性的层。它整理了有哪些内容、每个 capability 如何分类，以及在文档和运行时中的位置。
+
+## 三种分类
+
+OMX 将 capability 分为三类。
+
+- **agents** — 按角色划分的提示词 surface
+- **skills** — 用户进入的工作流入口
+- **tools** — skill、hook、agent 在内部使用的下层功能
+
+Catalog 负责维护这一分类不发生偏移。
+
+## 为何必要
+
+如果 capability 列表管理不当，会产生以下问题。
+
+- 文档索引与实际实现不一致
+- navigation 不准确
+- 用户工作流与内部实现混杂
+- 添加新提示词或 skill 时结构混乱
+
+大多数用户不会直接操作 catalog 数据。但文档、帮助、setup 输出能保持可预测性，正是 catalog 的功劳。
+
+## 在哪里体现
+
+基于 catalog 的分类可在以下地方确认。
+
+- [Agents](/zh/docs/agents)、[Skills](/zh/docs/skills)、[Tools](/zh/docs/tools) 等文档索引
+- 生成或更新文档结构的 scaffolding / setup 脚本
+- 展示 OMX 能做什么的 discovery / help 输出
+- 区分 skill 与下层 tool 的运行时逻辑
+
+## 结构摘要
+
+- **Skills** — 用户进入的入口
+- **Agents** — 在其背后实际执行任务的按角色划分的专家
+- **Tools** — 这些工作流所依赖的下层功能
+
+## 相关文档
+
+- [Agents](/zh/docs/agents) — 角色提示词列表
+- [Skills](/zh/docs/skills) — 用户工作流列表
+- [Tools](/zh/docs/tools) — 下层 capability 列表

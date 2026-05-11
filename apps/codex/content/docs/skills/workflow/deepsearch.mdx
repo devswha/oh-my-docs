@@ -1,0 +1,35 @@
+---
+title: $deepsearch
+description: Skill for deep exploration of the codebase or external context
+---
+
+## TL;DR
+
+Use `$deepsearch` when you need deeper exploration than a simple grep. Multiple agents analyze structure, patterns, and dependencies in parallel and aggregate the results.
+
+## How to invoke
+
+```
+$deepsearch "find everywhere the auth middleware is used and how"
+```
+
+## When to use it
+
+| Good fit | Avoid |
+|---|---|
+| Need to understand impact scope before making changes | Exploring a single file or function |
+| Finding patterns in legacy code | Work with already-clear scope |
+| Dependency analysis spanning multiple modules | |
+
+## How it works
+
+1. An explore agent builds a file and symbol map.
+2. Relevant areas are explored in parallel.
+3. Results are synthesized into a summary and file list.
+
+Output can be fed directly as context into `$ralplan` or `$ralph`.
+
+## Related skills
+
+- [`$ralplan`](/docs/skills/workflow/ralplan) — continue from search results into a plan
+- [`$ralph`](/docs/skills/workflow/ralph) — execute with the scope understood

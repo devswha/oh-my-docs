@@ -1,0 +1,67 @@
+---
+title: test-engineer
+description: "A Domain agent responsible for designing test strategies, analyzing coverage, and resolving flaky tests."
+---
+
+## Overview
+
+The `test-engineer` agent designs how tests should be written. It establishes strategy from unit tests through integration and e2e, and finds the root cause of flaky tests to stabilize them. Writing tests directly is included, but the primary role is deciding what to test and how.
+
+## When to use
+
+- When a test strategy for a new feature needs to be designed from scratch
+- When flaky tests are failing repeatedly and the cause needs to be identified
+- When gaps in current test coverage need to be found and filled
+- In `$tdd` mode, when tests need to be written before implementation
+- When the test foundation that `verifier` depends on needs to be strengthened
+
+## Examples
+
+```text
+"Design a test strategy for this API endpoint"
+"Find the cause of this intermittently failing test"
+"Identify and fill gaps in the authentication module's test coverage"
+```
+
+## Scope of work
+
+| Item | Description |
+|---|---|
+| Test strategy | Set unit/integration/e2e boundaries, decide what to test at each level |
+| Coverage analysis | Identify gaps in existing tests and plan how to fill them |
+| Flaky test resolution | Analyze non-deterministic failures and stabilize them |
+| Test writing | Write actual test code according to the strategy |
+
+## Process
+
+1. Understand the behavior boundaries of the target feature or module.
+2. Determine the strategy — what cases to validate at which level.
+3. For flaky tests, analyze failure patterns to narrow down the root cause.
+4. Write or update tests and confirm they pass consistently.
+
+## Inputs
+
+- Description of the feature or module to test
+- Existing test code and failure logs
+- Plans or implementation results from `planner` or `executor`
+- Coverage reports
+
+## Outputs
+
+- Test strategy document by level
+- Actual test code
+- Flaky test root cause analysis and fix results
+- Coverage improvement plan
+
+## Limits
+
+- Manual validation of runtime behavior is handled by `qa-tester`.
+- Completion evidence verdicts are deferred to `verifier`.
+- Build problems unrelated to tests, such as build failures, are handled by `build-fixer`.
+
+## Related agents
+
+- [verifier](/docs/agents/build-analysis/verifier) — determines completion based on the test foundation designed by test-engineer.
+- [qa-tester](/docs/agents/domain/qa-tester) — handles interactive runtime validation that test-engineer doesn't cover.
+- [executor](/docs/agents/build-analysis/executor) — proceeds with implementation alongside tests written by test-engineer.
+- [debugger](/docs/agents/build-analysis/debugger) — supports complex root cause analysis for flaky tests.

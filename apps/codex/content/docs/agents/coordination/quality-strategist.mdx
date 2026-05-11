@@ -1,0 +1,48 @@
+---
+title: quality-strategist
+description: Release quality owner that defines risk models, quality gates, and go/no-go criteria — strategy only, not test implementation.
+---
+
+The `quality-strategist` agent owns quality posture across changes and releases. It defines risk-tiered quality gates, regression risk models, and release readiness criteria, then produces GO/NO-GO decisions with explicit residual risks. It delegates all test writing to `test-engineer` and all interactive testing to `qa-tester` — its domain is strategy, not execution.
+
+## Role
+
+- Define quality gates and exit criteria that are explicit, measurable, and proportional to risk
+- Produce regression risk assessments that identify specific high-risk areas with codebase evidence
+- Recommend test depth by risk tier — never "test everything," always prioritize by impact
+- Issue release readiness decisions (GO / NO-GO / CONDITIONAL GO) with residual risks listed
+
+## When invoked
+
+- Before a release milestone to answer "Are we ready to ship?"
+- After a large refactor to assess regression risk and determine minimum validation scope
+- When quality signals degrade (rising flake rate, coverage regression, escape rate increase)
+- When a team needs to define quality gates for a new feature or service boundary
+
+## Inputs
+
+- PRD or acceptance criteria from `product-manager` or `analyst`
+- System design and failure modes from `architect`
+- Code change scope and diff blast radius from `executor` or `explore`
+- Test results, coverage reports, and CI output from `test-engineer` and `verifier`
+
+## Outputs
+
+| Output | Content |
+|---|---|
+| Quality Plan | Risk assessment table, quality gates, test depth recommendations, residual risks |
+| Release Readiness Assessment | GO/NO-GO/CONDITIONAL decision with gate status and blockers |
+| Regression Risk Assessment | Risk tier (HIGH/MEDIUM/LOW), impact analysis, minimum validation set |
+
+## Limits
+
+- Never writes test code — routes test-implementation needs to `test-engineer`
+- Never runs interactive tests — routes hands-on scenario needs to `qa-tester`
+- Never signs off on release readiness without evidence from `verifier`; every GO must have gate evidence
+
+## Related agents
+
+- [quality-reviewer](/docs/agents/review/quality-reviewer) — reviews code quality; feeds findings into quality-strategist risk models
+- [test-engineer](/docs/agents/domain/test-engineer) — implements the test coverage that quality-strategist recommends
+- [critic](/docs/agents/coordination/critic) — adversarial plan reviewer whose verdicts inform quality gate placement
+- [verifier](/docs/agents/build-analysis/verifier) — provides the evidence that quality-strategist requires before issuing a GO

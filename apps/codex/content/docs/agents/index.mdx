@@ -1,0 +1,89 @@
+---
+title: Agents
+description: An overview of OMX's 33 role-specific agents across four lanes.
+---
+
+## The agent system
+
+OMX ships 33 role-specific agents.
+Each agent keeps a narrow responsibility, and the orchestrator chooses among them based on the shape of the task.
+
+In other words, OMX does not rely on one general-purpose worker to do everything. It separates **exploration / planning / implementation / verification / review** into distinct roles.
+
+## Four-lane structure
+
+The agents are grouped into four lanes.
+
+### Build / Analysis
+
+This is the center of the development flow. It runs from discovery to planning, implementation, and verification.
+
+| Agent | Role |
+|----------|------|
+| [`explore`](/docs/agents/build-analysis/explore) | Explore the codebase and map files, patterns, and relationships |
+| [`analyst`](/docs/agents/build-analysis/analyst) | Clarify requirements and define acceptance criteria |
+| [`planner`](/docs/agents/build-analysis/planner) | Sequence work and produce execution plans |
+| [`architect`](/docs/agents/build-analysis/architect) | Define system boundaries, interfaces, and tradeoffs |
+| [`debugger`](/docs/agents/build-analysis/debugger) | Diagnose root causes |
+| [`executor`](/docs/agents/build-analysis/executor) | Implement code and refactor |
+| [`verifier`](/docs/agents/build-analysis/verifier) | Gather completion evidence and validate claims |
+
+This lane is the default execution line from “what are we building?” to “is it actually done?”.
+
+### Review
+
+This lane checks quality and risk before changes should be considered complete.
+
+| Agent | Role |
+|----------|------|
+| [`quality-reviewer`](/docs/agents/review/quality-reviewer) | Review logic defects, maintainability, and anti-patterns |
+| [`security-reviewer`](/docs/agents/review/security-reviewer) | Review vulnerabilities, trust boundaries, and auth |
+| [`code-reviewer`](/docs/agents/review/code-reviewer) | Perform broad code review |
+| [`style-reviewer`](/docs/agents/review/style-reviewer) | Review naming, formatting, and idioms |
+| [`api-reviewer`](/docs/agents/review/api-reviewer) | Review API contracts and backward compatibility |
+| [`performance-reviewer`](/docs/agents/review/performance-reviewer) | Review hotspots and performance cost |
+
+This lane is less about “does it run?” and more about **is it good enough to trust and ship?**
+
+### Domain
+
+These are specialists called in when the work needs narrower expertise.
+
+For example:
+
+- [`test-engineer`](/docs/agents/domain/test-engineer) — test strategy
+- [`designer`](/docs/agents/domain/designer) — UI and UX work
+- [`writer`](/docs/agents/domain/writer) — docs and user guidance
+- [`researcher`](/docs/agents/domain/researcher) — external documentation and reference research
+- [`dependency-expert`](/docs/agents/domain/dependency-expert) — SDK / package decisions
+- [`git-master`](/docs/agents/domain/git-master) — Git history and commit hygiene
+
+This lane does not replace the default execution flow. It strengthens it where specialized expertise is needed.
+
+### Coordination
+
+These agents challenge, coordinate, and tighten what the other lanes produce.
+
+For example:
+
+- [`critic`](/docs/agents/coordination/critic) — challenge plans and designs
+- [`team-executor`](/docs/agents/coordination/team-executor) — support team execution lanes
+- [`quality-strategist`](/docs/agents/coordination/quality-strategist) — evaluate quality strategy
+
+This lane is less about direct implementation and more about **making the overall process safer and sharper**.
+
+## How do you choose an agent?
+
+A simple mental model is:
+
+| Task shape | First agent to think about |
+|-----------|----------------------------|
+| I need to read the repo quickly | `explore` |
+| The requirements are still fuzzy | `analyst` |
+| I need a plan before I code | `planner`, `architect`, `critic` |
+| I need actual implementation | `executor` |
+| I need to confirm completion | `verifier` |
+| I am worried about security / quality / performance | review lane |
+| I need narrow expertise like tests, UI, or docs | domain lane |
+
+So in practice, most workflows begin in **Build / Analysis**, and then pull in review, domain, or coordination roles when needed.

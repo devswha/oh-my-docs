@@ -1,0 +1,53 @@
+---
+title: "Codex 原生钩子"
+description: "OMX 直接使用 Codex CLI 原生钩子接口的方式，以及原生覆盖与运行时回退的边界"
+---
+
+Codex CLI 在 `.codex/config.toml` 中设置 `[features] codex_hooks = true` 后，会读取 `.codex/hooks.json` 中的注册信息，并在每个生命周期时间点调用外部处理程序。OMX 直接使用此接口，而不是用 shell 脚本包装 Codex 二进制文件。
+
+## 安装结构
+
+`omx setup` 写入两个文件。
+
+- `.codex/config.toml` — 启用 `codex_hooks`
+- `.codex/hooks.json` — 注册 OMX 处理程序 `dist/scripts/codex-native-hook.js`
+
+安装时，`.codex/hooks.json` 中已有的用户管理钩子条目会被保留。`omx uninstall` 只删除 OMX 注册的条目，不会触动用户钩子。
+
+Codex 二进制文件的 shell 包装器仍通过 `omx tmux-hook` 支持，但不是原生事件的主要路径。
+
+## 覆盖矩阵
+
+| OMX 关注点 | Codex 事件 | 状态 |
+|---|---|---|
+| 会话记账、wiki 启动上下文 | `SessionStart` | 原生 |
+| 关键词检测、技能状态播种 | `UserPromptSubmit` | 原生 |
+| Bash 安全检查、提交格式守卫 | `PreToolUse`（仅 Bash） | 原生-部分 |
+| 命令未找到指导、退出码审查 | `PostToolUse`（仅 Bash） | 原生-部分 |
+| ralph / autopilot / ultrawork / ultraqa 继续运行 | `Stop` | 原生-部分 |
+| 停滞轮次自动推进 | `Stop` | 原生-部分 |
+| 会话结束 wiki 捕获、`session-idle` | — | 运行时-回退 |
+| 非 Bash 工具拦截 | — | 运行时-回退 |
+
+"原生-部分"表示原生路径处理常见情况，边缘情况回退到 notify-hook 或 tmux 运行时路径。
+
+## 确认方法
+
+确认钩子是否正确安装：
+
+```bash
+omx doctor
+```
+
+对原生钩子路径进行端到端冒烟测试：
+
+```bash
+omx exec --skip-git-repo-check -C . "Reply with exactly OMX-EXEC-OK"
+```
+
+插件分发日志记录在 `.omx/logs/hooks-YYYY-MM-DD.jsonl`。
+
+## 相关文档
+
+- [生命周期事件](/zh/docs/hooks/lifecycle-events)
+- [核心钩子](/zh/docs/hooks/core-hooks)

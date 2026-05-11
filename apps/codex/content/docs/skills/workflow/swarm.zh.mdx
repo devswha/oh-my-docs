@@ -1,0 +1,40 @@
+---
+title: $swarm
+description: 并行运行多个 agent 的 skill（$team 的遗留变体）
+---
+
+## 一句话概述
+
+`$swarm` 将工作同时分配给多个 agent。目前 `$team` 承担相同角色，新工作推荐使用 `$team`。
+
+## 调用方式
+
+```
+$swarm "并行实现前端、后端、测试"
+```
+
+也可通过魔法关键词 `swarm`、`team`、`coordinated team` 激活。
+
+## `$swarm` vs `$team`
+
+| 项目 | `$swarm` | `$team` |
+|---|---|---|
+| 状态 | 遗留/变体 | 当前标准 |
+| 功能 | 并行 agent 执行 | 并行 lane + stage 路由 |
+| 推荐程度 | 兼容现有工作流 | 新工作推荐 |
+
+`$team` 支持 stage-aware 路由（plan → exec → verify → fix）。新工作使用 `$team`。
+
+## 何时使用
+
+| 适合 | 避免 |
+|---|---|
+| 可独立拆分的并行工作 | 需求模糊时 |
+| 需要保持现有 `$swarm` 工作流时 | lane 之间可能冲突时 |
+
+比起并行化，需要单一所有者的工作用 `$ralph` 更安全。
+
+## 相关 skill
+
+- [`$team`](/zh/docs/skills/workflow/pipeline) — 当前标准并行执行
+- [`$ralph`](/zh/docs/skills/workflow/ralph) — 单一所有者循环执行

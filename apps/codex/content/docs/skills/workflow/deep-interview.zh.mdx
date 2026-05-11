@@ -1,0 +1,45 @@
+---
+title: $deep-interview
+description: 需求模糊时用 Socratic 提问先确定范围的 skill
+---
+
+## 一句话概述
+
+需求模糊时，提问先于写代码。`$deep-interview` 以 Socratic 方式与用户对话，在实现前确定范围。
+
+## 调用方式
+
+```
+$deep-interview "帮我明确认证变更事项"
+```
+
+也可通过魔法关键词 `deep interview`、`interview me`、`gather requirements`、`don't assume`、`ouroboros` 激活。
+
+## 何时使用
+
+| 适合 | 避免 |
+|---|---|
+| 需求还没整理好 | 范围已明确、可以直接实现时 |
+| 多个利益相关者方向不一致时 | 目的是探索的原型开发 |
+| 需要先确定"做什么"时 | |
+
+## 在标准流程中的位置
+
+```
+$deep-interview "整理认证变更范围"   ← 这里
+$ralplan "审批最安全的实现路径"
+$ralph "按审批计划执行到完成"
+```
+
+`$deep-interview` 始终在第一位。范围确定后再用 `$ralplan` 制定计划。
+
+## 工作方式
+
+- 用户每次回答后生成追问。
+- 核心假设明确后输出需求摘要。
+- 确认摘要后可传给 `$ralplan`，或直接进入实现。
+
+## 相关 skill
+
+- [`$ralplan`](/zh/docs/skills/workflow/ralplan) — 以确定的需求制定共识计划
+- [`$ralph`](/zh/docs/skills/workflow/ralph) — 执行计划

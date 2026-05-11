@@ -1,0 +1,48 @@
+---
+title: $autopilot
+description: アイデアから実装・QA・検証まで一気に実行する全体パイプラインスキル
+---
+
+## 一行要約
+
+アイデアひとつを入れると、実装 → QA → 検証まで OMX が順番に処理します。途中で方向を調整したい場合は `$deep-interview → $ralplan → $ralph` の流れを使ってください。
+
+## 呼び出し
+
+```
+$autopilot "build me a todo app in next.js"
+```
+
+マジックキーワード `autopilot`、`build me`、`I want a` でも起動します。
+
+## いつ使うか
+
+| 合う | 避ける |
+|---|---|
+| プロトタイプ、小さな機能 | 要件がまだ曖昧なとき |
+| end-to-end の流れを素早く確認 | アーキテクチャ合意が先の作業 |
+| 制御より速度が重要なとき | 間違った方向が高コストな作業 |
+
+## 内部フロー
+
+1. explore — 現在のコードベース構造を把握
+2. plan — 実装経路を決定
+3. execute — コードを書く
+4. QA (`$ultraqa`) — テスト・検証・修正サイクル
+5. verify — 完了証拠を収集
+
+## `$autopilot` vs 計画ベースの流れ
+
+`$autopilot` は OMX が流れの大部分を決めます。ステップを手動で制御したい場合や要件を先に確定させる必要がある場合は、以下の順序がより安全です。
+
+```
+$deep-interview "何を作るべきか整理して"
+$ralplan "最も安全な計画を立てて"
+$ralph "その計画を最後まで進めて"
+```
+
+## 関連スキル
+
+- [`$ralph`](/ja/docs/skills/workflow/ralph) — 完了まで繰り返し実行
+- [`$ralplan`](/ja/docs/skills/workflow/ralplan) — 合意ベースの計画
+- [`$deep-interview`](/ja/docs/skills/workflow/deep-interview) — 要件整理

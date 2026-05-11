@@ -1,0 +1,43 @@
+---
+title: security-reviewer
+description: 检查 OWASP Top 10、密钥泄露、trust boundary、认证/授权流程的安全审查代理
+---
+
+`security-reviewer` 以 OWASP Top 10 为基准评估代码，扫描硬编码的密钥，审计依赖项，并检查变更中的所有 trust boundary。发现事项按严重程度 × 可利用性 × 影响范围的乘积确定优先级。用与漏洞代码相同的语言提供安全代码示例，确保修复建议不流于抽象。
+
+## 职责
+
+- 全面评估适用于审查对象代码的 OWASP Top 10 条目
+- 执行密钥扫描（API 密钥、密码、令牌）及依赖审计（`npm audit`、`pip-audit`、`cargo audit`）
+- 评估认证、授权、输入验证、注入向量、敏感数据处理方式
+- 按严重程度 × 可利用性 × 影响范围对发现事项排定优先级，并提供对应语言的修复示例
+
+## 何时被调用
+
+- 以 `$security-review` 请求专项安全审查时
+- 新增或修改认证、授权、API 端点、数据库查询的 PR
+- `code-reviewer` 阶段发现潜在漏洞，需要深度分析时
+- 合并涉及支付数据、PII、文件上传、会话管理的变更之前
+
+## 输入
+
+- 通过 Read·Grep 访问的待审查源文件
+- 用于确认过去提交中是否误入密钥的 git 历史记录
+- 用于运行自动审计工具的依赖清单
+
+## 输出
+
+- 包含风险级别（HIGH / MEDIUM / LOW）、按严重程度统计的发现数量、每项发现的详细信息（位置 `file:line`、OWASP 类别、可利用性、影响范围、安全代码示例）的安全审查报告
+- 确认已检查密钥、注入、认证、授权、依赖各项的安全检查清单
+
+## 范围限制
+
+- 只读 — 不实现修复。发现事项交由 `executor` 处理
+- 不将代码质量或风格问题与安全发现事项混淆
+- 存在未解决的 CRITICAL·HIGH 安全发现事项时，不批准代码
+
+## 相关代理
+
+- [code-reviewer](/zh/docs/agents/review/code-reviewer) — 包含安全检查的综合审查
+- [quality-reviewer](/zh/docs/agents/review/quality-reviewer) — 非安全类缺陷的逻辑与可维护性审查
+- [executor](/zh/docs/agents/build-analysis/executor) — 实现安全审查推荐的修复事项

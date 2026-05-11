@@ -1,0 +1,40 @@
+---
+title: $build-fix
+description: 빌드 에러와 타입 오류를 자동으로 수정하는 유틸리티 스킬
+---
+
+`$build-fix`로 호출합니다.
+
+빌드 실패, 타입 에러, 린트 오류를 진단하고 수정하는 스킬입니다. build-fixer 에이전트를 호출해 컴파일러 출력과 에러 메시지를 분석한 뒤 코드를 직접 수정합니다.
+
+## 언제 쓰나
+
+- `npm run build` 또는 `tsc`가 실패했을 때
+- 타입 에러가 여러 파일에 걸쳐 있을 때
+- 린트 오류가 쌓여 있어 한 번에 정리하고 싶을 때
+- `$ralph`나 `$autopilot` 도중 빌드가 깨졌을 때
+
+## 언제 피하나
+
+- 에러 원인이 로직 버그인 경우 → `$analyze`로 원인 파악 먼저
+- 아키텍처 수준의 변경이 필요한 경우 → `$ralplan`으로 계획 수립 먼저
+
+## 명령
+
+```bash
+$build-fix
+$build-fix "타입스크립트 에러 전부 잡아줘"
+$build-fix --scope src/api
+```
+
+## 동작 방식
+
+build-fixer 에이전트가 빌드 명령을 실행하고 에러 출력을 파싱합니다. 에러 위치를 추적해 최소한의 수정으로 통과 가능한 상태를 만들고, 수정 후 다시 빌드해 검증합니다.
+
+로직 변경이 아닌 **컴파일 가능한 상태 복구**에 초점을 맞춥니다. 빌드는 통과하지만 동작이 의심스러우면 `$code-review`로 확인하세요.
+
+## 관련 문서
+
+- [build-fixer 에이전트](/ko/docs/agents/domain/build-fixer) — 내부 동작 상세
+- [`$analyze`](/ko/docs/skills/utility/analyze) — 에러 원인 분석
+- [`$code-review`](/ko/docs/skills/utility/code-review) — 수정 후 검토

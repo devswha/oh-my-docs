@@ -1,0 +1,41 @@
+---
+title: api-reviewer
+description: Public API contract review agent that detects breaking changes, enforces semver, and evaluates error semantics and usability
+---
+
+The `api-reviewer` agent treats a public API as a contract with every caller. It checks git history to establish the previous API shape, classifies each change as breaking or non-breaking, and provides migration paths for breaking changes so callers know exactly how to update. Internal implementation details are out of scope — the focus stays at the public surface.
+
+## Role
+
+- Identify all public API changes from the diff and classify each as breaking (major bump) or non-breaking (minor/patch)
+- Check git history to understand the previous API shape and detect subtle regressions
+- Review contract clarity: parameter names and types, return type ambiguity, nullability, and precondition/postcondition documentation
+- Evaluate error semantics: what errors are possible, when they occur, and whether messages are actionable for callers
+
+## When called
+
+- On changes to `index.*`, `*.d.ts`, or OpenAPI/schema files where the public surface is directly modified
+- When a `code-reviewer` pass identifies a potential backward-compatibility concern that needs detailed analysis
+- Before tagging a release to confirm the version bump matches the change severity
+- On library or SDK changes where downstream consumers exist outside the monorepo
+
+## Inputs
+
+- Git diff of the changed files
+- Git history (`git log`/`git diff`) to reconstruct the prior API shape
+- Public API definitions, type declarations, and any existing documentation or tests
+
+## Outputs
+
+- An API review report with overall status, a breaking-changes list with affected callers and migration paths, API design issue notes, error contract gaps, and a versioning bump recommendation with rationale
+
+## Limits
+
+- Reviews public APIs only — does not inspect or comment on internal implementation details
+- Does not implement migration shims or compatibility layers; hands those tasks to `executor`
+- Does not skip the git history check; reviewing API changes without the prior shape is incomplete
+
+## Related agents
+
+- [code-reviewer](/docs/agents/review/code-reviewer) — comprehensive review that includes API concerns alongside spec compliance
+- [architect](/docs/agents/build-analysis/architect) — provides system-level perspective on interface and boundary design

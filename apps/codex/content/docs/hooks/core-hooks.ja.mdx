@@ -1,0 +1,51 @@
+---
+title: "コアフック"
+description: "omx setup がインストールする 4 つの組み込みフック — キーワード検出器、ralph 停止ゲート、Bash 安全ガード、終了コードガイダンス"
+---
+
+コアフックは `omx setup` 実行時に自動インストールされるフックハンドラーです。追加設定なしで OMX ワークフロースキルを Codex ライフサイクルイベントに結線します。各フックは単一の責務のみを担い、その関心事が非アクティブであれば何もしません。
+
+## 構造
+
+4 つのフックはすべて `.codex/hooks.json` に登録され、`dist/scripts/codex-native-hook.js` をエントリーポイントとして使います。このエントリーポイントが Codex イベントタイプを見て正しいハンドラーへディスパッチします。有効化条件は `.codex/config.toml` の `[features] codex_hooks = true` です。
+
+`.omx/hooks/*.mjs` プラグインフックはこのインターフェースを拡張しますが、置き換えません。
+
+## 組み込みフック 4 つ
+
+**keyword-detector**（`UserPromptSubmit`）
+
+すべてのユーザープロンプトからマジックキーワードフレーズをスキャンします。マッチ時は `.omx/state/` にスキルのアクティベーション状態を書き込み、必要に応じて開発者コンテキストを前に付けます。`$skill` の明示的呼び出しと、"team" や "parallel" のような暗黙的フレーズマッチング（意図ガード付き）を両方サポートします。詳細は [マジックキーワード](/ja/docs/hooks/magic-keywords) を参照してください。
+
+**ralph stop-gate**（`Stop`）
+
+モデルが停止するとき、ralph、autopilot、ultrawork、ultraqa の実行がまだアクティブかどうか確認します。アクティブで終端状態でなければ `decision: "block"` を返して継続実行を指示します。状態は `.omx/state/{mode}-state.json` から読み取ります。
+
+**pre-tool-use guard**（`PreToolUse`、Bash のみ）
+
+破壊的なコマンド（`rm -rf dist` など）に警告し、必須トレーラー（`Co-authored-by: OmX <omx@oh-my-codex.dev>`）がないインライン `git commit` 呼び出しをブロックします。
+
+**post-tool-use advisor**（`PostToolUse`、Bash のみ）
+
+非正常終了コード、パーミッション拒否エラー、パス未検出メッセージを解釈し、次のプロンプトコンテキストに修正ガイダンスを注入します。
+
+## 状態確認
+
+フックが正しくインストールされているか確認:
+
+```bash
+omx doctor
+```
+
+キーワード検出後にフック状態を直接確認:
+
+```bash
+cat .omx/state/skill-active-state.json
+```
+
+## 関連ドキュメント
+
+- [ライフサイクルイベント](/ja/docs/hooks/lifecycle-events)
+- [コンテキストフック](/ja/docs/hooks/context-hooks)
+- [マジックキーワード](/ja/docs/hooks/magic-keywords)
+- [Codex ネイティブフック](/ja/docs/hooks/codex-native-hooks)

@@ -1,0 +1,51 @@
+---
+title: analyst
+description: "将产品范围转化为可实现的验收标准的计划前需求分析 agent。"
+---
+
+`analyst` agent 在模糊请求与计划制定之间运作。它读取需求、挖掘尚未回答的问题，并整理成可测试的 acceptance criteria。其作用是减少实现开始后「我想要的不是这个」的对话。
+
+## 职责
+
+- 找出请求中缺失的问题、未定义的 guardrail 和未经验证的假设。
+- 整理包含边缘情况（特殊输入、race condition、边界值）的 scope risk。
+- 创建可用 PASS/FAIL 确认的 acceptance criteria。
+- 明确界定哪些内容在 scope 内，哪些不在。
+
+## 何时被调用
+
+| 场景 | 调用路径 |
+|---|---|
+| `$autopilot`、`$plan` 启动时作为 `planner` 的前置阶段 | 自动 |
+| `$deep-interview` 中目标本身不明确时 | 自动 |
+| 任务描述模糊、相互矛盾或缺少成功标准时 | 直接请求 |
+| 执行已有计划前的需求审计 | 直接请求 |
+
+## 输入
+
+- 用户的任务描述或功能请求
+- 可选：`explore` agent 生成的仓库上下文报告
+- 可选：规格文档或已有的 acceptance criteria
+
+## 输出
+
+在 `.omx/specs/<date>-<topic>.md` 中留下结构化分析文档。
+
+- 按影响程度排序的 missing question
+- 包含具体边界值建议的 undefined guardrail
+- 含 mitigation 策略的 scope risk
+- 附带验证方法的 assumption list
+- 可测试的 acceptance criteria
+
+## 范围限制
+
+- 不做实现设计。该职责属于 `architect`。
+- 不直接编写或修改 production code 或 test code。
+- 不做市场价值或优先级判断，专注于可实现性与完整性。
+
+## 相关 agent
+
+- [explore](/zh/docs/agents/build-analysis/explore) — 提供代码库上下文，防止需求分析流于抽象。
+- [planner](/zh/docs/agents/build-analysis/planner) — 基于 `analyst` 创建的 acceptance criteria 规划任务顺序。
+- [architect](/zh/docs/agents/build-analysis/architect) — 需求整理完成后负责实现设计。
+- [critic](/zh/docs/agents/coordination/critic) — 对计划和设计进行批判性审查。

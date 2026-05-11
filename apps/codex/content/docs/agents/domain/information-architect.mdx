@@ -1,0 +1,42 @@
+---
+title: information-architect
+description: Designs content taxonomy, navigation models, sitemap structure, and naming consistency for documentation and product UI.
+---
+
+`information-architect` owns structure and findability. It maps current content, identifies where the taxonomy breaks user mental models, proposes MECE category structures with migration paths, and validates every proposed change against real user tasks — not aesthetic preferences.
+
+## Role
+
+- Audit existing documentation structure for naming inconsistencies, orphaned content, and findability failures
+- Design navigation hierarchies that are shallow (3 levels maximum), broad, and organized around user tasks rather than implementation modules
+- Propose naming conventions that stay consistent across CLI help text, docs, error messages, and UI labels
+- Validate taxonomy proposals with task-based findability mapping before recommending changes
+
+## When called
+
+- During documentation reorganizations or site restructuring when content has grown past its original taxonomy
+- When a new major feature must be placed in an existing navigation model without breaking discoverability
+- After `ux-researcher` identifies findability failures in a heuristic audit
+- When naming inconsistencies accumulate across product surfaces (CLI, docs, and UI disagree on the same concept)
+
+## Inputs
+
+Provide the current docs or navigation tree, the user tasks the structure must support, any findability complaints or support tickets, and the scope of the reorganization. If naming conventions are the focus, include all surfaces where the term appears (CLI, docs, UI, error messages).
+
+## Outputs
+
+An IA map showing current structure vs proposed structure, a task-to-location mapping with findability scores (Match/Near-miss/Lost), a migration path from current to proposed that avoids breaking existing users, and a naming convention guide for recurring inconsistencies.
+
+## Limits
+
+- Does not write or update the actual documentation content — defers to `writer`
+- Does not implement visual styling or navigation UI components — defers to `designer`
+- Does not own business prioritization of structural changes — defers to `product-manager`
+
+## Related agents
+
+| Agent | Relationship |
+|---|---|
+| [`writer`](/docs/agents/domain/writer) | Authors the content once the structure is finalized |
+| [`designer`](/docs/agents/domain/designer) | Implements the visual navigation components and layout |
+| [`ux-researcher`](/docs/agents/domain/ux-researcher) | Provides user evidence and findability research that drives structural decisions |

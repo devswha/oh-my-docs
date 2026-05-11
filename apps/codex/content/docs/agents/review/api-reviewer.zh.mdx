@@ -1,0 +1,41 @@
+---
+title: api-reviewer
+description: 检测公共 API 契约的破坏性变更，验证 semver 合规性与错误语义的审查代理
+---
+
+`api-reviewer` 将公共 API 视为与所有调用方的契约。通过查看 git 历史了解以前的 API 形态，将每项变更分类为破坏性（breaking）或非破坏性（non-breaking），并为破坏性变更提供迁移路径。内部实现细节不在范围之内，只专注于公共表面（public surface）。
+
+## 职责
+
+- 从 diff 中识别所有公共 API 变更，并分类为破坏性（major bump）或非破坏性（minor/patch）
+- 查看 git 历史以了解以前的 API 形态，检测细微的回归
+- 审查契约清晰度 — 参数名称·类型、返回类型歧义、可空性、前置/后置条件文档
+- 评估错误语义 — 可能出现哪些错误、何时发生、消息对调用方是否具有实用价值
+
+## 何时被调用
+
+- 直接修改公共表面的 `index.*`、`*.d.ts`、OpenAPI/Schema 文件变更时
+- `code-reviewer` 阶段发现向后兼容性问题，需要详细分析时
+- 发布打标签前，确认版本号递增是否与变更严重程度匹配时
+- 存在 monorepo 外部下游消费者的库·SDK 变更时
+
+## 输入
+
+- 变更文件的 git diff
+- 用于还原以前 API 形态的 git 历史（`git log`/`git diff`）
+- 公共 API 定义、类型声明、现有文档或测试
+
+## 输出
+
+- 包含整体状态、受影响调用方与迁移路径的破坏性变更列表、API 设计问题、错误契约空白、附理由的版本号递增建议的 API 审查报告
+
+## 范围限制
+
+- 只审查公共 API — 不涉及内部实现细节
+- 不直接实现迁移 shim 或兼容层。相关工作交由 `executor` 处理
+- 不跳过 git 历史确认。在不了解以前形态的情况下审查 API 变更是不完整的
+
+## 相关代理
+
+- [code-reviewer](/zh/docs/agents/review/code-reviewer) — 将 API 相关事项与规范合规一并处理的综合审查
+- [architect](/zh/docs/agents/build-analysis/architect) — 提供接口与边界设计的系统级视角

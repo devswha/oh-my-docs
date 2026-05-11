@@ -1,0 +1,85 @@
+---
+title: "HUD"
+description: "The OMX heads-up display: live session monitoring, presets, JSON output, and tmux-friendly status views for active runs."
+---
+
+HUD is OMX's lightweight monitoring surface. It gives you a compact view of what the current session is doing without forcing you to inspect raw state files or logs.
+
+## What it is
+
+Use the HUD when you want to see, at a glance:
+
+- whether a workflow is active
+- which phase it is in
+- whether progress is still advancing
+- what a tmux-backed run is doing
+- a compact operational summary beside the main session
+
+The HUD is a monitoring surface, not a workflow entry point. You normally watch it while skills such as `$ralph`, `$team`, or `$ultraqa` do the work.
+
+## Command surface
+
+```bash
+omx hud
+omx hud --watch
+omx hud --json
+omx hud --preset=focused
+omx hud --tmux
+```
+
+Available presets:
+
+- `minimal`
+- `focused`
+- `full`
+
+## What each mode is for
+
+| Command | Use it for |
+|---|---|
+| `omx hud` | Print one snapshot of the current HUD state |
+| `omx hud --watch` | Refresh the view continuously in the current terminal |
+| `omx hud --json` | Return structured output for scripts and external tooling |
+| `omx hud --preset=<name>` | Change how much detail the HUD displays |
+| `omx hud --tmux` | Open a dedicated tmux split for side-by-side monitoring |
+
+## Typical usage
+
+### Watch a long-running loop
+
+```bash
+omx hud --watch --preset=focused
+```
+
+Useful when `$ralph` or `$ultraqa` is iterating and you want phase changes without opening logs.
+
+### Feed another script or dashboard
+
+```bash
+omx hud --json
+```
+
+Useful for shell dashboards, automation, or external status integrations.
+
+### Keep a small tmux pane open
+
+```bash
+omx hud --tmux --preset=minimal
+```
+
+A good fit when OMX is already running inside tmux and you want a persistent side pane.
+
+## How it differs from nearby surfaces
+
+- **HUD** answers: “What is happening right now?”
+- **State** answers: “What does the runtime record say?”
+- **Trace** answers: “What happened over time?”
+- **Logs** answer: “What are the raw details?”
+
+Start with HUD when you want the quickest operational view.
+
+## Related
+
+- [State](/docs/tools/state) — the lifecycle record underneath the HUD
+- [Quick Commands](/docs/reference/quick-commands) — operational command reference
+- [Trace skill](/docs/skills/workflow/trace) — timeline and summary view across a run

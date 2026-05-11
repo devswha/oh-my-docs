@@ -1,0 +1,58 @@
+---
+title: $team
+description: 複数の Codex または Claude ワーカーを tmux ウィンドウに立ち上げて共有タスクキューを並列処理するワークフロー
+---
+
+`$team` は複数のワーカーセッションを tmux ウィンドウに並列で立ち上げ、共有状態ディレクトリを通じて調整します。各ワーカーはタスクリストから作業を取得してブランチにコミットし、mailbox で報告します。リーダーは進捗を監視し、全タスクが完了したらチームを終了します。
+
+一人が順次処理するより lane を分けて並列実行する方が速い作業に使います。
+
+## いつ使うか
+
+- docs、tests、実装、レビューのように独立して分けられる lane があるとき
+- `$ralplan` で承認された計画が並列実行を推奨するとき
+- 単一 reasoning burst を超える持続状態が必要なとき
+- 開始 → 監視 → 終了 → クリーンアップの明示的な lifecycle が必要なとき
+
+トリガーキーワード: "team", "coordinated workers", "parallel agents", "spawn workers"
+
+## 呼び出し
+
+```
+codex
+> team 3:executor "implement the three modules from the approved plan"
+```
+
+```bash
+omx team 2:executor "add validation and write tests in parallel"
+```
+
+Claude ワーカーを使いたい場合:
+
+```bash
+OMX_TEAM_WORKER_CLI=claude omx team 2:executor "update docs and report"
+```
+
+## 動作方法
+
+ワーカー実行前に `.omx/context/{slug}-{timestamp}.md` にコンテキストスナップショットが先に作られる必要があります。
+
+オーケストレーターはワーカー数と役割をパースし、`.omx/state/team/{team}/` 以下にチーム状態ファイルを初期化します。`AGENTS.md` を修正せずにワーカー指示事項を構成してから tmux ウィンドウを分割し、各ワーカーを実行します。各ワーカーは独立した環境変数で共有状態ルートを指します。
+
+ワーカーは `omx team api claim-task` でタスクを取得して作業した後 `git add -A && git commit` でコミットし、リーダー mailbox に ACK を送ります。リーダーは `omx team status {team}` で進捗を監視し、`pending=0`、`in_progress=0` になったら `omx team shutdown {team}` を実行します。
+
+パイプラインは team-plan → team-exec → team-verify → team-fix の順で進み、全 lane が green になるか上限に達するまで fix ループを繰り返します。
+
+## 出力
+
+- 各ワーカーがブランチにコミットしたソースコード、テスト、ドキュメント
+- `.omx/state/team/{team}/` — タスク状態、ワーカー heartbeat、mailbox、manifest
+- `.omx/context/{slug}-{timestamp}.md` — 全ワーカーが共有するコンテキストスナップショット
+- 終了前にタスク完了を確認する `omx team status` 証拠
+
+## 関連スキル
+
+- [`$ralplan`](/ja/docs/skills/workflow/ralplan) — チーム実行前に staffing ガイドを含む合意計画策定
+- [`$ralph`](/ja/docs/skills/workflow/ralph) — 単一オーナーの持続ループ。チーム完了後の検証後続として使用
+- [`$autopilot`](/ja/docs/skills/workflow/autopilot) — 実行ステップに team を内部的に使用する全体パイプライン
+- [`$deep-interview`](/ja/docs/skills/workflow/deep-interview) — チームに渡す前に要件整理

@@ -1,0 +1,45 @@
+---
+title: $deep-interview
+description: 요구사항이 모호할 때 Socratic 질문으로 범위를 먼저 확정하는 스킬
+---
+
+## 한 줄 요약
+
+요구가 흐릴 때 코드보다 질문이 먼저입니다. `$deep-interview`는 Socratic 방식으로 사용자와 대화하면서 구현 전에 범위를 확정합니다.
+
+## 호출
+
+```
+$deep-interview "인증 변경 사항을 명확히 해줘"
+```
+
+매직 키워드 `deep interview`, `interview me`, `gather requirements`, `don't assume`, `ouroboros`로도 활성화됩니다.
+
+## 언제 쓰나
+
+| 잘 맞는 경우 | 피할 경우 |
+|---|---|
+| 요구사항이 아직 정리 안 됨 | 범위가 명확하고 바로 구현 가능할 때 |
+| 이해관계자가 여럿이고 방향이 다를 때 | 프로토타입처럼 탐색이 목적일 때 |
+| "뭘 만들어야 하는지"부터 확정해야 할 때 | |
+
+## 표준 흐름에서 위치
+
+```
+$deep-interview "인증 변경 스코프를 정리해줘"   ← 여기
+$ralplan "가장 안전한 구현 경로를 승인해줘"
+$ralph "승인된 계획을 끝까지 완료해줘"
+```
+
+`$deep-interview`는 항상 첫 번째입니다. 범위가 확정된 뒤에 `$ralplan`으로 계획을 세우세요.
+
+## 동작 방식
+
+- 사용자가 답변할 때마다 추가 질문을 생성합니다.
+- 핵심 가정이 명확해지면 요구사항 요약을 출력합니다.
+- 요약을 확인한 뒤 `$ralplan`으로 넘기거나, 그대로 구현으로 진행할 수 있습니다.
+
+## 관련 스킬
+
+- [`$ralplan`](/ko/docs/skills/workflow/ralplan) — 확정된 요구사항으로 합의 계획
+- [`$ralph`](/ko/docs/skills/workflow/ralph) — 계획 실행

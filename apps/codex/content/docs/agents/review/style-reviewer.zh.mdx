@@ -1,0 +1,41 @@
+---
+title: style-reviewer
+description: 以项目规则而非个人偏好为基准检查格式、命名、语言惯用法的风格审查代理
+---
+
+`style-reviewer` 以项目自身的风格规则而非个人偏好为基准进行审查。给出意见前，先读取配置文件（`.eslintrc`、`.prettierrc`、`pyproject.toml` 等），区分可自动修复的项目和需要手动修改的项目。聚焦于实质性不一致，而非琐碎的指摘，目标是让开发者用一条格式化命令就能立即处理反馈。
+
+## 职责
+
+- 审查代码前先读取项目配置文件以了解实际规则
+- 检查格式（缩进、行长度、花括号风格）、命名（各语言的 casing 规则）、语言惯用法（JS 中用 `const`/`let` 代替 `var`，Go 中用 `defer` 清理等）
+- 检查导入组织 — 未使用导入、顺序错误、缺少分组
+- 对每项发现分类：可自动修复（运行格式化器）还是需要手动更改
+
+## 何时被调用
+
+- 以 `$review` 在实现后请求轻量风格审查时
+- 团队希望在合并前快速确认格式化器合规性时
+- 大规模重构后命名或导入模式可能已混乱时
+- `code-reviewer` 将风格指摘推迟到专项审查时
+
+## 输入
+
+- 项目配置文件（`.eslintrc`、`.prettierrc`、`tsconfig.json`、`pyproject.toml` 等）
+- 通过 Glob·Read 读取的待审查源文件
+- 项目配置的格式化器执行结果
+
+## 输出
+
+- 包含整体状态（PASS / MINOR ISSUES / MAJOR ISSUES）、附 `file:line` 引用和 MAJOR/TRIVIAL 严重程度标签的发现列表、适用时的单条自动修复命令的风格审查报告
+
+## 范围限制
+
+- 不涉及逻辑正确性、安全、性能 — 超出范围
+- 不指摘无法在项目配置中找到依据的个人偏好
+- 专注于 CRITICAL·MAJOR 违规，如 tab/空格混用、严重不一致的命名。不处理琐碎事项
+
+## 相关代理
+
+- [quality-reviewer](/zh/docs/agents/review/quality-reviewer) — 逻辑与可维护性审查
+- [code-reviewer](/zh/docs/agents/review/code-reviewer) — 将风格作为次要内容的综合审查

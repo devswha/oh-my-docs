@@ -1,0 +1,50 @@
+---
+title: $doctor
+description: A utility skill that diagnoses the OMX installation state and environment
+---
+
+Invoke with `$doctor`.
+
+Checks the OMX installation, dependencies, environment variables, and agent connection status. The first skill to run when something feels off and you don't know where the problem is.
+
+## When to use
+
+- After a fresh OMX install to confirm everything is working
+- When an agent is unresponsive or behaving unexpectedly
+- When an update seems to have broken the environment
+- When you need a snapshot of current state before filing a support request
+
+## Commands
+
+```bash
+$doctor
+$doctor --verbose
+$doctor --fix
+```
+
+`--fix` automatically resolves issues that can be fixed. For issues that can't be fixed automatically, it explains the steps to resolve them.
+
+## Checks
+
+| Item | Description |
+|---|---|
+| OMX version | Current installed version vs latest |
+| Node.js version | Whether required version is met |
+| Environment variables | API keys and config file presence |
+| Agent connections | Claude and Gemini bridge responsiveness |
+| MCP servers | Active MCP server status |
+| Hook configuration | Whether hooks are registered in settings.json |
+
+## Reading the output
+
+- `OK` — healthy
+- `WARN` — working but not on the recommended configuration
+- `ERROR` — needs immediate attention
+
+If there are `ERROR` entries, try `$doctor --fix` first. If it doesn't resolve, attach the output and file an issue.
+
+## Related docs
+
+- [Getting started](/docs/getting-started) — initial installation guide
+- [`$configure-notifications`](/docs/skills/utility/configure-notifications) — notification setup
+- [Utility skills list](/docs/skills/utility)

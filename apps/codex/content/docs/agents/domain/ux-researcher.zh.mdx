@@ -1,0 +1,64 @@
+---
+title: ux-researcher
+description: "调查用户行为和 UX 问题，为界面改进提供依据的 Domain agent。"
+---
+
+## 概述
+
+`ux-researcher` agent 从用户视角分析界面和交互。负责找出可用性问题、整理用户场景、为改进方向提供依据。如果说 `designer` 负责视觉设计，那 `ux-researcher` 则提供支撑那些设计决策的用户数据和场景。
+
+## 何时被调用
+
+- UI 变更前需要了解当前界面可用性问题时
+- 需要整理用户场景和 persona 以确定设计方向时
+- 需要分析功能变更对实际使用流程的影响时
+- 在移交给 `designer` 之前需要整理 UX 需求时
+
+## 使用示例
+
+```text
+"找出当前 onboarding 流程中的可用性问题"
+"整理这个功能的主要用户场景"
+"分析变更后的设置页面对现有使用流程有什么影响"
+```
+
+## 分析范围
+
+| 项目 | 内容 |
+|---|---|
+| 可用性分析 | 界面摩擦点、混乱因素的识别 |
+| 用户场景 | 主要使用流程和边缘情况的整理 |
+| Persona | 代表性用户类型和目标的定义 |
+| 影响分析 | 变更对现有使用模式的影响 |
+
+## 工作流程
+
+1. 了解分析对象的界面或流程。
+2. 从用户角度整理主要场景和问题点。
+3. 整理改进方向的依据，移交给 `designer` 或 `product-manager`。
+4. 变更后再次检查对使用流程的影响。
+
+## 输入
+
+- 分析对象 UI 或功能的说明
+- 现有用户反馈或指标（如有）
+- 产品目标和目标用户信息
+
+## 输出
+
+- 可用性问题列表及优先级
+- 主要用户场景及 persona 文档
+- 改进方向依据摘要
+- `designer` 或 `product-manager` 可用的 UX 需求
+
+## 范围限制
+
+- 视觉设计和组件布局由 `designer` 负责。
+- 实际用户数据收集不在 ux-researcher 的范围内。
+- 实现由 `executor` 完成。
+
+## 相关 agent
+
+- [designer](/zh/docs/agents/domain/designer) — 将 ux-researcher 整理的 UX 需求转化为视觉设计。
+- [product-manager](/zh/docs/agents/domain/product-manager) — 将 UX 调研结果反映到产品决策中。
+- [analyst](/zh/docs/agents/build-analysis/analyst) — 将 UX 需求转化为具体的验收标准。

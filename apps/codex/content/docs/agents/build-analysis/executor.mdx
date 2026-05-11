@@ -1,0 +1,79 @@
+---
+title: "executor"
+description: "Implementation agent that writes code, runs tests, and commits changes from a concrete plan."
+---
+
+The `executor` agent is the primary implementation worker in an OMX workflow. It takes a concrete, file-level plan and carries it through to a verified result — writing code, running diagnostics, fixing failures, and marking tasks complete. It does not stop at partial progress; it keeps going until the task is fully resolved.
+
+## When invoked
+
+| Situation | How it's triggered |
+|---|---|
+| Execution phase in `$autopilot`, `$ralph`, `$team`, and `$ralplan` | Automatic |
+| When `planner` completes a plan with target files and expected outcomes | Automatic |
+| When `build-fixer` or `debugger` has narrowed down the root cause and repair strategy | Delegated from parent agent |
+| Handling independent task branches in a `$ultrawork` parallel pipeline | Automatic |
+
+## Example prompts
+
+```text
+"Implement based on the files listed in this plan"
+"Translate the approved auth refactor into actual code"
+"Finish this failing plan step through to completion"
+```
+
+## Task classification
+
+| Class | Criteria |
+|---|---|
+| trivial | Single file, clearly scoped change |
+| scoped | 2–5 files, boundaries are clear but verification is needed |
+| complex | Touches multiple systems, full verification is critical |
+
+This classification determines the depth of exploration and verification.
+
+## Work process
+
+1. Confirm target files and expected outcomes from the plan
+2. Explore the repository first if needed to understand existing patterns
+3. Implement with a small diff
+4. Run diagnostics on every modified file
+5. Run tests and build to confirm they actually pass
+6. Reflect results in state and commit
+
+Small and precise to completion takes priority over large and clever.
+
+## Verification criteria
+
+Before claiming completion, confirm at minimum:
+
+- Zero diagnostic errors on modified files
+- Relevant tests and build actually pass
+- No debug code or temporary TODOs remain
+- No significant deviation from existing codebase patterns
+
+## Inputs
+
+- A plan document from `planner` or `ralplan` (tasks, target files, expected outcomes)
+- Active `.omx/state/` session context indicating which tasks are pending
+- Optional: LSP diagnostics output, test failure logs, or prior `explore` results
+
+## Outputs
+
+- Code changes across the files named in the plan
+- Inline verification evidence such as passing tests and clean LSP diagnostics
+- One or more descriptive git commits
+- Updated `.omx/state/` entries marking completed tasks
+
+## Limits
+
+- Works from a plan — does not improvise system architecture or introduce unrequested abstractions
+- Does not skip tests or force-push branches under any circumstances
+- Does not claim completion without showing fresh build, diagnostic, or test output as evidence
+
+## Related agents
+
+- [planner](/docs/agents/build-analysis/planner) — produces the task plan that `executor` consumes
+- [verifier](/docs/agents/build-analysis/verifier) — independently confirms that the executor's output meets acceptance criteria
+- [build-fixer](/docs/agents/domain/build-fixer) — handles stubborn build or type errors that block the executor
+- [debugger](/docs/agents/build-analysis/debugger) — performs root-cause analysis when executor hits an unexpected failure

@@ -1,0 +1,43 @@
+---
+title: security-reviewer
+description: Security vulnerability detection agent covering OWASP Top 10, secrets exposure, trust boundaries, and authentication/authorization flows
+---
+
+The `security-reviewer` agent evaluates code against the OWASP Top 10 as a baseline, scans for hardcoded secrets, audits dependencies, and assesses every trust boundary in the change. Findings are prioritized by the product of severity, exploitability, and blast radius. The agent always provides secure code examples in the same language as the vulnerable code, making remediation concrete rather than theoretical.
+
+## Role
+
+- Evaluate all applicable OWASP Top 10 categories against the code under review
+- Run a secrets scan (API keys, passwords, tokens) and a dependency audit (`npm audit`, `pip-audit`, `cargo audit`)
+- Assess authentication, authorization, input validation, injection vectors, and sensitive data handling
+- Prioritize findings by severity × exploitability × blast radius and provide language-matched remediation examples
+
+## When called
+
+- By `$security-review` when a dedicated security pass is requested
+- On pull requests that add or modify authentication, authorization, API endpoints, or database queries
+- When a `code-reviewer` pass surfaces a potential vulnerability that needs deeper analysis
+- Before merging changes that handle payment data, PII, file uploads, or session management
+
+## Inputs
+
+- Source files under review, accessed via Read and Grep
+- Git history checked for secrets accidentally committed in prior commits
+- Dependency manifests for automated audit tools
+
+## Outputs
+
+- A security review report with risk level (HIGH / MEDIUM / LOW), finding count by severity, and per-finding details: location (`file:line`), OWASP category, exploitability, blast radius, and a secure code example
+- A security checklist confirming secrets, injection, authentication, authorization, and dependencies were evaluated
+
+## Limits
+
+- Read-only — does not implement fixes; findings are handed to `executor` for remediation
+- Does not conflate code quality or style issues with security findings
+- Does not approve code with unresolved CRITICAL or HIGH security findings
+
+## Related agents
+
+- [code-reviewer](/docs/agents/review/code-reviewer) — comprehensive two-stage review that includes a security check
+- [quality-reviewer](/docs/agents/review/quality-reviewer) — logic and maintainability review for non-security defects
+- [executor](/docs/agents/build-analysis/executor) — implements the remediations recommended by the security review

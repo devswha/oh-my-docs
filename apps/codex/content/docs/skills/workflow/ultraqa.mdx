@@ -1,0 +1,54 @@
+---
+title: $ultraqa
+description: Autonomous QA cycle that automatically repeats diagnose-fix-rerun until tests, build, and lint pass
+---
+
+`$ultraqa` is an autonomous QA loop that doesn't stop at the first failure. It runs quality checks, and when they fail, an Architect agent diagnoses the root cause, an Executor agent applies the fix, and the check runs again. It repeats up to 5 cycles, and exits early if the same failure appears 3 times in a row, treating it as a structural problem.
+
+## When to use it
+
+- When you want to pass build, tests, lint, or typecheck without manually debugging each failure
+- When inheriting a broken codebase and need a systematic first-pass fix
+- When automating verification after completing a feature, before review
+- When you want to follow along with per-cycle progress logs
+
+Trigger keywords: "ultraqa", "fix until tests pass", "qa cycle", "make the build pass"
+
+## How to invoke
+
+```
+codex
+> ultraqa --tests
+```
+
+```
+codex
+> $ultraqa --build
+```
+
+```
+codex
+> $ultraqa --custom "no TypeScript errors in packages/api"
+```
+
+Available goal flags: `--tests`, `--build`, `--lint`, `--typecheck`, `--custom "pattern"`, `--interactive`
+
+## How it works
+
+Parses the goal flag and starts cycle 1. Runs the appropriate command and checks the exit code or output pattern. If already passing, exits immediately with a success message.
+
+If it fails, the Architect agent analyzes the output and identifies the root cause with specific fix recommendations. The Executor agent applies the fix precisely, the counter increments, and the check runs again. Repeats until the goal is met, 5 cycles are exhausted, or the same failure appears 3 times in a row.
+
+Each cycle outputs a `[ULTRAQA Cycle N/5]` progress line. State is written to `.omx/state/ultraqa-state.json` and cleared on completion or cancellation.
+
+## Outputs
+
+- Fixed source files from the Architect-Executor repair loop
+- Per-cycle progress log with failure summaries and fix descriptions
+- On success: exit message with cycle count; if goal not met: root-cause diagnosis message
+
+## Related skills
+
+- [`$ralph`](/docs/skills/workflow/ralph) — persistent verification loop that can wrap ultraqa cycling
+- [`$autopilot`](/docs/skills/workflow/autopilot) — full pipeline that uses ultraqa as its QA phase
+- [`$tdd`](/docs/skills/workflow/tdd) — test-first development for writing failing tests before implementation

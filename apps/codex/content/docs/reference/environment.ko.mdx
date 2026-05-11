@@ -1,0 +1,51 @@
+---
+title: "환경"
+description: "OMX 환경 변수 레퍼런스 — API 키, kill switch, 상태 디렉터리 override"
+---
+
+OMX는 시작 시 환경 변수를 읽습니다. 셸 프로필에 `export`해 두면 모든 세션에서 자동 적용됩니다.
+
+## 필수
+
+| 변수 | 설명 |
+|---|---|
+| `OPENAI_API_KEY` | OpenAI API 키. 없으면 CLI가 시작되지 않습니다. |
+
+## OpenClaw 관련
+
+| 변수 | 기본값 | 설명 |
+|---|---|---|
+| `OMX_OPENCLAW` | unset | `1`로 설정하면 OpenClaw dispatch pipeline을 활성화합니다. 설정하지 않으면 훅 이벤트가 어떤 gateway에도 전달되지 않습니다. |
+| `OMX_OPENCLAW_COMMAND` | unset | command 타입 gateway(예: `clawdbot` agent launcher)를 활성화합니다. `OMX_OPENCLAW=1`이 필요합니다. |
+| `OMX_OPENCLAW_COMMAND_TIMEOUT_MS` | `5000` | command gateway 호출 타임아웃(ms). `clawdbot` agent workflow에는 `120000` 이상으로 늘려 쓰세요. |
+| `HOOKS_TOKEN` | unset | OpenClaw HTTP gateway 인증에 사용하는 bearer token |
+
+## Kill switch
+
+| 변수 | 설명 |
+|---|---|
+| `OMX_SKIP_HOOKS` | 비활성화할 hook 이름 목록(쉼표 구분). 전체 비활성화는 `*`. 디버깅이나 CI에서 raw Codex 동작을 확인할 때 씁니다. |
+| `DISABLE_OMX` | 비어 있지 않은 값이면 OMX 확장 레이어 전체를 끕니다. Codex가 OMX 미설치 상태처럼 동작합니다. |
+
+## 상태 디렉터리 override
+
+| 변수 | 기본값 | 설명 |
+|---|---|---|
+| `OMX_STATE_DIR` | `.omx/state/` | OMX가 세션/팀 상태를 기록하는 디렉터리를 변경합니다. CI나 multi-worktree 환경에서 유용합니다. |
+
+## 셸 프로필 예시
+
+```bash
+# Required
+export OPENAI_API_KEY="sk-..."
+
+# OpenClaw (optional — enable if you use hook notifications)
+export OMX_OPENCLAW=1
+export OMX_OPENCLAW_COMMAND=1
+export OMX_OPENCLAW_COMMAND_TIMEOUT_MS=120000
+export HOOKS_TOKEN="your-token-here"
+```
+
+## 관련 문서
+
+- [설정](/ko/docs/reference/configuration) — 환경 변수와 함께 쓰는 설정 파일과 CLI 플래그

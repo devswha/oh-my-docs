@@ -1,0 +1,40 @@
+---
+title: $skill
+description: "A skill for managing local skills — list, add, and remove."
+---
+
+## Overview
+
+`$skill` manages skills installed in the current environment. Use it to see what skills are available, add new ones, or remove existing ones.
+
+## Example
+
+```text
+$skill list
+$skill add my-workflow
+$skill remove my-workflow
+```
+
+| Command | Description |
+|---|---|
+| `$skill list` | Print the full list of installed skills |
+| `$skill add <name>` | Add a new skill |
+| `$skill remove <name>` | Remove a skill |
+
+## When to use
+
+- When you want to check the list of currently available skills
+- When adding or removing a custom skill
+- When checking that installed skills are placed correctly
+
+## When to avoid
+
+- When you want to view a skill's content or check its usage → use `$help <skill-name>`
+- For full environment diagnostics → use `$doctor`
+- For changing skill install path configuration → use `$omx-setup`
+
+## Related
+
+- [$help](/docs/skills/utility/help) — check skill usage
+- [$omx-setup](/docs/skills/utility/omx-setup) — install and update skill files
+- [Skills overview](/docs/skills) — full skill catalog

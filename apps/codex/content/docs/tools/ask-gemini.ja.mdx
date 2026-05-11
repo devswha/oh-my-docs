@@ -1,0 +1,33 @@
+---
+title: "Ask Gemini"
+description: "アクティブな Codex コンテキスト外で Gemini にサブ質問を委任するブリッジ"
+---
+
+Ask Gemini は、アクティブな OMX セッションが Gemini にサブ質問を送り、回答を受け取るときに使うブリッジです。Claude ブリッジと同様に、新しい subprocess コンテキストで実行されるため、会話全体のコンテキストよりもサブ質問そのものに集中した回答を得られます。
+
+## いつ使うか
+
+- 設計や実装の質問に別のモデルの視点が必要なとき
+- Gemini の large-context 処理が有効な場合
+- アプローチを確定する前に Claude または Codex と素早く比較したいとき
+- 現在のコンテキストと切り離して処理すべき委任タスク
+
+## コマンド
+
+```bash
+omx ask gemini "Summarize the tradeoffs between RSA and ECDSA for JWT signing"
+omx ask gemini --prompt "Review this migration plan for missing risks"
+omx ask gemini --agent-prompt researcher "Extract the key constraints from this API documentation"
+```
+
+## なぜブリッジが必要か
+
+OMX は Codex 中心に設計されていますが、すべてのサブ質問を 1 つのモデルが処理すべきとは想定していません。Ask Gemini を使えば、セッションを破棄したり CLI 間でコンテキストを手動で移したりすることなく、別のモデルを参照できます。
+
+現在の OMX ワークフローが質問に直接答えられる場合は、メインレーンに留まる方がシンプルです。意図的に必要な場合のみ使う方が良いです。
+
+## 関連ドキュメント
+
+- [CLI Bridges](/ja/docs/integrations/cli-bridges) — cross-CLI consultation パターンの概要
+- [ask-gemini skill](/ja/docs/skills/utility/ask-gemini) — ユーザー向けワークフローガイド
+- [Ask Claude](/ja/docs/tools/ask-claude) — Claude を対象とする同等のブリッジ

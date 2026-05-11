@@ -1,0 +1,51 @@
+---
+title: "CLI Bridges"
+description: "通过 `$ask-claude`、`$ask-gemini` 与 team-level mixed CLI worker 实现的跨 CLI 自问流程。"
+---
+
+CLI bridge 是将问题委托给 OMX 会话之外的其他 AI CLI 或模型的轻量命令。当前直接提供的 bridge skill 是 `$ask-claude` 和 `$ask-gemini`；更广的 multi-model 工作应通过明确的 team/workflow orchestration 处理，而不是依赖未文档化的 bridge 名称。
+
+## 概述
+
+每个 bridge 以 fresh subprocess 启动目标 CLI binary，发送问题或任务，将响应返回当前 OMX 会话。subprocess 不继承当前上下文，全新启动，因此 bridge 调用是与 active working context 隔离的 clean-room query。这正是在不污染当前上下文的情况下需要外部视角时的用武之地。
+
+## Bridge 模式
+
+- **`$ask-claude`** — 将问题直接发送给 Claude CLI subprocess。适用于快速查询、摘要，以及在不影响 Codex 上下文的情况下获取 Claude 推理结果。
+- **`$ask-gemini`** — 启动 Gemini CLI subprocess。特别适合大上下文查询或比较 Google 模型的视角。
+- **Team-level mixed CLI worker** — 需要更广 multi-model coverage 时，请有意配置 team worker，并在主 OMX workflow 中完成综合。
+
+## 示例
+
+单模型自问：
+
+```
+codex
+> $ask-claude "what is the recommended retry strategy for idempotent HTTP endpoints?"
+```
+
+```
+codex
+> $ask-gemini "summarize the tradeoffs between RSA and ECDSA for JWT signing"
+```
+
+协调式 multi-model review：
+
+```
+codex
+> $team 2:executor "比较 public REST API rate limiter 的 Claude/Gemini-informed options"
+```
+
+不经过 skill 层，直接从 shell 调用的方式：
+
+```bash
+# Ask Claude directly from a shell script
+echo "explain this error: $(cat error.log)" | claude --print
+```
+
+## 相关文档
+
+- [ask-claude](/zh/docs/skills/utility/ask-claude) — `$ask-claude` skill 参考
+- [ask-gemini](/zh/docs/skills/utility/ask-gemini) — `$ask-gemini` skill 参考
+- [MCP](/zh/docs/integrations/mcp) — 用于结构化 tool invocation 的 Model Context Protocol
+- [OpenClaw](/zh/docs/integrations/openclaw) — 用于跨会话通知的事件 bridge

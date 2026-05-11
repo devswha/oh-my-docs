@@ -1,0 +1,32 @@
+---
+title: $git-master
+description: "A skill that delegates git operations to an agent — commits, branching, and history cleanup."
+---
+
+## Overview
+
+`$git-master` delegates git-related tasks to the `git-master` agent. Instead of handling commit message writing, branch management, history cleanup, and PR preparation yourself, the agent takes care of it.
+
+## When to use
+
+- After implementation is done and you need to create commits or a PR
+- When the commit history is messy and needs cleanup
+- When you need to decide on a branching strategy or merge approach
+- When you need to split multiple changes into logically separate commits
+
+## When to avoid
+
+- A simple `git add && git commit` one-liner — doing it directly is faster.
+- Temporarily stashing work in progress — use `git stash` directly.
+
+## Example
+
+```text
+$git-master "split the changes so far into commits by feature"
+$git-master "prepare the PR and clean up the commit messages"
+$git-master "create a branch from main and start with feature/auth"
+```
+
+## Related agent
+
+- [git-master](/docs/agents/domain/git-master) — detailed description of the agent this skill delegates to

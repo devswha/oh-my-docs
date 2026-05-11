@@ -1,0 +1,57 @@
+---
+title: $ralplan
+description: Planning skill that loops until planner, architect, and critic all agree
+---
+
+## TL;DR
+
+`$ralplan` has planner, architect, and critic — three agents — iteratively review a plan until they all agree. It's the step that locks in tradeoffs right before implementation.
+
+## How to invoke
+
+```
+$ralplan "approve the safest implementation path"
+```
+
+Also activated by magic keywords `ralplan`, `consensus plan`.
+
+## When to use it
+
+| Good fit | Avoid |
+|---|---|
+| Work involving architecture decisions | Work that only needs a quick draft |
+| When the wrong direction is expensive | Small features, short-term tasks |
+| Need to explicitly review multiple tradeoffs | |
+
+## Internal flow
+
+1. **planner** — drafts implementation steps and order.
+2. **architect** — reviews boundaries and interfaces from a system design perspective.
+3. **critic** — flags risks and missing pieces.
+4. If there are objections, revise and review again. When all agree, finalize the plan.
+
+## Where it fits in the standard flow
+
+```
+$deep-interview "..."      ← confirm requirements
+$ralplan "..."             ← consensus here
+$ralph "..."               ← execute
+```
+
+## `--deliberate` option
+
+For high-risk work, add `--deliberate`. It adds a pre-mortem, unit/integration/e2e test plans, and operational impact analysis.
+
+```
+$ralplan --deliberate "plan replacement of legacy auth system"
+```
+
+## Difference from `$plan`
+
+`$plan` has the planner alone quickly draft a plan. `$ralplan` reaches consensus through three agents. When stability matters more than speed, use `$ralplan`.
+
+## Related skills
+
+- [`$deep-interview`](/docs/skills/workflow/deep-interview) — clarify requirements before planning
+- [`$ralph`](/docs/skills/workflow/ralph) — execute the consensus plan
+- [`$plan`](/docs/skills/workflow/plan) — solo planning (quick draft)

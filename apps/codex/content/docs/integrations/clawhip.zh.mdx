@@ -1,0 +1,58 @@
+---
+title: "Clawhip"
+description: "定义 OMX hook 事件 envelope 格式与 normalized event 名称的事件契约层。"
+---
+
+Clawhip 是 OMX raw hook pipeline 与 downstream consumer（OpenClaw gateway、notification broker、interop agent）之间的事件契约。它固定了 canonical envelope 格式和一组稳定的 normalized event 名称，consumer 无需直接解析 OMX 内部事件字符串。
+
+## 概述
+
+这不是独立进程，而是 schema 和 routing contract。OMX 触发 hook 时，事件 envelope 已符合 clawhip contract，包含版本化的 schema、带 normalized field 的 `context` 块，以及 `context.normalized_event` 字符串。
+
+`context.normalized_event` 是将 OMX 内部使用的 `session-start`、`session-idle` 等名称映射为 consumer 可稳定依赖的小型 vocabulary 后的值。
+
+## OMX 的使用方式
+
+- **正规化事件路由** — consumer 以 `context.normalized_event` 而非 raw `event` 字段作为分支依据。支持的值：`started`、`blocked`、`finished`、`failed`、`retry-needed`、`pr-created`、`test-started`、`test-finished`、`test-failed`、`handoff-needed`。
+- **envelope contract** — 所有事件包含 `schema_version: "1"`、`event`、`timestamp`、`source`、`context` 块。`session_id`、`thread_id`、`turn_id`、`mode` 等标识符仅在存在时才包含。
+- **context 块** — 包含 `normalized_event`、`session_name`、`repo_path`、`branch`、`issue_number`、`pr_number`、`pr_url`、`command`、`tool_name`、`status`、`error_summary` 字段。
+- **noise control** — 重复 suppression 以 `thread_id + turn_id + type` 组合为基准。idle 事件应用 idle cooldown gate。`retry-needed`、`handoff-needed` 等 operational event 与会话生命周期 completion 分开处理。
+
+## 示例
+
+session-end 事件的 clawhip envelope：
+
+```json
+{
+  "schema_version": "1",
+  "event": "session-end",
+  "timestamp": "2025-04-19T10:00:00.000Z",
+  "source": "omx",
+  "session_id": "omx-abc123",
+  "context": {
+    "normalized_event": "finished",
+    "session_name": "omx-abc123",
+    "repo_name": "my-app",
+    "branch": "feat/new-api",
+    "status": "success"
+  }
+}
+```
+
+以 `normalized_event` 为基准的 consumer 路由：
+
+```js
+switch (event.context.normalized_event) {
+  case "finished": handleSuccess(event); break;
+  case "failed":   handleFailure(event); break;
+  case "blocked":  escalate(event);      break;
+}
+```
+
+关键在于以 `context.normalized_event`（`"finished"`）而非 raw `event` 字段（`"session-end"`）作为分支依据。即使 OMX 修改内部事件名称，consumer 也不受影响。
+
+## 相关文档
+
+- [OpenClaw](/zh/docs/integrations/openclaw) — 将 clawhip envelope 转发至 gateway 的 dispatch pipeline
+- [MCP](/zh/docs/integrations/mcp) — OMX skill 和 hook 中调用的 Model Context Protocol 服务器
+- [契约](/zh/docs/reference/contracts) — OMX prompt guidance / team mutation contract 说明

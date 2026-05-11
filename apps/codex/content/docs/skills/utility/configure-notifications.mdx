@@ -1,0 +1,50 @@
+---
+title: $configure-notifications
+description: A utility skill that sets up notification channels such as Discord, Slack, and Telegram
+---
+
+Invoke with `$configure-notifications`.
+
+Sets up channels to receive notifications when OMX tasks complete, error, or change state. Useful when running long tasks like `$ralph` in the background and you don't want to miss when they finish.
+
+## When to use
+
+- When running long tasks like `$ralph` or `$autopilot` while working on something else
+- When you need to share OMX task status to a team channel
+- When you need an immediate alert on error
+
+## When to avoid
+
+- For short tasks, waiting without notifications is usually faster
+
+## Commands
+
+```bash
+$configure-notifications
+$configure-notifications discord
+$configure-notifications slack
+$configure-notifications telegram
+```
+
+Running without arguments opens an interactive channel selector.
+
+## Supported channels
+
+| Channel | What you need |
+|---|---|
+| Discord | Webhook URL |
+| Slack | Webhook URL or Bot Token |
+| Telegram | Bot Token + Chat ID |
+
+## What events you receive
+
+- Task completion
+- Error occurrence and retries
+- Step-by-step progress (ralph, autopilot)
+- Pause points requiring manual confirmation
+
+## Related docs
+
+- [`$ralph`](/docs/skills/workflow/ralph) — long-running repeating execution mode
+- [`$autopilot`](/docs/skills/workflow/autopilot) — full end-to-end execution
+- [Utility skills list](/docs/skills/utility)

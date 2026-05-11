@@ -1,0 +1,44 @@
+---
+title: "Visual"
+description: "截图对比与图像分析 — 支撑 `$visual-verdict` 等 visual QA 工作流的底层功能"
+---
+
+Visual 是支撑将生成的 UI 与参照图像对比、并将差异转化为下一步修改的工作流的底层功能。
+
+大多数情况下，不直接调用此功能，而是通过 [`$visual-verdict`](/zh/docs/skills/workflow/visual-verdict) 等上层工作流来使用。
+
+## 评估什么
+
+OMX 的 visual comparison 通常检查以下项目。
+
+- 整体布局结构
+- 间距与对齐
+- 字体排版与字重
+- 颜色差异
+- 组件尺寸与视觉层级
+- 迭代过程中产生的回归
+
+目的不在于判定本身，而在于**提取下一步修改项**。
+
+## 典型流程
+
+1. 准备或捕获参照图像。
+2. 捕获当前生成的截图。
+3. 对比两者。
+4. 将差异整理为实际修改项。
+5. 反复迭代直到结果满足要求。
+
+这一流程在 `$ralph`、`$ultraqa`、UI cloning 循环中自然使用。
+
+## Tool surface vs Workflow skill
+
+- **Visual** — 比较功能本身
+- **`$visual-verdict`** — 将此功能封装为可重复 QA 步骤的用户工作流
+
+如果想了解 OMX 内部结构，本页是起点。如果想直接使用 visual QA，skill 页面更快捷。
+
+## 相关文档
+
+- [`$visual-verdict`](/zh/docs/skills/workflow/visual-verdict) — 面向用户的截图对比工作流
+- [`$web-clone`](/zh/docs/skills/workflow/web-clone) — 以 visual comparison 作为迭代门控的工作流
+- [HUD](/zh/docs/tools/hud) — 监控长时间 UI 验证循环时使用的工具

@@ -1,0 +1,56 @@
+---
+title: $wiki
+description: セッションをまたいで蓄積されるプロジェクト知識ベース — .omx/wiki/ 以下にマークダウンページとして保存され、検索・追加・点検が可能
+---
+
+`$wiki` は `.omx/wiki/` 以下にマークダウン知識ベースを維持します。各ページはタグとカテゴリが付いた通常のマークダウンファイルです。あるセッションで発見した内容が次のセッションで検索可能なコンテキストとして残るため、同じコードベースを再探索するコストが減ります。
+
+## いつ使うか
+
+- アーキテクチャ決定、デバッグ結果、繰り返しパターンを次のセッションのために保存するとき
+- 調査を始める前にプロジェクト wiki にすでにある内容を先に確認するとき
+- 外部ドキュメント、スペック、リサーチ資料をプロジェクト知識ベースに取り込むとき
+- 壊れたリンク、欠けているタグ、古くなったページを点検するとき
+
+トリガーキーワード: "wiki add", "wiki query", "wiki lint", "add to wiki", "search wiki"
+
+## 呼び出し
+
+```
+codex
+> wiki add "Auth uses JWT with 15-minute access tokens and 7-day refresh tokens stored in httpOnly cookies"
+```
+
+```
+codex
+> wiki query "authentication flow"
+```
+
+```
+codex
+> $wiki lint
+```
+
+## 動作方法
+
+5 つのコア操作を提供します。
+
+- `wiki_add` — タイトル・内容・タグ・カテゴリを指定して新しいページを作ります。カテゴリは architecture、decision、pattern、debugging、environment、session-log、reference、convention の中から選びます。
+- `wiki_query` — キーワードとタグマッチングでページを検索して順位別に返します。ベクター埋め込みがないため、具体的な用語で検索するときに結果が最もよくなります。
+- `wiki_ingest` — 外部ドキュメントやスペックファイルを受け取り、分類されたページに分けて取り込みます。
+- `wiki_lint` — `[[ページ名]]` 形式の壊れた内部リンク、必須タグ欠け、古くなったページを点検します。
+- `wiki_read`、`wiki_list`、`wiki_delete` — ページを直接管理。
+
+全ページは `.omx/wiki/` 以下のマークダウンファイルとして保存され、共有インデックスは `.omx/wiki/index.md` に維持されます。ツールなしでも開けてリポジトリと一緒に移動します。
+
+## 出力
+
+- `.omx/wiki/{slug}.md` — 個別の知識ページ
+- `.omx/wiki/index.md` — 全ページのタグとカテゴリが含まれた自動管理インデックス
+- `.omx/wiki/log.md` — 追加・修正・削除操作の append-only ログ
+- 壊れたリンク、欠けているタグ、古くなったページを列挙した lint レポート
+
+## 関連スキル
+
+- [`$deepsearch`](/ja/docs/skills/workflow/deepsearch) — 結果を wiki に保存する価値があるコードベース深層検索
+- [`$trace`](/ja/docs/skills/workflow/trace) — session-log ページとして wiki に取り込めるセッション実行記録

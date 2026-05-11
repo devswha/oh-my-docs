@@ -1,0 +1,41 @@
+---
+title: $omx-setup
+description: "A skill that installs or updates OMX prompts, skills, and configuration."
+---
+
+## Overview
+
+`$omx-setup` initializes or updates the OMX environment. It places skill files, agent prompts, and hook configuration in the correct install paths. Use it for a fresh install and to sync configuration after an upgrade.
+
+From the CLI, `omx setup` runs the same thing.
+
+## Example
+
+```text
+$omx-setup
+$omx-setup --scope user
+$omx-setup --scope project
+```
+
+| Option | Description |
+|---|---|
+| (none) | Install to the default scope |
+| `--scope user` | Global install to `~/.codex/` |
+| `--scope project` | Project-scoped install to `.codex/` |
+
+## When to use
+
+- When installing OMX for the first time
+- When syncing configuration after upgrading the `oh-my-codex` package
+- When replicating an existing environment on a new machine
+- When skills or hooks are not working correctly and you need to reinstall
+
+## When to avoid
+
+- Diagnosing environment issues — if something seems broken, run `$doctor` before `$omx-setup`.
+
+## Related
+
+- [Getting started](/docs/getting-started) — full installation flow
+- [$doctor](/docs/skills/utility/doctor) — diagnose installation state and configuration issues
+- [Quick commands](/docs/reference/quick-commands) — `omx setup` CLI reference

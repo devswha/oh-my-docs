@@ -1,0 +1,33 @@
+---
+title: "Ask Gemini"
+description: "在活动 Codex 上下文之外将子问题委托给 Gemini 的桥接工具"
+---
+
+Ask Gemini 是活动 OMX session 向 Gemini 发送子问题并获取回答时使用的桥接工具。与 Claude 桥接一样，在新的 subprocess 上下文中执行，因此能够获得专注于子问题本身而非整个对话上下文的回答。
+
+## 何时使用
+
+- 设计或实现问题需要另一个模型的视角时
+- Gemini 的 large-context 处理能力有用的情况
+- 在确定方案前想快速与 Claude 或 Codex 对比时
+- 需要与当前上下文隔离处理的委托任务
+
+## 命令
+
+```bash
+omx ask gemini "Summarize the tradeoffs between RSA and ECDSA for JWT signing"
+omx ask gemini --prompt "Review this migration plan for missing risks"
+omx ask gemini --agent-prompt researcher "Extract the key constraints from this API documentation"
+```
+
+## 为何需要桥接
+
+OMX 以 Codex 为中心设计，但并不假设所有子问题都必须由同一个模型处理。使用 Ask Gemini，无需放弃当前 session 或在 CLI 之间手动传递上下文，即可参考其他模型的回答。
+
+如果当前 OMX 工作流能够直接回答问题，留在主线上更简单。只在确实有意图地需要时使用。
+
+## 相关文档
+
+- [CLI Bridges](/zh/docs/integrations/cli-bridges) — cross-CLI consultation 模式概述
+- [ask-gemini skill](/zh/docs/skills/utility/ask-gemini) — 用户工作流指南
+- [Ask Claude](/zh/docs/tools/ask-claude) — 针对 Claude 的同等桥接工具

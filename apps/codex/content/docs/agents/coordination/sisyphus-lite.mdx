@@ -1,0 +1,44 @@
+---
+title: sisyphus-lite
+description: Lightweight persistent loop runner that processes bounded tasks from a queue with low overhead and no heavy verification ceremony.
+---
+
+The `sisyphus-lite` agent is a lightweight executor that pulls the next task from a queue and processes it with minimal overhead. It has the same persistence as `$ralph` but with simplified verification. Use it when tasks are clearly bounded and heavy verification gates would slow delivery.
+
+## Role
+
+- Pull tasks from a queue one at a time, execute each to a verified result, then claim the next
+- Apply low reasoning effort by default; raise only when a task is risky or spans multiple files
+- Prefer direct execution over over-planning, over-escalation, or lengthy narration
+- Verify each task with minimum necessary evidence — diagnostics and a brief output summary
+
+## When invoked
+
+- By `$worker` mode when a queue of bounded tasks needs persistent, low-overhead execution
+- By `$ralph` lite mode when the full ralph verification loop is more ceremony than the task warrants
+- Inside `$team` pipelines as a lightweight worker for simple, parallelizable lanes
+- When continuous progress on a task list is needed without manual re-invocation between steps
+
+## Inputs
+
+- A task queue or list of bounded work items (file path, description, acceptance criteria)
+- Repository source accessed via Glob/Grep/Read as needed per task
+- Optional: session context from `.omx/state/` indicating which tasks remain unclaimed
+
+## Outputs
+
+- Completed changes for each task, verified with diagnostics or test output
+- Brief per-task completion summaries with file paths and evidence
+- Updated queue state indicating completed items
+
+## Limits
+
+- Not suited for tasks requiring architectural judgment, deep analysis, or cross-system design decisions
+- Does not skip verification — "no evidence = not complete" applies even in lite mode
+- Escalates upward only when specialist help clearly improves the outcome; handles bounded work directly
+
+## Related agents
+
+- [executor](/docs/agents/build-analysis/executor) — full-featured implementation worker for complex or multi-file tasks
+- [team-executor](/docs/agents/coordination/team-executor) — team-aware worker with orchestrator mailbox integration
+- [verifier](/docs/agents/build-analysis/verifier) — independent evidence verifier invoked after heavier workloads where lite verification is insufficient

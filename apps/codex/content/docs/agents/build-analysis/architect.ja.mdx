@@ -1,0 +1,63 @@
+---
+title: architect
+description: "境界、インターフェイス、コンポーネント分解をファイルレベルの根拠とともに分析する、読み取り専用のシステム設計コンサルタントエージェント。"
+---
+
+`architect` エージェントは一般的な設計アドバイスの代わりに、実際のコードベースの根拠をもとに設計上の問題を診断します。コンテキスト収集 → 仮説立案 → コードとの交差検証の順に動き、root cause、具体的な勧告、明示的なトレードオフを整理して返します。すべての主要な主張には `file:line` の根拠が必要です。ファイルを書いたり修正したりせず、分析と勧告のみを担当します。
+
+## いつ呼ばれるか
+
+| 状況 | 呼び出し経路 |
+|---|---|
+| `$autopilot`、`$ralplan` で設計の cross-check が必要なとき | 自動 |
+| `$deep-interview` 中、構造的分析なしに答えにくい設計上の質問があるとき | 自動 |
+| `planner` や `executor` がシステム境界・インターフェイスコントラクトの問題をエスカレーションするとき | 上位エージェント要求 |
+| `executor` が予期しない失敗に遭遇し、構造的な root cause が疑われるとき | `executor` から委譲 |
+
+## 使用例
+
+```text
+"この構造で auth boundary がどこで漏れているか分析して"
+"このモジュール分解が正しいかトレードオフを整理して"
+"ralplan レビューの観点でこの設計案の最大のリスクを指摘して"
+```
+
+## 分析プロセス
+
+1. 関連するファイル、インターフェイス、依存関係の境界を収集します。
+2. 現在の構造から最も可能性の高い設計仮説を立てます。
+3. 実際のコードと交差検証しながら `file:line` の根拠を付けます。
+4. ranked recommendation とトレードオフを整理します。
+
+## 設計レビュー / consensus 役割
+
+`$ralplan` のような consensus フローではシンプルなコンサルタントよりも積極的な役割を担います。
+
+- **antithesis** — 現在の優先案に対する最も強い反論を提示
+- **tradeoff tension** — 無視できないコストや副作用を強調
+- **synthesis** — 可能であれば競合オプションの長所を保存した折衷案を提示
+
+consensus フローでは architect は設計を支持する役割ではなく、計画をより堅固にする反証・検証レイヤーに近いです。
+
+## 入力
+
+- 設計上の質問、plan draft、または失敗したコンポーネントの説明
+- Glob、Grep、Read、git history でアクセスしたリポジトリのソース
+- オプションで LSP diagnostics、`explore` 結果、ralplan deliberation context
+
+## 出力
+
+- file:line 根拠、root cause、ranked recommendation、tradeoff table を含む分析文書
+- consensus mode では antithesis（最も強い反論）、tradeoff tension、可能であれば synthesis
+
+## 範囲の限界
+
+- 読み取り専用です。いかなる場合もファイルを書いたり修正したりしません。
+- 実際のコードベースと無関係な一般論的なアドバイスはしません。
+- 根拠なしに推測しません。不確実なときは推測の代わりに uncertainty を明示します。
+
+## 関連エージェント
+
+- [planner](/ja/docs/agents/build-analysis/planner) — architect の勧告を計画に反映します。
+- [analyst](/ja/docs/agents/build-analysis/analyst) — architect の分析結果で要件のギャップが明らかになった場合に再整理します。
+- [critic](/ja/docs/agents/coordination/critic) — consensus mode で architect の勧告を批判的に検討します。

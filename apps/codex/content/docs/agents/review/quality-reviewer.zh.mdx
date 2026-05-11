@@ -1,0 +1,43 @@
+---
+title: quality-reviewer
+description: 检测逻辑缺陷、反模式、SOLID 违规的质量审查代理
+---
+
+`quality-reviewer` 重点检查逻辑正确性、错误处理完整性、反模式以及 SOLID 原则的遵守情况。不仅查看 diff，还会读取变更文件的完整上下文以理解意图，再给出意见。发现的问题按严重程度分类，写得好的代码则以正向反馈明确指出，强化良好模式。
+
+## 职责
+
+- **逻辑正确性验证** — 检查循环范围、null 处理、控制流以及变更代码整体的数据流
+- **错误处理评估** — 审查正常路径与错误路径、资源清理、错误传播方式
+- **反模式检测** — 指出 God Object、魔法数字、复制粘贴代码、Shotgun Surgery，并附 `file:line` 引用
+- **SOLID 原则评估** — 每项违规均附具体改进建议
+
+## 何时被调用
+
+- 以 `$review` 在实现后需要质量门控时
+- 大规模重构后，确认结构变更未引入逻辑回归时
+- `code-reviewer` 阶段发现可维护性问题，需要专项质量检查时
+- ralph 循环中 executor 产出物通过了测试但存在结构性问题时
+
+## 输入
+
+- 变更文件的完整文件上下文，而非仅 diff
+- 用于结构模式检测的 LSP diagnostics 及 `ast_grep_search` 结果
+- 用于了解预期行为的现有测试
+
+## 输出
+
+- 包含整体评级（EXCELLENT / GOOD / NEEDS WORK / POOR）、逻辑·错误处理·设计·可维护性各维度状态、带严重程度与 `file:line` 引用的发现事项、正向观察内容的质量审查报告
+- 附影响度估算的优先级建议
+
+## 范围限制
+
+- 不涉及格式或命名风格 — 由 `style-reviewer` 负责
+- 不进行安全审计或性能剖析 — 有专项审查代理
+- MEDIUM·LOW 发现事项仅做记录，不阻塞工作流
+
+## 相关代理
+
+- [code-reviewer](/zh/docs/agents/review/code-reviewer) — 同时处理规范合规与质量的综合审查
+- [style-reviewer](/zh/docs/agents/review/style-reviewer) — 格式与命名规范审查
+- [performance-reviewer](/zh/docs/agents/review/performance-reviewer) — 算法复杂度与热点分析

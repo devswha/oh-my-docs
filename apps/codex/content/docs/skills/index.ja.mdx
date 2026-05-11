@@ -1,0 +1,86 @@
+---
+title: スキル
+description: OMX スキルをワークフローとユーティリティに分けて整理したリファレンス
+---
+
+## 概要
+
+スキルは OMX で作業を始めるエントリーポイントです。ユーザーは通常 `$name` またはマジックキーワードで呼び出し、スキルが内部で必要なエージェント · フック · ツールを順番に使います。
+
+スキルはコマンドではなく、**「どの役割をどの順序で呼ぶか」を定義したワークフロー単位**です。
+
+## 二種類
+
+### ワークフロースキル
+
+実際の作業を進める実行モード。
+
+| スキル | 用途 |
+|---|---|
+| [`$deep-interview`](/ja/docs/skills/workflow/deep-interview) | 要件が曖昧なとき質問で整理 |
+| [`$ralplan`](/ja/docs/skills/workflow/ralplan) | planner · architect · critic の合意計画 |
+| [`$ralph`](/ja/docs/skills/workflow/ralph) | 完了証拠が出るまで繰り返し実行 |
+| [`$team`](/ja/docs/skills/workflow/team) | 並列レーンに分割して同時実行 |
+| [`$autopilot`](/ja/docs/skills/workflow/autopilot) | アイデア → 実装 → QA → 検証を一括処理 |
+| [`$ultraqa`](/ja/docs/skills/workflow/ultraqa) | テスト · 検証 · 修正サイクル |
+
+### ユーティリティスキル
+
+実行フローを補助するツール型スキル。
+
+- [`$analyze`](/ja/docs/skills/utility/analyze) — 読み取り中心の分析
+- [`$ask-claude`](/ja/docs/skills/utility/ask-claude) / [`$ask-gemini`](/ja/docs/skills/utility/ask-gemini) — 別モデルへの相談
+- [`$doctor`](/ja/docs/skills/utility/doctor) — インストールと環境の診断
+- [`$hud`](/ja/docs/skills/utility/hud) — HUD 確認と設定
+- [`$note`](/ja/docs/skills/utility/note) — セッションメモ保存
+- [`$cancel`](/ja/docs/skills/utility/cancel) — アクティブモードの終了
+
+## どこから習得するか
+
+全部を覚えようとせず、基本フロー一つを身につけるだけで十分です。
+
+```text
+$deep-interview "認証変更の内容を明確にしてくれ"
+$ralplan "最も安全な実装パスを承認してくれ"
+$ralph "承認された計画を最後まで完了してくれ"
+```
+
+この三つに慣れたら、あとは状況に応じて選択すればよいです。
+
+| 状況 | スキル |
+|---|---|
+| 何を作るか曖昧 | `$deep-interview` |
+| まず計画を合意 | `$ralplan` |
+| 一人で最後まで押し進める | `$ralph` |
+| 並列化が可能 | `$team` |
+| 全工程を一括処理 | `$autopilot` |
+
+## `$autopilot` vs 計画ベースのフロー
+
+最もよく混同される区別です。
+
+**`$autopilot`** — スピード優先、制御を手放す。
+
+```bash
+$autopilot "build me a todo app in next.js"
+```
+
+向いているケース: プロトタイプ、小さな機能、end-to-end 確認。
+
+**`$deep-interview → $ralplan → $ralph`** — 制御優先、ステップを分離。
+
+向いているケース: スコープが広い作業、方向合意が先の作業、間違えたときコストが高い作業。
+
+## `$team` は分割が実際に可能なときだけ
+
+```bash
+$team 3:executor "承認された計画を並列で実行してくれ"
+```
+
+向いているケース:
+
+- frontend / backend / test のように自然に分かれる作業
+- 順次処理では速度が出ない大きな作業
+- 計画がすでにあり、レーンに分配可能な場合
+
+逆に要件が曖昧だったり、レーン間で衝突しそうな場合は `$ralph` の方が安全です。

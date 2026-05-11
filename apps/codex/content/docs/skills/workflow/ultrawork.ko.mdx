@@ -1,0 +1,53 @@
+---
+title: $ultrawork
+description: 독립적인 태스크를 복잡도에 따라 분류해 동시에 실행하는 고병렬 실행 엔진
+---
+
+`$ultrawork`는 OMX 실행 스택의 병렬화 레이어입니다. 태스크를 복잡도별로 분류하고 적절한 모델 티어로 라우팅한 뒤, 독립적인 태스크를 순서를 기다리지 않고 동시에 실행합니다.
+
+ultrawork는 컴포넌트입니다. 병렬 실행과 모델 라우팅을 담당하고, 지속성과 검증 루프는 `$ralph`가, 전체 lifecycle은 `$autopilot`이 위에서 감쌉니다.
+
+## 언제 쓰나
+
+- 독립적인 태스크 여러 개를 동시에 끝내고 싶을 때
+- 여러 에이전트 티어에 작업을 동시에 위임해야 할 때
+- ralph의 지속성 오버헤드 없이 순수 처리량만 필요할 때
+
+피해야 할 경우: 태스크 간 의존성이 있거나, 완료 후 검증을 별도로 관리하기 어려울 때는 `$ralph`가 더 적합합니다.
+
+트리거 키워드: "ulw", "ultrawork", "parallel", "run concurrently", "all at once"
+
+## 호출 방법
+
+```
+codex
+> ulw add missing type exports, update the README, and add integration tests for the auth middleware
+```
+
+```
+codex
+> ultrawork implement the /api/users endpoint, add unit tests, and lint-fix the entire src/ directory
+```
+
+## 동작 방식
+
+태스크 설명을 받아 독립적인 하위 태스크로 분해합니다. 복잡도에 따라 세 티어로 분류합니다.
+
+- 단순 조회·소규모 수정 → 저비용 티어
+- 일반 구현 작업 → 표준 티어
+- 깊은 분석·복잡한 리팩토링 → 고품질 티어
+
+독립적인 태스크는 모두 동시에 실행합니다. 의존성이 있는 태스크만 필요한 순서대로 직렬화합니다. 설치, 빌드, 테스트처럼 오래 걸리는 작업은 `run_in_background`로 실행해 다른 태스크를 막지 않습니다.
+
+모든 태스크가 완료되면 경량 검증 패스를 실행합니다. 빌드와 타입 검사가 통과하고, 영향받은 테스트가 통과하고, 새로운 오류가 없어야 합니다. 반복 실패하는 태스크는 무한 재시도 대신 보고 형태로 올라옵니다.
+
+## 출력
+
+- 병렬 워커에서 완료된 작업물 (코드 변경, 테스트 결과, 문서)
+- 회귀가 없음을 확인하는 경량 빌드·테스트 증거
+
+## 관련 스킬
+
+- [`$ralph`](/ko/docs/skills/workflow/ralph) — 지속성, 검증 루프, 세션 재개를 ultrawork 위에 추가
+- [`$swarm`](/ko/docs/skills/workflow/swarm) — 파일 수가 많은 작업에 특화된 팬아웃 실행
+- [`$team`](/ko/docs/skills/workflow/team) — plan, exec, verify 단계가 포함된 완전한 staged 파이프라인

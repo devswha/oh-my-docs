@@ -1,0 +1,46 @@
+---
+title: "Context Hooks"
+description: "Hooks that inject project memory, session reminders, wiki summaries, and mode state into Codex prompts via system-reminder tags."
+---
+
+Context hooks are the subset of OMX hooks that insert structured knowledge into the next prompt. Rather than modifying the user's message directly, they emit `<system-reminder>` tags that Codex reads as injected context. This keeps user messages intact while ensuring the model always starts with current project memory and active directives.
+
+## Sources injected
+
+**Project memory**
+
+Key facts and directives written via `project_memory_write` or `project_memory_add_directive`. Injected on `SessionStart` and selectively on subsequent turns when directives are active.
+
+**Session reminders**
+
+Short-lived notes written via `notepad_write_working` or `notepad_write_priority`. Injected until they expire or are pruned.
+
+**Wiki summary**
+
+When wiki pages exist, a compact excerpt from `.omx/wiki/` is surfaced on `SessionStart`. Write-heavy operations such as ingest and rebuild are deferred to avoid blocking the hook path.
+
+**Mode state**
+
+When an active workflow mode is detected (ralph, team, ultrawork), its current phase and continuation instructions are included so the model resumes from the right point.
+
+## Example
+
+Register a permanent directive to include a trailer in all commits:
+
+```bash
+omx memory add-directive "All git commits must include Co-authored-by: OmX <omx@oh-my-codex.dev>"
+```
+
+The next session start will inject this directive automatically as a `<system-reminder>` block.
+
+Check what is currently in the notepad:
+
+```bash
+cat .omx/notepad.md
+```
+
+## Related
+
+- [Core Hooks](/docs/hooks/core-hooks)
+- [Wiki Tool](/docs/tools/wiki)
+- [State Tool](/docs/tools/state)

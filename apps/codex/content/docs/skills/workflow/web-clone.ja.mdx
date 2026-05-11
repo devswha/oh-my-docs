@@ -1,0 +1,54 @@
+---
+title: $web-clone
+description: 公開 URL の UI を Playwright で抽出してローカルフレームワークコードに再構成するウェブクローンワークフロー
+---
+
+`$web-clone` は公開 URL を受け取りローカルで実行可能なクローンを作ります。Playwright MCP で DOM 構造・計算されたスタイル・インタラクティブ要素を抽出し、対象フレームワークに合ったコードに再構成した後、`$visual-verdict` でスコア 85 以上が出るまでイテレーションします。
+
+## いつ使うか
+
+- URL を渡して自分のフレームワークスタックでローカルクローンを作りたいとき
+- 視覚的な精度だけでなくリンク・フォーム・トグルのような機能動作も再現する必要があるとき
+- 空のキャンバスではなく実際のデザインから始めるプロトタイピングをするとき
+
+静的なスクリーンショットだけある場合は `$visual-verdict` を直接使ってください。
+
+トリガーキーワード: "web-clone", "clone site", "clone website", "copy webpage", "replicate this URL"
+
+## 呼び出し
+
+```
+codex
+> web-clone https://news.ycombinator.com
+```
+
+```
+codex
+> $web-clone https://example.com/pricing output_dir=./clones/pricing tech_stack=react
+```
+
+## 動作方法
+
+5 つのパスで進みます。
+
+**Pass 1 (抽出)** Playwright で URL にアクセスしてリファレンスベースラインとして使う全体スクリーンショットを撮り、アクセシビリティツリーで構造を把握し、DOM と計算されたスタイルを抽出し、インタラクティブ要素を一覧化します。
+
+**Pass 2 (ビルド計画)** 抽出結果を分析してページ領域をコンポーネントにマッピングし、カラーパレット・フォントスタック・間隔単位のようなデザイントークンを抽出し、クローンのファイル構造を設計します。
+
+**Pass 3 (クローン生成)** デザイントークン → レイアウトシェル → 各領域を上から下へ → ナビゲーション・フォーム・ドロップダウン・トグルのインタラクション順にコンポーネントごとに実装します。
+
+**Pass 4 (検証)** クローンをローカルでサービングして全体スクリーンショットを撮り、`$visual-verdict` で原本と比較します。Playwright でインタラクション 2-3 つを確認します。
+
+**Pass 5 (繰り返し)** verdict から影響が大きい修正事項を適用して再検証します。判定が pass になるか 5 回の上限に達するまで繰り返します。
+
+## 出力
+
+- `output_dir` に要求した技術スタックで生成されたクローンプロジェクトファイル
+- `.omx/state/{scope}/web-clone-extraction.json` — ランドマークとインタラクション数を含む抽出サマリー
+- `.omx/state/{scope}/web-clone-verdicts.json` — 各検証パス後の累積判定
+- クローン成功項目と残っている差異をまとめた最終レポート
+
+## 関連スキル
+
+- [`$frontend-ui-ux`](/ja/docs/skills/workflow/frontend-ui-ux) — クローンパス内のコンポーネント生成に使う UI スキル
+- [`$visual-verdict`](/ja/docs/skills/workflow/visual-verdict) — 各クローンイテレーションを判定する視覚 QA ツール

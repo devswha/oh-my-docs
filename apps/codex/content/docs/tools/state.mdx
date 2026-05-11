@@ -1,0 +1,67 @@
+---
+title: "State"
+description: "Runtime mode state under `.omx/state/`: what it stores, how `omx state` exposes it, and when OMX uses it during long-running workflows."
+---
+
+State is OMX's runtime lifecycle surface. It records what an active mode is doing right now so workflows can continue, recover, and finish coherently across turns.
+
+## What it is
+
+OMX stores mode state under `.omx/state/`. A state record usually answers questions like:
+
+- which mode is active?
+- which phase is it in?
+- how many iterations has it completed?
+- did it finish, block, fail, or keep going?
+
+That makes state especially important for durable workflows such as `$ralph`, `$team`, `$ultraqa`, and other looped or resumable modes.
+
+## Command surface
+
+The CLI parity surface is `omx state`:
+
+```bash
+omx state read --input '{"mode":"ralph"}' --json
+omx state write --input '{"mode":"ralph","active":true,"current_phase":"executing"}' --json
+omx state clear --input '{"mode":"ralph","all_sessions":true}' --json
+omx state list-active --json
+omx state get-status --input '{"mode":"ralph"}' --json
+```
+
+These commands mirror the MCP state tools used internally by OMX.
+
+## Common fields
+
+| Field | What it means |
+|---|---|
+| `mode` | The active OMX mode, such as `ralph`, `team`, or `ultraqa` |
+| `active` | Whether the mode is currently live |
+| `current_phase` | A human-readable phase label such as `planning`, `executing`, or `verifying` |
+| `iteration` / `max_iterations` | Loop counters for iterative workflows |
+| `run_outcome` | Immediate run status: `continue`, `finish`, `blocked_on_user`, `failed`, or `cancelled` |
+| `lifecycle_outcome` | Terminal lifecycle status such as `finished`, `blocked`, or `failed` |
+| `task_description` | A short description of the current task |
+
+Different modes may attach additional fields, but the schema above covers most operational inspection.
+
+## When to reach for it
+
+State is useful when you need to:
+
+- inspect which modes are active
+- checkpoint progress before compaction or a long pause
+- diagnose stale or abandoned runtime state
+- clear a dead mode after cancellation
+- build higher-level automation on top of OMX lifecycle signals
+
+## Operational notes
+
+- Prefer `omx state ... --json` or the MCP surface over editing files in `.omx/state/` by hand.
+- Use `clear` only when you know a mode is stale, dead, or intentionally abandoned.
+- For team-mode cleanup, combine state inspection with `omx doctor --team` and `omx cancel` rather than deleting files directly.
+
+## Related
+
+- [`.omx` Directory](/docs/reference/omx-directory) — on-disk layout for state and other OMX data
+- [Quick Commands](/docs/reference/quick-commands) — common operational commands
+- [HUD](/docs/tools/hud) — compact live monitoring on top of runtime state

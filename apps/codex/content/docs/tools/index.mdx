@@ -1,0 +1,118 @@
+---
+title: "Tools"
+description: "An overview of the runtime capability surfaces OMX uses internally while workflows are running."
+---
+
+## What are tools?
+
+Tools are the runtime capability surfaces OMX uses internally while work is in progress.
+Unlike [skills](/docs/skills), which users invoke directly, tools are the lower-level capabilities that skills, hooks, and agents rely on underneath.
+
+In other words, if skills decide **what work should happen**, tools are part of **what makes that work actually possible**.
+
+## Why do tools matter?
+
+Tools are what let OMX:
+
+- store and restore runtime state
+- show progress through the HUD
+- accumulate knowledge in the wiki
+- perform visual QA such as screenshot comparison
+- delegate bounded cross-CLI questions to other models
+
+So the Tools section is less about “what button do I press?” and more about **understanding how OMX behaves under the hood**.
+
+## Main tool categories
+
+### State
+
+[State](/docs/tools/state) is the surface for reading and writing active runtime mode state.
+
+For example:
+
+- checking which mode is active
+- storing the current phase or iteration
+- clearing stale runtime state
+
+It is one of the core building blocks behind long-running workflows such as `$ralph`, `$team`, and `$ultraqa`.
+
+### HUD
+
+[HUD](/docs/tools/hud) is the monitoring surface for the current session.
+
+For example:
+
+- checking which phase is currently active
+- opening a tmux status pane
+- exporting status as JSON
+
+HUD is effectively the quickest answer to “what is happening right now?”.
+
+### Wiki
+
+[Wiki](/docs/tools/wiki) is the surface for persistent project knowledge stored under `.omx/wiki/`.
+
+For example:
+
+- accumulating structured knowledge
+- reusing findings across sessions
+- querying, reading, and curating durable notes
+
+If State is for the current run, Wiki is for information that should remain useful in later runs too.
+
+### Catalog
+
+[Catalog](/docs/tools/catalog) explains how OMX groups prompts, skills, and tools into a stable capability map.
+
+This matters less as an execution surface and more as a way to understand **how the docs and runtime are organized**.
+
+### Visual
+
+[Visual](/docs/tools/visual) is the lower-level comparison capability behind visual QA.
+
+For example:
+
+- comparing screenshots against reference images
+- identifying layout, spacing, and hierarchy differences
+- producing evidence for the next UI iteration
+
+In practice, users usually reach this through a higher-level workflow such as [`$visual-verdict`](/docs/skills/workflow/visual-verdict).
+
+### Ask Claude / Ask Gemini
+
+[Ask Claude](/docs/tools/ask-claude) and [Ask Gemini](/docs/tools/ask-gemini) are bridge surfaces for delegating bounded sub-questions to other models outside the current Codex context.
+
+For example:
+
+- getting a second opinion from another model
+- running a clean-room summary or lookup
+- comparing perspectives across CLIs intentionally
+
+## How tools differ from skills
+
+A simple distinction is:
+
+| Surface | Meaning |
+|------|------|
+| Skills | User-facing workflows you explicitly start |
+| Tools | Lower-level capabilities those workflows depend on |
+
+For example, one workflow might:
+
+- update runtime state
+- write results into the wiki
+- show progress in the HUD
+- validate outputs through visual comparison
+
+without forcing the user to invoke each of those capabilities as separate top-level commands.
+
+## When should you read the tools docs first?
+
+The Tools section is especially useful when you want to:
+
+- understand where OMX stores and restores state
+- sort out the difference between HUD, wiki, and state
+- understand where visual QA or provider bridges sit in the architecture
+- understand what capability layer sits underneath the skills you already know
+
+You do not need to begin with Tools, but once you want to understand OMX internals, it becomes a very important section.

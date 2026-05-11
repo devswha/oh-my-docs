@@ -1,0 +1,37 @@
+---
+title: "CJK IME"
+description: "Issues and workarounds for Korean, Chinese, and Japanese IME input in Codex CLI"
+---
+
+Codex CLI uses a terminal-based input model that can conflict with CJK IMEs (Input Method Editors). An IME intercepts keystrokes and builds composed characters before committing them to the input buffer. This intermediate composition state is invisible to the terminal and can cause dropped characters, duplicate input, or premature submission.
+
+## Known issues
+
+**Composition event conflicts** — When an IME is composing a character, some terminals send incomplete keystrokes to the CLI before composition is complete. Codex CLI may treat these as separate inputs, resulting in garbled text or unexpected command execution.
+
+**Enter key during composition** — Pressing Enter while an IME candidate list is open can cause Codex to submit the incomplete input instead of confirming the IME selection. This is the most common issue for Korean users on macOS and Linux.
+
+**Double-input on commit** — Some IME and terminal combinations send both the composed character and a raw keystroke on commit, causing characters to appear twice in the input buffer.
+
+## Workarounds
+
+**Commit before submitting** — Before pressing Enter to submit a command, make sure the IME candidate window is closed and composition is fully complete. It is safer to press Enter after the cursor has returned to the normal (non-underlined) state.
+
+**Use ASCII mode for skill invocations** — When typing OMX skill invocations like `$ralph` or `$team`, switch your IME to ASCII/English mode first. Switch back to CJK mode for the natural-language argument if needed.
+
+**Use copy-paste** — Write your CJK text in a separate editor first, then paste it into the Codex CLI prompt. Paste does not go through IME composition, so it arrives in the buffer correctly.
+
+**Switch terminals** — Some terminals handle IME composition events better than others. iTerm2 on macOS and Windows Terminal generally have fewer conflicts than basic xterm variants.
+
+## Environment considerations
+
+Set `LANG` and `LC_ALL` to a UTF-8 locale to ensure the terminal and Codex CLI agree on character encoding:
+
+```bash
+export LANG=ko_KR.UTF-8
+export LC_ALL=ko_KR.UTF-8
+```
+
+## Related
+
+- [Environment](/docs/reference/environment) — environment variables including locale settings

@@ -1,0 +1,56 @@
+---
+title: 통합
+description: OMX와 외부 시스템 · MCP · 다른 CLI 연결 지점
+---
+
+## 통합이란
+
+통합(Integrations)은 OMX가 자기 내부에서 끝나지 않고 **바깥과 어떻게 연결되는지** 다루는 섹션입니다. OMX는 세 경로로 경계를 넘습니다.
+
+- 훅 이벤트를 외부 시스템으로 포워딩
+- MCP 서버를 통해 외부 도구를 호출
+- Codex 외 다른 CLI · 모델과 협력
+
+## 어떤 통합이 있는가
+
+### OpenClaw
+
+[OpenClaw](/ko/docs/integrations/openclaw) — OMX 훅 이벤트를 외부 게이트웨이로 보내는 브리지.
+
+필요한 경우:
+
+- Discord / Slack / Telegram / 커스텀 시스템에 알림 연결
+- 훅 기반 외부 디스패치 연결
+
+### Clawhip
+
+[Clawhip](/ko/docs/integrations/clawhip) — 외부 소비자가 받게 되는 **정규화된 이벤트 계약**. OMX 내부 이벤트가 envelope · payload 수준에서 어떻게 표현되는지 고정합니다.
+
+### MCP
+
+[MCP](/ko/docs/integrations/mcp) — OMX가 Model Context Protocol 서버를 발견하고 호출하는 방식.
+
+필요한 경우:
+
+- 외부 도구를 MCP로 노출하고 연결
+- 스킬 · 도구 아래에서 어떤 MCP 호출이 일어나는지 추적
+- 로컬 도구를 구조적으로 OMX와 엮음
+
+### CLI Bridges
+
+[CLI Bridges](/ko/docs/integrations/cli-bridges) — `$ask-claude`, `$ask-gemini` 같은 cross-CLI consultation 흐름.
+
+필요한 경우:
+
+- Codex 외 모델의 시각이 필요
+- 서브 질문을 다른 CLI로 위임하면서 현재 컨텍스트를 오염시키고 싶지 않을 때
+- 여러 CLI를 역할별로 분배
+
+## 언제 이 섹션부터 보나
+
+- OMX 훅 이벤트를 다른 시스템과 엮어야 할 때
+- MCP 서버로 외부 도구를 연결할 때
+- Codex · Claude · Gemini 사이에 작업을 의도적으로 나눌 때
+- OMX 런타임과 외부의 상호작용 구조를 이해해야 할 때
+
+"OMX 단독 사용 → 외부와 연결" 단계로 넘어간 이후에 가장 자주 들어오는 섹션입니다.

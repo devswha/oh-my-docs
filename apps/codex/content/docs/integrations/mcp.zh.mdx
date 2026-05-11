@@ -1,0 +1,57 @@
+---
+title: "MCP"
+description: "OMX 发现并调用 Model Context Protocol 服务器的方式。"
+---
+
+Model Context Protocol（MCP）是一项开放标准，允许 AI 客户端通过统一接口调用外部工具。OMX 作为 MCP 客户端运行，在 skill、hook 和 agent workflow 中调用已注册的 MCP 服务器，访问文件系统、API 和专业服务。
+
+## 概述
+
+这是一个 client-server 协议：MCP 客户端（OMX/Codex）发送结构化的 tool-call 请求，MCP 服务器返回结构化响应。每个 MCP 服务器公开一组具名工具。OMX 在启动时发现已配置的服务器，并在 skill 和 hook 中直接调用这些工具。
+
+## OMX 的使用方式
+
+- **skill 层 tool call** — `$wiki`、`$trace`、`$team` 等 skill 在执行过程中调用 `wiki_add`、`state_read`、`TeamCreate` 等 MCP tool。
+- **hook 层 integration** — hook 脚本在 OMX 任务前后调用 MCP tool 读写状态。
+- **支持的服务器** — OMX 默认识别以下服务器：
+  - `filesystem` — 本地文件读写
+  - `github` — issue、PR、code search
+  - `context7` — 库文档查询
+  - `oh-my-claudecode_t` — OMX plugin 服务器，公开 state、notepad、wiki、LSP、AST、team 工具。
+- **配置位置** — 在 Claude Code 配置文件（`~/.claude/settings.json`）的 `mcpServers` 键下注册。每个条目包含 `command`、可选 `args`、可选 `env` override。
+
+## 配置示例
+
+注册 filesystem 和 GitHub MCP 服务器：
+
+```json
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/home/user/projects"]
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": { "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}" }
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"]
+    }
+  }
+}
+```
+
+注册后即可在 skill 中直接调用该服务器的工具：
+
+```
+codex
+> $wiki add "the DB schema lives in src/db/schema.ts"
+```
+
+## 相关文档
+
+- [OpenClaw](/zh/docs/integrations/openclaw) — 可触发 MCP 动作的 hook 事件 gateway
+- [CLI Bridges](/zh/docs/integrations/cli-bridges) — 在 MCP 和 shell bridge 之上运行的跨 CLI 快捷命令

@@ -1,0 +1,6 @@
+{
+  "title": "OMX ドキュメント",
+  "pages": ["index", "getting-started", "concepts", "guides",
+            "agents", "skills", "hooks", "tools",
+            "integrations", "reference", "support"]
+}

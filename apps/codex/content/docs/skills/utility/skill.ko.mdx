@@ -1,0 +1,40 @@
+---
+title: $skill
+description: "로컬 스킬을 관리하는 스킬. 목록 확인, 추가, 삭제를 지원합니다."
+---
+
+## 개요
+
+`$skill`은 현재 환경에 설치된 스킬을 관리합니다. 어떤 스킬이 있는지 목록을 보거나, 새 스킬을 추가하거나, 기존 스킬을 삭제하는 데 씁니다.
+
+## 사용 예시
+
+```text
+$skill list
+$skill add my-workflow
+$skill remove my-workflow
+```
+
+| 명령 | 설명 |
+|---|---|
+| `$skill list` | 설치된 스킬 전체 목록 출력 |
+| `$skill add <name>` | 새 스킬 추가 |
+| `$skill remove <name>` | 스킬 삭제 |
+
+## 언제 쓰는가
+
+- 현재 사용 가능한 스킬 목록을 확인할 때
+- 커스텀 스킬을 추가하거나 제거할 때
+- 설치된 스킬이 맞게 배치되어 있는지 점검할 때
+
+## 언제 피하는가
+
+- 스킬 내용을 보거나 사용법을 확인할 때 — `$help <skill-name>`을 쓰세요.
+- 환경 전체 진단 — `$doctor`를 쓰세요.
+- 스킬 설치 경로 설정 변경 — `$omx-setup`을 쓰세요.
+
+## 관련 항목
+
+- [$help](/ko/docs/skills/utility/help) — 스킬 사용법 확인
+- [$omx-setup](/ko/docs/skills/utility/omx-setup) — 스킬 파일 설치 및 갱신
+- [스킬 개요](/ko/docs/skills) — 전체 스킬 카탈로그

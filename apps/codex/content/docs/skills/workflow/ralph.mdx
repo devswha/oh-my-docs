@@ -1,0 +1,58 @@
+---
+title: $ralph
+description: Loop skill that repeats execution until completion evidence appears
+---
+
+## TL;DR
+
+`$ralph` keeps executing a task until completion evidence is confirmed. Use it for work that might not finish in one shot or could get stuck in the middle.
+
+## How to invoke
+
+```
+$ralph "complete the approved plan all the way through"
+```
+
+Also activated by magic keywords `ralph`, `don't stop`, `must complete`, `keep going`.
+
+## When to use it
+
+| Good fit | Avoid |
+|---|---|
+| Have a plan and need to push it to the end | Requirements still unclear |
+| Need to automatically fix build/test failures | Work that needs direction consensus first |
+| Tasks that require multiple attempts | Parallel work that can be split into lanes |
+
+## How it works
+
+1. Records task state in `.omx/state/`.
+2. Repeats execute → verify → fix on failure → re-execute.
+3. Exits the loop when verifier confirms completion evidence.
+
+Completion evidence is typically a passing build, passing tests, or existence of a specified artifact.
+
+## Where it fits in the standard flow
+
+```
+$deep-interview "..."      ← confirm requirements
+$ralplan "..."             ← plan consensus
+$ralph "..."               ← execute here
+```
+
+## `$ralph` vs `$team`
+
+Both are execution skills but with different approaches.
+
+| Item | `$ralph` | `$team` |
+|---|---|---|
+| Execution style | Single owner, repeat loop | Multiple lanes in parallel |
+| Good fit | When context must be maintained end-to-end | When work splits into independent units |
+| Conflict risk | Low | Higher if lane design is wrong |
+
+If requirements are unclear or lanes might conflict, `$ralph` is safer.
+
+## Related skills
+
+- [`$ralph-init`](/docs/skills/workflow/ralph-init) — reset state before starting ralph
+- [`$ralplan`](/docs/skills/workflow/ralplan) — plan consensus before running ralph
+- [`$team`](/docs/skills/workflow/team) — parallel lane execution

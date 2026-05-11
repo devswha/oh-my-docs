@@ -1,0 +1,46 @@
+---
+title: $code-review
+description: code-reviewerエージェントを呼び出すコードレビューwrapperスキル
+---
+
+`$code-review`で呼び出します。
+
+code-reviewerエージェントを呼び出すwrapperです。実装が終わったコードに対する包括的なレビューが必要なときに使います。APIコントラクト、後方互換性、ロジック欠陥、セキュリティ脆弱性を含めて検討します。
+
+## いつ使うか
+
+- 実装が終わったコードをPR前に確認するとき
+- `$ralph` や `$autopilot` が生成したコードを確認するとき
+- 特定のファイルや変更に対する品質フィードバックが必要なとき
+- 後方互換性やAPIコントラクトの準拠を確認しなければならないとき
+
+## いつ避けるか
+
+- セキュリティ脆弱点だけ集中的に見たいなら `$security-review` がより適切
+- ビルドエラー修正が目的なら `$build-fix`
+- まだ実装中のコードには使わない方がよい — 完成後に回す方が効率的
+
+## コマンド
+
+```bash
+$code-review
+$code-review "authモジュール変更内容をレビューして"
+$code-review --scope src/api
+$code-review --pr 123
+```
+
+## 検討範囲
+
+| 項目 | 内容 |
+|---|---|
+| ロジック欠陥 | 誤った条件、欠けているエッジケース |
+| APIコントラクト | 入出力型、エラー処理方式 |
+| 後方互換性 | 既存の呼び出し元に影響ある変更 |
+| 保守性 | 重複、不要な複雑さ |
+| セキュリティ | 明らかな脆弱点（深層セキュリティは `$security-review`） |
+
+## 関連
+
+- [code-reviewerエージェント](/ja/docs/agents/review/code-reviewer) — 内部動作の詳細
+- [`$build-fix`](/ja/docs/skills/utility/build-fix) — ビルドエラー修正
+- [security-reviewerエージェント](/ja/docs/agents/review/security-reviewer) — 深層セキュリティレビュー

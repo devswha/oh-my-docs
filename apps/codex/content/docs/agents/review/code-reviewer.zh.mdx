@@ -1,0 +1,46 @@
+---
+title: code-reviewer
+description: 按严重程度验证规范合规性、逻辑正确性和 API 契约的综合审查代理
+---
+
+`code-reviewer` 作为变更进入生产环境前的第一道关卡。严格执行规范合规确认 → 代码质量检查的两阶段审查。发现事项按严重程度（CRITICAL / HIGH / MEDIUM / LOW）分类，并附具体修复建议。只要有一项 CRITICAL·HIGH 就不予批准，且在确认实现是否真正满足需求之前，不会跳到风格指摘。
+
+## 职责
+
+- 确认实现覆盖了所有需求并解决了正确的问题（第 1 阶段）
+- 对所有修改文件运行 `lsp_diagnostics`，在判定前消除类型错误（第 2 阶段）
+- 对每项发现附上严重程度和可执行的修复建议
+- 给出明确的 APPROVE / REQUEST CHANGES / COMMENT 判定
+
+## 何时被调用
+
+- 以 `$code-review` 请求合并前综合审查时
+- `$autopilot` 在 executor 完成工作后到达指定审查检查点时
+- 涉及 API 契约、认证、数据处理的 PR
+- `verifier` 阶段对正确性提出疑问，需要深度检查时
+
+## 输入
+
+- 变更的 git diff
+- 用于确认意图的规范、PR 描述、Issue 描述
+- 通过 Grep·Read 读取的变更区域周围的完整文件上下文
+- 所有变更文件的 LSP diagnostics 输出
+
+## 输出
+
+- 包含 `file:line` 引用与修复建议的按严重程度分类发现事项审查报告
+- 按严重程度层级统计的问题数量（CRITICAL / HIGH / MEDIUM / LOW）
+- 以最高严重程度为基准的最终判定（APPROVE / REQUEST CHANGES / COMMENT）
+
+## 范围限制
+
+- 只读 — 审查期间不使用 Write·Edit 工具
+- 有未解决的 CRITICAL·HIGH 发现事项时，不批准变更
+- 不跳过第 1 阶段（规范合规）直接输出风格反馈
+
+## 相关代理
+
+- [quality-reviewer](/zh/docs/agents/review/quality-reviewer) — 专注逻辑缺陷与可维护性的深度审查
+- [security-reviewer](/zh/docs/agents/review/security-reviewer) — 需要安全深度时的专项 OWASP·密钥扫描
+- [style-reviewer](/zh/docs/agents/review/style-reviewer) — 格式·命名专项的轻量审查
+- [api-reviewer](/zh/docs/agents/review/api-reviewer) — 后向兼容性与版本控制的专项分析

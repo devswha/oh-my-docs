@@ -1,0 +1,78 @@
+---
+title: "Wiki"
+description: "Persistent markdown knowledge under `.omx/wiki/`, exposed through CLI parity commands and MCP tools for add, query, read, lint, and refresh workflows."
+---
+
+Wiki is OMX's durable project knowledge surface. It stores findings you want later sessions to remember, instead of limiting them to the current run.
+
+## What it is
+
+Wiki pages live under `.omx/wiki/` as ordinary markdown files. They are a good fit for information that should compound over time, such as:
+
+- architectural decisions
+- debugging findings
+- environment notes
+- recurring implementation patterns
+- reference material worth keeping
+- session summaries that should help future work
+
+Because the wiki is markdown-first, the data stays portable and inspectable even without OMX.
+
+## Command surface
+
+```bash
+omx wiki wiki_ingest --input '{}' --json
+omx wiki wiki_query --input '{"query":"session-start lifecycle"}' --json
+omx wiki wiki_read --input '{"page":"my-page"}' --json
+omx wiki wiki_list --json
+omx wiki wiki_lint --json
+```
+
+Available wiki tools:
+
+- `wiki_add`
+- `wiki_ingest`
+- `wiki_query`
+- `wiki_read`
+- `wiki_list`
+- `wiki_lint`
+- `wiki_refresh`
+- `wiki_delete`
+
+## What each operation is for
+
+| Operation | Use it for |
+|---|---|
+| `wiki_add` | Create a single new page quickly |
+| `wiki_ingest` | Turn bulk material into one or more categorized pages |
+| `wiki_query` | Search by keywords and tags |
+| `wiki_read` | Open a specific page |
+| `wiki_list` | See what exists already |
+| `wiki_lint` | Check health, links, and structure |
+| `wiki_refresh` | Rebuild derived metadata after larger changes |
+| `wiki_delete` | Remove a page and update the index |
+
+## When to reach for it
+
+Use the wiki when the information should survive the current session and help the next one.
+
+Good candidates include:
+
+- “Why we chose cursor pagination over offset pagination”
+- “How tmux team sessions are resumed in this repo”
+- “Known staging proxy deployment gotcha”
+- “What these recurring log lines mean and how to debug them”
+
+## How it differs from notes and state
+
+- **Wiki** is curated, durable project knowledge.
+- **Notepad** is looser scratch context for sessions and compaction resilience.
+- **State** is runtime lifecycle data for active modes.
+
+A simple rule: if future sessions should be able to reuse the information, it probably belongs in the wiki.
+
+## Related
+
+- [`.omx` Directory](/docs/reference/omx-directory) — where wiki data lives on disk
+- [State](/docs/tools/state) — ephemeral lifecycle state for active modes
+- [Wiki skill](/docs/skills/workflow/wiki) — the higher-level user-facing workflow built on top of this surface

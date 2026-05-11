@@ -1,0 +1,48 @@
+---
+title: "契約"
+description: "OMX 動作契約 — プロンプトガイダンス、team mutation、OpenClaw イベントスキーマ"
+---
+
+OMX はプロンプト、interop broker、イベント consumer 全体で 3 つの契約を定義します。プロンプトを変更したり、外部統合を作成したり、team state を読み取るツールを作成する際は、これらの契約に従う必要があります。
+
+## Prompt guidance contract
+
+GPT-5.4 guidance rollout で導入された契約で、`AGENTS.md`、`templates/AGENTS.md`、`prompts/*.md`、生成された `developer_instructions` テキストに適用されます。
+
+核となる動作 4 つ:
+
+1. **Quality-first, intent-deepening output** — 応答は意図をより深く掘り下げ、安全に行動するために必要な根拠を含む必要があります。
+2. **Automatic follow-through on low-risk steps** — 明確で元に戻せる次のステップは、不要な確認なしに自動で進めます。
+3. **Scoped overrides** — ユーザーの最新タスク更新は、プロンプト全体のリセットではなく、現在のタスクへのローカル override として扱います。以前の非競合する指示は保持します。
+4. **Persistent tool use and evidence-backed completion** — 答えが retrieval、diagnostics、tests、verification に依存する場合はツール使用を継続します。証拠なしに停止しません。
+
+Source: [`docs/prompt-guidance-contract.md`](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/prompt-guidance-contract.md)
+
+## Team mutation contract
+
+外部 interop broker は team state を CLI interop パス経由でのみ変更する必要があります。
+
+```bash
+omx team api <operation> --input '<json-object>' --json
+```
+
+`.omx/state/team/...` への直接書き込みはサポートされていません。既存の `team_*` MCP API は hard-deprecated 状態であり、CLI migration hint とともにエラーを返します。
+
+推奨タスク mutation フロー:
+
+`read-task` → `claim-task` → `transition-task-status`（`in_progress → completed|failed`）
+
+`release-task-claim` は pending にロールバックする場合のみ使用します。
+
+Source: [`docs/interop-team-mutation-contract.md`](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/interop-team-mutation-contract.md)
+
+## OpenClaw event contract
+
+OMX が出力するフックイベントの envelope 構造と正規化イベント一覧を定義します。外部 consumer は raw `event` 値ではなく `context.normalized_event` を基準にルーティングする必要があります。
+
+正規化イベントテーブルと完全な envelope スキーマは [Clawhip](/ja/docs/integrations/clawhip) を参照してください。
+
+## 関連ドキュメント
+
+- [Clawhip](/ja/docs/integrations/clawhip) — イベント契約レイヤーと normalized event routing
+- [OpenClaw](/ja/docs/integrations/openclaw) — フックイベント dispatch pipeline

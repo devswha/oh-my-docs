@@ -1,0 +1,33 @@
+---
+title: $note
+description: "A skill for saving and retrieving session notes."
+---
+
+## Overview
+
+`$note` saves notes to the current session. Use it to record decisions, progress, and temporary context you'll want to reference later. Saved notes can be referenced by agents within the same session.
+
+## Example
+
+```text
+$note "auth refactor confirmed to use JWT approach"
+$note "users table migration currently on hold"
+$note
+```
+
+Running without arguments prints the list of saved notes.
+
+## When to use
+
+- When you don't want to lose a mid-session decision during a long session
+- When you need to leave context to share between agents during `$ralph` or `$team` runs
+- When you need a temporary note to come back to later
+
+## When to avoid
+
+- Content that needs to be permanent — session notes are session-scoped. For long-term records, write to `.omx/notepad.md` or project documentation.
+- Code changes — modify the actual files rather than leaving a note.
+
+## Related
+
+- [State and sessions](/docs/concepts) — how OMX manages session context

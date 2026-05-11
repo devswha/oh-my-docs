@@ -1,0 +1,50 @@
+---
+title: $tdd
+description: テストを先に書いて実装を後から付ける red-green-refactor サイクルを強制するワークフロー
+---
+
+`$tdd` はプロダクションコードを書く前に必ず失敗するテストが先に存在しなければならないというルールを強制します。red-green-refactor サイクルを各ステップごとに進め、複雑なテスト戦略が必要なら test-engineer エージェントに相談します。新しいテストが通過し、既存テスト全体が green の状態になってからサイクルが終了します。
+
+## いつ使うか
+
+- テストを先に書いて実装を後から付けたいとき
+- 正確性が重要なコアドメインロジックを扱うとき
+- 実装後にテストを追加する方式ではなく体系的なカバレッジが必要なとき
+- 新しいコードベースを学びながらテストで期待動作をドキュメント化したいとき
+
+トリガーキーワード: "tdd", "test first", "red green", "write tests before code"
+
+## 呼び出し
+
+```
+codex
+> tdd add a coupon validation function to the checkout module
+```
+
+```
+codex
+> $tdd implement the password-strength checker with edge cases covered
+```
+
+## 動作方法
+
+**RED** — 次の機能単位に対するテストを書いて実行します。最初の実行で通過したらテストが間違っているとみなして書き直します。
+
+**GREEN** — テストを通過させるための最小限のプロダクションコードだけを書きます。テスト全体が green になってから次に進みます。
+
+**REFACTOR** — テストを green に保ちながらコード品質を改善します。変更後ごとにテストを実行します。
+
+複雑なドメインロジックや見慣れないテストパターンは、テスト作成前に test-engineer エージェントが戦略をレビューします。機能が完成するまでサイクルを繰り返します。
+
+## 出力
+
+- RED フェーズで書かれた失敗テスト
+- GREEN フェーズで書かれた最小プロダクションコード
+- テストスイート全体が green の状態のリファクタリングされたソース
+- 各サイクルごとの RED 失敗 → GREEN 通過 → REFACTOR 結果ログ
+
+## 関連スキル
+
+- [`$autopilot`](/ja/docs/skills/workflow/autopilot) — TDD サイクルを内部で適用する全体実行パイプライン
+- [`$ultraqa`](/ja/docs/skills/workflow/ultraqa) — 実装後に壊れたテストスイートを修正する QA サイクル
+- [`$ralplan`](/ja/docs/skills/workflow/ralplan) — deliberate モードで拡張テスト計画を含む合意計画

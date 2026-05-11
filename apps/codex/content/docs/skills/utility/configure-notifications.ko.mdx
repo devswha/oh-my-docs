@@ -1,0 +1,50 @@
+---
+title: $configure-notifications
+description: Discord, Slack, Telegram 등 알림 채널을 설정하는 유틸리티 스킬
+---
+
+`$configure-notifications`로 호출합니다.
+
+OMX 작업 완료, 에러, 상태 변경 시 알림을 받을 채널을 설정합니다. `$ralph`처럼 오래 걸리는 작업을 백그라운드에서 돌릴 때 완료 시점을 놓치지 않으려고 씁니다.
+
+## 언제 쓰나
+
+- `$ralph`나 `$autopilot` 같은 장시간 작업을 모니터링하지 않고 다른 일을 할 때
+- 팀 채널로 OMX 작업 상태를 공유해야 할 때
+- 에러 발생 즉시 알림을 받아야 할 때
+
+## 언제 피하나
+
+- 짧게 끝나는 작업은 알림 설정 없이 그냥 기다리는 편이 빠름
+
+## 명령
+
+```bash
+$configure-notifications
+$configure-notifications discord
+$configure-notifications slack
+$configure-notifications telegram
+```
+
+인자 없이 쓰면 대화형으로 채널을 선택합니다.
+
+## 지원 채널
+
+| 채널 | 필요한 것 |
+|---|---|
+| Discord | Webhook URL |
+| Slack | Webhook URL 또는 Bot Token |
+| Telegram | Bot Token + Chat ID |
+
+## 어떤 이벤트를 받나
+
+- 작업 완료
+- 에러 발생 및 재시도
+- 단계별 진행 상황 (ralph, autopilot)
+- 수동 확인이 필요한 중단 지점
+
+## 관련 문서
+
+- [`$ralph`](/ko/docs/skills/workflow/ralph) — 장시간 반복 실행 모드
+- [`$autopilot`](/ko/docs/skills/workflow/autopilot) — 전 과정 일괄 실행
+- [유틸리티 스킬 목록](/ko/docs/skills/utility)

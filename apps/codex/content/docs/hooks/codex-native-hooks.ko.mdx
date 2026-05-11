@@ -1,0 +1,53 @@
+---
+title: "Codex 네이티브 훅"
+description: "OMX가 Codex CLI 네이티브 훅 인터페이스를 직접 쓰는 방식과, 네이티브 커버리지와 런타임 폴백의 경계"
+---
+
+Codex CLI는 `.codex/config.toml`에 `[features] codex_hooks = true`가 설정되면 `.codex/hooks.json`의 등록 정보를 읽어 라이프사이클 지점마다 외부 핸들러를 호출합니다. OMX는 Codex 바이너리를 셸 스크립트로 감싸는 대신 이 인터페이스를 직접 사용합니다.
+
+## 설치 구조
+
+`omx setup`은 두 파일을 씁니다.
+
+- `.codex/config.toml` — `codex_hooks` 활성화
+- `.codex/hooks.json` — OMX 핸들러 `dist/scripts/codex-native-hook.js` 등록
+
+설치 시 `.codex/hooks.json`에 이미 있는 사용자 관리 훅 항목은 보존됩니다. `omx uninstall`은 OMX가 등록한 항목만 제거하고 사용자 훅은 건드리지 않습니다.
+
+Codex 바이너리 주변의 셸 래퍼는 `omx tmux-hook`으로 여전히 지원되지만, 네이티브 이벤트의 주요 경로가 아닙니다.
+
+## 커버리지 매트릭스
+
+| OMX 관심사 | Codex 이벤트 | 상태 |
+|---|---|---|
+| 세션 북키핑, 위키 시작 컨텍스트 | `SessionStart` | 네이티브 |
+| 키워드 감지, 스킬 상태 시드 | `UserPromptSubmit` | 네이티브 |
+| Bash 안전 검사, 커밋 형식 가드 | `PreToolUse` (Bash 전용) | 네이티브-부분 |
+| 명령 미발견 안내, 종료 코드 검토 | `PostToolUse` (Bash 전용) | 네이티브-부분 |
+| ralph / autopilot / ultrawork / ultraqa 계속 실행 | `Stop` | 네이티브-부분 |
+| 정지된 턴 자동 넛지 | `Stop` | 네이티브-부분 |
+| 세션 종료 위키 캡처, `session-idle` | — | 런타임-폴백 |
+| Bash 이외 도구 인터셉션 | — | 런타임-폴백 |
+
+"네이티브-부분"은 네이티브 경로가 일반적인 경우를 처리하고, 엣지 케이스는 notify-hook 또는 tmux 런타임 경로로 폴백된다는 뜻입니다.
+
+## 확인 방법
+
+훅이 제대로 설치됐는지 확인:
+
+```bash
+omx doctor
+```
+
+네이티브 훅 경로가 엔드 투 엔드로 실행되는지 스모크 테스트:
+
+```bash
+omx exec --skip-git-repo-check -C . "Reply with exactly OMX-EXEC-OK"
+```
+
+플러그인 디스패치 로그는 `.omx/logs/hooks-YYYY-MM-DD.jsonl`에 기록됩니다.
+
+## 관련 문서
+
+- [라이프사이클 이벤트](/ko/docs/hooks/lifecycle-events)
+- [코어 훅](/ko/docs/hooks/core-hooks)

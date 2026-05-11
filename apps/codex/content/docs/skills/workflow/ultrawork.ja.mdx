@@ -1,0 +1,53 @@
+---
+title: $ultrawork
+description: 独立したタスクを複雑度に応じて分類して同時実行する高並列実行エンジン
+---
+
+`$ultrawork` は OMX 実行スタックの並列化レイヤーです。タスクを複雑度別に分類して適切なモデルティアにルーティングし、独立したタスクを順序を待たずに同時実行します。
+
+ultrawork はコンポーネントです。並列実行とモデルルーティングを担当し、持続性と検証ループは `$ralph` が、全体 lifecycle は `$autopilot` が上で包みます。
+
+## いつ使うか
+
+- 独立したタスクを複数同時に終わらせたいとき
+- 複数のエージェントティアに作業を同時に委任する必要があるとき
+- ralph の持続性オーバーヘッドなしに純粋なスループットだけ必要なとき
+
+避けるべき場合: タスク間に依存関係がある場合、または完了後の検証を別途管理しにくい場合は `$ralph` がより適しています。
+
+トリガーキーワード: "ulw", "ultrawork", "parallel", "run concurrently", "all at once"
+
+## 呼び出し
+
+```
+codex
+> ulw add missing type exports, update the README, and add integration tests for the auth middleware
+```
+
+```
+codex
+> ultrawork implement the /api/users endpoint, add unit tests, and lint-fix the entire src/ directory
+```
+
+## 動作方法
+
+タスクの説明を受け取り、独立したサブタスクに分解します。複雑度に応じて三つのティアに分類します。
+
+- 単純な照会・小規模修正 → 低コストティア
+- 一般的な実装作業 → 標準ティア
+- 深い分析・複雑なリファクタリング → 高品質ティア
+
+独立したタスクはすべて同時に実行します。依存関係のあるタスクだけを必要な順序でシリアライズします。インストール、ビルド、テストのように時間がかかる作業は `run_in_background` で実行し、他のタスクをブロックしません。
+
+全タスクが完了したら軽量な検証パスを実行します。ビルドと型チェックが通過し、影響を受けたテストが通過し、新しいエラーがないことを確認します。繰り返し失敗するタスクは無限リトライではなくレポート形式で上がってきます。
+
+## 出力
+
+- 並列ワーカーで完了した成果物（コード変更、テスト結果、ドキュメント）
+- 回帰がないことを確認する軽量ビルド・テスト証拠
+
+## 関連スキル
+
+- [`$ralph`](/ja/docs/skills/workflow/ralph) — 持続性、検証ループ、セッション再開を ultrawork の上に追加
+- [`$swarm`](/ja/docs/skills/workflow/swarm) — ファイル数が多い作業に特化したファンアウト実行
+- [`$team`](/ja/docs/skills/workflow/team) — plan、exec、verify フェーズが含まれる完全な staged パイプライン

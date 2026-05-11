@@ -1,0 +1,86 @@
+---
+title: 技能
+description: OMX skill 按工作流与实用工具分类的参考文档
+---
+
+## 概述
+
+skill 是 OMX 中发起任务的入口。用户通常通过 `$name` 或魔法关键词调用，skill 在内部按顺序使用所需的 agent · hook · 工具。
+
+skill 不是命令，而是**定义了"以什么顺序调用哪些角色"的工作流单元**。
+
+## 两种类型
+
+### 工作流 skill
+
+执行实际任务的运行模式。
+
+| skill | 用途 |
+|---|---|
+| [`$deep-interview`](/zh/docs/skills/workflow/deep-interview) | 需求模糊时用问题梳理清楚 |
+| [`$ralplan`](/zh/docs/skills/workflow/ralplan) | planner · architect · critic 达成共识的计划 |
+| [`$ralph`](/zh/docs/skills/workflow/ralph) | 循环执行直到出现完成证据 |
+| [`$team`](/zh/docs/skills/workflow/team) | 拆分为并行 lane 同时执行 |
+| [`$autopilot`](/zh/docs/skills/workflow/autopilot) | 想法 → 实现 → QA → 验证一次性处理 |
+| [`$ultraqa`](/zh/docs/skills/workflow/ultraqa) | 测试 · 验证 · 修复循环 |
+
+### 实用工具 skill
+
+辅助执行流程的工具型 skill。
+
+- [`$analyze`](/zh/docs/skills/utility/analyze) — 以读取为主的分析
+- [`$ask-claude`](/zh/docs/skills/utility/ask-claude) / [`$ask-gemini`](/zh/docs/skills/utility/ask-gemini) — 向其他模型咨询
+- [`$doctor`](/zh/docs/skills/utility/doctor) — 安装与环境诊断
+- [`$hud`](/zh/docs/skills/utility/hud) — HUD 查看与设置
+- [`$note`](/zh/docs/skills/utility/note) — 保存会话笔记
+- [`$cancel`](/zh/docs/skills/utility/cancel) — 终止活动模式
+
+## 从哪里开始学
+
+不要试图全部记住，只要熟悉一个基本流程就够了。
+
+```text
+$deep-interview "帮我明确认证变更内容"
+$ralplan "请批准最安全的实现路径"
+$ralph "请把批准的计划执行完毕"
+```
+
+熟悉这三个之后，其余的根据情况选择就好。
+
+| 情况 | skill |
+|---|---|
+| 不清楚要做什么 | `$deep-interview` |
+| 先达成计划共识 | `$ralplan` |
+| 需要一人推进到底 | `$ralph` |
+| 可以并行化 | `$team` |
+| 全流程一次处理 | `$autopilot` |
+
+## `$autopilot` vs 基于计划的流程
+
+最容易混淆的区别。
+
+**`$autopilot`** — 速度优先，放弃控制。
+
+```bash
+$autopilot "build me a todo app in next.js"
+```
+
+适合的情况：原型、小功能、end-to-end 验证。
+
+**`$deep-interview → $ralplan → $ralph`** — 控制优先，阶段分离。
+
+适合的情况：范围宽泛的任务、需要先做方向共识的任务、走错方向代价高的任务。
+
+## `$team` 只在真正可以拆分时使用
+
+```bash
+$team 3:executor "请并行执行批准的计划"
+```
+
+适合的情况：
+
+- frontend / backend / test 这类自然分开的任务
+- 顺序处理速度不够的大型任务
+- 计划已有且可以分配到各 lane 的情况
+
+反之，如果需求模糊或 lane 之间可能产生冲突，`$ralph` 更安全。

@@ -1,0 +1,46 @@
+---
+title: "planner"
+description: "Task sequencing agent that turns a specification into an actionable, file-level execution plan with acceptance criteria."
+---
+
+The `planner` agent converts an implementation request into a concrete, step-by-step work plan ready for immediate execution. It inspects the repository directly, right-sizes the step count to actual scope, and produces acceptance criteria specific enough to drive verification. Planning and implementation are kept strictly separate — planner writes plans, not code.
+
+## Role
+
+- Decompose a specification into ordered tasks that name exact files, functions, and expected outcomes
+- Write plans to `.omx/plans/*.md` and surface open questions to `.omx/plans/open-questions.md`
+- Derive codebase facts from direct inspection rather than user guesses
+- Include a consensus-mode RALPLAN-DR and ADR block when invoked through `$ralplan`
+
+## When invoked
+
+| Situation | How it's triggered |
+|---|---|
+| Execution planning phase in `$autopilot` and `$ralplan` | Automatic |
+| Planning a feature, refactor, or initiative via `$plan` | Direct request |
+| When request scope is ambiguous and scoping is needed before assigning an executor | Direct request |
+| When a ralph loop stalls and sequencing needs to be reworked | Delegated from `ralph` |
+
+## Inputs
+
+- User request or issue description
+- Repository contents inspected directly via Glob, Grep, and Read
+- Any existing `.omx/plans/` or `.omx/state/` context from the active session
+
+## Outputs
+
+- A plan file at `.omx/plans/{name}.md` with an adaptive step count, target files, and acceptance criteria
+- A plan summary confirming scope, estimated complexity, and key deliverables
+- In consensus mode: RALPLAN-DR principles and drivers, ADR with alternatives and rationale
+
+## Limits
+
+- Does not write or edit any source files — plan production only
+- Does not default to exactly five steps; step count matches the actual scope
+- Does not finalize a plan until the user confirms intent or an explicit proceed signal is given
+
+## Related agents
+
+- [architect](/docs/agents/build-analysis/architect) — reviews system boundaries and design tradeoffs within the plan
+- [analyst](/docs/agents/build-analysis/analyst) — clarifies requirements and acceptance criteria before planning
+- [executor](/docs/agents/build-analysis/executor) — consumes the finished plan and carries it to a verified commit

@@ -1,0 +1,36 @@
+---
+title: $review
+description: "コードレビューをcode-reviewerエージェントに委任するスキル。"
+---
+
+## 概要
+
+`$review` はコードレビューを `code-reviewer` エージェントに委任します。ロジック欠陥、保守性、APIコントラクト、後方互換性などの項目を包括的に検討します。実装が終わった後に独立したレビューステップが必要なときに使います。
+
+## 使用例
+
+```text
+$review
+$review "authモジュール変更内容をレビューして"
+$review "PR #42 全体を確認して"
+```
+
+引数なしで呼び出すと現在の変更（git diff基準）をレビューします。
+
+## いつ使うか
+
+- `$executor` や `$ralph` で実装を終えた後に独立レビューが必要なとき
+- PRを開く前の品質チェックステップ
+- API変更があって後方互換性を確認しなければならないとき
+- セキュリティとは無関係な一般コード品質の確認
+
+## いつ避けるか
+
+- セキュリティ脆弱点中心の確認 — `$security-review` を使ってください。
+- ビルド・型エラーの修正 — `$build-fix` を使ってください。
+- 実装前の設計レビュー — `$ralplan` のcriticステップがより適しています。
+
+## 関連エージェント
+
+- [code-reviewer](/ja/docs/agents/review/code-reviewer) — このスキルが委任するエージェントの詳細説明
+- [$security-review](/ja/docs/skills/utility/security-review) — セキュリティ中心レビュー

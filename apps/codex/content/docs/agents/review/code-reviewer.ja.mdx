@@ -1,0 +1,46 @@
+---
+title: code-reviewer
+description: スペック準拠とロジック正確性、API 契約を深刻度別に検証する総合レビューエージェント
+---
+
+`code-reviewer` は変更がプロダクションに触れる前の第一ゲートとして機能します。スペック準拠確認 → コード品質検査の 2 段階レビューを厳格に行います。発見事項は深刻度（CRITICAL / HIGH / MEDIUM / LOW）別に分類し、具体的な修正提案を添付します。CRITICAL・HIGH がひとつでもあれば承認せず、実装が要求を実際に満たしているか確認する前にスタイル指摘には移りません。
+
+## 役割
+
+- 実装が要件をすべてカバーし、正しい問題を解決しているか確認（第 1 段階）
+- 修正されたファイル全体に `lsp_diagnostics` を実行し、型エラーを判定前に除去（第 2 段階）
+- 発見事項ごとに深刻度を付け、実行可能な修正提案を提供
+- APPROVE / REQUEST CHANGES / COMMENT のいずれかを明確に判定
+
+## いつ呼ばれるか
+
+- `$code-review` でマージ前の総合レビューが要求されるとき
+- `$autopilot` が executor 作業完了後に指定されたレビューチェックポイントで
+- API 契約、認証、データ処理に触れる PR
+- `verifier` パスで正確性への疑問が提起され、深層検査が必要なとき
+
+## 入力
+
+- 変更の git diff
+- 意図確認のためのスペック、PR 説明、イシュー説明
+- Grep・Read で読んだ変更エリア周辺の全体ファイルコンテキスト
+- 変更されたファイル全体の LSP diagnostics 出力
+
+## 出力
+
+- `file:line` 参照と修正提案が含まれた深刻度別発見事項レビューレポート
+- 深刻度階層別イシュー数（CRITICAL / HIGH / MEDIUM / LOW）
+- 最高深刻度基準の最終判定（APPROVE / REQUEST CHANGES / COMMENT）
+
+## 範囲の限界
+
+- 読み取り専用 — レビュー中に Write・Edit ツールは使用しません
+- CRITICAL・HIGH 発見事項が未解決の変更は承認しません
+- 第 1 段階（スペック準拠）をスキップしてスタイルフィードバックを先に出しません
+
+## 関連エージェント
+
+- [quality-reviewer](/ja/docs/agents/review/quality-reviewer) — ロジック欠陥とメンテナビリティに集中する深層レビュー
+- [security-reviewer](/ja/docs/agents/review/security-reviewer) — セキュリティ深度が必要なとき専任の OWASP・シークレットスキャン
+- [style-reviewer](/ja/docs/agents/review/style-reviewer) — フォーマット・ネーミング専任の軽量パス
+- [api-reviewer](/ja/docs/agents/review/api-reviewer) — 後方互換性とバージョニングの専門分析

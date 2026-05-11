@@ -1,0 +1,51 @@
+---
+title: "analyst"
+description: "Pre-planning requirements agent that converts product scope into concrete, testable acceptance criteria."
+---
+
+The `analyst` agent operates between a raw user request and the planning stage. It reads the stated requirements, surfaces every unanswered question, and produces structured acceptance criteria that are objectively testable. Its output prevents the "but I thought you meant..." conversation from happening after implementation has already started.
+
+## Role
+
+- Identify missing questions, undefined guardrails, and unvalidated assumptions in a request
+- Surface scope risks and edge cases (unusual inputs, race conditions, boundary values)
+- Produce acceptance criteria that are objectively pass/fail rather than subjective
+- Define explicit scope boundaries — what is included and what is excluded from the work
+
+## When invoked
+
+| Situation | How it's triggered |
+|---|---|
+| Before `planner` at the start of `$autopilot` and `$plan` | Automatic |
+| During `$deep-interview` when the goal itself is ambiguous | Automatic |
+| When a task description is vague, contradictory, or missing success criteria | Direct request |
+| Requirements audit before executing an existing plan | Direct request |
+
+## Inputs
+
+- The user's task description or feature request
+- Optional: a prior exploration report from the `explore` agent
+- Optional: referenced specification documents or existing acceptance criteria
+
+## Outputs
+
+A structured analysis document written to `.omx/specs/<date>-<topic>.md` containing:
+
+- Missing questions ranked by impact
+- Undefined guardrails with suggested concrete bounds
+- Scope risks with mitigation strategies
+- A validated assumption list with verification methods
+- Testable acceptance criteria
+
+## Limits
+
+- Does not design the implementation — that is the `architect` agent's responsibility
+- Does not write or modify any production or test code
+- Does not prioritize features by market or user value — focuses only on implementability and completeness
+
+## Related agents
+
+- [explore](/docs/agents/build-analysis/explore) — provides codebase context that keeps the requirements analysis grounded
+- [planner](/docs/agents/build-analysis/planner) — consumes the acceptance criteria produced by `analyst` to sequence tasks
+- [architect](/docs/agents/build-analysis/architect) — handles implementation design after requirements are settled
+- [critic](/docs/agents/coordination/critic) — critically reviews plans and designs

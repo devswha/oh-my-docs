@@ -1,0 +1,119 @@
+name: Check upstream OMX for changes
+
+# Polls Yeachan-Heo/oh-my-codex main daily and, when the SHA has
+# moved past the one pinned in .github/upstream-sha.txt, files (or
+# refreshes) a tracking issue so we know to run `/sync-omx-docs`.
+#
+# Bump .github/upstream-sha.txt in the same PR that lands the actual
+# doc sync — that closes this loop.
+on:
+  schedule:
+    - cron: "0 9 * * *"   # 09:00 UTC daily (~18:00 KST)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      UPSTREAM_REPO: Yeachan-Heo/oh-my-codex
+      UPSTREAM_BRANCH: main
+      SHA_FILE: .github/upstream-sha.txt
+      ISSUE_LABEL: upstream-drift
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compare SHAs
+        id: cmp
+        run: |
+          pinned=$(tr -d '[:space:]' < "$SHA_FILE")
+          latest=$(git ls-remote "https://github.com/${UPSTREAM_REPO}.git" \
+                   "refs/heads/${UPSTREAM_BRANCH}" | awk '{print $1}')
+          if [ -z "$latest" ]; then
+            echo "::error::Failed to resolve upstream main SHA"
+            exit 1
+          fi
+          echo "pinned=$pinned"  >> "$GITHUB_OUTPUT"
+          echo "latest=$latest"  >> "$GITHUB_OUTPUT"
+          if [ "$pinned" = "$latest" ]; then
+            echo "drift=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Upstream in sync at ${pinned:0:7}"
+          else
+            echo "drift=true" >> "$GITHUB_OUTPUT"
+            echo "::warning::Upstream drift ${pinned:0:7}..${latest:0:7}"
+          fi
+
+      - name: Build commit list
+        if: steps.cmp.outputs.drift == 'true'
+        id: commits
+        run: |
+          base="${{ steps.cmp.outputs.pinned }}"
+          head="${{ steps.cmp.outputs.latest }}"
+          # GitHub "compare" API caps at 250 commits; more than that and
+          # the sync is already long overdue, so link-only is fine.
+          gh api "/repos/${UPSTREAM_REPO}/compare/${base}...${head}" \
+            --jq '.commits[] | "- [`" + .sha[0:7] + "`](" + .html_url + ") " + (.commit.message | split("\n")[0])' \
+            > commits.md || true
+          count=$(wc -l < commits.md | tr -d ' ')
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+          {
+            echo "body<<EOF"
+            echo "Upstream \`${UPSTREAM_REPO}@${UPSTREAM_BRANCH}\` moved past the pinned SHA."
+            echo ""
+            echo "- Pinned: [\`${base:0:7}\`](https://github.com/${UPSTREAM_REPO}/commit/${base})"
+            echo "- Latest: [\`${head:0:7}\`](https://github.com/${UPSTREAM_REPO}/commit/${head})"
+            echo "- [Full diff](https://github.com/${UPSTREAM_REPO}/compare/${base}...${head})"
+            echo "- Commits: ${count}"
+            echo ""
+            echo "### Commits"
+            echo ""
+            if [ -s commits.md ]; then
+              cat commits.md
+            else
+              echo "_(commit list unavailable — see full diff link above)_"
+            fi
+            echo ""
+            echo "---"
+            echo ""
+            echo "**To resolve:** run the \`sync-omx-docs\` skill locally, land a PR with the updated MDX, and bump \`.github/upstream-sha.txt\` to \`${head}\` in the same PR. This issue will auto-close once the pinned SHA catches up."
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Upsert tracking issue
+        if: steps.cmp.outputs.drift == 'true'
+        run: |
+          title="Upstream drift: ${UPSTREAM_REPO}@${UPSTREAM_BRANCH} moved (${{ steps.commits.outputs.count }} commits ahead)"
+          # Find existing open drift issue, update or create.
+          number=$(gh issue list --state open --label "$ISSUE_LABEL" \
+                   --json number --jq '.[0].number' --repo "$GITHUB_REPOSITORY")
+          if [ -n "$number" ]; then
+            gh issue edit "$number" \
+              --title "$title" \
+              --body "${{ steps.commits.outputs.body }}" \
+              --repo "$GITHUB_REPOSITORY"
+            echo "::notice::Updated tracking issue #$number"
+          else
+            # Ensure label exists (ignore error if it does).
+            gh label create "$ISSUE_LABEL" --color ededed \
+              --description "Upstream OMX has moved past the pinned SHA" \
+              --repo "$GITHUB_REPOSITORY" 2>/dev/null || true
+            gh issue create \
+              --title "$title" \
+              --body "${{ steps.commits.outputs.body }}" \
+              --label "$ISSUE_LABEL" \
+              --repo "$GITHUB_REPOSITORY"
+          fi
+
+      - name: Close stale drift issues when back in sync
+        if: steps.cmp.outputs.drift == 'false'
+        run: |
+          for n in $(gh issue list --state open --label "$ISSUE_LABEL" \
+                     --json number --jq '.[].number' --repo "$GITHUB_REPOSITORY"); do
+            gh issue close "$n" \
+              --comment "Upstream back in sync at \`${{ steps.cmp.outputs.pinned }}\`." \
+              --repo "$GITHUB_REPOSITORY"
+          done

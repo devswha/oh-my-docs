@@ -1,0 +1,64 @@
+---
+title: researcher
+description: "调查外部文档、SDK 参考资料、库规格，获取实现所需信息的 Domain agent。"
+---
+
+## 概述
+
+`researcher` agent 调查外部文档和参考资料。当需要 SDK 使用方法、库 API 规格、服务约束条件等代码库内没有的信息时调用。由于负责在实现前确保准确信息，可以减少 `executor` 凭猜测写代码的情况。
+
+## 何时被调用
+
+- 需要确认首次使用的 SDK 或库的正确用法时
+- 需要了解外部服务 API 的约束条件、rate limit、认证方式时
+- 最新文档与训练数据基准信息可能不同，需要查阅官方参考资料时
+- 需要通过 `$external-context` 或 `$document-specialist` 进行并行文档调查时
+
+## 使用示例
+
+```text
+"按照官方文档调查 Stripe Webhooks 的验证方法"
+"查找 Next.js App Router 中 middleware 的配置方法"
+"调查这个库从 v3 到 v4 的迁移方法"
+```
+
+## 调查范围
+
+| 项目 | 内容 |
+|---|---|
+| SDK / 库 | 官方参考资料、函数签名、配置选项 |
+| 外部服务 API | 端点规格、认证方式、约束条件 |
+| 迁移指南 | 版本变更点、breaking change、升级步骤 |
+| 最佳实践 | 官方推荐模式、已知注意事项 |
+
+## 工作流程
+
+1. 明确调查对象，确定需要了解什么。
+2. 优先查阅官方文档或参考资料。
+3. 必要时利用 context7 等文档工具。
+4. 汇总调查结果，整理为可直接用于实现的形式。
+
+## 输入
+
+- 需要调查的库、SDK、服务名称
+- 需要具体确认的 API 或功能
+- 实现中遇到的瓶颈或不确定的部分
+
+## 输出
+
+- 基于官方文档的准确用法摘要
+- 函数签名、配置选项、示例代码
+- 已知约束条件或注意事项
+- 参考来源链接
+
+## 范围限制
+
+- 不直接编写代码。提供信息，由 `executor` 实现。
+- 没有官方文档的情况下明示不确定性。
+- 内部代码库的探索由 `explore` 负责。
+
+## 相关 agent
+
+- [executor](/zh/docs/agents/build-analysis/executor) — 基于 researcher 获取的信息进行实际实现。
+- [dependency-expert](/zh/docs/agents/domain/dependency-expert) — 负责 SDK/包的选择和版本判断。
+- [explore](/zh/docs/agents/build-analysis/explore) — 负责内部代码库探索和文件结构把握。

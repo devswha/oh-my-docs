@@ -1,0 +1,37 @@
+---
+title: "explore-harness"
+description: "Wrapper agent that caches explore results and constrains the scope of exploration."
+---
+
+`explore-harness` acts as a wrapper around the `explore` agent rather than calling it directly — it caches exploration results and restricts the scope of each search. When multiple agents repeatedly explore the same repository, it eliminates redundant work, and by keeping scope explicit, it reduces noise.
+
+## Role
+
+- Cache `explore` results within a session to avoid repeated exploration cost
+- Constrain exploration to specific directories, file patterns, or symbol sets
+- Manage per-hypothesis exploration results separately during multi-hypothesis investigations
+- Coordinate parallel explorations when `debugger` or `planner` needs to explore multiple paths simultaneously
+
+## When invoked
+
+| Situation | How it's triggered |
+|---|---|
+| When `debugger` is tracking multiple hypotheses in parallel | Delegated from `debugger` |
+| When repeated exploration of a large repository must be avoided | Orchestrator request |
+| When exploration scope must be explicitly narrowed to a specific module | Direct request |
+
+## Difference from `explore`
+
+`explore` is a single agent that searches a repository broadly. `explore-harness` wraps that search and adds **scope limiting** and **result reuse**. For straightforward lookups, `explore` alone is sufficient. `explore-harness` earns its keep in complex investigation scenarios that require repeated or parallel exploration.
+
+## Limits
+
+- Does not create, modify, or delete any files
+- Does not make architectural judgments or modification recommendations
+- Cache is valid only within the current session
+
+## Related agents
+
+- [explore](/docs/agents/build-analysis/explore) — the underlying discovery agent that `explore-harness` wraps
+- [debugger](/docs/agents/build-analysis/debugger) — uses `explore-harness` during multi-hypothesis investigations
+- [planner](/docs/agents/build-analysis/planner) — sequences tasks based on exploration results

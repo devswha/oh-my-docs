@@ -1,0 +1,51 @@
+---
+title: "环境"
+description: "OMX 环境变量参考 — API 密钥、kill switch、状态目录 override"
+---
+
+OMX 在启动时读取环境变量。在 shell profile 中 `export` 后，所有会话将自动生效。
+
+## 必填
+
+| 变量 | 说明 |
+|---|---|
+| `OPENAI_API_KEY` | OpenAI API 密钥。未设置则 CLI 无法启动。 |
+
+## OpenClaw 相关
+
+| 变量 | 默认值 | 说明 |
+|---|---|---|
+| `OMX_OPENCLAW` | unset | 设为 `1` 时启用 OpenClaw dispatch pipeline。未设置时钩子事件不会转发到任何 gateway。 |
+| `OMX_OPENCLAW_COMMAND` | unset | 启用 command 类型 gateway（例：`clawdbot` agent launcher）。需要 `OMX_OPENCLAW=1`。 |
+| `OMX_OPENCLAW_COMMAND_TIMEOUT_MS` | `5000` | command gateway 调用超时（ms）。`clawdbot` agent 工作流请设为 `120000` 以上。 |
+| `HOOKS_TOKEN` | unset | OpenClaw HTTP gateway 认证使用的 bearer token |
+
+## Kill switch
+
+| 变量 | 说明 |
+|---|---|
+| `OMX_SKIP_HOOKS` | 要禁用的钩子名称列表（逗号分隔）。全部禁用填 `*`。调试或 CI 中验证 raw Codex 行为时使用。 |
+| `DISABLE_OMX` | 设为非空值时禁用整个 OMX 扩展层。Codex 将以未安装 OMX 的状态运行。 |
+
+## 状态目录 override
+
+| 变量 | 默认值 | 说明 |
+|---|---|---|
+| `OMX_STATE_DIR` | `.omx/state/` | 更改 OMX 记录会话/团队状态的目录。在 CI 或 multi-worktree 环境中很有用。 |
+
+## Shell Profile 示例
+
+```bash
+# Required
+export OPENAI_API_KEY="sk-..."
+
+# OpenClaw (optional — enable if you use hook notifications)
+export OMX_OPENCLAW=1
+export OMX_OPENCLAW_COMMAND=1
+export OMX_OPENCLAW_COMMAND_TIMEOUT_MS=120000
+export HOOKS_TOKEN="your-token-here"
+```
+
+## 相关文档
+
+- [配置](/zh/docs/reference/configuration) — 与环境变量配合使用的配置文件和 CLI 标志

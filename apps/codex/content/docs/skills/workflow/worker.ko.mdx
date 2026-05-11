@@ -1,0 +1,47 @@
+---
+title: $worker
+description: 공유 태스크 큐에서 작업을 가져와 실행하고 완료 처리 후 다음 항목으로 넘어가는 에이전트 워커 프로토콜
+---
+
+`$worker`는 `$team` 또는 `$swarm`에 참여하는 각 에이전트 세션이 따르는 프로토콜입니다. 워커는 inbox를 읽고, claim-safe lifecycle API로 다음 차단되지 않은 태스크를 가져오고, 작업을 수행하고, 태스크를 completed 또는 failed로 전환한 뒤 다음 항목을 가져옵니다. 이 claim-before-work 계약 덕분에 여러 에이전트가 큐를 공유할 때 두 워커가 같은 작업을 건드리는 일이 없습니다.
+
+## 언제 쓰나
+
+- `$team` 또는 `$swarm`이 현재 세션을 팀 워커로 시작했을 때 (`OMX_TEAM_WORKER`가 설정된 경우)
+- 큐가 빌 때까지 지속적으로 태스크를 처리하는 세션이 필요할 때
+- 팀 리더가 작업을 분해해 두고 워커가 가져가서 실행해야 할 때
+- 멀티에이전트 시스템에서 신뢰할 수 있는 워커 루프 기본 단위가 필요할 때
+
+## 호출 방법
+
+`$worker`는 보통 `$team` 또는 `$swarm`이 자동으로 시작합니다. `OMX_TEAM_WORKER`가 설정된 세션에서 직접 호출할 수도 있습니다.
+
+```
+codex
+> $worker
+```
+
+```bash
+# team 스킬이 다음과 같이 시작합니다:
+OMX_TEAM_WORKER="alpha/worker-2" codex
+```
+
+## 동작 방식
+
+시작 시 `OMX_TEAM_WORKER`에서 자신의 정체(`{teamName}/{workerName}` 형식)를 파싱하고, 태스크를 건드리기 전에 리더 mailbox에 startup ACK을 보냅니다.
+
+이후 canonical 팀 상태 루트를 확인하고, `.omx/state/team/{team}/workers/{worker}/inbox.md`에서 inbox를 읽은 뒤 차단되지 않은 첫 번째 태스크를 선택합니다. `omx team api claim-task`로 태스크를 claim합니다. 다른 워커가 먼저 가져갔으면 claim이 실패하고 다음 태스크로 넘어갑니다.
+
+작업을 완료하면 `omx team api transition-task-status`로 태스크를 completed 또는 failed로 전환하고, 자신의 상태를 `idle`로 업데이트하고, 다음 태스크를 가져오는 루프로 돌아갑니다. inbox에서 shutdown 메시지를 받으면 리더 지시에 따라 정리 후 종료합니다.
+
+## 출력
+
+- 작업 디렉토리에 커밋된 완료 태스크 결과물
+- `.omx/state/team/{team}/tasks/`에 업데이트된 태스크 상태 파일
+- 리더가 확인할 수 있는 팀 mailbox의 ACK 및 상태 메시지
+
+## 관련 스킬
+
+- [`$team`](/ko/docs/skills/workflow/team) — 워커를 시작하고 조율하는 코디네이터
+- [`$swarm`](/ko/docs/skills/workflow/swarm) — 여러 워커를 병렬로 생성하는 팬아웃 실행
+- [`$ralph`](/ko/docs/skills/workflow/ralph) — 단일 세션 지속 실행 루프

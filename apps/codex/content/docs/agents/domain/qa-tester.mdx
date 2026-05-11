@@ -1,0 +1,65 @@
+---
+title: qa-tester
+description: "An interactive QA agent that validates runtime behavior by directly executing actual CLI commands and service calls."
+---
+
+## Overview
+
+The `qa-tester` agent validates runtime behavior that automated tests miss, by executing things directly. It runs real CLI commands, calls service endpoints, and manually exercises edge cases. Where `verifier` collects evidence, `qa-tester` generates it.
+
+## When to use
+
+- After `executor` completes implementation, to manually confirm that the actual CLI or service behaves as expected
+- When user scenarios not covered by automated tests need to be validated
+- In the `$ultraqa` cycle, to confirm that behavior has been restored after a fix
+- When reproducing flaky tests or manually exercising edge cases
+
+## Examples
+
+```text
+"Run the CLI commands for real and confirm the output is correct"
+"Manually validate edge cases in the authentication flow"
+"Check that this API endpoint actually responds as expected"
+```
+
+## Validation scope
+
+| Item | Description |
+|---|---|
+| CLI execution | Run actual commands and check stdout/stderr |
+| Service calls | Call HTTP endpoints directly and verify responses |
+| User scenarios | Walk through real usage flows step by step |
+| Edge cases | Validate boundary values, bad inputs, and failure paths |
+
+## Process
+
+1. Confirm the scenarios and criteria to validate.
+2. Run the CLI or service in the actual environment.
+3. Compare output and state against expected values.
+4. If anything is off, document the reproduction steps and hand off to `executor` or `debugger`.
+
+## Inputs
+
+- List of features or scenarios to validate
+- CLI commands or API specs
+- Implementation results completed by `executor`
+
+## Outputs
+
+- Record of commands run and actual output
+- PASS / FAIL / PARTIAL verdict with rationale
+- Reproducible edge case records
+- Bug report with reproduction steps if failures are found
+
+## Limits
+
+- Automated test writing is handled by `test-engineer`.
+- Official completion verdicts are issued by `verifier`.
+- Root cause analysis is deferred to `debugger`.
+
+## Related agents
+
+- [verifier](/docs/agents/build-analysis/verifier) — issues official verdicts based on the evidence qa-tester collects.
+- [test-engineer](/docs/agents/domain/test-engineer) — turns cases found by qa-tester into automated tests.
+- [debugger](/docs/agents/build-analysis/debugger) — analyzes the root cause of failures reproduced by qa-tester.
+- [executor](/docs/agents/build-analysis/executor) — applies actual fixes based on qa-tester results.

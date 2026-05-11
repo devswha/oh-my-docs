@@ -1,0 +1,54 @@
+---
+title: $visual-verdict
+description: 생성된 UI 스크린샷과 레퍼런스 이미지를 비교해 점수·차이점·수정 제안을 JSON으로 반환하는 시각 QA 도구
+---
+
+`$visual-verdict`는 생성된 UI와 레퍼런스 이미지를 결정론적으로 비교합니다. 0-100 점수, pass/revise/fail 판정, 구체적인 차이점 목록, 차이점별 수정 제안을 담은 JSON을 반환합니다. 90점 미만이면 이터레이션을 계속해야 합니다.
+
+## 언제 쓰나
+
+- 생성된 스크린샷과 레퍼런스 이미지를 비교해야 할 때
+- 레이아웃·간격·타이포그래피·컴포넌트 스타일에 시각적 정확도 요구가 있을 때
+- UI 변경을 머지하거나 배포하기 전 확정적인 pass/fail 기준이 필요할 때
+- `$ralph` 또는 `$web-clone` 루프 안에서 점수 기반 품질 신호가 필요할 때
+
+트리거 키워드: "visual verdict", "compare screenshot", "visual QA", "check if it matches"
+
+## 호출 방법
+
+```
+codex
+> $visual-verdict reference_images=["design.png"] generated_screenshot="output.png"
+```
+
+```
+codex
+> visual verdict — compare current screenshot against designs/header-spec.png
+```
+
+## 동작 방식
+
+레퍼런스 이미지와 생성된 스크린샷을 불러와 다차원 비교를 수행합니다. 비교 항목은 레이아웃 구조, 간격과 패딩, 타이포그래피(폰트 패밀리·굵기·크기), 색상 값, 시각적 계층 구조입니다.
+
+결과는 단일 JSON 객체로 나옵니다. 90점 이상이면 pass, 미만이면 revise입니다. `differences` 배열에는 "상단 내비게이션 간격이 레퍼런스보다 8px 좁음" 같은 구체적인 불일치가 나열됩니다. `suggestions` 배열은 각 차이점에 대응하는 수정 방법을 담습니다.
+
+찾기 어려운 불일치를 진단할 때는 픽셀 레벨 diff 도구를 보조 수단으로 쓸 수 있지만, 최종 판정은 visual-verdict가 기준입니다. ralph 루프 안에서 실행하면 판정이 `.omx/state/{scope}/ralph-progress.json`에 기록돼 루프가 그 결과를 기반으로 동작합니다.
+
+## 출력
+
+```json
+{
+  "score": 87,
+  "verdict": "revise",
+  "category_match": true,
+  "differences": ["Primary button uses smaller font weight"],
+  "suggestions": ["Set primary button font-weight to 600"],
+  "reasoning": "Core layout matches but style details still diverge."
+}
+```
+
+## 관련 스킬
+
+- [`$frontend-ui-ux`](/ko/docs/skills/workflow/frontend-ui-ux) — 이터레이션 게이트로 visual-verdict를 사용하는 UI 생성 스킬
+- [`$ultraqa`](/ko/docs/skills/workflow/ultraqa) — visual-verdict를 품질 목표로 포함할 수 있는 QA 사이클
+- [`$web-clone`](/ko/docs/skills/workflow/web-clone) — 시각적 정확도 점수 측정에 visual-verdict를 사용하는 복제 워크플로우

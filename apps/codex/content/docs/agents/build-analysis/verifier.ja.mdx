@@ -1,0 +1,68 @@
+---
+title: verifier
+description: "完了の主張を実際のコマンド出力と成果物で検証する、証拠ベースの検証エージェント。"
+---
+
+`verifier` エージェントはすべての完了の主張を一つの仮説として扱います。テストを実行し、diff を見て、build log を読み、実際の出力をもとに PASS / FAIL / PARTIAL の判定を下します。「終わった」という言葉だけでは不十分で、その主張を証明するものが何かを具体的な artifact として指し示せる必要があります。
+
+## いつ呼ばれるか
+
+| 状況 | 呼び出し経路 |
+|---|---|
+| `$autopilot`、`$ralph`、`$ultraqa` サイクルの end-of-task チェックポイント | 自動 |
+| `executor` がタスクを完了処理した後の acceptance criteria 確認 | 自動 |
+| `$ultraqa` fix loop で前のサイクルの verdict が FAIL または PARTIAL のとき | 自動 |
+| 機能の動作に関する独立した second opinion が必要なとき | 直接要求 |
+
+## 使用例
+
+```text
+"executor が終わったと言ったが、実際の証拠で検証して"
+"この機能が acceptance criteria をすべて満たしているか確認して"
+"テストは通過したが release 可能なレベルか evidence 基準で見て"
+```
+
+## 検証プロセス
+
+1. 何を証明すべきか acceptance criteria を改めて立てます。
+2. その基準を確認するコマンド（テスト、ビルド、smoke check）を実行するか結果を読みます。
+3. 証拠が十分か、まだ欠けているものがあるかを区別します。
+4. PASS / FAIL / PARTIAL の判定を下します。
+
+「それらしく見える」ではなく、実際に何が証拠なのかを判断基準に使います。
+
+## 即時拒否条件
+
+以下の状況では承認する方向に傾きません。
+
+- 「should」「probably」「seems to」などの推測的な表現だけがあるとき
+- 最新のテスト出力がないとき
+- 「すべてのテストが通過した」という主張だけで実際の結果がないとき
+- TypeScript の変更なのに型チェックの証拠がないとき
+- コンパイル言語の変更なのにビルドの検証がないとき
+
+## 入力
+
+- 検証すべき主張（例：「all tests pass」「the API returns 200 on valid input」）
+- test output、build log、diff、route smoke result、既存の verifier report などの関連 artifact
+- オプションで `analyst` が作った `.omx/specs/` の acceptance criteria
+
+## 出力
+
+- stdout または `.omx/verification/<topic>.md` に残す PASS / FAIL / PARTIAL verdict report
+- 実行したコマンドとその出力の evidence リスト
+- 欠けている証拠や判断できない領域を書いた gaps セクション
+- 残っている uncertainty とフォローアップを書いた risks セクション
+
+## 範囲の限界
+
+- 失敗を直接修正しません。`executor`、`build-fixer`、`debugger` に渡します。
+- 主観的な品質、UX、セキュリティの判断を完全に代替しません。
+- stale な出力を再利用せず、可能な限り fresh な evidence を改めて集めます。
+
+## 関連エージェント
+
+- [executor](/ja/docs/agents/build-analysis/executor) — verifier が検証する実際の実装担当者。
+- [test-engineer](/ja/docs/agents/domain/test-engineer) — verifier が依存するテスト戦略とカバレッジを設計します。
+- [quality-reviewer](/ja/docs/agents/review/quality-reviewer) — verifier が扱わない主観的な品質の側面を検討します。
+- [critic](/ja/docs/agents/coordination/critic) — 実行前の計画と設計を検討して post-execution verification を補完します。

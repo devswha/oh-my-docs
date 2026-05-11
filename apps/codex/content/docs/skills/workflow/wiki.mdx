@@ -1,0 +1,56 @@
+---
+title: $wiki
+description: Project knowledge base that accumulates across sessions — stored as markdown pages under .omx/wiki/ with search, add, and lint capabilities
+---
+
+`$wiki` maintains a markdown knowledge base under `.omx/wiki/`. Each page is a plain markdown file with tags and categories. Discoveries made in one session become searchable context in future sessions, reducing the cost of re-exploring the same parts of a codebase.
+
+## When to use it
+
+- When saving architecture decisions, debugging findings, or recurring patterns for future sessions
+- When checking what the project wiki already knows before starting an investigation
+- When ingesting external docs, specs, or research into the project knowledge base
+- When checking for broken links, missing tags, or stale pages
+
+Trigger keywords: "wiki add", "wiki query", "wiki lint", "add to wiki", "search wiki"
+
+## How to invoke
+
+```
+codex
+> wiki add "Auth uses JWT with 15-minute access tokens and 7-day refresh tokens stored in httpOnly cookies"
+```
+
+```
+codex
+> wiki query "authentication flow"
+```
+
+```
+codex
+> $wiki lint
+```
+
+## How it works
+
+Provides 5 core operations.
+
+- `wiki_add` — creates a new page with title, content, tags, and a category. Categories: architecture, decision, pattern, debugging, environment, session-log, reference, convention.
+- `wiki_query` — searches pages by keyword and tag matching and returns ranked results. No vector embeddings, so specific terms yield the best results.
+- `wiki_ingest` — accepts external docs or spec files and splits them into categorized pages.
+- `wiki_lint` — checks for broken `[[page-name]]` internal links, missing required tags, and stale pages.
+- `wiki_read`, `wiki_list`, `wiki_delete` — direct page management.
+
+All pages are stored as markdown files under `.omx/wiki/`, with a shared index maintained at `.omx/wiki/index.md`. Fully portable and inspectable without tooling, travels with the repository.
+
+## Outputs
+
+- `.omx/wiki/{slug}.md` — individual knowledge pages
+- `.omx/wiki/index.md` — auto-maintained index of all pages with tags and categories
+- `.omx/wiki/log.md` — append-only log of add, update, and delete operations
+- Lint report listing broken cross-references, missing tags, and stale pages
+
+## Related skills
+
+- [`$deepsearch`](/docs/skills/workflow/deepsearch) — deep codebase search whose findings are worth saving in the wiki
+- [`$trace`](/docs/skills/workflow/trace) — session execution record that can be ingested as a session-log wiki page

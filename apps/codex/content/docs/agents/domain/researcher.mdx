@@ -1,0 +1,64 @@
+---
+title: researcher
+description: "A Domain agent that looks up external documentation, SDK references, and library specs to bring in information needed for implementation."
+---
+
+## Overview
+
+The `researcher` agent investigates external documentation and references. Call it when you need information that isn't in the codebase — things like SDK usage, library API specs, or service constraints. Its role is to secure accurate information before implementation, reducing the chance that `executor` writes code based on guesses.
+
+## When to use
+
+- When you need to verify the correct usage of an SDK or library you haven't used before
+- When you need to understand the constraints, rate limits, or authentication method of an external service API
+- When official references need to be checked because current docs may differ from training data
+- When parallel documentation research is needed via `$external-context` or `$document-specialist`
+
+## Examples
+
+```text
+"Look up how to verify Stripe Webhooks based on the official docs"
+"Find how to configure middleware in Next.js App Router"
+"Research how to migrate this library from v3 to v4"
+```
+
+## Research scope
+
+| Item | Description |
+|---|---|
+| SDK / library | Official references, function signatures, configuration options |
+| External service API | Endpoint specs, authentication methods, constraints |
+| Migration guides | Version changes, breaking changes, upgrade procedures |
+| Best practices | Officially recommended patterns, known caveats |
+
+## Process
+
+1. Clarify the research target — what exactly needs to be known.
+2. Check official documentation or references first.
+3. Use documentation tools like context7 when necessary.
+4. Summarize findings in a form that can be used directly for implementation.
+
+## Inputs
+
+- Name of the library, SDK, or service to research
+- The specific API or feature to verify
+- Areas where implementation is blocked or uncertain
+
+## Outputs
+
+- Accurate usage summary based on official documentation
+- Function signatures, configuration options, and example code
+- Known constraints or caveats
+- Reference source links
+
+## Limits
+
+- Does not write code directly. Provides information and hands off to `executor` for implementation.
+- States uncertainty explicitly when official documentation is unavailable.
+- Internal codebase exploration is handled by `explore`.
+
+## Related agents
+
+- [executor](/docs/agents/build-analysis/executor) — implements based on the information researcher retrieves.
+- [dependency-expert](/docs/agents/domain/dependency-expert) — handles SDK/package selection and version judgment.
+- [explore](/docs/agents/build-analysis/explore) — handles internal codebase exploration and file structure mapping.

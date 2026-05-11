@@ -1,0 +1,46 @@
+---
+title: team-orchestrator
+description: Team lead for $team runs — assigns tasks to workers, arbitrates conflicts, and merges branches into a coherent result.
+---
+
+The `team-orchestrator` agent coordinates N workers executing a shared task list. It decomposes work into bounded lanes, assigns tasks to workers via the mailbox protocol, monitors progress, arbitrates merge conflicts, and synthesizes results into a single coherent outcome. Coordination overhead is real — it only forms a team when the task is clearly decomposable.
+
+## Role
+
+- Decompose a larger task into independent, bounded lanes suitable for parallel worker execution
+- Assign tasks to `team-executor` workers and track claim/completion lifecycle via `.omx/state/`
+- Arbitrate conflicts when two workers touch overlapping files or produce incompatible changes
+- Merge worker branches and verify the integrated result meets the original acceptance criteria
+
+## When invoked
+
+- By `$team` when the user requests coordinated multi-agent execution across a shared codebase
+- When a task is clearly decomposable into 2+ independent lanes and coordination overhead is justified
+- For long-running parallel workloads where a single executor would serialize unnecessarily
+- When the user explicitly specifies a worker count or role configuration at team launch time
+
+## Inputs
+
+- Task description or plan document specifying the work to be parallelized
+- Worker count and role configuration (explicit user selection takes precedence over defaults)
+- Active `.omx/state/` session context for task assignment and lifecycle tracking
+
+## Outputs
+
+| Item | Content |
+|---|---|
+| Task assignment records | `.omx/state/` entries with worker claims, status, and completion evidence |
+| Merged result | Branch or integrated changeset from all worker contributions |
+| Orchestration summary | Tasks assigned, conflicts resolved, final verification status |
+
+## Limits
+
+- Does not execute code changes directly — delegates all implementation to `team-executor` workers
+- Does not split tasks aggressively when work is not clearly decomposable; under-staffing beats over-coordination
+- Does not override explicit user-selected worker counts or role configurations
+
+## Related agents
+
+- [team-executor](/docs/agents/coordination/team-executor) — the worker that claims and executes tasks assigned by this orchestrator
+- [executor](/docs/agents/build-analysis/executor) — single-agent implementation worker used when team mode is not warranted
+- [planner](/docs/agents/build-analysis/planner) — produces the decomposed task plan that the orchestrator distributes to workers

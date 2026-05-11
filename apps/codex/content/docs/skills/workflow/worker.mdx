@@ -1,0 +1,47 @@
+---
+title: $worker
+description: Agent worker protocol that claims tasks from a shared task queue, executes them, completes them, and moves to the next item
+---
+
+`$worker` is the protocol each agent session follows when participating in `$team` or `$swarm` execution. A worker reads its inbox, claims the next unblocked task via a claim-safe lifecycle API, does the work, transitions the task to completed or failed, then pulls the next item. This claim-before-work contract ensures two workers never touch the same task when multiple agents share a queue.
+
+## When to use it
+
+- When `$team` or `$swarm` has started the current session as a team worker (`OMX_TEAM_WORKER` is set)
+- When a session needs to continuously process tasks until the queue drains
+- When a team leader has decomposed work into tasks and needs workers to claim and execute them
+- When a reliable worker loop primitive is needed in a multi-agent system
+
+## How to invoke
+
+`$worker` is normally started automatically by `$team` or `$swarm`. You can also invoke it directly in a session with `OMX_TEAM_WORKER` set.
+
+```
+codex
+> $worker
+```
+
+```bash
+# team skill starts it like this:
+OMX_TEAM_WORKER="alpha/worker-2" codex
+```
+
+## How it works
+
+On startup, parses identity from `OMX_TEAM_WORKER` (format `{teamName}/{workerName}`) and sends a startup ACK to the leader mailbox before touching any tasks.
+
+Then resolves the canonical team state root, reads the inbox at `.omx/state/team/{team}/workers/{worker}/inbox.md`, and picks the first unblocked task. Claims the task via `omx team api claim-task`. If the claim fails because another worker got there first, it skips to the next task.
+
+After completing work, calls `omx team api transition-task-status` to mark the task completed or failed, updates own status to `idle`, and loops back to pull the next task. When it receives a shutdown message in its inbox, it cleans up and exits as directed by the leader.
+
+## Outputs
+
+- Completed task artifacts committed to the working directory
+- Task state files updated in `.omx/state/team/{team}/tasks/`
+- ACK and status messages in the team mailbox for leader visibility
+
+## Related skills
+
+- [`$team`](/docs/skills/workflow/team) — coordinator that starts and manages workers
+- [`$swarm`](/docs/skills/workflow/swarm) — fan-out execution that spawns multiple workers in parallel
+- [`$ralph`](/docs/skills/workflow/ralph) — single-session persistent execution loop

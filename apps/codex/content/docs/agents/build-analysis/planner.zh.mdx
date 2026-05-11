@@ -1,0 +1,46 @@
+---
+title: planner
+description: "将规格转化为可执行的文件级计划和 acceptance criteria 的任务顺序设计 agent。"
+---
+
+`planner` agent 在收到实现请求后，不会立即执行，而是将其转化为可执行的分步任务计划。它直接检查仓库，根据实际范围确定步骤数，并创建包含可验证 acceptance criteria 的计划。计划与实现严格分离——planner 写计划，不写代码。
+
+## 职责
+
+- 将规格分解为包含精确文件、函数和 expected outcome 的有序任务。
+- 将计划写入 `.omx/plans/*.md`，将未解决的问题整理到 `.omx/plans/open-questions.md`。
+- 从对仓库的直接调查中导出代码库事实，而非依赖用户推测。
+- 通过 `$ralplan` 调用时，包含 consensus-mode RALPLAN-DR 和 ADR 块。
+
+## 何时被调用
+
+| 场景 | 调用路径 |
+|---|---|
+| `$autopilot`、`$ralplan` 中执行前的计划阶段 | 自动 |
+| 通过 `$plan` 请求功能、重构或计划 | 直接请求 |
+| 请求范围不明确，需要在投入 executor 前做 scoping | 直接请求 |
+| ralph loop 卡住，需要重新安排 sequencing 时 | `ralph` 委派 |
+
+## 输入
+
+- 用户请求或问题描述
+- 通过 Glob、Grep、Read 直接确认的仓库内容
+- 当前会话的 `.omx/plans/` 或 `.omx/state/` 上下文
+
+## 输出
+
+- 包含 adaptive step count、target file、acceptance criteria 的 `.omx/plans/{name}.md` 计划文件
+- 概述范围、预估复杂度和核心 deliverable 的 plan summary
+- consensus mode 下包含 RALPLAN-DR 原则/驱动因素和 ADR 备选方案/根据
+
+## 范围限制
+
+- 不直接修改 source file。职责范围止于生成计划。
+- step count 与实际范围匹配，不强制创建五步计划。
+- 在用户未确认 intent 或没有明确的 proceed signal 时，不最终确定计划。
+
+## 相关 agent
+
+- [architect](/zh/docs/agents/build-analysis/architect) — 审查计划中的系统边界和设计权衡。
+- [analyst](/zh/docs/agents/build-analysis/analyst) — 在计划前明确需求和 acceptance criteria。
+- [executor](/zh/docs/agents/build-analysis/executor) — 将完成的计划转化为实际实现。

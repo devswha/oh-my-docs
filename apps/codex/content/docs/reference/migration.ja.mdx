@@ -1,0 +1,61 @@
+---
+title: "マイグレーション"
+description: "OMX バージョン間の breaking change とアップグレード手順"
+---
+
+新しい major/minor バージョンへ上げる際は、このページを最初に確認してください。全リリース履歴は[変更ログ](/ja/docs/reference/changelog)にあります。
+
+## Post-v0.4.4 mainline
+
+catalog 統合、setup scope 変更、tmux hardening が反映されたバージョンです。完全なアップストリームガイドは [`docs/migration-mainline-post-v0.4.4.md`](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/migration-mainline-post-v0.4.4.md) を参照してください。
+
+### 削除されたプロンプト
+
+- `deep-executor` — 代わりに `/prompts:executor` を使用
+- `scientist` — リサーチワークフローには `/prompts:researcher` を使用
+
+### 削除されたスキル
+
+| 削除済み | 代替方法 |
+|---|---|
+| `$pipeline` | `$team`（デフォルト orchestrator） |
+| `$ultrapilot` | `$team` |
+| `$deepinit` | `omx agents-init [path]`（CLI コマンド） |
+| `$psm` / `$project-session-manager` | リポジトリ内に代替なし — 自動化から削除 |
+| `$release` | リポジトリ内に代替なし — プロジェクトリリースプロセスを使用 |
+| `$learn-about-omx` / `$learner` / `$writer-memory` | リポジトリ内に代替なし — 古い参照を削除 |
+
+### setup scope 変更
+
+`omx setup` が `--scope user` と `--scope project` をサポートするようになりました。既存の `project-local` 値は自動的にマイグレーションされます。
+
+```bash
+omx help | grep -e "--scope"
+```
+
+### 確認チェックリスト
+
+アップグレード後に削除済みの参照が残っていないか確認します。
+
+```bash
+rg -n "deep-executor|scientist|pipeline|project-session-manager|ultrapilot" \
+  README.md docs scripts .omx -S
+```
+
+team の状態も確認します。
+
+```bash
+omx doctor --team
+```
+
+## 一般的なアップグレード手順
+
+1. 最新バージョンをインストール: `npm install -g oh-my-codex`
+2. `omx doctor` を実行して設定の問題を確認
+3. 不足しているプロンプト/スキルが報告された場合は `omx setup` を再実行
+4. このページと変更ログでバージョンごとの追加手順を確認
+
+## 関連ドキュメント
+
+- [変更ログ](/ja/docs/reference/changelog) — 全リリース履歴
+- [設定](/ja/docs/reference/configuration) — マイグレーションの影響がある設定ファイル

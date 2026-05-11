@@ -1,0 +1,56 @@
+---
+title: $wiki
+description: 跨会话累积的项目知识库 — 以 markdown 页面形式保存在 .omx/wiki/ 下，支持检索、添加、检查
+---
+
+`$wiki` 在 `.omx/wiki/` 下维护 markdown 知识库。每个页面是带有标签和分类的普通 markdown 文件。某个会话中发现的内容作为可检索的上下文保留到下一个会话，降低重新探索同一代码库的成本。
+
+## 何时使用
+
+- 想将架构决策、调试结果、重复模式保存供下一个会话使用时
+- 开始调查前先确认项目 wiki 中已有的内容时
+- 将外部文档、规格、研究资料导入项目知识库时
+- 检查断链、缺失标签、过期页面时
+
+触发关键词: "wiki add", "wiki query", "wiki lint", "add to wiki", "search wiki"
+
+## 调用方式
+
+```
+codex
+> wiki add "Auth uses JWT with 15-minute access tokens and 7-day refresh tokens stored in httpOnly cookies"
+```
+
+```
+codex
+> wiki query "authentication flow"
+```
+
+```
+codex
+> $wiki lint
+```
+
+## 工作方式
+
+提供 5 种核心操作。
+
+- `wiki_add` — 指定标题、内容、标签、分类创建新页面。分类从 architecture、decision、pattern、debugging、environment、session-log、reference、convention 中选择。
+- `wiki_query` — 通过关键词和标签匹配搜索页面并按排名返回。没有向量嵌入，使用具体术语搜索时结果最佳。
+- `wiki_ingest` — 接收外部文档或规格文件，拆分为分类页面导入。
+- `wiki_lint` — 检查 `[[页面名]]` 格式的断链、缺少必需标签、过期页面。
+- `wiki_read`、`wiki_list`、`wiki_delete` — 直接管理页面。
+
+所有页面以 markdown 文件形式保存在 `.omx/wiki/` 下，共享索引维护在 `.omx/wiki/index.md`。不需要工具也可以打开，随仓库一起迁移。
+
+## 输出
+
+- `.omx/wiki/{slug}.md` — 单个知识页面
+- `.omx/wiki/index.md` — 包含所有页面标签和分类的自动维护索引
+- `.omx/wiki/log.md` — 添加、修改、删除操作的 append-only 日志
+- 列举断链、缺失标签、过期页面的 lint 报告
+
+## 相关 skill
+
+- [`$deepsearch`](/zh/docs/skills/workflow/deepsearch) — 值得保存到 wiki 的代码库深度搜索
+- [`$trace`](/zh/docs/skills/workflow/trace) — 可作为 session-log 页面导入 wiki 的会话执行记录

@@ -1,0 +1,31 @@
+---
+title: $pipeline
+description: 按顺序执行预定义步骤的流水线 skill
+---
+
+## 一句话概述
+
+`$pipeline` 用于需要按顺序执行多个步骤的场景。每个步骤完成后进入下一步，中间结果作为下一步的输入。
+
+## 调用方式
+
+```
+$pipeline "按 lint → test → build → deploy 顺序执行"
+```
+
+## 何时使用
+
+| 适合 | 避免 |
+|---|---|
+| CI/CD 步骤等顺序固定的工作 | 可并行化的独立任务 |
+| 每步输出作为下步输入的情况 | 单一任务执行 |
+| 可重复再现的发布流程 | |
+
+## 与 `$ralph` 的区别
+
+`$ralph` 是循环执行直到有完成证据的循环。`$pipeline` 步骤顺序固定，每步只执行一次。需要逐步确认结果时，`$pipeline` 更合适。
+
+## 相关 skill
+
+- [`$ralph`](/zh/docs/skills/workflow/ralph) — 循环执行直到完成
+- [`$team`](/zh/docs/skills/workflow/swarm) — 将步骤拆分为并行 lane

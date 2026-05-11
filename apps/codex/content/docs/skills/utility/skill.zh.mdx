@@ -1,0 +1,40 @@
+---
+title: $skill
+description: "管理本地技能的技能。支持列表查看、添加、删除。"
+---
+
+## 概述
+
+`$skill` 管理当前环境中已安装的技能。用于查看有哪些技能、添加新技能或删除现有技能。
+
+## 使用示例
+
+```text
+$skill list
+$skill add my-workflow
+$skill remove my-workflow
+```
+
+| 命令 | 说明 |
+|---|---|
+| `$skill list` | 输出已安装技能的完整列表 |
+| `$skill add <name>` | 添加新技能 |
+| `$skill remove <name>` | 删除技能 |
+
+## 何时使用
+
+- 确认当前可用的技能列表时
+- 添加或删除自定义技能时
+- 检查已安装的技能是否正确放置时
+
+## 何时避免
+
+- 查看技能内容或确认使用方法时 — 使用 `$help <skill-name>`。
+- 诊断整体环境 — 使用 `$doctor`。
+- 更改技能安装路径配置 — 使用 `$omx-setup`。
+
+## 相关项目
+
+- [$help](/zh/docs/skills/utility/help) — 确认技能使用方法
+- [$omx-setup](/zh/docs/skills/utility/omx-setup) — 技能文件安装和更新
+- [技能概述](/zh/docs/skills) — 完整技能目录

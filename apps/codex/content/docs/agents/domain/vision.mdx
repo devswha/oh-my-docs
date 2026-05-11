@@ -1,0 +1,64 @@
+---
+title: vision
+description: "A Domain agent that analyzes images and screenshots to validate visual output and provide UI feedback."
+---
+
+## Overview
+
+The `vision` agent reads images and screenshots to analyze visual output. Its role is to confirm whether rendered results differ from expectations, whether layouts are broken, and whether design specs match the actual implementation. It is used to catch visual regressions that text-based code review misses.
+
+## When to use
+
+- After a UI change, when the actual rendering result needs to be validated via screenshot
+- When a design mockup needs to be compared against the implementation result
+- When visual bugs like broken layouts, color mismatches, or text clipping need to be found
+- When visual QA verdicts are needed in the `$visual-verdict` skill
+
+## Examples
+
+```text
+"Find layout problems in this screenshot"
+"Compare the design mockup against the actual implementation"
+"Confirm the rendering result is correct after switching to dark mode"
+```
+
+## Analysis scope
+
+| Item | Description |
+|---|---|
+| Layout validation | Check component position, spacing, and alignment |
+| Visual regression | Detect rendering differences before and after changes |
+| Design match | Compare mockup vs actual implementation |
+| UI bugs | Text clipping, color mismatches, overlapping elements, etc. |
+
+## Process
+
+1. Receive the image or screenshot to analyze.
+2. Compare against the reference (design mockup, previous screenshot, or spec).
+3. Record differences and problems in specific terms.
+4. If fixes are needed, hand off to `designer` or `executor`.
+
+## Inputs
+
+- Screenshot or image file to analyze
+- Design mockup or previous screenshot as a reference baseline
+- Specific items to check, if any
+
+## Outputs
+
+- List of visual problems found and their locations
+- Comparison summary of expected vs actual results
+- PASS / FAIL / PARTIAL verdict
+- Specific descriptions of items that need fixing
+
+## Limits
+
+- Code changes are handled by `executor`.
+- UX strategy judgments are deferred to `ux-researcher` and `designer`.
+- Performance measurement is handled by `performance-reviewer`.
+
+## Related agents
+
+- [designer](/docs/agents/domain/designer) — resolves visual problems found by vision from a design perspective.
+- [qa-tester](/docs/agents/domain/qa-tester) — validates UI runtime behavior alongside vision.
+- [executor](/docs/agents/build-analysis/executor) — fixes the visual bugs that vision identifies.

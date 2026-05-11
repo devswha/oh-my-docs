@@ -1,0 +1,51 @@
+---
+title: "변경 로그"
+description: "OMX 릴리스 이력 — 최신 릴리스 요약과 업스트림 CHANGELOG 링크"
+---
+
+전체 changelog는 업스트림 [`CHANGELOG.md`](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md)에서 관리됩니다. 이 페이지는 최근 릴리스를 요약합니다.
+
+## 최신 릴리스 — v0.14.4
+
+기본 frontier lane을 `gpt-5.5`로 올리면서 standard/mini lane과 spark lane은 기존의 정확한 모델 고정값으로 유지하는 패치 릴리스입니다.
+
+**변경 사항:**
+- runtime 기본값, Codex agent 기본값, `omx explore` fallback 동작에서 frontier 기본값이 `gpt-5.5`를 사용합니다.
+- setup/config 안내와 regression coverage가 `gpt-5.5` 기본값을 설명하도록 갱신되었고, 기존 context size 권장값은 유지됩니다.
+- 생성되는 setup config와 executor worker launch 기본값이 이제 medium reasoning을 기본으로 사용합니다.
+- mini와 spark lane은 그대로입니다. `gpt-5.4-mini`와 `gpt-5.3-codex-spark` 동작은 변경되지 않았습니다.
+
+**수정 사항:**
+- Node/Cargo metadata, lockfile, changelog, release body, release note, release-readiness 자료의 릴리스 메타데이터 drift를 정렬했습니다.
+
+## v0.14.3
+
+`0.14.2` 이후의 안정성 강화 릴리스입니다. `omx question`/deep-interview return-pane 동작, project-local explore launch context, setup TOML repair 안전성, HUD window targeting, ultrawork protocol 정렬, BusyBox cleanup 호환성, stale Stop/autopilot state 처리, supervisor runtime event, Docker-host tmux question rendering, native Windows psmux worker pane bootstrap hardening을 다룹니다.
+
+## v0.14.2 및 v0.14.1
+
+interactive orchestration 안정성에 집중한 패치 릴리스입니다. 더 안전한 `omx question` renderer 동작, 공유 tmux answer-submit semantics, 더 엄격한 deep-interview state 처리, Korean `ulw` keyboard drift handling, setup/update refresh 복원력, lifecycle contract cleanup, 더 명확한 deep-interview background-question guidance를 포함합니다.
+
+## v0.14.0
+
+interactive orchestration 변화를 중심으로 한 minor release입니다. 새로운 `omx question` blocking-question entrypoint, 구조화된 deep-interview question obligation, advisory triage routing, validator-gated autoresearch, 명시적인 runtime run outcome, 더 명확한 specialist routing, 배포 패키지 hardening이 포함됩니다.
+
+## v0.13.x 시리즈
+
+`omx adapt` 기반, Ralph/runtime authority 수정, hook과 HUD 안정성, worker identity 보존, 보안 hardening, detached tmux startup repair를 다룬 시리즈입니다.
+
+- [v0.13.2](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#0132---2026-04-18)
+- [v0.13.1](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#0131---2026-04-16)
+- [v0.13.0](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/release-notes-0.13.0.md)
+
+## 전체 이력
+
+v0.7.x부터 현재까지 모든 릴리스는 업스트림 저장소에서 확인할 수 있습니다.
+
+[https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md)
+
+## 관련 문서
+
+- [릴리스 노트](/ko/docs/reference/release-notes) — 사용자 영향, 호환성, 검증 근거 상세
+- [마이그레이션](/ko/docs/reference/migration) — 버전 간 breaking change와 업그레이드 절차
+- [퀵 커맨드](/ko/docs/reference/quick-commands) — 자주 쓰는 CLI 명령 요약

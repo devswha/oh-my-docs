@@ -1,0 +1,79 @@
+---
+title: executor
+description: "具体的な計画を受け取りコードを書き、テストを実行し、検証済みの結果まで推し進める実装エージェント。"
+---
+
+`executor` エージェントは OMX ワークフローで実際の実装を担当する主要作業者です。ファイルレベルの計画を受け取ってコードを書き、diagnostics を実行し、失敗を修正し、作業を完了状態まで引っ張っていきます。途中で止まらず、検証可能な結果が出るまで続けます。
+
+## いつ呼ばれるか
+
+| 状況 | 呼び出し経路 |
+|---|---|
+| `$autopilot`、`$ralph`、`$team`、`$ralplan` の実行フェーズ | 自動 |
+| `planner` が target file・expected outcome が明示された計画を完成させたとき | 自動 |
+| `build-fixer` や `debugger` が root cause と repair 戦略を絞ってくれたとき | 上位エージェント委譲 |
+| `$ultrawork` 並列パイプラインで独立した task branch の処理 | 自動 |
+
+## 使用例
+
+```text
+"この計画に記載されたファイルを基準に実装して"
+"承認された auth refactor を実際のコードに移して"
+"この failing plan step を最後まで仕上げて"
+```
+
+## タスク分類
+
+| 分類 | 基準 |
+|---|---|
+| trivial | 単一ファイル、修正範囲が明確 |
+| scoped | 2〜5ファイル、境界は明確だが検証が必要 |
+| complex | 複数システムに触れ、全体検証が重要 |
+
+この分類は探索範囲と検証の深さを決めるために使います。
+
+## 作業プロセス
+
+1. 計画から target file と expected outcome を確認します。
+2. 必要であればリポジトリ探索で既存のパターンを先に把握します。
+3. 小さな diff で実装します。
+4. 修正したファイルごとに diagnostics を実行します。
+5. テスト/ビルドを実行して実際に通過するか確認します。
+6. 結果を状態と commit に反映します。
+
+大きく派手に直すより、小さく正確に最後まで進めることを優先します。
+
+## 検証基準
+
+完了を主張する前に少なくとも以下の項目を確認します。
+
+- 修正したファイルの diagnostics エラーが0個か
+- 関連テストとビルドが実際に通過しているか
+- debug code や一時的な TODO が残っていないか
+- 既存のコードベースのパターンと大きく乖離していないか
+
+## 入力
+
+- `planner` または `ralplan` が作成した計画文書（タスク、target file、expected outcome を含む）
+- 現在の pending task が何かを示す `.omx/state/` セッションコンテキスト
+- オプションで LSP diagnostics 出力、test failure log、`explore` 結果
+
+## 出力
+
+- 計画に明示されたファイルに対する実際のコード変更
+- 通過したテストとクリーンな LSP diagnostics などの inline verification evidence
+- 説明可能な git commit
+- 完了したタスクを反映した `.omx/state/` の更新
+
+## 範囲の限界
+
+- 計画なしに勝手にアーキテクチャを変更したり、要求されていない抽象化を導入したりしません。
+- テストをスキップしたり force-push をしたりしません。
+- fresh build/test/diagnostic 出力なしに完了を主張しません。
+
+## 関連エージェント
+
+- [planner](/ja/docs/agents/build-analysis/planner) — executor が従うタスクプランを作ります。
+- [verifier](/ja/docs/agents/build-analysis/verifier) — executor が出した結果が acceptance criteria を満たしているか独立して確認します。
+- [build-fixer](/ja/docs/agents/domain/build-fixer) — 解決が難しい build/type error を専担します。
+- [debugger](/ja/docs/agents/build-analysis/debugger) — 予期しない失敗が生じたとき根本原因を分析します。

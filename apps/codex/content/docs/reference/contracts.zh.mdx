@@ -1,0 +1,48 @@
+---
+title: "契约"
+description: "OMX 行为契约 — 提示词指导、team mutation、OpenClaw 事件模式"
+---
+
+OMX 在提示词、interop broker、事件 consumer 三个层面定义了三种契约。修改提示词、创建外部集成或编写读取 team state 的工具时，必须遵循这些契约。
+
+## Prompt guidance contract
+
+在 GPT-5.4 guidance rollout 中引入的契约，适用于 `AGENTS.md`、`templates/AGENTS.md`、`prompts/*.md`、生成的 `developer_instructions` 文本。
+
+核心行为四条：
+
+1. **Quality-first, intent-deepening output** — 响应应深入挖掘意图，并包含安全行动所需的依据。
+2. **Automatic follow-through on low-risk steps** — 明确且可撤销的下一步骤无需额外确认，自动执行。
+3. **Scoped overrides** — 用户的最新任务更新视为对当前任务的局部 override，而非整体提示词重置。保留之前不冲突的指令。
+4. **Persistent tool use and evidence-backed completion** — 若答案依赖 retrieval、diagnostics、tests、verification，则继续使用工具。不在无证据的情况下停止。
+
+Source: [`docs/prompt-guidance-contract.md`](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/prompt-guidance-contract.md)
+
+## Team mutation contract
+
+外部 interop broker 必须仅通过 CLI interop 路径修改 team state。
+
+```bash
+omx team api <operation> --input '<json-object>' --json
+```
+
+不支持直接写入 `.omx/state/team/...`。现有 `team_*` MCP API 处于 hard-deprecated 状态，会返回带 CLI migration hint 的错误。
+
+推荐的任务 mutation 流程：
+
+`read-task` → `claim-task` → `transition-task-status`（`in_progress → completed|failed`）
+
+`release-task-claim` 仅用于回滚到 pending 的情况。
+
+Source: [`docs/interop-team-mutation-contract.md`](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/interop-team-mutation-contract.md)
+
+## OpenClaw event contract
+
+定义 OMX 输出的钩子事件的 envelope 结构和规范化事件列表。外部 consumer 应基于 `context.normalized_event` 进行路由，而非原始 `event` 值。
+
+规范化事件表和完整 envelope 模式请参阅 [Clawhip](/zh/docs/integrations/clawhip)。
+
+## 相关文档
+
+- [Clawhip](/zh/docs/integrations/clawhip) — 事件契约层与 normalized event routing
+- [OpenClaw](/zh/docs/integrations/openclaw) — 钩子事件 dispatch pipeline

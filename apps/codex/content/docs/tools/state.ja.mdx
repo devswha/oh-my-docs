@@ -1,0 +1,60 @@
+---
+title: "State"
+description: "`.omx/state/` に保存されるランタイムモード状態 — 何を記録し、どのように参照するか"
+---
+
+State は、アクティブなモードが現在どのフェーズにあるかを記録する場所です。`$ralph`、`$team`、`$ultraqa` などの長時間実行ワークフローが複数のターンにわたって一貫性を保ち、必要なときに復元できるのも、この state のおかげです。
+
+## 何を保存するか
+
+OMX はモード状態を `.omx/state/` 以下にファイルとして保存します。1 つの state record は通常、以下の問いに答えます。
+
+- どのモードがアクティブか？
+- 現在どの phase にいるか？
+- 何回の iteration を完了したか？
+- 完了 / ブロック / 失敗 / 進行中のどの状態か？
+
+## コマンド
+
+```bash
+omx state read --input '{"mode":"ralph"}' --json
+omx state write --input '{"mode":"ralph","active":true,"current_phase":"executing"}' --json
+omx state clear --input '{"mode":"ralph","all_sessions":true}' --json
+omx state list-active --json
+omx state get-status --input '{"mode":"ralph"}' --json
+```
+
+これらのコマンドは、OMX 内部で使用する MCP state tool をそのまま反映しています。
+
+## 主要フィールド
+
+| フィールド | 意味 |
+|---|---|
+| `mode` | `ralph`、`team`、`ultraqa` などのアクティブ OMX モード |
+| `active` | そのモードが現在生きているかどうか |
+| `current_phase` | `planning`、`executing`、`verifying` などの phase ラベル |
+| `iteration` / `max_iterations` | 反復型ワークフローのループカウンター |
+| `run_outcome` | `continue`、`finish`、`blocked_on_user`、`failed`、`cancelled` |
+| `lifecycle_outcome` | `finished`、`blocked`、`failed` などの最終状態 |
+| `task_description` | 現在のタスクに関する短い説明 |
+
+モードごとに追加フィールドが付く場合がありますが、上記フィールドで大半の運用チェックがカバーできます。
+
+## いつ確認するか
+
+- どのモードがアクティブか確認したいとき
+- context compaction や長い中断の前に進捗をチェックポイントしたいとき
+- stale または放棄されたランタイム状態を診断したいとき
+- キャンセル後の dead mode をクリーンアップしたいとき
+
+## 運用メモ
+
+`.omx/state/` ファイルを直接編集するよりも、`omx state ... --json` コマンドまたは MCP surface を使う方が安全です。
+
+`clear` は、そのモードが stale または死んでいると確信できる場合のみ使います。team-mode のクリーンアップは、ファイル削除よりも `omx doctor --team` + `omx cancel` + state 確認を組み合わせる方法が安全です。
+
+## 関連ドキュメント
+
+- [`.omx` Directory](/ja/docs/reference/omx-directory) — state とその他 OMX データのディスク構造
+- [Quick Commands](/ja/docs/reference/quick-commands) — よく使う運用コマンド
+- [HUD](/ja/docs/tools/hud) — runtime state の上で動作するリアルタイムモニタリング

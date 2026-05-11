@@ -1,0 +1,24 @@
+---
+title: "集成"
+description: "OMX 与外部生态系统的集成：OpenClaw（Codex↔Claude 桥）、Clawhip 事件契约、MCP 服务器、CLI 桥。"
+---
+
+集成文档说明 OMX 以 Codex 为中心的运行时如何连接到事件网关、互操作契约、MCP 服务器以及跨 CLI 工作流。
+
+## 集成页面
+
+| 页面 | 说明 |
+|---|---|
+| [OpenClaw](/zh/docs/integrations/openclaw) | 将 OMX hook 事件发送到外部网关的通知 / 分发桥 |
+| [Clawhip](/zh/docs/integrations/clawhip) | 下游消费者应基于其路由的标准化事件契约 |
+| [MCP](/zh/docs/integrations/mcp) | OMX 如何发现并调用 Model Context Protocol 服务器 |
+| [CLI Bridges](/zh/docs/integrations/cli-bridges) | `$ask-claude`、`$ask-gemini` 与多 CLI 协作工作流 |
+
+## 什么时候阅读这一节
+
+当你需要以下内容时，请查看集成文档：
+
+- 将 OMX hook 事件连接到其他系统
+- 理解外部消费者接收到的事件 envelope
+- 配置基于 MCP 的工具和服务器
+- 在 Codex、Claude 和 Gemini 之间有意识地分配工作

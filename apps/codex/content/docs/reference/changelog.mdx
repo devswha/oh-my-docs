@@ -1,0 +1,51 @@
+---
+title: "Changelog"
+description: "OMX release history — latest release summary and link to the upstream CHANGELOG"
+---
+
+The full changelog is maintained upstream at [`CHANGELOG.md`](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md). This page summarizes the most recent releases.
+
+## Latest release — v0.14.4
+
+A patch release that promotes the default frontier lane to `gpt-5.5` while keeping the standard/mini and spark lanes pinned to their existing exact models.
+
+**Changed:**
+- Frontier defaults now target `gpt-5.5` across runtime defaults, Codex agent defaults, and `omx explore` fallback behavior.
+- Setup/config guidance and regression coverage now describe the `gpt-5.5` default while preserving the existing context-size recommendations.
+- Generated setup config and executor worker launch defaults now use medium reasoning by default.
+- Mini and spark lanes remain exact: `gpt-5.4-mini` and `gpt-5.3-codex-spark` are unchanged.
+
+**Fixed:**
+- Release metadata drift across Node/Cargo metadata, lockfiles, changelog, release body, release notes, and release-readiness collateral.
+
+## v0.14.3
+
+A reliability hardening release after `0.14.2` covering `omx question`/deep-interview return-pane behavior, project-local explore launch context, setup TOML repair safety, HUD window targeting, ultrawork protocol alignment, BusyBox cleanup compatibility, stale Stop/autopilot state handling, supervisor runtime events, Docker-host tmux question rendering, and native Windows psmux worker pane bootstrap hardening.
+
+## v0.14.2 and v0.14.1
+
+Patch releases focused on interactive orchestration reliability: safer `omx question` renderer behavior, shared tmux answer-submit semantics, tighter deep-interview state handling, Korean `ulw` keyboard drift handling, setup/update refresh resilience, lifecycle contract cleanup, and clearer deep-interview background-question guidance.
+
+## v0.14.0
+
+A minor release centered on interactive orchestration changes, including the new `omx question` blocking-question entrypoint, structured deep-interview question obligations, advisory triage routing, validator-gated autoresearch, explicit runtime run outcomes, clearer specialist routing, and release-proof hardening for the shipped package.
+
+## v0.13.x series
+
+A series covering `omx adapt` foundations, Ralph/runtime authority fixes, hook and HUD reliability, worker identity preservation, security hardening, and detached tmux startup repairs.
+
+- [v0.13.2](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#0132---2026-04-18)
+- [v0.13.1](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#0131---2026-04-16)
+- [v0.13.0](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/release-notes-0.13.0.md)
+
+## Full history
+
+All releases from v0.7.x through the current version are available in the upstream repository:
+
+[https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md)
+
+## Related
+
+- [Release Notes](/docs/reference/release-notes) — detailed user impact, compatibility, and verification notes
+- [Migration](/docs/reference/migration) — breaking changes and upgrade steps between versions
+- [Quick Commands](/docs/reference/quick-commands) — frequently used CLI commands

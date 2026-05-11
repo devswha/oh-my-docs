@@ -1,0 +1,37 @@
+---
+title: "CJK IME"
+description: "Codex CLI 中使用韩语/中文/日语 IME 输入时的已知问题与规避方法"
+---
+
+Codex CLI 使用基于终端的输入模型，因此可能与 CJK IME（输入法编辑器）产生冲突。IME 在确认字符前会组合多个按键，而这个中间 composition 状态在终端中不可见，从而导致字符丢失、重复输入或提前提交等问题。
+
+## 已知问题
+
+**composition 事件冲突** — IME 正在组合字符时，部分终端会提前将未完成的按键发送给 CLI。Codex CLI 将其视为独立输入，可能导致文本损坏或触发意外命令。
+
+**composition 过程中的 Enter 键问题** — IME 候选窗口打开时按下 Enter，会提交未完成的输入而非 IME 选择项。这是 macOS/Linux 上中韩日语用户常见的问题。
+
+**确认时重复输入** — 部分 IME + 终端组合会同时发送已确认字符和 raw keystroke，导致字符被输入两次。
+
+## 规避方法
+
+**确认后再提交** — 按 Enter 前，确认 IME 候选窗口已关闭且 composition 已完全结束。光标恢复正常状态（无下划线）后再按 Enter 更为安全。
+
+**技能调用使用 ASCII 模式** — 调用 `$ralph`、`$team` 等 OMX 技能时，请切换到英文输入模式后再输入。自然语言参数可在需要时切换回 CJK 模式输入。
+
+**使用复制粘贴** — 在编辑器中预先编写 CJK 文本再粘贴到 CLI 是更稳定的方法。粘贴不经过 IME composition 阶段，可以精确输入到缓冲区。
+
+**更换终端** — 部分终端对 IME composition 事件的处理更好。macOS 上 iTerm2、Windows 上 Windows Terminal 通常比基础 xterm 系列冲突更少。
+
+## 环境配置
+
+为使终端与 Codex CLI 的字符编码一致，请将 `LANG`、`LC_ALL` 设置为 UTF-8 locale。
+
+```bash
+export LANG=zh_CN.UTF-8
+export LC_ALL=zh_CN.UTF-8
+```
+
+## 相关文档
+
+- [环境](/zh/docs/reference/environment) — 包含 locale 设置的环境变量

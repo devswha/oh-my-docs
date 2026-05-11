@@ -1,0 +1,111 @@
+---
+title: Guides
+description: A practical overview of how to apply OMX to real tasks.
+---
+
+## Practical guides
+
+Once you understand the core concepts, the next step is learning how to apply OMX to real work.
+
+This page is less about listing skill names and more about **helping you choose the right execution flow for the situation you are in**.
+
+---
+
+## Understanding the default execution path
+
+If you want to experience OMX properly for the first time, this is the most recommended baseline flow:
+
+```bash
+$deep-interview "clarify the authentication change"
+$ralplan "approve the safest implementation path"
+$ralph "carry the approved plan to completion"
+```
+
+This flow matters because each step has a different job.
+
+| Step | Role |
+|------|------|
+| `$deep-interview` | Clarify the task when the requirements are still fuzzy |
+| `$ralplan` | Agree on the plan and tradeoffs before implementation |
+| `$ralph` | Push the approved plan through implementation and verification |
+
+You *can* hand everything to `$autopilot` immediately, but it is usually worth experiencing this default path once so you understand how OMX moves.
+
+---
+
+## When should you use `$autopilot`?
+
+`$autopilot` is the headline workflow when you want OMX to take an idea all the way through implementation, QA, and validation.
+
+```bash
+$autopilot "build me a todo app in next.js"
+```
+
+### Good fit
+
+- You want to see a full result quickly
+- The requirements are not especially complex
+- You do not want to manually manage planning, execution, and QA
+- You want to try OMX on a throwaway prototype or a small feature
+
+### A different flow may be better when
+
+- the requirements are still unclear → `$deep-interview`
+- you need agreement on the plan first → `$ralplan`
+- one persistent owner should carry the work through verification → `$ralph`
+- you need to explicitly divide work across parallel lanes → `$team`
+
+In short: `$autopilot` is great for **fast full-pipeline execution**, while `deep-interview → ralplan → ralph` is the **more controllable default path**.
+
+---
+
+## When should you use plan-driven workflows?
+
+One of OMX's strengths is that you do not have to jump straight into implementation. You can separate **clarification → plan approval → execution**.
+
+That flow looks like this:
+
+```bash
+$deep-interview "clarify what we need to build"
+$ralplan "produce the safest implementation plan"
+$ralph "carry out that plan to completion"
+```
+
+### This is especially useful when
+
+- the task is broad and risky to implement blindly
+- architecture, testing, or operations impact matters
+- the user request is not fully shaped yet
+- you need to agree on direction before touching code
+
+### A simple way to think about it
+
+- **I want to see something fast** → `$autopilot`
+- **I need clarification first** → `$deep-interview`
+- **I need an agreed plan first** → `$ralplan`
+- **I need one owner to carry it all the way through** → `$ralph`
+
+---
+
+## When should you use `$team`?
+
+`$team` works best when the approved plan contains work that is genuinely worth splitting into parallel lanes.
+
+```bash
+$team 3:executor "execute the approved plan in parallel"
+```
+
+### Good fit
+
+- The work can be split into frontend / backend / testing lanes
+- The task spans multiple files or subsystems
+- Sequential execution would be unnecessarily slow
+- You already have a plan and can distribute it across workers
+
+### Not a good fit
+
+- The requirements are still unclear
+- Parallelism would create more merge friction than speed
+- One persistent owner needs to keep the whole context in hand
+
+So `$team` is not the “better mode” by default. It is the right mode **only when parallelism has real value**.

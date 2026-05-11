@@ -1,0 +1,54 @@
+---
+title: "퀵 커맨드"
+description: "설정, 진단, 세션 관리, team 작업에 자주 쓰는 OMX 명령 모음"
+---
+
+자주 쓰는 OMX 명령 레퍼런스입니다. `omx`가 PATH에 없으면 `npx oh-my-codex` 또는 설치 전체 경로를 사용하세요.
+
+## 설정과 상태 점검
+
+| 명령 | 설명 |
+|---|---|
+| `omx setup` | OMX 프롬프트, 스킬, 설정을 설치하거나 갱신합니다. 업그레이드 후나 새 머신에서 실행하세요. |
+| `omx setup --scope user` | 사용자 전역 설정(`~/.codex/`)에 설치합니다. |
+| `omx setup --scope project` | 프로젝트 범위 설정(`.codex/`)에 설치합니다. |
+| `omx doctor` | 설치 상태, 누락 파일, 설정 문제, hook pipeline 상태를 점검합니다. |
+| `omx doctor --team` | team/swarm runtime 관련 추가 진단을 수행합니다. |
+
+## 세션 관리
+
+| 명령 | 설명 |
+|---|---|
+| `omx` | 인터랙티브 OMX/Codex 세션을 시작합니다. |
+| `omx --madmax` | 최대 병렬성 team pipeline으로 시작합니다. |
+| `omx --madmax --high` | 최대 병렬성 + 최고 tier 모델로 시작합니다. |
+| `omx --skip-git-repo-check` | git 저장소 밖에서 시작할 때 오류를 억제합니다. |
+| `omx cancel` | 현재 활성 실행 모드(ralph, autopilot, ultrawork 등)를 취소합니다. |
+
+## 도움말
+
+| 명령 | 설명 |
+|---|---|
+| `omx help` | 전체 CLI 도움말과 사용 가능한 플래그를 출력합니다. |
+| `omx --version` | 설치된 OMX 버전을 출력합니다. |
+
+## Team 작업
+
+| 명령 | 설명 |
+|---|---|
+| `omx team api list-tasks --json` | 현재 team task 목록을 JSON으로 출력합니다. |
+| `omx team api read-task --json` | 현재 활성 task를 읽습니다. |
+| `omx team api get-summary --json` | team state 요약을 가져옵니다. |
+| `omx team await` | team 이벤트가 발생할 때까지 대기합니다. |
+
+## AGENTS 초기화
+
+| 명령 | 설명 |
+|---|---|
+| `omx agents-init [path]` | `path`(기본값: 현재 디렉터리)에 `AGENTS.md`를 생성합니다. |
+
+## 관련 문서
+
+- [설정](/ko/docs/reference/configuration) — 설정 파일과 launch flag
+- [환경](/ko/docs/reference/environment) — 환경 변수
+- [마이그레이션](/ko/docs/reference/migration) — 업그레이드 및 마이그레이션 메모

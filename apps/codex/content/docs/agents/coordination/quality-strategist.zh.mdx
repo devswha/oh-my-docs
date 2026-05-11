@@ -1,0 +1,48 @@
+---
+title: quality-strategist
+description: 负责发布质量策略的智能体。定义风险模型和上线判断标准。
+---
+
+`quality-strategist` 智能体负责变更和发布全程的质量策略。它定义与风险等级相匹配的质量门控、回归风险模型和发布就绪标准，并在列明残余风险的情况下作出 GO/NO-GO 决定。测试编写委托给 `test-engineer`，直接执行测试委托给 `qa-tester`。该智能体的领域是策略，而非执行。
+
+## 职责
+
+- 定义清晰、可量化且与风险相称的质量门控和完成标准。
+- 编写包含代码库依据的回归风险评估，并指出高风险区域。
+- 按风险等级推荐测试深度。不是"全部测试"，而是以影响范围为基准确定优先级。
+- 给出 GO / NO-GO / CONDITIONAL GO 发布就绪裁定，并附残余风险清单。
+
+## 调用时机
+
+- 发布里程碑前需要"是否准备好上线"检查时
+- 大规模重构后需要回归风险评估和最小验证范围决策时
+- 出现 flaky 测试增多、覆盖率下降、逃逸率上升等质量信号恶化时
+- 需要为新功能或服务边界定义质量门控时
+
+## 输入
+
+- `product-manager` 或 `analyst` 的 PRD 或验收标准
+- `architect` 的系统设计和故障模式
+- `executor` 或 `explore` 的变更范围和影响半径
+- `test-engineer` 和 `verifier` 的测试结果、覆盖率报告、CI 输出
+
+## 输出
+
+| 产出物 | 内容 |
+|---|---|
+| 质量计划 | 风险评估表、质量门控、测试深度建议、残余风险 |
+| 发布就绪评估 | GO/NO-GO/CONDITIONAL 裁定＋门控状态＋阻塞项 |
+| 回归风险评估 | 风险等级（HIGH/MEDIUM/LOW）、影响分析、最小验证集 |
+
+## 约束
+
+- 不直接编写测试代码。如有实现需求，路由至 `test-engineer`。
+- 不执行直接运行测试。场景验证交由 `qa-tester` 处理。
+- 没有 `verifier` 的证据不作 GO 裁定。所有 GO 均需门控证据。
+
+## 关联智能体
+
+- [quality-reviewer](/zh/docs/agents/review/quality-reviewer) — 审查代码质量，并将结果反映到风险模型中。
+- [test-engineer](/zh/docs/agents/domain/test-engineer) — 实现 quality-strategist 推荐的测试覆盖范围。
+- [critic](/zh/docs/agents/coordination/critic) — 指出计划弱点，其结果影响质量门控的位置。
+- [verifier](/zh/docs/agents/build-analysis/verifier) — 收集并提供 GO 裁定所需的证据。

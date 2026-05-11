@@ -1,0 +1,50 @@
+---
+title: $tdd
+description: 先写测试再写实现，强制执行 red-green-refactor 循环的工作流
+---
+
+`$tdd` 强制要求在编写生产代码之前必须先存在一个会失败的测试。按步骤推进 red-green-refactor 循环，遇到复杂测试策略时向 test-engineer agent 寻求建议。只有新测试通过且全部现有测试为 green 时，循环才结束。
+
+## 何时使用
+
+- 想先写测试再写实现时
+- 处理正确性至关重要的核心域逻辑时
+- 需要系统性覆盖而非实现后追加测试时
+- 学习新代码库时想通过测试来记录期望行为时
+
+触发关键词: "tdd", "test first", "red green", "write tests before code"
+
+## 调用方式
+
+```
+codex
+> tdd add a coupon validation function to the checkout module
+```
+
+```
+codex
+> $tdd implement the password-strength checker with edge cases covered
+```
+
+## 工作方式
+
+**RED** — 为下一个功能单元写测试并运行。如果第一次运行就通过，则认为测试有误，重新编写。
+
+**GREEN** — 只写通过测试所需的最少生产代码。整个测试都变为 green 后再进入下一步。
+
+**REFACTOR** — 在保持测试 green 的前提下改善代码质量。每次修改后都运行测试。
+
+复杂域逻辑或不熟悉的测试模式，会在写测试前由 test-engineer agent 审查策略。功能完成前持续重复循环。
+
+## 输出
+
+- RED 阶段编写的失败测试
+- GREEN 阶段编写的最小生产代码
+- 整个测试套件为 green 状态的重构后源码
+- 每个循环的 RED 失败 → GREEN 通过 → REFACTOR 结果日志
+
+## 相关 skill
+
+- [`$autopilot`](/zh/docs/skills/workflow/autopilot) — 内部应用 TDD 循环的全量执行流水线
+- [`$ultraqa`](/zh/docs/skills/workflow/ultraqa) — 修复实现后损坏的测试套件的 QA 循环
+- [`$ralplan`](/zh/docs/skills/workflow/ralplan) — deliberate 模式下包含扩展测试计划的共识计划

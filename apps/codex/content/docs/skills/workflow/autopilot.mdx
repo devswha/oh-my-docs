@@ -1,0 +1,48 @@
+---
+title: $autopilot
+description: Full pipeline skill that runs implementation, QA, and verification from a single idea
+---
+
+## TL;DR
+
+Give it one idea and OMX handles implementation → QA → verification in sequence. If you want to steer the direction first, use the `$deep-interview → $ralplan → $ralph` flow instead.
+
+## How to invoke
+
+```
+$autopilot "build me a todo app in next.js"
+```
+
+Also activated by magic keywords `autopilot`, `build me`, `I want a`.
+
+## When to use it
+
+| Good fit | Avoid |
+|---|---|
+| Prototypes, small features | Requirements still unclear |
+| Quickly validating an end-to-end flow | Work that needs architecture consensus first |
+| Speed matters more than control | Wrong direction is expensive |
+
+## How it works
+
+1. explore — understand current codebase structure
+2. plan — decide implementation path
+3. execute — write code
+4. QA (`$ultraqa`) — test, verify, and fix cycle
+5. verify — collect completion evidence
+
+## `$autopilot` vs plan-based flow
+
+`$autopilot` lets OMX make most of the decisions. If you want to control each step manually or lock down requirements first, this sequence is safer.
+
+```
+$deep-interview "help me clarify what to build"
+$ralplan "find the safest implementation path"
+$ralph "follow that plan all the way through"
+```
+
+## Related skills
+
+- [`$ralph`](/docs/skills/workflow/ralph) — loop until complete
+- [`$ralplan`](/docs/skills/workflow/ralplan) — consensus-based planning
+- [`$deep-interview`](/docs/skills/workflow/deep-interview) — clarify requirements

@@ -1,0 +1,40 @@
+---
+title: $build-fix
+description: 自动修复构建错误和类型错误的工具技能
+---
+
+通过 `$build-fix` 调用。
+
+这是一个诊断并修复构建失败、类型错误、lint错误的技能。调用build-fixer智能体分析编译器输出和错误消息后直接修改代码。
+
+## 何时使用
+
+- `npm run build` 或 `tsc` 失败时
+- 类型错误跨越多个文件时
+- lint错误积累，想一次性整理时
+- 在 `$ralph` 或 `$autopilot` 执行过程中构建被破坏时
+
+## 何时避免
+
+- 错误原因是逻辑Bug → 先用 `$analyze` 找出原因
+- 需要架构级别的变更 → 先用 `$ralplan` 制定计划
+
+## 命令
+
+```bash
+$build-fix
+$build-fix "把所有TypeScript错误都修掉"
+$build-fix --scope src/api
+```
+
+## 工作方式
+
+build-fixer智能体执行构建命令并解析错误输出。追踪错误位置，以最小修改使构建通过，修复后重新构建验证。
+
+专注于**恢复可编译状态**而非逻辑变更。如果构建通过但行为可疑，请用 `$code-review` 确认。
+
+## 相关
+
+- [build-fixer智能体](/zh/docs/agents/domain/build-fixer) — 内部工作详情
+- [`$analyze`](/zh/docs/skills/utility/analyze) — 错误原因分析
+- [`$code-review`](/zh/docs/skills/utility/code-review) — 修复后的审查

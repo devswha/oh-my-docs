@@ -1,0 +1,54 @@
+---
+title: $ultraqa
+description: テスト・ビルド・lint が通過するまで診断-修正-再実行を自動で繰り返す QA サイクル
+---
+
+`$ultraqa` は最初の失敗で止まらない自律 QA ループです。品質検査を実行し、失敗したら Architect エージェントが根本原因を診断し、Executor エージェントが修正を適用してから再検査します。最大 5 サイクル繰り返し、同じ失敗が 3 回連続した場合は構造的な問題と判断して早期終了します。
+
+## いつ使うか
+
+- ビルド、テスト、lint、型検査を自分でデバッグせずに通過させたいとき
+- 壊れたコードベースを受け取って体系的な最初の修正パスが必要なとき
+- 機能完成後にレビュー前の検証を自動化したいとき
+- サイクルごとの進捗ログを見ながら追いかけたいとき
+
+トリガーキーワード: "ultraqa", "fix until tests pass", "qa cycle", "make the build pass"
+
+## 呼び出し
+
+```
+codex
+> ultraqa --tests
+```
+
+```
+codex
+> $ultraqa --build
+```
+
+```
+codex
+> $ultraqa --custom "no TypeScript errors in packages/api"
+```
+
+利用可能なターゲットフラグ: `--tests`、`--build`、`--lint`、`--typecheck`、`--custom "パターン"`、`--interactive`
+
+## 動作方法
+
+ターゲットフラグをパースしてサイクル 1 を開始します。該当コマンドを実行して終了コードや出力パターンで結果を確認します。すでに通過状態なら即座に成功メッセージを出して終了します。
+
+失敗した場合、Architect エージェントが出力を分析して根本原因と具体的な修正方向を示します。Executor エージェントがその修正を正確に適用し、カウンターが上がってから検査を再実行します。目標達成、5 サイクル消費、または同じ失敗 3 回連続のいずれかになるまで繰り返します。
+
+各サイクルごとに `[ULTRAQA Cycle N/5]` 進捗行が出力されます。状態は `.omx/state/ultraqa-state.json` に記録され、完了またはキャンセル時に削除されます。
+
+## 出力
+
+- Architect-Executor 修正ループで修正されたソースファイル
+- サイクルごとの失敗サマリーと修正内容を含む進捗ログ
+- 成功時はサイクル数とともに終了メッセージ、未達成時は根本原因診断メッセージ
+
+## 関連スキル
+
+- [`$ralph`](/ja/docs/skills/workflow/ralph) — ultraqa サイクルを包む持続検証ループ
+- [`$autopilot`](/ja/docs/skills/workflow/autopilot) — QA ステップに ultraqa を使う全体パイプライン
+- [`$tdd`](/ja/docs/skills/workflow/tdd) — 失敗テストを先に書くテスト駆動開発

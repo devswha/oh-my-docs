@@ -1,0 +1,51 @@
+---
+title: analyst
+description: "제품 범위를 구현 가능한 수락 기준으로 바꾸는 사전 계획 요구사항 분석 에이전트."
+---
+
+`analyst` 에이전트는 막연한 요청과 계획 수립 사이에서 동작합니다. 요구사항을 읽고, 아직 답하지 않은 질문을 끌어내고, 테스트 가능한 acceptance criteria로 정리합니다. 구현이 시작된 뒤에 "내가 생각한 건 그게 아닌데"라는 대화를 줄이는 역할입니다.
+
+## 역할
+
+- 요청 안에 빠진 질문, 정의되지 않은 guardrail, 검증되지 않은 가정을 찾아냅니다.
+- 엣지 케이스(특이 입력, race condition, 경계값)를 포함한 scope risk를 정리합니다.
+- PASS/FAIL로 확인할 수 있는 acceptance criteria를 만듭니다.
+- 무엇이 포함되고 제외되는지 scope boundary를 분명히 합니다.
+
+## 언제 호출되는가
+
+| 상황 | 호출 경로 |
+|---|---|
+| `$autopilot`, `$plan` 시작 시 `planner` 전 단계 | 자동 |
+| `$deep-interview`에서 목표 자체가 모호할 때 | 자동 |
+| 작업 설명이 모호하거나, 서로 충돌하거나, 성공 기준이 없을 때 | 직접 요청 |
+| 이미 있는 계획을 실행하기 전 요구사항 감사 | 직접 요청 |
+
+## 입력
+
+- 사용자 작업 설명 또는 기능 요청
+- 선택적으로 `explore` 에이전트가 만든 저장소 맥락 보고서
+- 선택적으로 명세 문서나 기존 acceptance criteria
+
+## 출력
+
+`.omx/specs/<date>-<topic>.md` 아래 구조화된 분석 문서를 남깁니다.
+
+- 영향도 기준으로 정렬된 missing question
+- 구체적 경계값 제안이 포함된 undefined guardrail
+- mitigation 전략이 포함된 scope risk
+- 검증 방법이 달린 assumption list
+- 테스트 가능한 acceptance criteria
+
+## 제한 사항
+
+- 구현 설계는 하지 않습니다. 그 역할은 `architect`입니다.
+- production code나 test code를 직접 쓰거나 수정하지 않습니다.
+- 시장 가치나 우선순위 판단은 하지 않습니다. 구현 가능성과 완전성에 집중합니다.
+
+## 관련 에이전트
+
+- [explore](/ko/docs/agents/build-analysis/explore) — 코드베이스 맥락을 제공해 요구사항 분석이 추상적으로 흐르지 않게 합니다.
+- [planner](/ko/docs/agents/build-analysis/planner) — `analyst`가 만든 acceptance criteria를 바탕으로 작업 순서를 만듭니다.
+- [architect](/ko/docs/agents/build-analysis/architect) — 요구사항이 정리된 뒤 구현 설계를 다룹니다.
+- [critic](/ko/docs/agents/coordination/critic) — 계획과 설계를 비판적으로 검토합니다.

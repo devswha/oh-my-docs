@@ -1,0 +1,60 @@
+---
+title: "State"
+description: "`.omx/state/` 아래에 저장되는 런타임 모드 상태 — 무엇을 기록하고 어떻게 조회하는지"
+---
+
+State는 활성 모드가 지금 어느 단계에 있는지 기록하는 공간입니다. `$ralph`, `$team`, `$ultraqa` 같은 장기 실행 워크플로우가 여러 턴에 걸쳐 일관성을 유지하고, 필요하면 복구할 수 있는 것도 이 state 덕분입니다.
+
+## 무엇을 저장하는가
+
+OMX는 모드 상태를 `.omx/state/` 아래에 파일로 저장합니다. 하나의 state record는 보통 아래 질문에 답합니다.
+
+- 어떤 모드가 활성 상태인가?
+- 지금 어느 phase에 있는가?
+- 몇 번의 iteration을 완료했는가?
+- 완료 / 차단 / 실패 / 진행 중 중 어느 상태인가?
+
+## 명령
+
+```bash
+omx state read --input '{"mode":"ralph"}' --json
+omx state write --input '{"mode":"ralph","active":true,"current_phase":"executing"}' --json
+omx state clear --input '{"mode":"ralph","all_sessions":true}' --json
+omx state list-active --json
+omx state get-status --input '{"mode":"ralph"}' --json
+```
+
+이 명령들은 OMX 내부에서 사용하는 MCP state tool을 그대로 반영합니다.
+
+## 주요 필드
+
+| 필드 | 의미 |
+|---|---|
+| `mode` | `ralph`, `team`, `ultraqa` 같은 활성 OMX 모드 |
+| `active` | 해당 모드가 현재 살아 있는지 여부 |
+| `current_phase` | `planning`, `executing`, `verifying` 같은 phase 레이블 |
+| `iteration` / `max_iterations` | 반복형 워크플로우의 루프 카운터 |
+| `run_outcome` | `continue`, `finish`, `blocked_on_user`, `failed`, `cancelled` |
+| `lifecycle_outcome` | `finished`, `blocked`, `failed` 같은 최종 상태 |
+| `task_description` | 현재 작업에 대한 짧은 설명 |
+
+모드마다 추가 필드가 붙을 수 있지만, 위 필드로 대부분의 운영 점검이 커버됩니다.
+
+## 언제 보는가
+
+- 어떤 모드가 활성인지 확인할 때
+- context compaction이나 긴 중단 전에 진행 상황을 checkpoint할 때
+- stale하거나 버려진 런타임 상태를 진단할 때
+- 취소 이후 dead mode를 정리할 때
+
+## 운영 메모
+
+`.omx/state/` 파일을 직접 편집하는 것보다 `omx state ... --json` 명령 또는 MCP surface를 쓰는 편이 안전합니다.
+
+`clear`는 해당 모드가 stale하거나 죽었다고 확신할 때만 씁니다. team-mode 정리는 파일 삭제보다 `omx doctor --team` + `omx cancel` + state 점검을 함께 쓰는 방식이 더 안전합니다.
+
+## 관련 문서
+
+- [`.omx` Directory](/ko/docs/reference/omx-directory) — state와 기타 OMX 데이터의 디스크 구조
+- [Quick Commands](/ko/docs/reference/quick-commands) — 자주 쓰는 운영 명령
+- [HUD](/ko/docs/tools/hud) — runtime state 위에서 동작하는 실시간 모니터링

@@ -1,0 +1,13 @@
+{
+  "title": "Build & Analysis",
+  "pages": [
+    "explore",
+    "analyst",
+    "planner",
+    "architect",
+    "executor",
+    "debugger",
+    "verifier",
+    "explore-harness"
+  ]
+}

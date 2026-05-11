@@ -1,0 +1,51 @@
+---
+title: "変更ログ"
+description: "OMX リリース履歴 — 最新リリース要約とアップストリーム CHANGELOG リンク"
+---
+
+完全な changelog はアップストリームの [`CHANGELOG.md`](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md) で管理されています。このページは最近のリリースを要約したものです。
+
+## 最新リリース — v0.14.4
+
+デフォルトの frontier lane を `gpt-5.5` に引き上げつつ、standard/mini lane と spark lane は既存の厳密なモデル固定を維持するパッチリリースです。
+
+**変更内容:**
+- runtime defaults、Codex agent defaults、`omx explore` fallback behavior の frontier default が `gpt-5.5` になりました。
+- setup/config guidance と regression coverage が `gpt-5.5` default を説明するよう更新され、既存の context size 推奨値は維持されています。
+- 生成される setup config と executor worker launch defaults は、デフォルトで medium reasoning を使うようになりました。
+- mini と spark lane は厳密に維持されます。`gpt-5.4-mini` と `gpt-5.3-codex-spark` の動作は変更されていません。
+
+**修正内容:**
+- Node/Cargo metadata、lockfile、changelog、release body、release notes、release-readiness collateral のリリースメタデータ drift を整合させました。
+
+## v0.14.3
+
+`0.14.2` 以降の信頼性を強化するリリースです。`omx question`/deep-interview return-pane behavior、project-local explore launch context、setup TOML repair safety、HUD window targeting、ultrawork protocol alignment、BusyBox cleanup compatibility、stale Stop/autopilot state handling、supervisor runtime events、Docker-host tmux question rendering、native Windows psmux worker pane bootstrap hardening を扱います。
+
+## v0.14.2 と v0.14.1
+
+interactive orchestration の信頼性に集中したパッチリリースです。より安全な `omx question` renderer behavior、shared tmux answer-submit semantics、より厳密な deep-interview state handling、Korean `ulw` keyboard drift handling、setup/update refresh resilience、lifecycle contract cleanup、より明確な deep-interview background-question guidance を含みます。
+
+## v0.14.0
+
+interactive orchestration の変更を中心とした minor release です。新しい `omx question` blocking-question entrypoint、structured deep-interview question obligations、advisory triage routing、validator-gated autoresearch、明示的な runtime run outcomes、より明確な specialist routing、出荷パッケージの hardening が含まれます。
+
+## v0.13.x シリーズ
+
+`omx adapt` foundations、Ralph/runtime authority fixes、hook と HUD の reliability、worker identity preservation、security hardening、detached tmux startup repairs を扱ったシリーズです。
+
+- [v0.13.2](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#0132---2026-04-18)
+- [v0.13.1](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#0131---2026-04-16)
+- [v0.13.0](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/release-notes-0.13.0.md)
+
+## 全履歴
+
+v0.7.x から現在までのすべてのリリースはアップストリームリポジトリで確認できます。
+
+[https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md)
+
+## 関連ドキュメント
+
+- [リリースノート](/ja/docs/reference/release-notes) — ユーザー影響、互換性、検証根拠の詳細
+- [マイグレーション](/ja/docs/reference/migration) — バージョン間の breaking change とアップグレード手順
+- [クイックコマンド](/ja/docs/reference/quick-commands) — よく使う CLI コマンドの要約

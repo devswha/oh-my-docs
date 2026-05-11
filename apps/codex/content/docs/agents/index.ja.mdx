@@ -1,0 +1,74 @@
+---
+title: エージェント
+description: OMX の役割別エージェント 33 種を 4 レーンに整理したリファレンス
+---
+
+## 概要
+
+OMX には役割別エージェントが 33 個あります。それぞれ一つの責務だけを担い、オーケストレーターが作業の性質に応じて適切なエージェントにルーティングします。
+
+「何でもこなす汎用エージェント一つ」ではなく、**探索 · 計画 · 実装 · 検証 · レビュー**を役割ごとに分けて処理する構造が核心です。失敗したときにどの段階で失敗したかを追跡でき、並列化時の干渉が減ります。
+
+## レーン別構成
+
+### Build / Analysis — メイン実行ライン
+
+探索 → 分析 → 計画 → 実装 → 検証の基本フローです。
+
+| エージェント | 役割 |
+|---|---|
+| [`explore`](/ja/docs/agents/build-analysis/explore) | コードベース探索、ファイルと関係のマッピング |
+| [`analyst`](/ja/docs/agents/build-analysis/analyst) | 要件分析、受け入れ基準の整理 |
+| [`planner`](/ja/docs/agents/build-analysis/planner) | 作業順序と実行計画の策定 |
+| [`architect`](/ja/docs/agents/build-analysis/architect) | システム設計、境界、インターフェース |
+| [`debugger`](/ja/docs/agents/build-analysis/debugger) | 根本原因分析 |
+| [`executor`](/ja/docs/agents/build-analysis/executor) | コード実装とリファクタリング |
+| [`verifier`](/ja/docs/agents/build-analysis/verifier) | 完了証拠の収集と検証 |
+
+### Review — 品質ゲート
+
+動作するコードを渡す前に通過しなければならない関門です。
+
+| エージェント | 役割 |
+|---|---|
+| [`quality-reviewer`](/ja/docs/agents/review/quality-reviewer) | 論理欠陥、保守性、アンチパターン |
+| [`security-reviewer`](/ja/docs/agents/review/security-reviewer) | 脆弱性、信頼境界、認証経路 |
+| [`code-reviewer`](/ja/docs/agents/review/code-reviewer) | 総合レビュー |
+| [`style-reviewer`](/ja/docs/agents/review/style-reviewer) | スタイル、命名、フォーマット |
+| [`api-reviewer`](/ja/docs/agents/review/api-reviewer) | API 契約と後方互換性 |
+| [`performance-reviewer`](/ja/docs/agents/review/performance-reviewer) | パフォーマンスボトルネックとコスト |
+
+### Domain — 専門領域
+
+特定の分野でのみ呼び出されるスペシャリスト。基本実行ラインを置き換えるのではなく、**必要なときに補強**します。
+
+- [`test-engineer`](/ja/docs/agents/domain/test-engineer) — テスト戦略、フレーキーテスト解消
+- [`designer`](/ja/docs/agents/domain/designer) — UI/UX 設計
+- [`writer`](/ja/docs/agents/domain/writer) — ドキュメント · マイグレーションノート
+- [`researcher`](/ja/docs/agents/domain/researcher) — 外部ドキュメント調査
+- [`dependency-expert`](/ja/docs/agents/domain/dependency-expert) — SDK / パッケージ判断
+- [`git-master`](/ja/docs/agents/domain/git-master) — コミット · rebase · ヒストリー整理
+
+### Coordination — フロー調整
+
+他のエージェントの計画と実行を点検し、抜け漏れを減らします。
+
+- [`critic`](/ja/docs/agents/coordination/critic) — 計画 · 設計の弱点指摘
+- [`team-executor`](/ja/docs/agents/coordination/team-executor) — `$team` 実行レーン補助
+- [`quality-strategist`](/ja/docs/agents/coordination/quality-strategist) — 品質戦略の判断
+
+## どのエージェントを最初に思い浮かべるか
+
+ほとんどの作業は Build / Analysis から始まります。
+
+| 今必要なもの | 最初に使うエージェント |
+|---|---|
+| コードベースを素早く把握 | `explore` |
+| 要件が曖昧 | `analyst` |
+| 計画 · 設計 | `planner` · `architect` · `critic` |
+| 実装 | `executor` |
+| 完了したか検証 | `verifier` |
+| セキュリティ · 品質 · パフォーマンスが気になる | Review レーン |
+| テスト · UI · ドキュメントのような狭い専門性 | Domain レーン |
+
+実際にユーザーがエージェントを直接名前で呼び出すケースは多くありません。`$ralph`、`$team`、`$autopilot` といったスキルが状況を判断して自動的にルーティングしてくれます。このページのリファレンスは「裏で何が動いているか」確認するときや、特定のレーンを直接呼び出したいときに参照します。

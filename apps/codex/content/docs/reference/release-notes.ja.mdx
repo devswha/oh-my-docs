@@ -1,0 +1,101 @@
+---
+title: "リリースノート"
+description: "ユーザー影響、互換性、検証根拠、アップストリームリンクをまとめた OMX の詳細リリースノート。"
+---
+
+[変更ログ](/ja/docs/reference/changelog) は短い要約です。このページでは、最近のリリースで何が変わったのか、移行が必要か、リリース前に何が検証されたのかを確認できます。
+
+## v0.14.4 — Frontier default moves to GPT-5.5
+
+[アップストリームリリースノート](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/release-notes-0.14.4.md) · [CHANGELOG entry](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#0144---2026-04-24)
+
+### ユーザー影響
+
+- 新規または default frontier-managed paths は `gpt-5.5` を優先します。
+- runtime defaults、Codex agent defaults、`omx explore` fallback behavior の frontier lane が `gpt-5.5` に解決されます。
+- 生成される setup config と executor worker launch defaults は high ではなく medium reasoning を使います。
+- standard/mini lane と spark lane は固定のままです。`gpt-5.4-mini` と `gpt-5.3-codex-spark` の意味は変わりません。
+
+### 互換性
+
+移行は不要です。明示的な `gpt-5.4-mini` と `gpt-5.3-codex-spark` overrides は従来どおり動作します。
+
+### アップストリームの検証根拠
+
+アップストリームノートは `npm run build`、model/default 変更向け Node suites、lint/no-unused、Cargo workspace tests を記録し、詳細を `docs/qa/release-readiness-0.14.4.md` に残しています。
+
+## v0.14.3 — Operator reliability hardening
+
+[アップストリームリリースノート](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/release-notes-0.14.3.md) · [CHANGELOG entry](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#0143---2026-04-22)
+
+### ユーザー影響
+
+- `omx question` は tool-launched prompts、prompt reseeding、renderer paths、metadata races の中でも invoking leader pane をよりよく保持します。
+- Deep-interview は回答済み question records を再プロンプト前に調整し、大きすぎる clarification flow に summary gates を追加します。
+- project-local setup scope が保存されている場合、explore launch は project-local `CODEX_HOME` を使います。
+- setup refresh は multiline root TOML assignments をより安全に扱います。
+- HUD reconciliation は emitting tmux window だけを対象にします。
+- team/runtime surfaces に canonical supervisor events と native Windows psmux pane bootstrap hardening が追加されました。
+
+### 互換性
+
+移行は不要です。`omx question` は visible/returnable tmux pane がない場合、意図的に fail-closed します。
+
+### アップストリームの検証根拠
+
+アップストリームノートは `npm test` 3910 件成功、no-unused、Cargo workspace tests、lint、build、対象変更パスの suites を記録しています。
+
+## v0.14.2 — Fast-follow question/deep-interview fixes
+
+[アップストリームリリースノート](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/release-notes-0.14.2.md) · [CHANGELOG entry](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#0142---2026-04-21)
+
+### ユーザー影響
+
+- attached tmux 外では `omx question` が見えない detached renderer を作らず、明確なエラーで失敗します。
+- duplicate MCP stdio siblings は安全な post-traffic idle 後に自己終了できます。
+- deep-interview state clear が安全になり、question launch 失敗時に pending obligations を消します。
+- 韓国語 2-set keyboard で `ulw` を `ㅕㅣㅈ` と入力した場合、ultrawork shorthand に正規化されます。
+- question answer injection は共通 tmux submit semantics を再利用します。
+- deep-interview guidance は background `omx question` terminal の完了を待ち、JSON answer を読んでから続行するよう明示します。
+- TypeScript と Biome baseline が更新されました。
+
+### アップストリームが残したリスク
+
+実際の tmux/reused-session 環境での `omx question`、prompt submit、workflow/state clear、duplicate MCP cleanup、多言語入力 activation が重要な観察対象です。
+
+## v0.14.1 — Interactive orchestration reliability follow-through
+
+[アップストリームリリースノート](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/release-notes-0.14.1.md) · [CHANGELOG entry](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#0141---2026-04-21)
+
+### ユーザー影響
+
+- pending deep-interview question obligations は、質問が解決するまで Stop をブロックします。
+- question panes は tmux 環境差に強くなり、信頼できない場合は静かに失敗せず fail-closed します。
+- `omx update` はインストール済みバージョンが最新でも setup state を refresh できます。
+- lifecycle compatibility code は共有 runtime run-outcome contract を再利用します。
+- code-review guidance が強化され、lightweight fallback lanes は意図的に軽量に保たれます。
+
+### アップストリームが残したリスク
+
+`omx question`、Stop gating、upgrade 後の setup refresh は実際の multi-session tmux/operator 環境で観察する価値があります。
+
+## v0.14.0 — Structured questions and explicit runtime outcomes
+
+[アップストリームリリースノート](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/release-notes-0.14.0.md) · [CHANGELOG entry](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#0140---2026-04-19)
+
+### ユーザー影響
+
+- `omx question` は JSON input、UI rendering、persistent question state、structured answers を持つ公式 interactive question surface になります。
+- deep-interview rounds は ad-hoc plain-text fallback ではなく question obligations を作成・充足します。
+- autoresearch は skill-first かつ validator-gated になり、direct `omx autoresearch` は hard-deprecated です。
+- PASS/LIGHT/HEAVY advisory triage hints は workflow を暗黙に有効化せず non-keyword prompts を案内できます。
+- runtime run outcomes が正規化され、Stop/continuation behavior が一貫します。
+- specialist routing guidance はより狭く明確になります。
+
+### アップストリームの検証根拠
+
+アップストリームノートは build、lint、TypeScript、affected interactive/runtime suites、catalog check、packed-install smoke test、pack dry-run を記録しています。
+
+## Legacy docs signal
+
+旧 [`oh-my-codex.dev/docs.html`](https://oh-my-codex.dev/docs.html) は、team worktrees、Codex/Claude/Gemini mixed workers、notifications、recommended workflows、team CLI API examples などの release-style operational topics を 1 つの長いページに集めていました。現在の docs site ではそれらを [Skills](/ja/docs/skills)、[Tools](/ja/docs/tools)、[Integrations](/ja/docs/integrations)、[Reference](/ja/docs/reference) の専用ページへ分割し、このページでは release-note thread を明示的に維持します。

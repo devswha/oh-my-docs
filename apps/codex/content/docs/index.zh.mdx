@@ -1,0 +1,91 @@
+---
+title: Oh My CodeX
+description: "面向 OpenAI Codex CLI 的多智能体编排。零学习曲线。"
+---
+
+![Oh My CodeX](/images/omx-social-preview.jpg)
+
+**面向 OpenAI Codex CLI 的多智能体编排。零学习曲线。**
+
+_无需学习 Codex 提示词。直接使用 OMX 即可。_
+
+Oh My CodeX (OMX) 是运行在 OpenAI Codex CLI 之上的工作流层。只需一次调用，它便能协调多个专用智能体提示词，端到端地自动化复杂的开发任务。
+
+## 快速开始
+
+### 第 1 步 — 安装 Codex CLI
+
+```bash
+npm i -g @openai/codex
+```
+
+### 第 2 步 — 安装 OMX
+
+```bash
+npm i -g oh-my-codex
+```
+
+### 第 3 步 — 初始化设置
+
+```bash
+omx setup
+```
+
+### 第 4 步 — 运行首次会话冒烟测试
+
+```bash
+omx doctor
+codex login status
+omx exec --skip-git-repo-check -C . "Reply with exactly OMX-EXEC-OK"
+```
+
+### 第 5 步 — 按推荐方式启动 OMX
+
+```bash
+omx --madmax --high
+```
+
+然后在该会话中尝试标准工作流：
+
+```
+$deep-interview "澄清认证改动的需求"
+$ralplan "批准最安全的实现路径"
+$ralph "把已批准的计划推进到完成"
+```
+
+如果已批准的计划需要并行执行，请把最后一步改为 `$team 3:executor "并行执行已批准的计划"`，而不是 `$ralph`。
+
+## 文档
+
+<Cards>
+  <Card title="Getting Started" href="/zh/docs/getting-started">
+    安装、设置校验，以及一次良好的初始 OMX 会话
+  </Card>
+  <Card title="Core Concepts" href="/zh/docs/concepts">
+    智能体、技能、钩子与 `.omx/` 运行时状态
+  </Card>
+  <Card title="Guides" href="/zh/docs/guides">
+    规划、执行、QA 与调试的推荐工作流
+  </Card>
+  <Card title="Agents" href="/zh/docs/agents">
+    33 个角色化提示词的参考文档
+  </Card>
+  <Card title="Skills" href="/zh/docs/skills">
+    工作流/实用技能、调用规则与使用指南
+  </Card>
+  <Card title="Hooks" href="/zh/docs/hooks">
+    Codex 生命周期集成、关键词路由与钩子行为
+  </Card>
+  <Card title="Tools" href="/zh/docs/tools">
+    State、HUD、Wiki、Visual、provider bridge 等运行时内部能力层
+  </Card>
+  <Card title="Integrations" href="/zh/docs/integrations">
+    OpenClaw、Clawhip、MCP 与跨 CLI 互操作性
+  </Card>
+  <Card title="Reference" href="/zh/docs/reference">
+    配置、快捷命令、环境变量与契约
+  </Card>
+  <Card title="Support" href="/zh/docs/support">
+    FAQ、问题反馈与支持渠道
+  </Card>
+</Cards>

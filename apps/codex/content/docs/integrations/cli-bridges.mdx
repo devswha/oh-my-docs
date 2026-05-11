@@ -1,0 +1,51 @@
+---
+title: "CLI Bridges"
+description: "Cross-CLI consultation via `$ask-claude`, `$ask-gemini`, and team-level mixed CLI workers."
+---
+
+CLI bridges are lightweight commands that delegate questions to a different AI CLI or model outside the current OMX session. The current direct bridge skills are `$ask-claude` and `$ask-gemini`; broader multi-model work should be handled by explicit team or workflow orchestration rather than an undocumented bridge name.
+
+## What it is
+
+Each bridge launches the target CLI binary as a fresh subprocess, sends the question or task, and returns the response into the current OMX session. Because each subprocess starts fresh with no inherited context, bridge calls are isolated from the active working context. That isolation is what makes them useful when you need an outside perspective without contaminating the current session.
+
+## Bridge patterns
+
+- **`$ask-claude`** — Sends the question directly to a Claude CLI subprocess. Use it for quick lookups, summarization, or fetching Claude's reasoning without touching the Codex context.
+- **`$ask-gemini`** — Launches a Gemini CLI subprocess. Especially useful for large-context lookups or when you want to compare with Google's model.
+- **Team-level mixed CLI workers** — For broader multi-model coverage, configure team workers deliberately and keep the synthesis in the main OMX workflow.
+
+## Example
+
+Single-model consultation:
+
+```
+codex
+> $ask-claude "what is the recommended retry strategy for idempotent HTTP endpoints?"
+```
+
+```
+codex
+> $ask-gemini "summarize the tradeoffs between RSA and ECDSA for JWT signing"
+```
+
+Coordinated multi-model review:
+
+```
+codex
+> $team 2:executor "compare Claude/Gemini-informed options for a public REST API rate limiter"
+```
+
+Calling directly from a shell script without going through the skill layer:
+
+```bash
+# Ask Claude directly from a shell script
+echo "explain this error: $(cat error.log)" | claude --print
+```
+
+## Related
+
+- [ask-claude](/docs/skills/utility/ask-claude) — `$ask-claude` skill reference
+- [ask-gemini](/docs/skills/utility/ask-gemini) — `$ask-gemini` skill reference
+- [MCP](/docs/integrations/mcp) — Model Context Protocol for structured tool invocation
+- [OpenClaw](/docs/integrations/openclaw) — event bridge for cross-session notifications

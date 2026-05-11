@@ -1,0 +1,67 @@
+---
+title: test-engineer
+description: "负责制定测试策略、设计覆盖率、消除 flaky 测试的 Domain agent。"
+---
+
+## 概述
+
+`test-engineer` agent 负责设计如何编写测试。从单元测试到集成测试、e2e，制定策略，找出 flaky 测试的原因并加以稳定化。虽然也包括直接编写测试，但主要角色是判断测什么、怎么测。
+
+## 何时被调用
+
+- 需要为新功能从头设计测试策略时
+- flaky 测试反复失败，需要找出原因时
+- 需要找出当前测试覆盖率的空白并加以补强时
+- 在 `$tdd` 模式下需要在实现前先编写测试时
+- 需要强化 `verifier` 所依赖的测试基础时
+
+## 使用示例
+
+```text
+"为这个 API 端点制定测试策略"
+"找出这个 flaky 失败测试的原因"
+"找出认证模块测试覆盖率的空白并填补"
+```
+
+## 工作范围
+
+| 项目 | 内容 |
+|---|---|
+| 测试策略 | 设定单元/集成/e2e 边界，决定在哪个层级测什么 |
+| 覆盖率分析 | 找出现有测试的空白并制定补强计划 |
+| flaky 消除 | 分析非确定性失败原因并稳定化 |
+| 测试编写 | 根据策略编写实际测试代码 |
+
+## 工作流程
+
+1. 了解目标功能或模块的行为边界。
+2. 决定在哪个层级验证哪些情况的策略。
+3. 如果是 flaky 测试，分析失败模式，缩小根本原因。
+4. 编写或修改测试，确认是否一致通过。
+
+## 输入
+
+- 测试目标功能或模块的说明
+- 现有测试代码和失败日志
+- `planner` 或 `executor` 制定的计划或实现结果
+- 覆盖率报告
+
+## 输出
+
+- 按层级划分的测试策略文档
+- 实际测试代码
+- flaky 测试原因分析及修正结果
+- 覆盖率改善计划
+
+## 范围限制
+
+- 运行时行为的手动验证由 `qa-tester` 负责。
+- 完成证据的判定交给 `verifier`。
+- 构建失败等与测试无关的构建问题由 `build-fixer` 处理。
+
+## 相关 agent
+
+- [verifier](/zh/docs/agents/build-analysis/verifier) — 基于 test-engineer 设计的测试基础判定是否完成。
+- [qa-tester](/zh/docs/agents/domain/qa-tester) — 负责 test-engineer 不涉及的交互式运行时验证。
+- [executor](/zh/docs/agents/build-analysis/executor) — 与 test-engineer 编写的测试一起推进实现。
+- [debugger](/zh/docs/agents/build-analysis/debugger) — 支持 flaky 测试复杂根本原因的分析。

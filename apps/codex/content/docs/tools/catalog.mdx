@@ -1,0 +1,50 @@
+---
+title: "Catalog"
+description: "The capability inventory OMX uses to group prompts, skills, and tools into a stable, navigable runtime and documentation layout."
+---
+
+Catalog is OMX's capability inventory surface. It is how OMX keeps track of what exists, how those capabilities are grouped, and where they belong in the docs and runtime model.
+
+## What it is
+
+OMX exposes several kinds of surfaces:
+
+- **agents** — role-specific prompt surfaces
+- **skills** — user-facing workflow entry points
+- **tools** — lower-level runtime capabilities used by skills, hooks, and agents
+
+Catalog is the layer that keeps those groups coherent.
+
+## Why it matters
+
+Without a stable capability inventory, it becomes harder to:
+
+- document OMX consistently
+- keep navigation and section indexes accurate
+- separate user-facing workflows from lower-level internals
+- add new prompts, skills, or tools without breaking the information architecture
+
+So although most users do not interact with catalog data directly, they benefit from it every time the docs, help surfaces, or setup outputs stay predictable.
+
+## Where it shows up
+
+You can see catalog-driven grouping in:
+
+- documentation indexes such as [Agents](/docs/agents), [Skills](/docs/skills), and [Tools](/docs/tools)
+- scaffolding and setup scripts that generate or refresh docs structure
+- discovery/help surfaces that list what OMX can do
+- runtime logic that distinguishes skills from lower-level tool surfaces
+
+## Practical mental model
+
+Think of catalog as OMX's table of contents for capabilities:
+
+- **Skills** are the front door.
+- **Agents** are the specialists behind that door.
+- **Tools** are the lower-level machinery those workflows rely on.
+
+## Related
+
+- [Agents](/docs/agents) — role prompt catalog
+- [Skills](/docs/skills) — user-facing workflow catalog
+- [Tools](/docs/tools) — lower-level capability catalog

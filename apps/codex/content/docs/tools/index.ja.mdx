@@ -1,0 +1,64 @@
+---
+title: ツール
+description: OMX ランタイムが内部的に使う capability レイヤー
+---
+
+## ツールとは
+
+ツールは OMX が作業を進める際に内部的に使うランタイム capability です。ユーザーが直接呼び出す [スキル](/ja/docs/skills) と異なり、ツールは **スキル · フック · エージェントが裏で依存する下位機能** です。
+
+スキルが「何をするか」を決めるなら、ツールは「それを実際に可能にするレイヤー」です。
+
+## ツールがあるからできること
+
+- 実行中の状態を保存して復元
+- HUD で進行状況を表示
+- wiki にプロジェクト知識を蓄積
+- スクリーンショット比較のような visual QA
+- Claude / Gemini などの他のモデルへの cross-CLI 委任
+
+「ユーザーが直接押すボタン」というよりも、**OMX がなぜそう動くのかを理解したいときに見るセクション** に近いです。
+
+## 主要ツール
+
+### State
+
+[State](/ja/docs/tools/state) — 実行中モードの状態を読み書きするポイント。`$ralph`、`$team`、`$ultraqa` などの長期実行が状態を維持する基盤です。
+
+### HUD
+
+[HUD](/ja/docs/tools/hud) — 現在のセッション状態を確認する窓口。phase、tmux status pane、JSON export など。
+
+### Wiki
+
+[Wiki](/ja/docs/tools/wiki) — `.omx/wiki/` 以下に永続的なプロジェクト知識を蓄積する場所。State が実行中の情報なら、Wiki は**セッションが終わっても残すべき情報**です。
+
+### Catalog
+
+[Catalog](/ja/docs/tools/catalog) — OMX がプロンプト · スキル · ツールをどの capability マップにまとめるか。構造を理解したいときに見ます。
+
+### Visual
+
+[Visual](/ja/docs/tools/visual) — スクリーンショットと参照画像を比較する capability。通常は [`$visual-verdict`](/ja/docs/skills/workflow/visual-verdict) を通じて間接的に使われます。
+
+### Ask Claude / Ask Gemini
+
+[Ask Claude](/ja/docs/tools/ask-claude)、[Ask Gemini](/ja/docs/tools/ask-gemini) — 現在の Codex コンテキスト外で他のモデルにサブ質問を委任するブリッジ。セカンドオピニオン、汚染のない要約、cross-CLI 比較に使います。
+
+## ツール vs スキル
+
+| 区分 | 意味 |
+|---|---|
+| スキル | ユーザーが開始するワークフロー |
+| ツール | そのワークフローが依存する下位 capability |
+
+一つのワークフローが実行されると、内部で state 更新 → wiki 保存 → HUD 更新 → visual 比較のような連鎖が起きますが、ユーザーはこれらの個別呼び出しを気にする必要はありません。
+
+## いつ見ると役立つか
+
+- OMX が状態をどこに保存しているか確認したいとき
+- HUD · wiki · state の違いを整理したいとき
+- visual QA や provider bridge がどのレイヤーにあるか確認したいとき
+- スキルの上で実際にどの capability が動いているか追跡したいとき
+
+最初から通読する必要はありませんが、OMX internals を理解するなら外せないセクションです。

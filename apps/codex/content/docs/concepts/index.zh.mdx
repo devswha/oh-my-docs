@@ -1,0 +1,229 @@
+---
+title: 核心概念
+description: 构成 OMX 的 agent、skill、hook 与 state 管理系统之间的关系
+---
+
+## OMX 的组成
+
+OMX 由四套系统咬合协作:
+
+<Mermaid chart={`
+graph TD
+    A["用户输入"] --> B["钩子 (Hooks)\n事件检测与路由"]
+    B --> C["技能 (Skills)\n行为注入与工作流编排"]
+    C --> D["智能体 (Agents)\n执行专项任务"]
+    D --> E["状态 (State)\n记录进度与知识"]
+`} />
+
+### 各概念速览
+
+#### Agents
+
+OMX 提供 33 个角色化 agent。每个 agent 只负责一项职责。
+
+例: `explore`(探索)、`planner`(规划)、`architect`(设计)、`executor`(实现)、`verifier`(验证)。
+
+#### Skills
+
+skill 是把 agent 行为拼装、扩展起来的工作流入口。通常通过 `$autopilot`、`$ralph`、`$team` 这样的名字调用。
+
+例: `$deep-interview`(澄清需求)、`$ralplan`(形成共识计划)、`$ralph`(持续执行直到完成)。
+
+#### Hooks
+
+hook 响应 Codex CLI 的生命周期事件，从而启动 skill 与运行时行为。会话开始、用户输入、工具调用、停止点，都可以介入。
+
+#### State
+
+任务进度和跨会话的知识都保存在 `.omx/` 目录下，所以即便经历 context compaction 也不会丢失关键信息。
+
+---
+
+## Agents 是什么?
+
+agent 是针对特定角色优化的工作 surface。OMX 把所有 agent 按四条 lane 分类。
+
+<Mermaid chart={`
+graph LR
+    A["explore\n代码库探索"] --> B["analyst\n需求分析"]
+    B --> C["planner / architect\n规划与设计"]
+    C --> D["critic\n计划审阅"]
+    D --> E["executor\n实现"]
+    E --> F["verifier\n完成验证"]
+`} />
+
+### Build / Analysis lane
+
+从理解需求到实现与验证，负责开发的主干流程。
+
+| Agent | 作用 |
+|----------|------|
+| `explore` | 代码库探索、文件/模式/关系梳理 |
+| `analyst` | 需求分析、发现隐藏约束 |
+| `planner` | 任务排序与计划制定 |
+| `architect` | 系统设计、接口、权衡分析 |
+| `debugger` | 根本原因分析 |
+| `executor` | 代码实现、重构 |
+| `verifier` | 完成验证、测试充分性检查 |
+
+### Review lane
+
+交付之前检查质量与风险。
+
+| Agent | 作用 |
+|----------|------|
+| `quality-reviewer` | 逻辑缺陷、可维护性、反模式审查 |
+| `security-reviewer` | 安全漏洞、信任边界、auth 审查 |
+| `code-reviewer` | 综合代码审查 |
+| `style-reviewer` | 风格、命名、格式审查 |
+| `api-reviewer` | API 合约与向后兼容性检查 |
+| `performance-reviewer` | 性能瓶颈与开销检查 |
+
+### Domain lane
+
+在特定领域有专长的 specialist，按需被调起。
+
+示例:
+
+- `test-engineer` — 测试策略
+- `designer` — UI/UX 设计
+- `writer` — 文档与用户引导
+- `researcher` — 外部文档与参考资料调研
+- `build-fixer` — 构建/工具链错误修复
+- `git-master` — Git 操作与历史整理
+
+### Coordination lane
+
+审阅并协调其他 agent 产生的计划与结果。
+
+示例:
+
+- `critic` — 检查计划/设计的漏洞
+- `team-executor` — 辅助 team 执行 lane
+- `quality-strategist` — 质量策略裁决
+
+### 如何选择 agent
+
+简单一点说:
+
+| 任务类型 | 优先考虑的 agent |
+|-----------|----------------------|
+| 想快速读懂代码库 | `explore` |
+| 需求还不清晰 | `analyst` |
+| 需要先定计划 | `planner`、`architect`、`critic` |
+| 要实际实现 | `executor` |
+| 要确认是否真的完成 | `verifier` |
+| 担心安全/质量/性能 | review lane |
+
+完整列表见 [Agents 目录](/zh/docs/agents)。
+
+---
+
+## Skills 是什么?
+
+skill 是把 agent 行为组合起来的工作流系统。它不替代 agent，而是规定**按什么顺序、在什么时机调用哪个角色**。
+
+<Mermaid chart={`
+graph TD
+    G["入口 skill\n$deep-interview / $ralplan / $ralph / $team"] --> H["角色选择\n决定什么时候调用哪个 agent"]
+    H --> I["执行\n调用 agent、更新 state、验证循环"]
+    I --> J["完成\n通过验证后结束"]
+`} />
+
+### 怎么调用 skill?
+
+OMX 里通常用 `$` 前缀调用:
+
+```bash
+$deep-interview "整理一下认证需求"
+$ralplan "给出最安全的实现计划"
+$ralph "把已批准的计划推进到完成"
+```
+
+也可以通过 magic keyword 自动激活对应的 skill。
+
+### 主要工作流 skill
+
+| Skill | 作用 |
+|------|------|
+| `$deep-interview` | 需求模糊时用提问澄清 |
+| `$ralplan` | 基于 planner/architect/critic 的共识制定计划 |
+| `$ralph` | 一直跑到通过验证为止 |
+| `$team` | 调度需要并行执行的工作 |
+| `$autopilot` | 从想法到实现/QA/验证一把完成 |
+| `$ultraqa` | 循环跑测试、验证、修复 |
+
+### 什么时候用哪个 skill?
+
+- **不清楚要做什么** → `$deep-interview`
+- **实现前想先定计划** → `$ralplan`
+- **需要一个 owner 把事情扛到底** → `$ralph`
+- **需要并行执行** → `$team`
+- **想把全流程一次性交出去** → `$autopilot`
+
+完整列表见 [Skills 目录](/zh/docs/skills)。
+
+---
+
+## Hooks 是什么?
+
+hook 是响应 Codex CLI 生命周期事件的运行时代码。用户输入 prompt、执行工具、会话开始/结束时，它会自动介入。
+
+<Mermaid chart={`
+graph TD
+    A["SessionStart"] --> B["恢复状态 / 注入上下文"]
+    C["UserPromptSubmit"] --> D["检测 magic keyword / 激活 skill"]
+    E["PreToolUse / PostToolUse"] --> F["拦截 / 后处理 / 暴露提示"]
+    G["Stop"] --> H["判断未完成的执行是否继续"]
+`} />
+
+OMX 通过 hook 实现关键字识别、skill 激活、状态恢复、终止拦截这一类行为。
+
+### 主要事件与职责
+
+| 事件 | OMX 做什么 |
+|--------|---------------|
+| `SessionStart` | 状态恢复、注入开发者上下文、`.omx/` 初步检查 |
+| `UserPromptSubmit` | 检测 magic keyword、激活对应 skill |
+| `PreToolUse` | 对危险命令告警、执行前拦截 |
+| `PostToolUse` | 失败提示暴露、后处理 |
+| `Stop` | 控制长时间运行的模式是否继续 |
+
+所以 hook 不是用户直接调用的功能，而是 **让 OMX 在幕后顺畅运转的事件层**。
+
+详细见 [Hooks](/zh/docs/hooks) 章节。
+
+---
+
+## State 管理概览
+
+OMX 把运行中的状态和跨会话的记忆都保存在 `.omx/` 下。
+
+<Mermaid chart={`
+graph TD
+    A["当前会话"] --> B[".omx/state\n活跃模式的状态"]
+    A --> C[".omx/notepad.md\n工作笔记"]
+    A --> D[".omx/project-memory.json\n长期知识"]
+    A --> E[".omx/wiki\n累积的文档知识"]
+`} />
+
+| 路径 | 作用 |
+|------|------|
+| `.omx/state/` | 活跃模式的状态 |
+| `.omx/plans/` | `$ralplan` 等生成的计划 |
+| `.omx/logs/` | 会话与执行日志 |
+| `.omx/notepad.md` | 自由形式笔记 |
+| `.omx/project-memory.json` | 长期保留的项目指令/笔记 |
+| `.omx/wiki/` | 累积的 wiki 知识 |
+
+### 为什么重要?
+
+因为有状态管理，OMX 才能:
+
+- 经历 context compaction 之后仍然不丢进度
+- 恢复长时间运行的工作流
+- 跨会话继承项目知识
+
+也就是说，hook 和 skill 负责"动作"，state 管理负责确保这些动作不被切断。
+
+详细内容见 [`.omx/` 目录参考](/zh/docs/reference/omx-directory) 和 [State 工具](/zh/docs/tools/state)。

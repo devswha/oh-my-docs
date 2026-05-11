@@ -1,0 +1,68 @@
+---
+title: "verifier"
+description: "Evidence-based verification agent that proves or disproves completion claims with concrete command output."
+---
+
+The `verifier` agent treats every completion claim as a hypothesis. It runs tests, inspects diffs, reads build logs, and produces a PASS / FAIL / PARTIAL verdict grounded in actual output. Saying "it's done" is not enough — the verifier requires specific artifacts that prove the claim.
+
+## When invoked
+
+| Situation | How it's triggered |
+|---|---|
+| End-of-task checkpoint in `$autopilot`, `$ralph`, and `$ultraqa` cycles | Automatic |
+| After `executor` marks a task complete, to confirm acceptance criteria | Automatic |
+| During `$ultraqa` fix loops when a previous cycle's verdict was FAIL or PARTIAL | Automatic |
+| When an independent second opinion is needed on whether a feature actually works | Direct request |
+
+## Example prompts
+
+```text
+"The executor said it's done — verify it with actual evidence"
+"Confirm this feature meets all acceptance criteria"
+"Tests passed, but check whether it's release-ready based on evidence"
+```
+
+## Verification process
+
+1. Restate the acceptance criteria to be proven
+2. Run or review the commands (tests, build, smoke checks) that confirm each criterion
+3. Distinguish between insufficient evidence (inconclusive) and failed behavior (definitive failure)
+4. Issue a PASS / FAIL / PARTIAL verdict
+
+The judgment criterion is what is actually evidence, not what looks plausible.
+
+## Immediate rejection conditions
+
+In the following situations, the verifier does not lean toward approval:
+
+- Only speculative language is present ("should", "probably", "seems to")
+- No recent test output is available
+- A claim of "all tests pass" exists but no actual results are shown
+- A TypeScript change has no type-check evidence
+- A compiled language change has no build verification
+
+## Inputs
+
+- The claim to verify (e.g., "all tests pass", "the API returns 200 on valid input")
+- Relevant artifacts: test output, build log, diff, route smoke result, or prior verifier report
+- Optional: `.omx/specs/` acceptance criteria file produced by `analyst`
+
+## Outputs
+
+- A verdict report (PASS / FAIL / PARTIAL) written to stdout or persisted to `.omx/verification/<topic>.md`
+- A list of commands run and their captured output as evidence
+- A gaps section calling out any missing or inconclusive proof
+- A risks section noting remaining uncertainty and recommended follow-up
+
+## Limits
+
+- Does not fix failures — reports them and hands off to `executor`, `build-fixer`, or `debugger`
+- Does not replace human review for subjective quality, UX, or security judgments
+- Does not reuse stale output — always gathers fresh evidence when possible
+
+## Related agents
+
+- [executor](/docs/agents/build-analysis/executor) — the implementation agent whose output `verifier` checks
+- [test-engineer](/docs/agents/domain/test-engineer) — designs the test suite that `verifier` relies on for evidence
+- [quality-reviewer](/docs/agents/review/quality-reviewer) — covers subjective quality dimensions that `verifier` does not assess
+- [critic](/docs/agents/coordination/critic) — challenges plans and designs before execution, complementing post-execution verification

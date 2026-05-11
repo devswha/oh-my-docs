@@ -1,0 +1,46 @@
+---
+title: "コンテキストフック"
+description: "プロジェクトメモリ、セッションリマインダー、wiki サマリー、モード状態を system-reminder タグで Codex プロンプトに注入するフック"
+---
+
+コンテキストフックは、次のプロンプトに構造化された知識を差し込む OMX フックのサブセットです。ユーザーメッセージを直接変更する代わりに、Codex が読み取る `<system-reminder>` タグを発行します。これにより、ユーザーメッセージをそのまま保ちながら、モデルは常に最新のプロジェクトメモリとアクティブな指示を持って起動します。
+
+## 注入されるソース
+
+**プロジェクトメモリ**
+
+`project_memory_write` または `project_memory_add_directive` で書き込まれた重要な事実と指示。`SessionStart` 時に注入され、指示がアクティブな場合はその後のターンでも選択的に注入されます。
+
+**セッションリマインダー**
+
+`notepad_write_working` または `notepad_write_priority` で書き込まれた短期メモ。有効期限が切れるか削除されるまで継続的に注入されます。
+
+**wiki サマリー**
+
+wiki ページが存在する場合、`SessionStart` 時に `.omx/wiki/` の簡潔な抜粋を表示します。収集・再ビルドのような書き込み集中型の作業はフックパスをブロックしないよう遅延処理されます。
+
+**モード状態**
+
+ralph、team、ultrawork のようなアクティブなワークフローモードが検出されると、現在のフェーズと継続指示を一緒に注入し、モデルが中断地点から正しく再開できるようにします。
+
+## 使用例
+
+すべてのコミットにトレーラーを含めるという永続的な指示を登録:
+
+```bash
+omx memory add-directive "All git commits must include Co-authored-by: OmX <omx@oh-my-codex.dev>"
+```
+
+次のセッション開始時に、この指示が `<system-reminder>` ブロックとして自動的に注入されます。
+
+現在の notepad の内容を確認:
+
+```bash
+cat .omx/notepad.md
+```
+
+## 関連ドキュメント
+
+- [コアフック](/ja/docs/hooks/core-hooks)
+- [Wiki ツール](/ja/docs/tools/wiki)
+- [State ツール](/ja/docs/tools/state)

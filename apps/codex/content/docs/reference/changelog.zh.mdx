@@ -1,0 +1,51 @@
+---
+title: "变更日志"
+description: "OMX 发布历史 — 最新版本摘要与上游 CHANGELOG 链接"
+---
+
+完整 changelog 在上游 [`CHANGELOG.md`](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md) 中维护。本页汇总最近的发布信息。
+
+## 最新版本 — v0.14.4
+
+这是一个补丁版本，将默认 frontier lane 提升到 `gpt-5.5`，同时保持 standard/mini lane 与 spark lane 的精确模型固定不变。
+
+**变更内容：**
+- runtime defaults、Codex agent defaults 与 `omx explore` fallback behavior 的 frontier default 现在使用 `gpt-5.5`。
+- setup/config guidance 与 regression coverage 已更新为描述 `gpt-5.5` default，同时保留现有 context size 建议。
+- 生成的 setup config 与 executor worker launch defaults 现在默认使用 medium reasoning。
+- mini 与 spark lane 保持精确不变：`gpt-5.4-mini` 和 `gpt-5.3-codex-spark` 行为未改变。
+
+**修复内容：**
+- 对齐 Node/Cargo metadata、lockfile、changelog、release body、release notes 与 release-readiness collateral 中的发布元数据 drift。
+
+## v0.14.3
+
+这是 `0.14.2` 之后的可靠性强化版本，覆盖 `omx question`/deep-interview return-pane behavior、project-local explore launch context、setup TOML repair safety、HUD window targeting、ultrawork protocol alignment、BusyBox cleanup compatibility、stale Stop/autopilot state handling、supervisor runtime events、Docker-host tmux question rendering，以及 native Windows psmux worker pane bootstrap hardening。
+
+## v0.14.2 与 v0.14.1
+
+这些补丁版本聚焦 interactive orchestration 可靠性：更安全的 `omx question` renderer behavior、共享 tmux answer-submit semantics、更严格的 deep-interview state handling、Korean `ulw` keyboard drift handling、setup/update refresh resilience、lifecycle contract cleanup，以及更清晰的 deep-interview background-question guidance。
+
+## v0.14.0
+
+这是围绕 interactive orchestration 变化的 minor release，包括新的 `omx question` blocking-question entrypoint、structured deep-interview question obligations、advisory triage routing、validator-gated autoresearch、明确的 runtime run outcomes、更清晰的 specialist routing，以及对发布包的 hardening。
+
+## v0.13.x 系列
+
+该系列覆盖 `omx adapt` foundations、Ralph/runtime authority fixes、hook 与 HUD reliability、worker identity preservation、security hardening，以及 detached tmux startup repairs。
+
+- [v0.13.2](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#0132---2026-04-18)
+- [v0.13.1](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#0131---2026-04-16)
+- [v0.13.0](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/release-notes-0.13.0.md)
+
+## 完整历史
+
+v0.7.x 至今所有版本均可在上游仓库查看。
+
+[https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md)
+
+## 相关文档
+
+- [发布说明](/zh/docs/reference/release-notes) — 用户影响、兼容性与验证证据详情
+- [迁移](/zh/docs/reference/migration) — 版本间 breaking change 与升级步骤
+- [快速命令](/zh/docs/reference/quick-commands) — 常用 CLI 命令摘要

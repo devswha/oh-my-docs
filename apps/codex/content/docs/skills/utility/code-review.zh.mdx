@@ -1,0 +1,46 @@
+---
+title: $code-review
+description: 调用code-reviewer智能体的代码审查包装技能
+---
+
+通过 `$code-review` 调用。
+
+这是调用code-reviewer智能体的wrapper。需要对已完成的代码进行全面审查时使用。涵盖API契约、向后兼容性、逻辑缺陷、安全漏洞等方面。
+
+## 何时使用
+
+- 实现完成后在提PR前审查代码时
+- 确认 `$ralph` 或 `$autopilot` 生成的代码时
+- 需要对特定文件或变更提供质量反馈时
+- 需要确认向后兼容性或API契约合规性时
+
+## 何时避免
+
+- 只专注于安全漏洞 → `$security-review` 更合适
+- 目的是修复构建错误 → 使用 `$build-fix`
+- 尚在实现中的代码不建议使用 — 完成后再审查效率更高
+
+## 命令
+
+```bash
+$code-review
+$code-review "审查一下auth模块的变更内容"
+$code-review --scope src/api
+$code-review --pr 123
+```
+
+## 审查范围
+
+| 项目 | 内容 |
+|---|---|
+| 逻辑缺陷 | 错误的条件、缺失的边界情况 |
+| API契约 | 输入输出类型、错误处理方式 |
+| 向后兼容性 | 影响现有调用方的变更 |
+| 可维护性 | 重复代码、不必要的复杂度 |
+| 安全性 | 明显漏洞（深层安全审查用 `$security-review`） |
+
+## 相关
+
+- [code-reviewer智能体](/zh/docs/agents/review/code-reviewer) — 内部工作详情
+- [`$build-fix`](/zh/docs/skills/utility/build-fix) — 构建错误修复
+- [security-reviewer智能体](/zh/docs/agents/review/security-reviewer) — 深层安全审查

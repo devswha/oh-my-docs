@@ -1,0 +1,40 @@
+---
+title: $plan
+description: Skill for planning first without implementation
+---
+
+## TL;DR
+
+Use `$plan` when you want to create a plan without executing anything. If you need consensus-based planning, `$ralplan` is a better fit.
+
+## How to invoke
+
+```
+$plan "plan the introduction of a new auth system"
+```
+
+Also activated by magic keywords `plan this`, `plan the`, `let's plan`.
+
+## `$plan` vs `$ralplan`
+
+| Item | `$plan` | `$ralplan` |
+|---|---|---|
+| Agents | planner alone | planner + architect + critic |
+| Consensus process | None | Yes (iterative review) |
+| Speed | Fast | Slower but more stable |
+| Good fit | Need a quick draft | Direction consensus matters |
+
+Use `$ralplan` for large scope or when the cost of mistakes is high.
+
+## When to use it
+
+| Good fit | Avoid |
+|---|---|
+| Need a quick draft plan | Work requiring stakeholder consensus |
+| Small features, short-term tasks | Work involving architecture decisions |
+
+## Related skills
+
+- [`$ralplan`](/docs/skills/workflow/ralplan) — consensus-based planning
+- [`$ralph`](/docs/skills/workflow/ralph) — execute the plan
+- [`$deep-interview`](/docs/skills/workflow/deep-interview) — clarify requirements before planning

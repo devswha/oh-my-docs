@@ -1,0 +1,47 @@
+---
+title: explore
+description: "以只读方式探索文件、符号、入口点和依赖关系的代码库探索 agent。"
+---
+
+`explore` agent 在其他 agent 触碰代码之前，先回答「X 在哪里？」这个问题。通过先广泛扫描整个仓库再逐步缩小范围的并行搜索，将文件路径、符号位置和调用关系结构化后返回。完全只读，因此可以在工作流的任何阶段无副作用地调用。
+
+## 职责
+
+- 定位与问题相关的文件、目录和模块边界。
+- 查找函数、类、类型等符号的位置及文件间关系。
+- 识别入口点、dependency chain 和 import graph。
+- 交叉验证 Glob、Grep、AST search、LSP 的结果以减少 false positive。
+
+## 何时被调用
+
+| 场景 | 调用路径 |
+|---|---|
+| `$autopilot`、`$deep-interview`、`$deepsearch` 启动时 | 自动 |
+| 「帮我找 X 在哪里」「哪些文件触碰了 Y」 | 直接请求 |
+| `planner` 或 `executor` 需要获取实际文件路径时 | 上层 agent 请求 |
+| 调试过程中尚不知道症状位置时 | `debugger` 委派 |
+
+## 输入
+
+- 仓库根路径
+- 搜索查询或范围提示（符号名、功能区域、文件模式、自由描述）
+- 可选：错误信息、已知文件路径
+
+## 输出
+
+- 包含绝对文件路径、匹配符号和关系摘要的 in-session 报告
+- deep-search 执行时在 `.omx/research/<topic>.md` 留下结果，供其他 agent 参考
+- 指示下一步应由哪个 agent 处理的 `next_steps` 章节
+
+## 范围限制
+
+- 不创建、修改或删除文件。
+- 不负责运行测试、构建或评估代码质量。
+- 不给出架构建议。该职责属于 `architect`。
+
+## 相关 agent
+
+- [analyst](/zh/docs/agents/build-analysis/analyst) — 基于 `explore` 的结果整理需求。
+- [planner](/zh/docs/agents/build-analysis/planner) — 以 `explore` 找到的文件和模块地图为基础规划任务顺序。
+- [debugger](/zh/docs/agents/build-analysis/debugger) — 在查找症状位置时利用 `explore`。
+- [executor](/zh/docs/agents/build-analysis/executor) — 在修改前以 `explore` 和 `planner` 整理的文件列表作为输入。

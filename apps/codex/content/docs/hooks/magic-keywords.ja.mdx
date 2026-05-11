@@ -1,0 +1,54 @@
+---
+title: "マジックキーワード"
+description: "キーワード検出器フックが認識するフレーズと、各フレーズがどの OMX スキルにルーティングされるか"
+---
+
+マジックキーワードは、`$skill` の明示なしに OMX スキルを有効化するフレーズです。キーワード検出器フックはすべての `UserPromptSubmit` イベントでこのフレーズをスキャンし、モデルがプロンプトを受け取る前にスキルのアクティベーション状態を `.omx/state/` に書き込みます。モデルはスキル指示が準備された状態で実行を開始します。
+
+## 動作方式
+
+検出ロジックは `src/hooks/keyword-registry.ts` に優先度順で並べられたフレーズ-スキルマッピングとして定義されます。明示的な `$skill` 呼び出し（左から右にマッチ）と、単語境界ガード付きの暗黙的フレーズマッチングの両方をサポートします。
+
+`team`、`ralph`、`parallel` のようなキーワードは、普通の文章で誤って発動しないように追加の意図コンテキスト条件が付いています。
+
+## キーワード表
+
+| フレーズ | ルーティング先 | 優先度 |
+|---|---|---|
+| `ralplan`, `consensus plan` | `ralplan` | 11 |
+| `autopilot`, `build me`, `I want a` | `autopilot` | 10 |
+| `ultrawork`, `ulw`, `parallel` | `ultrawork` | 10 |
+| `ralph`, `don't stop`, `must complete`, `keep going` | `ralph` | 9 |
+| `deep interview`, `interview me`, `gather requirements`, `don't assume`, `ouroboros` | `deep-interview` | 8 |
+| `ultraqa` | `ultraqa` | 8 |
+| `team`, `swarm`, `coordinated team` | `team` | 8 |
+| `plan this`, `plan the`, `let's plan` | `plan` | 8 |
+| `analyze`, `investigate` | `analyze` | 7 |
+| `code review`, `review code` | `code-review` | 6 |
+| `tdd`, `test first` | `tdd` | 6 |
+| `fix build`, `type errors` | `build-fix` | 6 |
+| `wiki query`, `wiki add`, `wiki lint` | `wiki` | 5 |
+| `cancel`, `stop`, `abort` | `cancel` | 5 |
+
+複数のキーワードが同時にマッチした場合、優先度の高い方が勝ちます。明示的な `$skill` は常に暗黙的なフレーズマッチより優先されます。
+
+## 例
+
+暗黙的トリガー — フレーズだけで autopilot が有効化されます:
+
+```
+codex
+> build me a REST API for bookstore inventory in TypeScript
+```
+
+明示的呼び出し — `$` プレフィックスでスキルを直接指定します:
+
+```
+codex
+> $ralplan design the new auth system
+```
+
+## 関連ドキュメント
+
+- [コアフック](/ja/docs/hooks/core-hooks)
+- [ライフサイクルイベント](/ja/docs/hooks/lifecycle-events)

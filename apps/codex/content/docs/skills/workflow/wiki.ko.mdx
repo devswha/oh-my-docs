@@ -1,0 +1,56 @@
+---
+title: $wiki
+description: 세션을 넘어 누적되는 프로젝트 지식 베이스 — .omx/wiki/ 아래에 마크다운 페이지로 저장되고 검색·추가·점검이 가능합니다
+---
+
+`$wiki`는 `.omx/wiki/` 아래에 마크다운 지식 베이스를 유지합니다. 각 페이지는 태그와 카테고리가 붙은 평범한 마크다운 파일입니다. 한 세션에서 발견한 내용이 다음 세션에서 검색 가능한 컨텍스트로 남기 때문에, 같은 코드베이스를 다시 탐색하는 비용이 줄어듭니다.
+
+## 언제 쓰나
+
+- 아키텍처 결정, 디버깅 결과, 반복 패턴을 다음 세션을 위해 저장할 때
+- 조사를 시작하기 전에 프로젝트 wiki에 이미 있는 내용을 먼저 확인할 때
+- 외부 문서, 스펙, 리서치 자료를 프로젝트 지식 베이스로 가져올 때
+- 끊어진 링크, 누락된 태그, 오래된 페이지를 점검할 때
+
+트리거 키워드: "wiki add", "wiki query", "wiki lint", "add to wiki", "search wiki"
+
+## 호출 방법
+
+```
+codex
+> wiki add "Auth uses JWT with 15-minute access tokens and 7-day refresh tokens stored in httpOnly cookies"
+```
+
+```
+codex
+> wiki query "authentication flow"
+```
+
+```
+codex
+> $wiki lint
+```
+
+## 동작 방식
+
+5가지 핵심 작업을 제공합니다.
+
+- `wiki_add` — 제목·내용·태그·카테고리를 지정해 새 페이지를 만듭니다. 카테고리는 architecture, decision, pattern, debugging, environment, session-log, reference, convention 중에서 선택합니다.
+- `wiki_query` — 키워드와 태그 매칭으로 페이지를 검색하고 순위별로 반환합니다. 벡터 임베딩이 없으므로 구체적인 용어로 검색할 때 결과가 가장 좋습니다.
+- `wiki_ingest` — 외부 문서나 스펙 파일을 받아 분류된 페이지로 나눠 가져옵니다.
+- `wiki_lint` — `[[페이지명]]` 형식의 끊어진 내부 링크, 필수 태그 누락, 오래된 페이지를 점검합니다.
+- `wiki_read`, `wiki_list`, `wiki_delete` — 페이지 직접 관리.
+
+모든 페이지는 `.omx/wiki/` 아래 마크다운 파일로 저장되고, 공유 인덱스는 `.omx/wiki/index.md`에 유지됩니다. 도구 없이도 열어볼 수 있고 저장소와 함께 이동합니다.
+
+## 출력
+
+- `.omx/wiki/{slug}.md` — 개별 지식 페이지
+- `.omx/wiki/index.md` — 모든 페이지의 태그와 카테고리가 담긴 자동 관리 인덱스
+- `.omx/wiki/log.md` — 추가·수정·삭제 작업의 append-only 로그
+- 끊어진 링크, 누락된 태그, 오래된 페이지를 나열한 lint 리포트
+
+## 관련 스킬
+
+- [`$deepsearch`](/ko/docs/skills/workflow/deepsearch) — 결과를 wiki에 저장할 가치가 있는 코드베이스 심층 검색
+- [`$trace`](/ko/docs/skills/workflow/trace) — session-log 페이지로 wiki에 가져올 수 있는 세션 실행 기록

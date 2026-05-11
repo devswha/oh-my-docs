@@ -1,0 +1,53 @@
+---
+title: "Codex ネイティブフック"
+description: "OMX が Codex CLI のネイティブフックインターフェースを直接使う方法と、ネイティブカバレッジとランタイムフォールバックの境界"
+---
+
+Codex CLI は `.codex/config.toml` に `[features] codex_hooks = true` が設定されると、`.codex/hooks.json` の登録情報を読み取り、ライフサイクルのタイミングごとに外部ハンドラーを呼び出します。OMX は Codex バイナリをシェルスクリプトでラップする代わりに、このインターフェースを直接使用します。
+
+## インストール構造
+
+`omx setup` は 2 つのファイルを書き込みます。
+
+- `.codex/config.toml` — `codex_hooks` を有効化
+- `.codex/hooks.json` — OMX ハンドラー `dist/scripts/codex-native-hook.js` を登録
+
+インストール時、`.codex/hooks.json` に既存のユーザー管理フックエントリが存在する場合は保持されます。`omx uninstall` は OMX が登録したエントリのみを削除し、ユーザーフックには触れません。
+
+Codex バイナリ周辺のシェルラッパーは `omx tmux-hook` で引き続きサポートされますが、ネイティブイベントの主要パスではありません。
+
+## カバレッジマトリクス
+
+| OMX の関心事 | Codex イベント | ステータス |
+|---|---|---|
+| セッションブックキーピング、wiki 起動コンテキスト | `SessionStart` | ネイティブ |
+| キーワード検出、スキル状態シード | `UserPromptSubmit` | ネイティブ |
+| Bash 安全チェック、コミットフォーマットガード | `PreToolUse`（Bash のみ） | ネイティブ-部分 |
+| コマンド未検出ガイダンス、終了コードレビュー | `PostToolUse`（Bash のみ） | ネイティブ-部分 |
+| ralph / autopilot / ultrawork / ultraqa 継続実行 | `Stop` | ネイティブ-部分 |
+| 停滞したターンの自動ナッジ | `Stop` | ネイティブ-部分 |
+| セッション終了 wiki キャプチャ、`session-idle` | — | ランタイム-フォールバック |
+| Bash 以外のツールのインターセプション | — | ランタイム-フォールバック |
+
+「ネイティブ-部分」とは、ネイティブパスが一般的なケースを処理し、エッジケースは notify-hook または tmux ランタイムパスにフォールバックすることを意味します。
+
+## 確認方法
+
+フックが正しくインストールされているか確認:
+
+```bash
+omx doctor
+```
+
+ネイティブフックパスがエンドツーエンドで実行されるかスモークテスト:
+
+```bash
+omx exec --skip-git-repo-check -C . "Reply with exactly OMX-EXEC-OK"
+```
+
+プラグインディスパッチログは `.omx/logs/hooks-YYYY-MM-DD.jsonl` に記録されます。
+
+## 関連ドキュメント
+
+- [ライフサイクルイベント](/ja/docs/hooks/lifecycle-events)
+- [コアフック](/ja/docs/hooks/core-hooks)

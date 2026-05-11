@@ -1,0 +1,48 @@
+---
+title: "Catalog"
+description: "プロンプト、skill、ツールを一貫したレイアウトでまとめるために OMX が管理する capability リスト"
+---
+
+Catalog は、OMX が公開する capability を一貫して維持するレイヤーです。何が存在するか、各 capability がどのように分類されるか、ドキュメントとランタイム内のどこに位置するかを整理します。
+
+## 3 つの分類
+
+OMX は capability を 3 種類に分けます。
+
+- **agents** — 役割別のプロンプト surface
+- **skills** — ユーザーが入口とするワークフロー
+- **tools** — skill、hook、agent が内部で使う下位機能
+
+Catalog は、この分類が崩れないよう維持します。
+
+## なぜ必要か
+
+capability リストが適切に管理されないと、以下の問題が生じます。
+
+- ドキュメントインデックスと実際の実装がずれる
+- navigation が不正確になる
+- ユーザー向けワークフローと内部実装が混在する
+- 新しいプロンプトや skill を追加するときに構造が乱れる
+
+ほとんどのユーザーは catalog データを直接扱いません。ただし、ドキュメント、ヘルプ、setup 出力が予測可能に保たれているのは catalog のおかげです。
+
+## どこに現れるか
+
+catalog に基づく分類は以下で確認できます。
+
+- [Agents](/ja/docs/agents)、[Skills](/ja/docs/skills)、[Tools](/ja/docs/tools) などのドキュメントインデックス
+- ドキュメント構造を生成・更新する scaffolding / setup スクリプト
+- OMX が何をできるかを示す discovery / help 出力
+- skill と下位 tool を区別するランタイムロジック
+
+## 構造サマリー
+
+- **Skills** — ユーザーが入ってくる入口
+- **Agents** — その背後で実際に作業する役割別の専門家
+- **Tools** — そのワークフローが依存する下位機能
+
+## 関連ドキュメント
+
+- [Agents](/ja/docs/agents) — 役割プロンプト一覧
+- [Skills](/ja/docs/skills) — ユーザー向けワークフロー一覧
+- [Tools](/ja/docs/tools) — 下位 capability 一覧

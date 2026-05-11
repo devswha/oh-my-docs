@@ -1,0 +1,9 @@
+{
+  "title": "Integrations",
+  "pages": [
+    "openclaw",
+    "clawhip",
+    "mcp",
+    "cli-bridges"
+  ]
+}

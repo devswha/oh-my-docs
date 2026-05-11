@@ -1,0 +1,41 @@
+---
+title: git-master
+description: Keeps git history clean. Atomic commits, rebase strategy, conflict resolution, and PR preparation.
+---
+
+`git-master` keeps the git history clean and intentional. It crafts atomic commits, restructures messy histories into logical sequences, resolves conflicts without data loss, and prepares branches for review — so the commit log tells the story of what changed and why, not just what happened to be staged.
+
+## Role
+
+- Author atomic commits — one logical change per commit, clear subject line, imperative mood
+- Plan and execute rebase strategies — squash noise commits, reorder for clarity, split oversized commits
+- Resolve merge and rebase conflicts, explaining each resolution decision
+- Prepare branches for PR — clean history, up-to-date with base, no debug commits or fixup noise
+
+## When called
+
+- Before opening a pull request when the branch history needs cleanup (squash, reorder, or reword)
+- During conflict resolution when a merge or rebase produces non-trivial conflicts
+- When a commit needs to be split into smaller logical units for reviewer clarity
+- After a long-running feature branch drifts far from main and needs a structured rebase plan
+
+## Inputs
+
+Provide the current branch name, the target base branch, and the goal (clean for PR / resolve conflict / split commit / rebase onto main). Include any commit message conventions used by the project (Conventional Commits, ticket prefixes, etc.) so the output matches project standards.
+
+## Outputs
+
+A clean branch with the requested history shape, a summary of operations performed (commits squashed/split/reordered, conflicts resolved), and the final `git log --oneline` showing the result. For conflict resolutions, each conflict site and its resolution rationale is documented.
+
+## Limits
+
+- Does not force-push to protected branches without explicit user confirmation
+- Does not make code changes beyond what is needed for conflict resolution
+- Does not set up CI/CD or branch protection rules — defers to `build-fixer` and project config
+
+## Related agents
+
+| Agent | Relationship |
+|---|---|
+| [`executor`](/docs/agents/build-analysis/executor) | Makes the code changes that git-master then commits and organizes |
+| [`build-fixer`](/docs/agents/domain/build-fixer) | Resolves build failures that surface after a rebase or merge |

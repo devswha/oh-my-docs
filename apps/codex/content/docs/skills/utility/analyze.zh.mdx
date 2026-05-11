@@ -1,0 +1,40 @@
+---
+title: $analyze
+description: 专注于读取和分析代码库而不做修改的工具技能
+---
+
+通过 `$analyze` 调用。
+
+这是一个专注于理解代码库而不修改它的技能。用于定位Bug原因、追踪依赖关系、了解架构等"需要先读懂再行动"的场景。
+
+## 何时使用
+
+- 需要先找出Bug来源时
+- 代码变更前需要确认影响范围时
+- 向团队成员解释或进行评审前需要整理上下文时
+- 有可疑行为但不知道该看哪里时
+
+## 何时避免
+
+- 目的是修复 → 直接使用 `$build-fix` 或executor智能体更快
+- 需要制定计划 → 使用 `$ralplan`
+
+## 命令
+
+```bash
+$analyze "找出登录后重定向失败的原因"
+$analyze "全面了解auth模块的依赖关系"
+$analyze --scope src/api "整理这个目录中的错误处理方式"
+```
+
+## 工作方式
+
+`$analyze` 调用debugger智能体。不直接修改代码，通过文件探索、符号搜索、引用追踪来整理原因和结构，然后以文本形式返回结果。
+
+如果想一次性完成分析和修复，请使用 `$ralph`。
+
+## 相关
+
+- [debugger智能体](/zh/docs/agents/build-analysis/debugger) — 根本原因分析负责人
+- [`$ralph`](/zh/docs/skills/workflow/ralph) — 分析后连续执行修复
+- [工具技能列表](/zh/docs/skills/utility)

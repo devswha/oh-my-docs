@@ -1,0 +1,52 @@
+---
+title: ".omx 디렉터리"
+description: "프로젝트별 `.omx/` 상태 디렉터리 구조와 각 항목의 역할"
+---
+
+OMX를 사용하는 각 프로젝트는 worktree 루트에 `.omx/` 디렉터리를 갖습니다. 계획, 로그, 메모, wiki, 연구 결과, team coordination 데이터가 여기에 저장됩니다. 계획·wiki·spec처럼 팀과 공유할 항목은 커밋하고, state·logs·sessions처럼 일시적인 항목은 gitignore 처리하는 것이 일반적입니다.
+
+## 디렉터리 구조
+
+```
+.omx/
+├── state/                  # 런타임 상태 파일
+│   ├── sessions/           # 세션별 상태 서브디렉터리
+│   │   └── {sessionId}/    # 활성 세션마다 하나의 디렉터리
+│   └── team/               # Team pipeline coordination 상태
+├── plans/                  # $plan / $ralplan이 생성한 계획 문서
+├── logs/                   # Hook pipeline 및 agent 실행 로그
+├── notepad.md              # 자유 형식 notepad (agent가 읽을 수 있음)
+├── project-memory.json     # 구조화된 프로젝트 메모리 — directives와 notes
+├── research/               # 연구 워크플로우가 생성한 문서
+├── wiki/                   # LLM Wiki 페이지 ($wiki 스킬 관리)
+├── specs/                  # 기능/시스템 specification 문서
+└── sessions/               # 보관된 세션 요약
+```
+
+## 주요 항목
+
+- **`state/`** — OMX runtime이 읽고 쓰는 상태. team task queue, worker heartbeat, inbox file, monitor snapshot 등이 들어갑니다. 직접 수정하지 말고 `omx team api`로 다루세요.
+- **`state/sessions/{sessionId}/`** — 세션별 scratch state. 세션 시작 시 생성되며, 같은 세션 안에서 hook invocation 사이에 context를 넘길 때 씁니다.
+- **`plans/`** — `$plan`, `$ralplan`의 결과물. 실행 agent는 읽기만 하고, 쓰기는 planning skill만 합니다.
+- **`logs/`** — hook 실행, OpenClaw command gateway, team event의 raw log. 구조화 집계가 필요하면 `.jsonl` 파일로 append하세요.
+- **`notepad.md`** — `$note` 또는 수동으로 작성하는 자유 형식 메모. 같은 worktree에서 실행되는 agent가 이 파일을 읽어 이전 세션의 context를 이어받습니다.
+- **`project-memory.json`** — `directives`, `notes` 배열을 가진 구조화 메모리. 세션을 넘어가는 결정과 제약 조건을 저장합니다.
+- **`research/`** — 연구 중심 워크플로우나 analyst가 생성한 문서.
+- **`wiki/`** — `$wiki`가 관리하는 markdown wiki 페이지. 세션 간 질의/링크가 가능합니다.
+- **`specs/`** — 기능/시스템 specification 문서. 수동 작성하거나 `$autopilot` planning pass가 생성할 수 있습니다.
+
+## 권장 `.gitignore`
+
+```text
+.omx/state/
+.omx/logs/
+.omx/sessions/
+```
+
+`.omx/plans/`, `.omx/wiki/`, `.omx/specs/`, `.omx/notepad.md`, `.omx/project-memory.json`은 팀과 context를 공유하려면 버전 관리에 포함하세요.
+
+## 관련 문서
+
+- [설정](/ko/docs/reference/configuration) — `.omx/`와 함께 보는 설정 파일
+- [State 도구](/ko/docs/tools/state) — `state_read`, `state_write` 등 관련 tool
+- [Wiki](/ko/docs/tools/wiki) — `.omx/wiki/`를 읽고 쓰는 wiki tool

@@ -1,0 +1,46 @@
+---
+title: planner
+description: "仕様を実行可能なファイル単位の計画と acceptance criteria に変換する、作業順序設計エージェント。"
+---
+
+`planner` エージェントは実装要求を受け取るとすぐ実行する代わりに、実行可能なステップ別の作業計画に変換します。リポジトリを直接確認し、実際のスコープに合わせてステップ数を決め、検証可能な acceptance criteria を含む計画を作ります。計画と実装は厳密に分離されています。planner は計画を書き、コードは書きません。
+
+## 役割
+
+- 仕様を正確なファイル、関数、expected outcome が示された順序ある作業に分解します。
+- 計画を `.omx/plans/*.md` に書き、未解決の質問を `.omx/plans/open-questions.md` に整理します。
+- ユーザーの推測ではなくリポジトリの直接調査結果からコードベースの事実を導き出します。
+- `$ralplan` で呼び出された場合は consensus-mode RALPLAN-DR および ADR ブロックを含めます。
+
+## いつ呼ばれるか
+
+| 状況 | 呼び出し経路 |
+|---|---|
+| `$autopilot`、`$ralplan` で実行前の計画フェーズ | 自動 |
+| `$plan` で機能・リファクタリング・イニシアチブの計画要求 | 直接要求 |
+| 要求範囲が不明確で executor 投入前に scoping が必要 | 直接要求 |
+| ralph loop が詰まって sequencing を組み直す必要があるとき | `ralph` から委譲 |
+
+## 入力
+
+- ユーザー要求またはイシュー説明
+- Glob、Grep、Read で直接確認したリポジトリの内容
+- 現在のセッションの `.omx/plans/` または `.omx/state/` コンテキスト
+
+## 出力
+
+- adaptive step count、target file、acceptance criteria を含む `.omx/plans/{name}.md` 計画ファイル
+- スコープ、想定複雑度、主要 deliverable を要約した plan summary
+- consensus mode では RALPLAN-DR の原則・ドライバーと ADR の代替案・根拠
+
+## 範囲の限界
+
+- source file を直接修正しません。計画の生産までが責任範囲です。
+- step count は実際のスコープに合わせます。無条件に5ステップの計画を作りません。
+- ユーザーが intent を確認していない、または明示的な proceed signal がない限り計画を最終確定しません。
+
+## 関連エージェント
+
+- [architect](/ja/docs/agents/build-analysis/architect) — 計画内のシステム境界と設計上のトレードオフを検討します。
+- [analyst](/ja/docs/agents/build-analysis/analyst) — 計画前に要件と acceptance criteria を明確にします。
+- [executor](/ja/docs/agents/build-analysis/executor) — 完成した計画を実際の実装につなげます。

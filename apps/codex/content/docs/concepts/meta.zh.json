@@ -1,0 +1,10 @@
+{
+  "title": "核心概念",
+  "pages": [
+    "[智能体提示词](/zh/docs/concepts#agent-prompts)",
+    "[技能](/zh/docs/concepts#skills)",
+    "[Codex 原生钩子](/zh/docs/concepts#codex-native-hooks)",
+    "[团队编排](/zh/docs/concepts#team-orchestration)",
+    "[.omx/ 目录](/zh/docs/concepts#the-omx-directory)"
+  ]
+}

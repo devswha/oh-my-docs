@@ -1,0 +1,40 @@
+---
+title: $ask-claude
+description: 在当前OMX会话中将子问题委托给Claude的桥接技能
+---
+
+通过 `$ask-claude` 调用。
+
+这是一个无需离开当前Codex会话即可向Claude提问的桥接工具。委托的调用在独立的Claude上下文中执行，因此可以获得与当前工作流分离的答案。
+
+## 何时使用
+
+- 想把Codex难以回答的推理密集型问题交给Claude处理时
+- 需要与当前上下文独立的摘要或分析时
+- 想与Gemini并排比较不同模型的观点时
+- 快速处理简短且范围明确的子问题时
+
+## 何时避免
+
+- 需要当前会话代码库上下文的问题 → 在Codex中直接处理
+- 复杂的实现工作 → 使用 `$ralph` 或executor智能体
+
+## 命令
+
+```bash
+$ask-claude "幂等HTTP端点最安全的retry策略是什么?"
+$ask-claude --print "把这个日志总结成五行"
+$ask-claude --agent-prompt writer "把这个备忘录转换成发布说明"
+```
+
+## 工作方式
+
+打开新的Claude上下文传递问题，并将结果返回当前会话。不会继承当前工作会话的文件或状态。
+
+与其作为默认工作流频繁使用，不如在真正需要Claude视角的有限问题上有意识地使用。
+
+## 相关
+
+- [`$ask-gemini`](/zh/docs/skills/utility/ask-gemini) — 以Gemini为目标的相同桥接
+- [Ask Claude工具](/zh/docs/tools/ask-claude) — 内部工作详情
+- [CLI Bridges](/zh/docs/integrations/cli-bridges) — cross-CLI咨询模式概述

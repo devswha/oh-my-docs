@@ -1,0 +1,54 @@
+---
+title: "Quick Commands"
+description: "Frequently used OMX commands for setup, diagnostics, session management, and team operations"
+---
+
+A reference for the OMX commands you reach for most often. If `omx` is not on your PATH, use `npx oh-my-codex` or the full path to the installed binary.
+
+## Setup and health
+
+| Command | Description |
+|---|---|
+| `omx setup` | Install or refresh OMX prompts, skills, and config. Run after upgrading or on a new machine. |
+| `omx setup --scope user` | Install to user-level config (`~/.codex/`). |
+| `omx setup --scope project` | Install to project-level config (`.codex/`). |
+| `omx doctor` | Check installation health — missing files, config issues, and hook pipeline status. |
+| `omx doctor --team` | Run additional diagnostics for the team/swarm runtime. |
+
+## Session management
+
+| Command | Description |
+|---|---|
+| `omx` | Start an interactive OMX/Codex session. |
+| `omx --madmax` | Start with maximum-parallelism team pipeline. |
+| `omx --madmax --high` | Start with max parallelism and the highest-tier model. |
+| `omx --skip-git-repo-check` | Start outside a git repository without errors. |
+| `omx cancel` | Cancel the current active execution mode (ralph, autopilot, ultrawork, etc.). |
+
+## Help
+
+| Command | Description |
+|---|---|
+| `omx help` | Print full CLI help and available flags. |
+| `omx --version` | Print the installed OMX version. |
+
+## Team operations
+
+| Command | Description |
+|---|---|
+| `omx team api list-tasks --json` | List current team tasks in JSON. |
+| `omx team api read-task --json` | Read the current active task. |
+| `omx team api get-summary --json` | Get a summary of team state. |
+| `omx team await` | Block until a team event occurs. |
+
+## Agents init
+
+| Command | Description |
+|---|---|
+| `omx agents-init [path]` | Create an `AGENTS.md` at `path` (defaults to the current directory). |
+
+## Related
+
+- [Configuration](/docs/reference/configuration) — config files and launch flags
+- [Environment](/docs/reference/environment) — environment variables
+- [Migration](/docs/reference/migration) — upgrade and migration notes

@@ -1,0 +1,63 @@
+---
+title: architect
+description: "以文件级证据分析边界、接口和组件拆分的只读系统设计顾问 agent。"
+---
+
+`architect` agent 不提供一般性设计建议，而是基于实际代码库的证据来诊断设计问题。按照收集上下文 → 建立假设 → 与代码交叉验证的顺序运作，整理后返回 root cause、具体建议和明确的权衡。所有主要论断都需要 `file:line` 依据。不写或修改任何文件，只负责分析和建议。
+
+## 何时被调用
+
+| 场景 | 调用路径 |
+|---|---|
+| `$autopilot`、`$ralplan` 需要设计 cross-check 时 | 自动 |
+| `$deep-interview` 中出现没有结构性分析就难以回答的设计问题时 | 自动 |
+| `planner` 或 `executor` 上报系统边界或接口合约问题时 | 上层 agent 请求 |
+| `executor` 遭遇意外失败且怀疑存在结构性 root cause 时 | `executor` 委派 |
+
+## 使用示例
+
+```text
+"分析这个结构中 auth boundary 在哪里泄漏"
+"整理这个模块拆分是否合理的权衡"
+"从 ralplan 审查角度指出这个设计方案最大的风险"
+```
+
+## 分析流程
+
+1. 收集相关文件、接口和依赖边界。
+2. 针对当前结构提出最可能的设计假设。
+3. 与实际代码交叉验证，附上 `file:line` 依据。
+4. 整理 ranked recommendation 和权衡。
+
+## 设计审查 / consensus 作用
+
+在 `$ralplan` 等 consensus 流程中，承担比单纯顾问更积极的角色。
+
+- **antithesis** — 对当前首选方案提出最有力的反驳
+- **tradeoff tension** — 强调不可忽视的代价或副作用
+- **synthesis** — 在可能的情况下提出保留竞争选项优点的折中方案
+
+在 consensus 流程中，architect 不是支持设计的角色，而更接近于让计划更扎实的反证与验证层。
+
+## 输入
+
+- 设计问题、plan draft 或失败组件的描述
+- 通过 Glob、Grep、Read、git history 访问的仓库源码
+- 可选：LSP diagnostics、`explore` 结果、ralplan deliberation context
+
+## 输出
+
+- 包含 file:line 依据、root cause、ranked recommendation 和 tradeoff table 的分析文档
+- consensus mode 下包含 antithesis（最有力反驳）、tradeoff tension，以及可能的 synthesis
+
+## 范围限制
+
+- 只读。任何情况下都不写或修改文件。
+- 不给出与实际代码库无关的一般性建议。
+- 不在没有依据的情况下猜测，不确定时明确标注 uncertainty 而非猜测。
+
+## 相关 agent
+
+- [planner](/zh/docs/agents/build-analysis/planner) — 将 architect 的建议反映到计划中。
+- [analyst](/zh/docs/agents/build-analysis/analyst) — 当 architect 的分析揭示需求缺口时重新整理。
+- [critic](/zh/docs/agents/coordination/critic) — 在 consensus mode 中批判性审查 architect 的建议。

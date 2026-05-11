@@ -1,0 +1,33 @@
+---
+title: "Ask Claude"
+description: "在活动 Codex 上下文之外将子问题委托给 Claude 的桥接工具"
+---
+
+Ask Claude 是当前 OMX session 向 Claude 委托子问题时使用的桥接工具。委托的调用在新的 Claude 上下文中执行，因此不继承当前工作 session 的上下文，能够获得专注于子问题本身的回答。
+
+## 何时使用
+
+- 需要另一个模型快速提供 second opinion 时
+- 想将范围明确的问题与当前上下文隔离处理时
+- 需要在实现上下文之外进行摘要或 synthesis 时
+- 与 Codex 或 Gemini 并排对比时
+
+## 命令
+
+```bash
+omx ask claude "What is the safest retry strategy for idempotent HTTP endpoints?"
+omx ask claude --print "Summarize these logs in five bullets"
+omx ask claude --agent-prompt writer "Turn these notes into release notes"
+```
+
+## 为何需要桥接
+
+不同模型各有优势。OMX 以 Codex 作为主要执行引擎，同时通过这个桥接工具在需要时参考其他模型的视角。
+
+与其像默认工作流一样频繁使用 Ask Claude，不如在确实需要 Claude 视角、范围清晰的子问题上有意识地使用。
+
+## 相关文档
+
+- [CLI Bridges](/zh/docs/integrations/cli-bridges) — cross-CLI consultation 模式概述
+- [ask-claude skill](/zh/docs/skills/utility/ask-claude) — 用户工作流指南
+- [Ask Gemini](/zh/docs/tools/ask-gemini) — 针对 Gemini 的同等桥接工具

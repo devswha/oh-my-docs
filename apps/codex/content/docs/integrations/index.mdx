@@ -1,0 +1,64 @@
+---
+title: "Integrations"
+description: An overview of how OMX connects to external systems, MCP servers, and other CLIs.
+---
+
+## What are integrations?
+
+Integrations cover the points where OMX connects to systems outside itself.
+
+For example, OMX can:
+
+- send hook events to external gateways
+- discover and invoke MCP servers
+- hand bounded sub-questions to other CLIs and models
+
+So this section is about **how OMX connects to the outside world**.
+
+## What integrations exist?
+
+### OpenClaw
+
+[OpenClaw](/docs/integrations/openclaw) is the bridge that sends OMX hook events to external gateways.
+
+Read it when you want to:
+
+- send events to Discord / Slack / Telegram / a custom target
+- connect hook-driven notifications or dispatch to another system
+
+### Clawhip
+
+[Clawhip](/docs/integrations/clawhip) explains the normalized event contract external consumers should rely on.
+
+In other words, it shows **what shape OMX events take once they leave the runtime**.
+
+### MCP
+
+[MCP](/docs/integrations/mcp) explains how OMX discovers and invokes Model Context Protocol servers.
+
+It matters when you want to:
+
+- expose external tools through MCP
+- understand which MCP calls happen beneath skill/tool surfaces
+- connect local capabilities into OMX in a structured way
+
+### CLI Bridges
+
+[CLI Bridges](/docs/integrations/cli-bridges) explains cross-CLI consultation flows such as `$ask-claude` and `$ask-gemini`.
+
+Read it when you want to:
+
+- consult another model intentionally
+- use a second CLI without polluting the active context
+- delegate bounded sub-questions outside the current Codex session
+
+## When should you read this section first?
+
+Integrations matter most when:
+
+- you need to connect OMX hook events to another system
+- you need to attach MCP-backed tools or servers
+- you want to distribute work intentionally across Codex, Claude, and Gemini
+- you want to understand how the runtime interacts with external systems
+
+So this is usually the section you open once you move beyond using OMX as a self-contained workflow layer and start **wiring it into a broader toolchain**.

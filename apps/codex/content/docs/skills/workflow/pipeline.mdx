@@ -1,0 +1,31 @@
+---
+title: $pipeline
+description: Pipeline skill that runs predefined stages in sequence
+---
+
+## TL;DR
+
+Use `$pipeline` when you need to run multiple stages in sequence. It advances to the next stage after each completes, and intermediate outputs become inputs to the next stage.
+
+## How to invoke
+
+```
+$pipeline "run lint → test → build → deploy in order"
+```
+
+## When to use it
+
+| Good fit | Avoid |
+|---|---|
+| Work with fixed order like CI/CD stages | Independent tasks that can be parallelized |
+| Each stage's output is the next stage's input | Running a single task |
+| Repeatable release flows | |
+
+## Difference from `$ralph`
+
+`$ralph` is a loop that repeats until completion evidence appears. `$pipeline` has a fixed stage order and passes through each stage once. If you need to check results between stages, `$pipeline` is a better fit.
+
+## Related skills
+
+- [`$ralph`](/docs/skills/workflow/ralph) — repeat loop until complete
+- [`$team`](/docs/skills/workflow/swarm) — split stages into parallel lanes

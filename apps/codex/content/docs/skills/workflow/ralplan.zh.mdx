@@ -1,0 +1,57 @@
+---
+title: $ralplan
+description: planner、architect、critic 反复评审直到达成共识的计划 skill
+---
+
+## 一句话概述
+
+`$ralplan` 让 planner、architect、critic 三个 agent 反复评审，直到对计划达成共识。这是实现前固定权衡取舍的环节。
+
+## 调用方式
+
+```
+$ralplan "审批最安全的实现路径"
+```
+
+也可通过魔法关键词 `ralplan`、`consensus plan` 激活。
+
+## 何时使用
+
+| 适合 | 避免 |
+|---|---|
+| 包含架构决策的工作 | 只需要快速草稿的工作 |
+| 走错方向代价高时 | 小功能、短期任务 |
+| 需要明确审查多个权衡时 | |
+
+## 内部流程
+
+1. **planner** — 草拟实现步骤和顺序。
+2. **architect** — 从系统设计角度审查边界和接口。
+3. **critic** — 指出风险点和遗漏之处。
+4. 有异议则修改后再次审查，全员同意后确定计划。
+
+## 在标准流程中的位置
+
+```
+$deep-interview "..."      ← 确定需求
+$ralplan "..."             ← 在这里达成共识
+$ralph "..."               ← 执行
+```
+
+## `--deliberate` 选项
+
+高风险工作加上 `--deliberate`。会额外增加事前复盘（pre-mortem）、单元/集成/e2e 测试计划、运营影响分析。
+
+```
+$ralplan --deliberate "制定遗留认证系统替换计划"
+```
+
+## 与 `$plan` 的区别
+
+`$plan` 由 planner 单独快速生成草稿。`$ralplan` 经过三个 agent 的共识过程。稳定性比速度更重要时使用 `$ralplan`。
+
+## 相关 skill
+
+- [`$deep-interview`](/zh/docs/skills/workflow/deep-interview) — 计划前整理需求
+- [`$ralph`](/zh/docs/skills/workflow/ralph) — 执行已达成共识的计划
+- [`$plan`](/zh/docs/skills/workflow/plan) — 单独计划（快速草稿）

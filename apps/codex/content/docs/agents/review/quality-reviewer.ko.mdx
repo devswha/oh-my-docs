@@ -1,0 +1,43 @@
+---
+title: quality-reviewer
+description: 로직 결함, 안티패턴, SOLID 위반을 잡는 품질 리뷰 에이전트
+---
+
+`quality-reviewer`는 로직 정확성, 에러 처리 완전성, 안티패턴, SOLID 원칙 준수를 중점적으로 검사합니다. diff만 보지 않고 변경된 파일의 전체 컨텍스트를 읽어 의도를 파악한 뒤 의견을 냅니다. 발견한 문제는 심각도별로 분류하고, 잘 쓴 코드는 긍정 피드백으로 명시해 좋은 패턴을 강화합니다.
+
+## 역할
+
+- **로직 정확성 검증** — 루프 범위, null 처리, 제어 흐름, 변경된 코드 전반의 데이터 흐름 확인
+- **에러 처리 평가** — 정상 경로와 오류 경로, 리소스 정리, 에러 전파 방식 검토
+- **안티패턴 탐지** — God Object, 매직 넘버, 복붙 코드, Shotgun Surgery를 `file:line` 참조와 함께 지적
+- **SOLID 원칙 평가** — 위반 사항마다 구체적인 개선 제안 포함
+
+## 언제 호출되나
+
+- `$review`로 구현 후 품질 게이트가 필요할 때
+- 대규모 리팩토링 후 구조 변경이 로직 회귀를 유발하지 않았는지 확인할 때
+- `code-reviewer` 패스에서 유지보수성 문제가 발견되어 전담 품질 검사가 필요할 때
+- ralph 루프에서 executor 결과물이 테스트는 통과했지만 구조적 문제가 있을 때
+
+## 입력
+
+- 변경된 파일의 diff가 아닌 전체 파일 컨텍스트
+- 구조 패턴 탐지를 위한 LSP diagnostics 및 `ast_grep_search` 결과
+- 의도한 동작을 파악하기 위한 기존 테스트
+
+## 출력
+
+- 전체 등급(EXCELLENT / GOOD / NEEDS WORK / POOR), 로직·에러 처리·설계·유지보수성 각 차원별 상태, 심각도와 `file:line` 참조가 포함된 발견 사항, 긍정 관찰 내용을 담은 품질 리뷰 보고서
+- 영향도 추정치가 붙은 우선순위별 권고 사항
+
+## 범위 제한
+
+- 포맷이나 네이밍 스타일은 다루지 않습니다 — `style-reviewer` 담당
+- 보안 감사나 성능 프로파일링은 하지 않습니다 — 전담 리뷰어가 있습니다
+- MEDIUM·LOW 발견 사항은 워크플로우를 막지 않고 문서화만 합니다
+
+## 관련 에이전트
+
+- [code-reviewer](/ko/docs/agents/review/code-reviewer) — 스펙 준수와 품질을 함께 다루는 종합 리뷰
+- [style-reviewer](/ko/docs/agents/review/style-reviewer) — 포맷과 네이밍 규칙 리뷰
+- [performance-reviewer](/ko/docs/agents/review/performance-reviewer) — 알고리즘 복잡도와 핫스팟 분석

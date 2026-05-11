@@ -1,0 +1,42 @@
+---
+title: product-analyst
+description: Defines product metrics, designs experiment measurement plans, and frames success criteria for feature launches.
+---
+
+`product-analyst` ensures every product decision can be measured. It defines metrics precisely (numerator, denominator, time window, segment), designs event schemas, plans A/B experiments with sample-size calculations, and connects every KPI to a real user outcome — not vanity numbers.
+
+## Role
+
+- Define product metrics precisely — what counts, the population, measurement window, and segment breakdowns
+- Design event schemas for instrumentation — event names, trigger conditions, required properties, and example payloads
+- Frame experiment measurement plans — primary metric, guardrail metrics, minimum detectable effect, and required sample size
+- Audit existing KPIs to identify whether they connect to user outcomes or merely measure system activity
+
+## When called
+
+- During feature planning to define what "success" means before a single line of code is written
+- When preparing an A/B test or experiment that needs a rigorous measurement plan
+- After a feature launch for post-launch review — did outcomes move as expected?
+- When the team disagrees about whether a metric is moving in the right direction
+
+## Inputs
+
+Provide the product decision the metrics will inform, the user behavior that indicates success, and any existing tracking infrastructure or event logs. For experiment design, include the expected effect size and the business minimum that would justify shipping the change.
+
+## Outputs
+
+Metric definitions (with all required components), event schema proposals formatted for engineering handoff, an experiment measurement checklist, and a metric-to-outcome mapping showing how each leading indicator connects to a lagging business outcome.
+
+## Limits
+
+- Does not build data pipelines or implement event tracking — defers instrumentation code to `executor`
+- Does not run deep statistical or causal analysis — defers to `researcher` for advanced statistics
+- Does not decide which features to build — provides measurement evidence for `product-manager` to prioritize
+
+## Related agents
+
+| Agent | Relationship |
+|---|---|
+| [`analyst`](/docs/agents/build-analysis/analyst) | Clarifies requirements and acceptance criteria that metrics operationalize |
+| [`product-manager`](/docs/agents/domain/product-manager) | Uses metric frameworks to make scope and priority decisions |
+| [`researcher`](/docs/agents/domain/researcher) | Provides deeper statistical analysis when experiment results need causal inference |

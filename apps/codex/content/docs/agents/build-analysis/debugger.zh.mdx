@@ -1,0 +1,66 @@
+---
+title: debugger
+description: "通过基于证据的假设验证追踪 bug 和回归，定位根本原因的 agent。"
+---
+
+`debugger` agent 不掩盖症状，而是将失败追踪到 root cause。在调查前先确保可重现性，读取所有错误信息和 stack trace，每次只建立一个假设并进行验证。同一方法失败三次后，不再重复变体，而是将问题连同证据一起上报。
+
+## 何时被调用
+
+| 场景 | 调用路径 |
+|---|---|
+| 测试套件失败但 root cause 不明显时 | 直接请求 |
+| 收到「debug X」的请求但还不知道 bug 位置时 | 直接请求 |
+| `ralph` 或 `$autopilot` loop 在同一失败处反复卡住时 | 自动 |
+| 出现 regression 需要缩小 offending change 范围时 | 直接请求 |
+
+## 使用示例
+
+```text
+"找出这个错误为什么发生的 root cause"
+"追踪这个测试为什么突然挂掉了"
+"从原因而非症状的角度缩小构建错误范围"
+```
+
+## 运行时 bug 调查协议
+
+1. 稳定地重现失败。
+2. 收集 stack trace、错误信息和最近的变更历史。
+3. 每次只建立一个假设。
+4. 用最小的修改验证该假设。
+5. 不符合则转向下一个假设。
+
+不一次性引入多个修复方案。保持一假设、一修改的原则。
+
+## 构建 / 编译错误解决协议
+
+- 先对错误类型进行分类。
+- 区分 import/export 问题、类型推断问题和配置问题。
+- 用最小的修改逐一减少错误。
+- 修改后重新运行 diagnostics / build，确认是否真正解决。
+
+不停留在读取错误信息，持续循环**分类 → 假设 → 最小修改 → 再验证**。
+
+## 输入
+
+- 错误信息、stack trace、失败测试的输出
+- 通过 Grep、Read、git log/blame 访问的完整代码库
+- 可选：重现步骤、环境信息、之前的假设笔记
+
+## 输出
+
+- 包含 root cause、`file:line` 依据、最小重现步骤、最小修复建议和验证方法的 bug report
+- 可能存在相同模式的其他代码位置列表
+
+## 范围限制
+
+- 三次假设失败后触发 circuit breaker，连同证据一起上报。
+- 不一次性打包多个修复方案。
+- 不用 `probably`、`seems like` 等推测性表达来结束诊断。需要 `file:line` 依据。
+
+## 相关 agent
+
+- [explore](/zh/docs/agents/build-analysis/explore) — 在尚不知道 bug 位置时执行轻量级 read-only lookup。
+- [verifier](/zh/docs/agents/build-analysis/verifier) — 用完整证据确认修复是否真正解决了问题。
+- [test-engineer](/zh/docs/agents/domain/test-engineer) — 在确认 root cause 后设计 regression test。
+- [explore-harness](/zh/docs/agents/build-analysis/explore-harness) — 用于多假设因果调查。

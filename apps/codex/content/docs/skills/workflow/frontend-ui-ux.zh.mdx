@@ -1,0 +1,41 @@
+---
+title: $frontend-ui-ux
+description: 专门处理 UI/UX 设计和前端实现的 skill
+---
+
+## 一句话概述
+
+`$frontend-ui-ux` 处理界面设计、组件结构、交互流程等前端专项工作，以 designer agent 为核心执行。
+
+## 调用方式
+
+```
+$frontend-ui-ux "设计仪表板布局和筛选器组件"
+```
+
+## 何时使用
+
+| 适合 | 避免 |
+|---|---|
+| UI 结构和交互设计 | 仅涉及后端逻辑的工作 |
+| 定义组件层次和状态流 | 数据模型和 API 设计 |
+| 无障碍访问和响应式布局需求 | |
+
+## 工作方式
+
+1. 从需求中提取界面单元和组件。
+2. 确定交互流程和状态管理方向。
+3. 以代码或设计文档的形式输出结果。
+
+## 与 `$team` 配合使用
+
+如果前端和后端可以并行推进，可以与 `$team` 组合。
+
+```
+$team 2:executor "按 frontend-ui-ux 规格实现组件，并行编写后端 API"
+```
+
+## 相关 skill
+
+- [`$autopilot`](/zh/docs/skills/workflow/autopilot) — 全流程一次性完成
+- [`$ralph`](/zh/docs/skills/workflow/ralph) — 将设计结果实现到底

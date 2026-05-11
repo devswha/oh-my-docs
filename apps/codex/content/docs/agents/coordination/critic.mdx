@@ -1,0 +1,47 @@
+---
+title: critic
+description: Adversarial plan reviewer that verifies file references, simulates tasks, and issues an OKAY or REJECT verdict with evidence.
+---
+
+The `critic` agent reviews plans and designs from an adversarial perspective. It reads file references directly, challenges assumptions, surfaces risks, then issues an OKAY or REJECT verdict with explicit justification. It never rubber-stamps.
+
+## Role
+
+- Verify every file reference in a plan, simulate 2-3 representative tasks, and confirm an executor could proceed without guessing
+- Apply four quality axes: Clarity, Verifiability, Completeness, and Big Picture coherence
+- In `$ralplan` consensus gates, enforce principle-option consistency, depth of alternatives, and strength of risk mitigations
+- In deliberate ralplan mode, additionally require a pre-mortem (3 scenarios) and a full unit/integration/e2e/observability test plan
+
+## When invoked
+
+- By `$ralplan` as the consensus gate between planner output and executor start
+- By `$autopilot` at pre-execution sanity checkpoints
+- When a team lead wants adversarial review before merging a plan or design proposal
+- When code-reviewer findings need a second critical read
+
+## Inputs
+
+- A plan file path or design document to evaluate
+- Repository source files referenced by the plan, read directly via Glob/Grep/Read
+- Optional: ralplan deliberation context, prior architect or analyst outputs
+
+## Outputs
+
+| Item | Content |
+|---|---|
+| Verdict | OKAY (actionable) or REJECT (gaps found) with explicit justification |
+| On REJECT | Top 3-5 critical improvements with concrete, specific suggestions |
+| ralplan mode | Pass/fail ratings for principle-option consistency, alternatives depth, and verification rigor |
+
+## Limits
+
+- Read-only — Write and Edit tools are blocked; the critic never modifies files
+- Does not invent problems: if the plan is actionable, it says OKAY
+- Does not issue vague rejections; every gap is tied to a specific file, line, or missing detail
+
+## Related agents
+
+- [code-reviewer](/docs/agents/review/code-reviewer) — comprehensive code review that critic can challenge in consensus mode
+- [quality-strategist](/docs/agents/coordination/quality-strategist) — owns quality strategy and release gates downstream of critic verdicts
+- [architect](/docs/agents/build-analysis/architect) — provides structural analysis that critic cross-checks against plan claims
+- [planner](/docs/agents/build-analysis/planner) — receives REJECT verdicts and revises the plan before re-submission

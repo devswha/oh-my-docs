@@ -1,0 +1,40 @@
+---
+title: $plan
+description: 不执行、只先制定计划的 skill
+---
+
+## 一句话概述
+
+`$plan` 用于只需要先制定计划、不执行的场景。如果需要共识驱动的计划，`$ralplan` 更合适。
+
+## 调用方式
+
+```
+$plan "制定新认证系统引入计划"
+```
+
+也可通过魔法关键词 `plan this`、`plan the`、`let's plan` 激活。
+
+## `$plan` vs `$ralplan`
+
+| 项目 | `$plan` | `$ralplan` |
+|---|---|---|
+| agent 数量 | 仅 planner | planner + architect + critic |
+| 共识过程 | 无 | 有（迭代评审） |
+| 速度 | 快 | 慢但稳定 |
+| 适合场景 | 需要快速草稿时 | 方向共识重要的工作 |
+
+范围大或失败代价高的工作使用 `$ralplan`。
+
+## 何时使用
+
+| 适合 | 避免 |
+|---|---|
+| 需要快速输出计划草稿时 | 需要利益相关者共识的工作 |
+| 小功能、短期任务 | 包含架构决策的工作 |
+
+## 相关 skill
+
+- [`$ralplan`](/zh/docs/skills/workflow/ralplan) — 共识驱动的计划
+- [`$ralph`](/zh/docs/skills/workflow/ralph) — 执行计划
+- [`$deep-interview`](/zh/docs/skills/workflow/deep-interview) — 计划前整理需求

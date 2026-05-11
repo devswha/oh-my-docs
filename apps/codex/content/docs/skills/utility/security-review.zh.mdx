@@ -1,0 +1,36 @@
+---
+title: $security-review
+description: "审查安全漏洞和信任边界的技能。"
+---
+
+## 概述
+
+`$security-review` 将以安全为中心的代码审查委托给 `security-reviewer` 智能体。检查漏洞、信任边界、认证授权流程、输入验证等安全项目。专注于安全威胁而非一般代码质量。
+
+## 使用示例
+
+```text
+$security-review
+$security-review "对auth中间件变更内容进行安全审查"
+$security-review "全面检查支付处理模块"
+```
+
+不带参数调用时审查当前变更（以git diff为基准）。
+
+## 何时使用
+
+- 修改了认证授权逻辑时
+- 处理外部输入的代码被添加或修改时
+- 实现了支付、个人信息、权限相关功能时
+- 安全审计前需要预先检查时
+
+## 何时避免
+
+- 一般代码质量审查 — 使用 `$review`。
+- 构建/类型错误 — 使用 `$build-fix`。
+- 与安全无关的重构 — `$review` 已足够。
+
+## 关联智能体
+
+- [security-reviewer](/zh/docs/agents/review/security-reviewer) — 此技能委托的智能体详细说明
+- [$review](/zh/docs/skills/utility/review) — 安全以外的一般代码审查

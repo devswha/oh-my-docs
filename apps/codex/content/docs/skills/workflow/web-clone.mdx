@@ -1,0 +1,54 @@
+---
+title: $web-clone
+description: Web cloning workflow that extracts a public URL's UI with Playwright and reconstructs it as local framework code
+---
+
+`$web-clone` takes a public URL and creates a locally runnable replica. It extracts DOM structure, computed styles, and interactive elements with Playwright MCP, reconstructs them as code for the target framework, and iterates with `$visual-verdict` until the score reaches 85 or above.
+
+## When to use it
+
+- When you want to give a URL and create a local replica in your own framework stack
+- When you need to reproduce not just visual accuracy but also functional behavior like links, forms, and toggles
+- When prototyping by starting from a real design instead of a blank canvas
+
+For static screenshots only, use `$visual-verdict` directly.
+
+Trigger keywords: "web-clone", "clone site", "clone website", "copy webpage", "replicate this URL"
+
+## How to invoke
+
+```
+codex
+> web-clone https://news.ycombinator.com
+```
+
+```
+codex
+> $web-clone https://example.com/pricing output_dir=./clones/pricing tech_stack=react
+```
+
+## How it works
+
+Runs in 5 passes.
+
+**Pass 1 (Extract)** Navigates to the URL with Playwright, takes a full-page screenshot as the reference baseline, understands structure via the accessibility tree, extracts DOM and computed styles, and catalogs interactive elements.
+
+**Pass 2 (Build Plan)** Analyzes extraction results to map page regions to components, extracts design tokens like color palette, font stack, and spacing scale, and designs the clone's file structure.
+
+**Pass 3 (Generate Clone)** Implements components in order: design tokens → layout shell → each region top to bottom → navigation, form, dropdown, and toggle interactions.
+
+**Pass 4 (Verify)** Serves the clone locally, takes a full-page screenshot, runs `$visual-verdict` against the original, and spot-checks 2-3 interactions with Playwright.
+
+**Pass 5 (Iterate)** Applies high-impact fixes from the verdict and re-verifies. Repeats until the verdict is pass or the 5-iteration ceiling is reached.
+
+## Outputs
+
+- Clone project files in `output_dir` in the requested tech stack
+- `.omx/state/{scope}/web-clone-extraction.json` — extraction summary with landmark and interaction counts
+- `.omx/state/{scope}/web-clone-verdicts.json` — cumulative verdict after each verification pass
+- Final report summarizing what was successfully cloned and remaining differences
+
+## Related skills
+
+- [`$frontend-ui-ux`](/docs/skills/workflow/frontend-ui-ux) — UI skill used for component generation within clone passes
+- [`$visual-verdict`](/docs/skills/workflow/visual-verdict) — visual QA tool that gates each clone iteration

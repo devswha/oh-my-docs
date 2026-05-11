@@ -1,0 +1,52 @@
+---
+title: "Visual"
+description: "The lower-level screenshot-comparison surface behind visual QA workflows such as `$visual-verdict` and iterative UI fidelity checks."
+---
+
+Visual is OMX's screenshot-comparison and image-analysis surface. It powers workflows that compare a generated UI against a reference and turn the differences into actionable feedback.
+
+## What it is
+
+Use this surface when a workflow needs to answer questions like:
+
+- does the generated UI match the reference closely enough?
+- where do layout, spacing, or hierarchy diverge?
+- is this screenshot good enough to stop iterating?
+
+Most users reach this capability through a higher-level workflow such as [`$visual-verdict`](/docs/skills/workflow/visual-verdict), rather than invoking the capability model directly.
+
+## What it evaluates
+
+Visual comparison in OMX typically looks at:
+
+- overall layout structure
+- spacing and alignment
+- typography choices and weight
+- color differences
+- component sizing and visual hierarchy
+- regressions between iterations
+
+The goal is not just to produce a judgment, but to drive the next edit.
+
+## Typical workflow shape
+
+1. Capture or provide a reference image.
+2. Capture the current generated screenshot.
+3. Compare the two.
+4. Turn the differences into concrete edits.
+5. Re-run until the verdict is acceptable.
+
+That pattern is why visual QA shows up naturally inside `$ralph`, `$ultraqa`, and UI-cloning loops.
+
+## Tool surface vs workflow skill
+
+- **Visual** is the lower-level comparison capability.
+- **`$visual-verdict`** is the user-facing workflow that packages that capability into a repeatable QA step.
+
+If you are navigating the architecture, this page is the capability view. If you are trying to use OMX interactively, the skill page is usually the better starting point.
+
+## Related
+
+- [`$visual-verdict`](/docs/skills/workflow/visual-verdict) — main user-facing screenshot comparison workflow
+- [`$web-clone`](/docs/skills/workflow/web-clone) — uses visual comparison as an iteration gate
+- [HUD](/docs/tools/hud) — useful for monitoring long-running UI verification loops

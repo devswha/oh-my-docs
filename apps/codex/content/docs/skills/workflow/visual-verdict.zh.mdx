@@ -1,0 +1,54 @@
+---
+title: $visual-verdict
+description: 比较生成的 UI 截图和参考图像，以 JSON 格式返回分数、差异和修改建议的视觉 QA 工具
+---
+
+`$visual-verdict` 对生成的 UI 和参考图像进行确定性比较。返回包含 0-100 分数、pass/revise/fail 判定、具体差异列表和每项差异对应修改建议的 JSON。90 分以下需要继续迭代。
+
+## 何时使用
+
+- 需要比较生成的截图和参考图像时
+- 对布局、间距、字体排版、组件样式有视觉精度要求时
+- UI 变更合并或部署前需要确定性 pass/fail 标准时
+- 在 `$ralph` 或 `$web-clone` 循环中需要基于分数的质量信号时
+
+触发关键词: "visual verdict", "compare screenshot", "visual QA", "check if it matches"
+
+## 调用方式
+
+```
+codex
+> $visual-verdict reference_images=["design.png"] generated_screenshot="output.png"
+```
+
+```
+codex
+> visual verdict — compare current screenshot against designs/header-spec.png
+```
+
+## 工作方式
+
+加载参考图像和生成的截图，执行多维度比较。比较项目包括布局结构、间距和内边距、字体排版（字体系列、粗细、大小）、颜色值、视觉层次结构。
+
+结果以单个 JSON 对象输出。90 分以上为 pass，以下为 revise。`differences` 数组列举具体差异，如"顶部导航间距比参考图窄 8px"。`suggestions` 数组包含每项差异对应的修复方法。
+
+诊断难以发现的差异时可以用像素级 diff 工具作为辅助手段，但最终判定以 visual-verdict 为准。在 ralph 循环中运行时，判定记录到 `.omx/state/{scope}/ralph-progress.json`，循环依据该结果运行。
+
+## 输出
+
+```json
+{
+  "score": 87,
+  "verdict": "revise",
+  "category_match": true,
+  "differences": ["Primary button uses smaller font weight"],
+  "suggestions": ["Set primary button font-weight to 600"],
+  "reasoning": "Core layout matches but style details still diverge."
+}
+```
+
+## 相关 skill
+
+- [`$frontend-ui-ux`](/zh/docs/skills/workflow/frontend-ui-ux) — 以 visual-verdict 作为迭代门控的 UI 生成 skill
+- [`$ultraqa`](/zh/docs/skills/workflow/ultraqa) — 可将 visual-verdict 作为质量目标的 QA 循环
+- [`$web-clone`](/zh/docs/skills/workflow/web-clone) — 使用 visual-verdict 衡量视觉精度分数的克隆工作流

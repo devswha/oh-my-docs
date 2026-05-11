@@ -1,0 +1,38 @@
+---
+title: $ralph-init
+description: Skill that resets state before running ralph
+---
+
+## TL;DR
+
+`$ralph-init` resets state before starting a `$ralph` loop. Use it first when ralph is behaving strangely by carrying over state from a previous session.
+
+## How to invoke
+
+```
+$ralph-init
+```
+
+## When to use it
+
+- When `$ralph` is misbehaving by inheriting state from a previous task
+- When starting a new session and want to cleanly initialize the ralph loop
+- When a ralph loop stopped mid-way or state got corrupted
+
+## How it works
+
+1. Cleans ralph-related state files from `.omx/state/`.
+2. Resets loop counter and completion evidence tracking.
+3. After initialization, ready to run `$ralph`.
+
+## Typical sequence
+
+```
+$ralph-init
+$ralph "complete the approved plan all the way through"
+```
+
+## Related skills
+
+- [`$ralph`](/docs/skills/workflow/ralph) — repeat execution until complete
+- [`$cancel`](/docs/skills/utility/cancel) — force-stop active mode

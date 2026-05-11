@@ -1,0 +1,53 @@
+---
+title: "配置"
+description: "`.codex/config.toml`、`.codex/hooks.json`、CLI 标志参考"
+---
+
+OMX 从 `~/.codex/`（用户全局）和 `.codex/`（项目范围）两处读取配置。同一键重复时，项目范围优先。
+
+## `.codex/config.toml`
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `model` | string | 默认模型（例：`"gpt-4.1"`、`"o3"`） |
+| `codex_hooks` | bool | 启用 OMX 钩子管道。设为 `true` 时 skills、team、OpenClaw 生效。 |
+| `custom-prompts` | string | 用于扩展或替换 OMX 默认提示词的目录路径 |
+| `approval_policy` | string | 工具调用审批策略：`"suggest"`、`"auto-edit"`、`"full-auto"` |
+
+```toml
+model = "gpt-4.1"
+codex_hooks = true
+custom-prompts = "~/.codex/prompts"
+approval_policy = "auto-edit"
+```
+
+## `.codex/hooks.json`
+
+注册在生命周期各时间点执行的钩子处理器。每个条目将钩子名称绑定到 command 或 MCP tool。
+
+```json
+{
+  "hooks": {
+    "session-end": {
+      "command": "~/.codex/scripts/on-session-end.sh {{sessionId}}"
+    }
+  }
+}
+```
+
+完整钩子目录请参阅[上游仓库](https://github.com/Yeachan-Heo/oh-my-codex)。
+
+## CLI 标志
+
+| 标志 | 说明 |
+|---|---|
+| `--madmax` | 最大并行模式。自动启动完整 team pipeline。 |
+| `--high` | 高推理强度。使用最高 tier 模型。 |
+| `--skip-git-repo-check` | 在 git 仓库外运行时忽略报错。 |
+| `--spark` | 将 team worker 路由到轻量 spark tier。 |
+| `--madmax-spark` | 同时应用 `--madmax` 与 spark worker 路由。 |
+
+## 相关文档
+
+- [环境](/zh/docs/reference/environment) — 与配置文件配合使用的环境变量
+- [`.omx` 目录](/zh/docs/reference/omx-directory) — 项目范围状态目录结构

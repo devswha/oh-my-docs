@@ -1,0 +1,45 @@
+---
+title: team-executor
+description: Implementation worker inside a $team run — claims tasks from the orchestrator, implements them, and reports verified evidence back.
+---
+
+The `team-executor` agent is the implementation worker inside a `$team` run. It claims a single task from the orchestrator's queue, executes the smallest correct change, verifies with diagnostics and tests, commits to its own branch, and reports concrete evidence back to the leader. It stays within assigned scope and reports blockers immediately rather than guessing.
+
+## Role
+
+- Claim one assigned task from the orchestrator and execute it to a verified, committed result
+- Implement the minimal correct change within the assigned file boundary; do not expand scope unilaterally
+- Run `lsp_diagnostics` on every modified file and pass relevant tests before reporting done
+- Report concrete evidence (file paths, test output, diagnostic results) back to the orchestrator
+
+## When invoked
+
+- By `$team` workflow when the orchestrator assigns a task lane to this worker instance
+- As one of N parallel workers handling independent lanes of a decomposed larger task
+- When the orchestrator detects an unclaimed task and routes it to an available executor slot
+
+## Inputs
+
+- Task assignment from `team-orchestrator` specifying target files and expected outcome
+- Active `.omx/state/` session context with the task record and any prior worker findings
+- Optional: prior `explore` results or LSP diagnostics as grounding context for the assigned lane
+
+## Outputs
+
+| Item | Content |
+|---|---|
+| Code changes | Changes within the assigned file boundary, committed to the worker's branch |
+| Verification evidence | Clean LSP diagnostics, passing test output, or documented pre-existing failures |
+| Status update | Completion record in `.omx/state/` with evidence attached for orchestrator review |
+
+## Limits
+
+- Stays within assigned files unless correctness strictly requires a narrow adjacent edit
+- Does not broaden task scope because more work is visible — reports scope expansion to the orchestrator
+- Does not claim completion without fresh verification output; evidence is mandatory
+
+## Related agents
+
+- [team-orchestrator](/docs/agents/coordination/team-orchestrator) — assigns tasks, tracks lifecycle, and merges this worker's branch
+- [executor](/docs/agents/build-analysis/executor) — the single-agent implementation worker used outside of team mode
+- [verifier](/docs/agents/build-analysis/verifier) — independently confirms the integrated result after all worker branches are merged

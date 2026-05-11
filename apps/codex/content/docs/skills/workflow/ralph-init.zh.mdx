@@ -1,0 +1,38 @@
+---
+title: $ralph-init
+description: ralph 运行前初始化状态的 skill
+---
+
+## 一句话概述
+
+`$ralph-init` 在启动 `$ralph` 循环前初始化状态。当 ralph 继承了上次会话状态而出现异常时，先运行此命令。
+
+## 调用方式
+
+```
+$ralph-init
+```
+
+## 何时使用
+
+- `$ralph` 继承了上次任务状态而出现错误时
+- 开始新会话，想干净初始化 ralph 循环时
+- ralph 循环中途停止或状态混乱时
+
+## 工作方式
+
+1. 清理 `.omx/state/` 中与 ralph 相关的状态文件。
+2. 初始化循环计数器和完成证据追踪。
+3. 初始化完成后，准备好运行 `$ralph`。
+
+## 常用顺序
+
+```
+$ralph-init
+$ralph "按审批计划执行到完成"
+```
+
+## 相关 skill
+
+- [`$ralph`](/zh/docs/skills/workflow/ralph) — 循环执行直到完成
+- [`$cancel`](/zh/docs/skills/utility/cancel) — 强制终止活跃模式

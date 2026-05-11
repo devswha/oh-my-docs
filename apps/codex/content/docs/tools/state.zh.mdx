@@ -1,0 +1,60 @@
+---
+title: "State"
+description: "存储在 `.omx/state/` 下的运行时模式状态 — 记录什么以及如何查看"
+---
+
+State 是记录活动模式当前处于哪个阶段的空间。`$ralph`、`$team`、`$ultraqa` 等长时间运行的工作流能够在多个轮次中保持一致性并在需要时恢复，都依赖于这个 state。
+
+## 存储什么
+
+OMX 将模式状态以文件形式保存在 `.omx/state/` 下。一条 state record 通常回答以下问题。
+
+- 哪个模式处于活动状态？
+- 当前处于哪个 phase？
+- 已完成多少次 iteration？
+- 是完成 / 阻塞 / 失败 / 进行中哪种状态？
+
+## 命令
+
+```bash
+omx state read --input '{"mode":"ralph"}' --json
+omx state write --input '{"mode":"ralph","active":true,"current_phase":"executing"}' --json
+omx state clear --input '{"mode":"ralph","all_sessions":true}' --json
+omx state list-active --json
+omx state get-status --input '{"mode":"ralph"}' --json
+```
+
+这些命令直接反映 OMX 内部使用的 MCP state tool。
+
+## 主要字段
+
+| 字段 | 含义 |
+|---|---|
+| `mode` | `ralph`、`team`、`ultraqa` 等活动 OMX 模式 |
+| `active` | 该模式当前是否存活 |
+| `current_phase` | `planning`、`executing`、`verifying` 等 phase 标签 |
+| `iteration` / `max_iterations` | 迭代型工作流的循环计数器 |
+| `run_outcome` | `continue`、`finish`、`blocked_on_user`、`failed`、`cancelled` |
+| `lifecycle_outcome` | `finished`、`blocked`、`failed` 等最终状态 |
+| `task_description` | 当前任务的简短描述 |
+
+每个模式可能附带额外字段，但上述字段已能覆盖大多数运维检查。
+
+## 何时查看
+
+- 确认哪个模式处于活动状态时
+- 在 context compaction 或较长中断前对进度进行检查点时
+- 诊断 stale 或废弃的运行时状态时
+- 取消后清理 dead mode 时
+
+## 运维说明
+
+直接编辑 `.omx/state/` 文件不如使用 `omx state ... --json` 命令或 MCP surface 安全。
+
+`clear` 仅在确信该模式已 stale 或失效时使用。team-mode 的清理建议组合使用 `omx doctor --team` + `omx cancel` + state 检查，而非直接删除文件。
+
+## 相关文档
+
+- [`.omx` Directory](/zh/docs/reference/omx-directory) — state 及其他 OMX 数据的磁盘结构
+- [Quick Commands](/zh/docs/reference/quick-commands) — 常用运维命令
+- [HUD](/zh/docs/tools/hud) — 基于 runtime state 的实时监控

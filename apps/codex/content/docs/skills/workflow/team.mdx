@@ -1,0 +1,56 @@
+---
+title: $team
+description: Workflow that spawns multiple Codex or Claude workers in tmux panes to process a shared task queue in parallel
+---
+
+`$team` launches multiple worker sessions in parallel tmux panes and coordinates them through a shared state directory. Each worker claims tasks from the task list, commits to a branch, and reports back via mailbox. The leader monitors progress and shuts the team down once all tasks complete. Use it when splitting work into lanes and running in parallel is faster than one person handling things sequentially.
+
+## When to use it
+
+- When there are independently separable lanes like docs, tests, implementation, and review
+- When a plan approved by `$ralplan` recommends parallel execution
+- When durable state that persists beyond a single reasoning burst is needed
+- When explicit lifecycle of start → monitor → shutdown → cleanup is required
+
+Trigger keywords: "team", "coordinated workers", "parallel agents", "spawn workers"
+
+## How to invoke
+
+```
+codex
+> team 3:executor "implement the three modules from the approved plan"
+```
+
+```bash
+omx team 2:executor "add validation and write tests in parallel"
+```
+
+To use Claude workers:
+
+```bash
+OMX_TEAM_WORKER_CLI=claude omx team 2:executor "update docs and report"
+```
+
+## How it works
+
+A context snapshot at `.omx/context/{slug}-{timestamp}.md` must be created before workers launch.
+
+The orchestrator parses worker count and role, initializes team state files under `.omx/state/team/{team}/`, composes worker instructions without mutating `AGENTS.md`, splits the tmux window, and launches each worker. Each worker runs with independent environment variables pointing to the shared state root.
+
+Workers claim tasks via `omx team api claim-task`, do their work, commit with `git add -A && git commit`, and send an ACK to the leader mailbox. The leader monitors progress with `omx team status {team}` and runs `omx team shutdown {team}` when `pending=0` and `in_progress=0`.
+
+The pipeline proceeds as team-plan → team-exec → team-verify → team-fix, repeating the fix loop until all lanes are green or a ceiling is reached.
+
+## Outputs
+
+- Source code, tests, and docs committed by each worker to their branch
+- `.omx/state/team/{team}/` — task state, worker heartbeats, mailbox, manifest
+- `.omx/context/{slug}-{timestamp}.md` — context snapshot shared by all workers
+- `omx team status` evidence confirming task completion before shutdown
+
+## Related skills
+
+- [`$ralplan`](/docs/skills/workflow/ralplan) — build a consensus plan with staffing guidance before launching the team
+- [`$ralph`](/docs/skills/workflow/ralph) — single-owner persistent loop; use after team for verification follow-up
+- [`$autopilot`](/docs/skills/workflow/autopilot) — full pipeline that uses team internally for the execution phase
+- [`$deep-interview`](/docs/skills/workflow/deep-interview) — clarify requirements before handing off to team

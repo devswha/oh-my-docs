@@ -1,0 +1,64 @@
+---
+title: vision
+description: "分析图像和截图来验证视觉结果并提供 UI 反馈的 Domain agent。"
+---
+
+## 概述
+
+`vision` agent 读取图像和截图，分析视觉结果。负责确认渲染结果是否与预期不同、是否存在布局崩溃、设计规格与实际实现是否一致。用于发现基于文本的代码审查无法捕获的视觉回归。
+
+## 何时被调用
+
+- UI 变更后需要通过截图验证实际渲染结果时
+- 需要比较设计 mockup 与实现结果时
+- 需要找出布局崩溃、颜色不一致、文字截断等视觉 bug 时
+- 在 `$visual-verdict` skill 中需要视觉 QA 判定时
+
+## 使用示例
+
+```text
+"在这张截图中找出布局问题"
+"比较设计 mockup 和实际实现结果"
+"确认切换到暗色模式后的渲染结果是否正确"
+```
+
+## 分析范围
+
+| 项目 | 内容 |
+|---|---|
+| 布局验证 | 组件位置、间距、对齐的确认 |
+| 视觉回归 | 变更前后渲染差异的检测 |
+| 设计一致性 | mockup vs 实际实现的比较 |
+| UI bug | 文字截断、颜色不一致、重叠等 |
+
+## 工作流程
+
+1. 接收需要分析的图像或截图。
+2. 与期望值（设计 mockup、之前的截图、规格）进行比较。
+3. 具体记录差异和问题。
+4. 如需修正，移交给 `designer` 或 `executor`。
+
+## 输入
+
+- 需要分析的截图或图像文件
+- 作为比较基准的设计 mockup 或之前的截图
+- 需要确认的具体项目（如有）
+
+## 输出
+
+- 发现的视觉问题列表及位置
+- 期望值与实际结果的比较摘要
+- PASS / FAIL / PARTIAL 判定
+- 需要修正项目的具体说明
+
+## 范围限制
+
+- 代码修改由 `executor` 负责。
+- UX 策略判断交给 `ux-researcher` 和 `designer`。
+- 性能测量由 `performance-reviewer` 处理。
+
+## 相关 agent
+
+- [designer](/zh/docs/agents/domain/designer) — 从设计角度解决 vision 发现的视觉问题。
+- [qa-tester](/zh/docs/agents/domain/qa-tester) — 与 vision 共同验证 UI 的运行时行为。
+- [executor](/zh/docs/agents/build-analysis/executor) — 实际修正 vision 发现的视觉 bug。

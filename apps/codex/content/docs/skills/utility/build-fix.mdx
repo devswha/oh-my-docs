@@ -1,0 +1,40 @@
+---
+title: $build-fix
+description: A utility skill that automatically fixes build errors and type errors
+---
+
+Invoke with `$build-fix`.
+
+A skill that diagnoses and fixes build failures, type errors, and lint errors. It calls the build-fixer agent, analyzes compiler output and error messages, then edits the code directly.
+
+## When to use
+
+- When `npm run build` or `tsc` fails
+- When type errors span multiple files
+- When lint errors have piled up and you want to clear them in one pass
+- When a build breaks in the middle of `$ralph` or `$autopilot`
+
+## When to avoid
+
+- If the error is caused by a logic bug → use `$analyze` to find the root cause first
+- If an architecture-level change is needed → use `$ralplan` to plan first
+
+## Commands
+
+```bash
+$build-fix
+$build-fix "fix all TypeScript errors"
+$build-fix --scope src/api
+```
+
+## How it works
+
+The build-fixer agent runs the build command and parses the error output. It traces error locations and makes the minimum changes needed to reach a passing state, then re-runs the build to verify.
+
+The focus is on **restoring compilability**, not changing logic. If the build passes but behavior looks off, run `$code-review` to check.
+
+## Related docs
+
+- [build-fixer agent](/docs/agents/domain/build-fixer) — internal implementation details
+- [`$analyze`](/docs/skills/utility/analyze) — error root-cause analysis
+- [`$code-review`](/docs/skills/utility/code-review) — review after the fix

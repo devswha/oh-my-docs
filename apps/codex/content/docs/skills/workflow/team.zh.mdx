@@ -1,0 +1,58 @@
+---
+title: $team
+description: 在 tmux 窗口中启动多个 Codex 或 Claude worker，并行处理共享任务队列的工作流
+---
+
+`$team` 在 tmux 窗口中并行启动多个 worker 会话，通过共享状态目录进行协调。每个 worker 从任务列表中获取工作，提交到分支，并通过 mailbox 汇报。leader 监控进度，所有任务完成后关闭团队。
+
+用于比单人顺序处理更适合拆分 lane 并行执行的工作。
+
+## 何时使用
+
+- 存在可独立拆分的 lane，如 docs、tests、实现、review
+- `$ralplan` 审批的计划建议并行执行时
+- 需要超出单次 reasoning burst 的持续状态时
+- 需要显式的启动 → 监控 → 关闭 → 清理 lifecycle 时
+
+触发关键词: "team", "coordinated workers", "parallel agents", "spawn workers"
+
+## 调用方式
+
+```
+codex
+> team 3:executor "implement the three modules from the approved plan"
+```
+
+```bash
+omx team 2:executor "add validation and write tests in parallel"
+```
+
+使用 Claude worker:
+
+```bash
+OMX_TEAM_WORKER_CLI=claude omx team 2:executor "update docs and report"
+```
+
+## 工作方式
+
+worker 运行前需要先在 `.omx/context/{slug}-{timestamp}.md` 创建上下文快照。
+
+orchestrator 解析 worker 数量和角色，在 `.omx/state/team/{team}/` 下初始化团队状态文件。不修改 `AGENTS.md`，配置好 worker 指令后分割 tmux 窗口并运行各 worker。每个 worker 通过独立的环境变量指向共享状态根目录。
+
+worker 通过 `omx team api claim-task` 获取任务，完成后执行 `git add -A && git commit` 提交，并向 leader mailbox 发送 ACK。leader 用 `omx team status {team}` 监控进度，`pending=0`、`in_progress=0` 时执行 `omx team shutdown {team}`。
+
+流水线按 team-plan → team-exec → team-verify → team-fix 顺序推进，所有 lane 变为 green 或达到上限前持续循环 fix。
+
+## 输出
+
+- 各 worker 提交到分支的源码、测试、文档
+- `.omx/state/team/{team}/` — 任务状态、worker heartbeat、mailbox、manifest
+- `.omx/context/{slug}-{timestamp}.md` — 所有 worker 共享的上下文快照
+- 关闭前确认任务完成的 `omx team status` 证据
+
+## 相关 skill
+
+- [`$ralplan`](/zh/docs/skills/workflow/ralplan) — 团队执行前制定包含人员配置指南的共识计划
+- [`$ralph`](/zh/docs/skills/workflow/ralph) — 单一所有者持续循环，用于团队完成后的验证后续
+- [`$autopilot`](/zh/docs/skills/workflow/autopilot) — 在执行步骤中内部使用 team 的全量流水线
+- [`$deep-interview`](/zh/docs/skills/workflow/deep-interview) — 交给团队前整理需求

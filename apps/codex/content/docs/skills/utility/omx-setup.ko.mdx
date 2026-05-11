@@ -1,0 +1,41 @@
+---
+title: $omx-setup
+description: "OMX 프롬프트, 스킬, 설정을 설치하거나 갱신하는 스킬."
+---
+
+## 개요
+
+`$omx-setup`은 OMX 환경을 초기화하거나 갱신합니다. 스킬 파일, 에이전트 프롬프트, 훅 설정을 설치 경로에 맞게 배치합니다. 처음 설치할 때와 업그레이드 후 설정을 갱신할 때 씁니다.
+
+CLI에서는 `omx setup`으로 동일하게 실행할 수 있습니다.
+
+## 사용 예시
+
+```text
+$omx-setup
+$omx-setup --scope user
+$omx-setup --scope project
+```
+
+| 옵션 | 설명 |
+|---|---|
+| (없음) | 기본 범위에 설치 |
+| `--scope user` | `~/.codex/`에 전역 설치 |
+| `--scope project` | `.codex/`에 프로젝트 범위 설치 |
+
+## 언제 쓰는가
+
+- OMX를 처음 설치하는 경우
+- `oh-my-codex` 패키지를 업그레이드한 뒤 설정을 동기화할 때
+- 새 머신에서 기존 환경과 동일하게 맞출 때
+- 스킬이나 훅이 제대로 작동하지 않을 때 재설치
+
+## 언제 피하는가
+
+- 환경 이상 진단 — 설치 문제가 의심되면 `$omx-setup` 전에 `$doctor`로 확인하세요.
+
+## 관련 항목
+
+- [시작하기](/ko/docs/getting-started) — 설치 전체 흐름
+- [$doctor](/ko/docs/skills/utility/doctor) — 설치 상태와 설정 문제 진단
+- [퀵 커맨드](/ko/docs/reference/quick-commands) — `omx setup` CLI 레퍼런스

@@ -1,0 +1,37 @@
+---
+title: $ask-gemini
+description: 在当前OMX会话中将子问题委托给Gemini的桥接技能
+---
+
+通过 `$ask-gemini` 调用。
+
+这是一个无需离开当前Codex会话即可向Gemini提问的桥接工具。结构与 `$ask-claude` 相同，只是目标模型变为Gemini。
+
+## 何时使用
+
+- 有需要Gemini长上下文处理能力的问题时
+- 想并排比较Claude和Gemini的回答时
+- 快速处理与当前上下文独立的子问题时
+
+## 何时避免
+
+- 需要当前代码库上下文的问题 → 在Codex中直接处理
+- 想在同一决策循环中比较 Claude 和 Gemini 时，请并行使用有边界的 `$ask-claude`/`$ask-gemini` 调用，或通过明确的 team orchestration 综合结果
+
+## 命令
+
+```bash
+$ask-gemini "找出这个设计的潜在瓶颈"
+$ask-gemini --print "分析一下这个错误日志"
+$ask-gemini --agent-prompt analyst "整理一下这些需求"
+```
+
+## 工作方式
+
+打开独立的Gemini上下文传递问题，并将结果返回当前会话。不会继承当前会话的文件或状态。
+
+## 相关
+
+- [`$ask-claude`](/zh/docs/skills/utility/ask-claude) — 以Claude为目标的相同桥接
+- [Ask Gemini工具](/zh/docs/tools/ask-gemini) — 内部工作详情
+- [CLI Bridges](/zh/docs/integrations/cli-bridges) — cross-CLI咨询模式概述

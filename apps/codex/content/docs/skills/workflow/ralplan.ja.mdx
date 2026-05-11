@@ -1,0 +1,57 @@
+---
+title: $ralplan
+description: planner・architect・critic が合意するまで繰り返す計画スキル
+---
+
+## 一行要約
+
+`$ralplan` は planner、architect、critic の三エージェントが計画に同意するまで繰り返しレビューします。実装直前にトレードオフを固める段階です。
+
+## 呼び出し
+
+```
+$ralplan "最も安全な実装経路を承認して"
+```
+
+マジックキーワード `ralplan`、`consensus plan` でも起動します。
+
+## いつ使うか
+
+| 合う | 避ける |
+|---|---|
+| アーキテクチャ決定が含まれる作業 | 素早いドラフトだけ必要な作業 |
+| 間違った方向が高コストなとき | 小さな機能・短期作業 |
+| 複数のトレードオフを明示的にレビューする必要があるとき | |
+
+## 内部フロー
+
+1. **planner** — 実装ステップと順序をドラフトとして作成します。
+2. **architect** — システム設計の観点から境界とインターフェースをレビューします。
+3. **critic** — リスク要素と漏れを指摘します。
+4. 異議があれば修正後に再レビューします。全員が同意したら計画を確定します。
+
+## 標準フローでの位置
+
+```
+$deep-interview "..."      ← 要件確定
+$ralplan "..."             ← ここで合意
+$ralph "..."               ← 実行
+```
+
+## `--deliberate` オプション
+
+リスクが高い作業には `--deliberate` を付けます。事前検死（pre-mortem）、ユニット・インテグレーション・e2e テスト計画、運用影響分析が追加されます。
+
+```
+$ralplan --deliberate "レガシー認証システム置き換え計画を立てて"
+```
+
+## `$plan` との違い
+
+`$plan` は planner 一人が素早くドラフトを作ります。`$ralplan` は三エージェントが合意を経ます。速度より安定性が重要なら `$ralplan` を使います。
+
+## 関連スキル
+
+- [`$deep-interview`](/ja/docs/skills/workflow/deep-interview) — 計画前に要件整理
+- [`$ralph`](/ja/docs/skills/workflow/ralph) — 合意した計画を実行
+- [`$plan`](/ja/docs/skills/workflow/plan) — 単独計画（素早いドラフト）

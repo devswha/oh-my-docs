@@ -1,0 +1,41 @@
+---
+title: style-reviewer
+description: Lightweight formatting, naming, and language-idiom review agent that enforces project conventions over personal preferences
+---
+
+The `style-reviewer` agent enforces the project's own style rules rather than personal preferences. It reads config files (`.eslintrc`, `.prettierrc`, `pyproject.toml`, etc.) before forming any opinion, distinguishes auto-fixable issues from manual ones, and focuses on material inconsistencies rather than trivial nitpicks. The goal is fast, actionable feedback that a developer can act on immediately — often by running a single formatter command.
+
+## Role
+
+- Read project config files to establish the actual conventions before reviewing any code
+- Check formatting (indentation, line length, brace style), naming (casing conventions per language), and language idioms (e.g., `const`/`let` not `var` in JS, `defer` for cleanup in Go)
+- Identify import organization issues: unused imports, wrong ordering, missing groupings
+- Classify each finding as auto-fixable (run formatter) or requiring a manual change
+
+## When called
+
+- By `$review` when a light style pass is requested after implementation
+- As a fast pre-merge check when the team wants to confirm formatter compliance
+- After large-scale refactors where naming or import patterns may have drifted
+- When a `code-reviewer` defers style concerns to a dedicated pass
+
+## Inputs
+
+- Project config files (`.eslintrc`, `.prettierrc`, `tsconfig.json`, `pyproject.toml`, etc.)
+- Source files under review, read via Glob and Read
+- Linter output from running the project's configured formatter
+
+## Outputs
+
+- A style review report with overall status (PASS / MINOR ISSUES / MAJOR ISSUES), a list of findings with `file:line` references and MAJOR/TRIVIAL severity labels, and a single auto-fix command where applicable
+
+## Limits
+
+- Does not comment on logic correctness, security, or performance — those are out of scope
+- Does not enforce personal style preferences; all findings must reference the project's configured conventions
+- Focuses on CRITICAL (mixed tabs/spaces, wildly inconsistent naming) and MAJOR violations; does not bikeshed on trivial details
+
+## Related agents
+
+- [quality-reviewer](/docs/agents/review/quality-reviewer) — logic and maintainability review
+- [code-reviewer](/docs/agents/review/code-reviewer) — comprehensive two-stage review that includes style as a secondary concern

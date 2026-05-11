@@ -1,0 +1,44 @@
+---
+title: "Visual"
+description: "スクリーンショット比較と画像分析 — `$visual-verdict` のような visual QA ワークフローを支える下位機能"
+---
+
+Visual は、生成された UI を参照画像と比較し、その差分を次の修正へとつなげるワークフローを支える下位機能です。
+
+ほとんどの場合、この機能を直接呼び出すのではなく、[`$visual-verdict`](/ja/docs/skills/workflow/visual-verdict) のような上位ワークフローを通して使います。
+
+## 何を評価するか
+
+OMX の visual comparison は通常、以下の項目を確認します。
+
+- 全体レイアウト構造
+- 間隔と整列
+- タイポグラフィと太さ
+- 色の差異
+- コンポーネントサイズと視覚的な階層
+- 反復の過程で発生したリグレッション
+
+判定そのものよりも、**次の修正項目を抽出すること**が目的です。
+
+## 典型的な流れ
+
+1. 参照画像を準備またはキャプチャします。
+2. 現在生成されたスクリーンショットをキャプチャします。
+3. 両者を比較します。
+4. 差分を実際の修正項目として整理します。
+5. 結果が十分になるまで繰り返します。
+
+この流れは `$ralph`、`$ultraqa`、UI cloning ループの中で自然に使われます。
+
+## Tool surface vs Workflow skill
+
+- **Visual** — 比較機能そのもの
+- **`$visual-verdict`** — この機能を繰り返し可能な QA ステップとしてラップしたユーザー向けワークフロー
+
+OMX の内部構造を理解したい場合はこのページが出発点です。実際に visual QA を使いたい場合は skill ページの方が早いです。
+
+## 関連ドキュメント
+
+- [`$visual-verdict`](/ja/docs/skills/workflow/visual-verdict) — ユーザー向けスクリーンショット比較ワークフロー
+- [`$web-clone`](/ja/docs/skills/workflow/web-clone) — visual comparison を反復ゲートとして使うワークフロー
+- [HUD](/ja/docs/tools/hud) — 長時間の UI 検証ループを監視するときに使うツール

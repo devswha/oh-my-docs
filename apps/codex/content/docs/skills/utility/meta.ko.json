@@ -1,0 +1,23 @@
+{
+  "title": "유틸리티 스킬",
+  "pages": [
+    "ai-slop-cleaner",
+    "analyze",
+    "ask-claude",
+    "ask-gemini",
+    "build-fix",
+    "cancel",
+    "code-review",
+    "configure-notifications",
+    "doctor",
+    "ecomode",
+    "git-master",
+    "help",
+    "hud",
+    "note",
+    "omx-setup",
+    "review",
+    "security-review",
+    "skill"
+  ]
+}

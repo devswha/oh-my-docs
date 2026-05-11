@@ -1,0 +1,36 @@
+---
+title: $security-review
+description: "A skill that reviews security vulnerabilities and trust boundaries."
+---
+
+## Overview
+
+`$security-review` delegates security-focused code review to the `security-reviewer` agent. It examines vulnerabilities, trust boundaries, authentication/authorization flows, and input validation. The focus is on security threats rather than general code quality.
+
+## Example
+
+```text
+$security-review
+$security-review "security review the auth middleware changes"
+$security-review "review the entire payment processing module"
+```
+
+Running without arguments reviews the current changes (based on git diff).
+
+## When to use
+
+- After changing authentication or authorization logic
+- When code that handles external input is added or changed
+- After implementing payment, personal data, or permission-related features
+- When you need a pre-check before a security audit
+
+## When to avoid
+
+- General code quality review → use `$review`
+- Build or type errors → use `$build-fix`
+- Refactoring unrelated to security → `$review` is sufficient
+
+## Related agent
+
+- [security-reviewer](/docs/agents/review/security-reviewer) — detailed description of the agent this skill delegates to
+- [$review](/docs/skills/utility/review) — general code review outside of security

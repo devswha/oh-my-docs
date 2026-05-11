@@ -1,0 +1,53 @@
+---
+title: $ultrawork
+description: 按复杂度分类独立任务并同时执行的高并行执行引擎
+---
+
+`$ultrawork` 是 OMX 执行栈的并行化层。按复杂度分类任务并路由到合适的模型层级，独立任务不等待顺序、同时执行。
+
+ultrawork 是一个组件。负责并行执行和模型路由，持续性和验证循环由 `$ralph` 承担，整体 lifecycle 由 `$autopilot` 在上层包裹。
+
+## 何时使用
+
+- 想同时完成多个独立任务时
+- 需要同时向多个 agent 层级委派工作时
+- 只需要纯吞吐量而不需要 ralph 持续性开销时
+
+应避免的情况：任务间存在依赖关系，或完成后验证难以单独管理时，`$ralph` 更合适。
+
+触发关键词: "ulw", "ultrawork", "parallel", "run concurrently", "all at once"
+
+## 调用方式
+
+```
+codex
+> ulw add missing type exports, update the README, and add integration tests for the auth middleware
+```
+
+```
+codex
+> ultrawork implement the /api/users endpoint, add unit tests, and lint-fix the entire src/ directory
+```
+
+## 工作方式
+
+接收任务描述，分解为独立子任务。按复杂度分为三个层级。
+
+- 简单查询和小规模修改 → 低成本层级
+- 常规实现工作 → 标准层级
+- 深度分析和复杂重构 → 高质量层级
+
+所有独立任务同时执行。有依赖关系的任务才按需要的顺序串行化。安装、构建、测试等耗时操作用 `run_in_background` 执行，不阻塞其他任务。
+
+所有任务完成后运行轻量验证步骤。确认构建和类型检查通过、受影响的测试通过、无新增错误。反复失败的任务以报告形式上报，而非无限重试。
+
+## 输出
+
+- 并行 worker 完成的成果物（代码变更、测试结果、文档）
+- 确认无回归的轻量构建和测试证据
+
+## 相关 skill
+
+- [`$ralph`](/zh/docs/skills/workflow/ralph) — 在 ultrawork 之上添加持续性、验证循环和会话恢复
+- [`$swarm`](/zh/docs/skills/workflow/swarm) — 专门针对文件数量多的工作的扇出执行
+- [`$team`](/zh/docs/skills/workflow/team) — 包含 plan、exec、verify 阶段的完整 staged 流水线

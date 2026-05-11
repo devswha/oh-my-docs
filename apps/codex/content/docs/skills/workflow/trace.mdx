@@ -1,0 +1,48 @@
+---
+title: $trace
+description: Investigation tool that shows the agent execution flow of the current session as a chronological timeline and statistics
+---
+
+`$trace` surfaces the execution record of the current session. It calls the `trace_timeline` and `trace_summary` MCP tools to output a chronological event log and aggregate statistics. You can see which skill a keyword triggered, how agent delegation worked, and which tool was the bottleneck.
+
+## When to use it
+
+- When you want to understand what happened during a complex multi-agent session
+- When debugging an unexpected skill activation or mode transition
+- When finding slow tools or agents to eliminate bottlenecks
+- When auditing what order hooks fired in
+
+Trigger keywords: "trace", "show trace", "what happened", "flow trace", "session trace"
+
+## How to invoke
+
+```
+codex
+> trace
+```
+
+```
+codex
+> $trace
+```
+
+## How it works
+
+Calls `trace_timeline` with no arguments to retrieve the chronological event log for the latest session. The timeline shows hook fires, keyword detections, skill activations, agent delegations, mode transitions, and tool calls in the order they occurred.
+
+Then calls `trace_summary` to produce aggregate statistics: how many times each hook fired, which keywords were detected, which skills activated, what mode transitions occurred, and which tools were slowest.
+
+Output shows the timeline first followed by the summary. Mode transitions are highlighted, and tools and agents that consumed the most time are flagged as bottlenecks. The causal structure of keyword → skill → agent is also summarized.
+
+## Outputs
+
+- Chronological event timeline of the current session
+- Aggregate stats: hook fire counts, keyword detections, skill activations, mode transitions
+- Bottleneck report identifying the slowest tools and agents
+- Keyword → skill → agent causal flow summary
+
+## Related skills
+
+- [`$deep-interview`](/docs/skills/workflow/deep-interview) — interview workflow whose execution flow can be reviewed with this skill
+- [`$ralplan`](/docs/skills/workflow/ralplan) — consensus planning whose agent sequence appears in the trace
+- [`$wiki`](/docs/skills/workflow/wiki) — knowledge base for saving insights from a trace for future sessions

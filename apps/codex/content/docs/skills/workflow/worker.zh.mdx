@@ -1,0 +1,47 @@
+---
+title: $worker
+description: 从共享任务队列获取任务并执行，完成处理后进入下一项的 agent worker 协议
+---
+
+`$worker` 是参与 `$team` 或 `$swarm` 的每个 agent 会话所遵循的协议。worker 读取 inbox，通过 claim-safe lifecycle API 获取下一个未被阻塞的任务，执行工作，将任务转换为 completed 或 failed，然后获取下一项。得益于 claim-before-work 契约，多个 agent 共享队列时两个 worker 不会处理同一个任务。
+
+## 何时使用
+
+- `$team` 或 `$swarm` 将当前会话作为团队 worker 启动时（设置了 `OMX_TEAM_WORKER`）
+- 需要持续处理任务直到队列为空的会话时
+- 团队 leader 分解好任务等 worker 来领取执行时
+- 多 agent 系统中需要可靠的 worker 循环基本单元时
+
+## 调用方式
+
+`$worker` 通常由 `$team` 或 `$swarm` 自动启动。也可以在设置了 `OMX_TEAM_WORKER` 的会话中直接调用。
+
+```
+codex
+> $worker
+```
+
+```bash
+# team skill 按如下方式启动:
+OMX_TEAM_WORKER="alpha/worker-2" codex
+```
+
+## 工作方式
+
+启动时从 `OMX_TEAM_WORKER` 解析自身身份（`{teamName}/{workerName}` 格式），在接触任务前向 leader mailbox 发送 startup ACK。
+
+然后检查 canonical 团队状态根目录，从 `.omx/state/team/{team}/workers/{worker}/inbox.md` 读取 inbox，选择第一个未被阻塞的任务。用 `omx team api claim-task` 认领任务。如果另一个 worker 先认领了，claim 失败后进入下一个任务。
+
+完成工作后用 `omx team api transition-task-status` 将任务转为 completed 或 failed，将自身状态更新为 `idle`，回到获取下一个任务的循环。在 inbox 中收到 shutdown 消息时按 leader 指示清理后退出。
+
+## 输出
+
+- 提交到工作目录的已完成任务成果物
+- `.omx/state/team/{team}/tasks/` 中更新的任务状态文件
+- leader 可查看的团队 mailbox 中的 ACK 和状态消息
+
+## 相关 skill
+
+- [`$team`](/zh/docs/skills/workflow/team) — 启动并协调 worker 的协调者
+- [`$swarm`](/zh/docs/skills/workflow/swarm) — 并行生成多个 worker 的扇出执行
+- [`$ralph`](/zh/docs/skills/workflow/ralph) — 单会话持续执行循环

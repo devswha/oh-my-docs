@@ -1,0 +1,48 @@
+---
+title: "Contracts"
+description: "OMX behavioral contracts — prompt guidance, team mutation, and OpenClaw event schemas"
+---
+
+OMX defines three contracts that govern behavior across prompt surfaces, interop brokers, and event consumers. Follow these contracts when editing prompts, building external integrations, or writing tools that read OMX team state.
+
+## Prompt guidance contract
+
+Introduced in the GPT-5.4 guidance rollout, this contract applies to `AGENTS.md`, `templates/AGENTS.md`, `prompts/*.md`, and the generated `developer_instructions` text.
+
+The four core behaviors:
+
+1. **Quality-first, intent-deepening output** — Responses must dig deeper into intent and include the evidence needed to act safely.
+2. **Automatic follow-through on low-risk steps** — Clear, reversible next steps proceed automatically without unnecessary confirmation.
+3. **Scoped overrides** — A user's latest task update is treated as a local override for the current task, not a full prompt reset. Earlier non-conflicting instructions are preserved.
+4. **Persistent tool use and evidence-backed completion** — Tool use continues as long as correctness depends on retrieval, diagnostics, tests, or verification. Do not stop without evidence.
+
+Source: [`docs/prompt-guidance-contract.md`](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/prompt-guidance-contract.md)
+
+## Team mutation contract
+
+External interop brokers must mutate team state exclusively through the CLI interop path:
+
+```bash
+omx team api <operation> --input '<json-object>' --json
+```
+
+Direct writes to `.omx/state/team/...` are unsupported. Legacy `team_*` MCP APIs are hard-deprecated and return an error with a CLI migration hint.
+
+The required task mutation flow:
+
+`read-task` → `claim-task` → `transition-task-status` (`in_progress → completed|failed`)
+
+Use `release-task-claim` only for rollback to pending.
+
+Source: [`docs/interop-team-mutation-contract.md`](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/interop-team-mutation-contract.md)
+
+## OpenClaw event contract
+
+Defines the envelope shape and normalized event vocabulary for all hook events OMX emits. External consumers should route on `context.normalized_event`, not the raw `event` value.
+
+For the full normalized event table and envelope schema, see [Clawhip](/docs/integrations/clawhip).
+
+## Related
+
+- [Clawhip](/docs/integrations/clawhip) — event-contract layer and normalized event routing
+- [OpenClaw](/docs/integrations/openclaw) — hook-event dispatch pipeline

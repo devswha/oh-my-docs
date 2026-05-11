@@ -1,0 +1,51 @@
+---
+title: "核心钩子"
+description: "omx setup 安装的 4 个内置钩子 — 关键词检测器、ralph 停止门控、Bash 安全守卫、退出码指导"
+---
+
+核心钩子是运行 `omx setup` 时自动安装的钩子处理程序。它们无需任何额外配置，即可将 OMX 工作流技能与 Codex 生命周期事件连接起来。每个钩子只负责一项职责，当其关注点处于非活动状态时不会干预。
+
+## 结构
+
+4 个钩子均注册在 `.codex/hooks.json` 中，使用 `dist/scripts/codex-native-hook.js` 作为单一入口点。该入口点根据 Codex 事件类型分发到正确的处理程序。启用条件为 `.codex/config.toml` 中的 `[features] codex_hooks = true`。
+
+`.omx/hooks/*.mjs` 插件钩子扩展此接口，但不会替换它。
+
+## 4 个内置钩子
+
+**keyword-detector**（`UserPromptSubmit`）
+
+扫描所有用户提示中的魔法关键词短语。匹配时将技能激活状态写入 `.omx/state/`，并在必要时在前面添加开发者上下文。同时支持 `$skill` 显式调用和对 "team"、"parallel" 等词汇带有意图守卫的隐式短语匹配。详情参见 [魔法关键词](/zh/docs/hooks/magic-keywords)。
+
+**ralph stop-gate**（`Stop`）
+
+模型停止时确认 ralph、autopilot、ultrawork、ultraqa 的运行是否仍处于活动状态。若活动且尚未达到终止状态，则返回 `decision: "block"` 以指示继续运行。从 `.omx/state/{mode}-state.json` 读取状态。
+
+**pre-tool-use guard**（`PreToolUse`，仅 Bash）
+
+对破坏性命令（如 `rm -rf dist`）发出警告，并阻止缺少必要尾注（`Co-authored-by: OmX <omx@oh-my-codex.dev>`）的内联 `git commit` 调用。
+
+**post-tool-use advisor**（`PostToolUse`，仅 Bash）
+
+解析异常退出码、权限拒绝错误和路径未找到消息，并将纠正指导注入下一个提示上下文。
+
+## 状态确认
+
+确认钩子是否正确安装：
+
+```bash
+omx doctor
+```
+
+关键词检测后直接确认钩子状态：
+
+```bash
+cat .omx/state/skill-active-state.json
+```
+
+## 相关文档
+
+- [生命周期事件](/zh/docs/hooks/lifecycle-events)
+- [上下文钩子](/zh/docs/hooks/context-hooks)
+- [魔法关键词](/zh/docs/hooks/magic-keywords)
+- [Codex 原生钩子](/zh/docs/hooks/codex-native-hooks)

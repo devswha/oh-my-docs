@@ -1,0 +1,57 @@
+---
+title: $ralplan
+description: planner · architect · critic이 합의할 때까지 반복하는 계획 스킬
+---
+
+## 한 줄 요약
+
+`$ralplan`은 planner, architect, critic 세 에이전트가 계획에 동의할 때까지 반복 검토합니다. 구현 직전에 트레이드오프를 고정하는 단계입니다.
+
+## 호출
+
+```
+$ralplan "가장 안전한 구현 경로를 승인해줘"
+```
+
+매직 키워드 `ralplan`, `consensus plan`으로도 활성화됩니다.
+
+## 언제 쓰나
+
+| 잘 맞는 경우 | 피할 경우 |
+|---|---|
+| 아키텍처 결정이 포함된 작업 | 빠른 초안만 필요한 작업 |
+| 잘못된 방향이 비쌀 때 | 작은 기능·단기 작업 |
+| 여러 트레이드오프를 명시적으로 검토해야 할 때 | |
+
+## 내부 흐름
+
+1. **planner** — 구현 단계와 순서를 초안으로 작성합니다.
+2. **architect** — 시스템 설계 관점에서 경계와 인터페이스를 검토합니다.
+3. **critic** — 위험 요소와 누락된 부분을 지적합니다.
+4. 이의가 있으면 수정 후 다시 검토합니다. 모두 동의하면 계획을 확정합니다.
+
+## 표준 흐름에서 위치
+
+```
+$deep-interview "..."      ← 요구 확정
+$ralplan "..."             ← 여기서 합의
+$ralph "..."               ← 실행
+```
+
+## `--deliberate` 옵션
+
+리스크가 높은 작업에는 `--deliberate`를 붙입니다. 사전 부검(pre-mortem), 단위·통합·e2e 테스트 계획, 운영 영향 분석이 추가됩니다.
+
+```
+$ralplan --deliberate "레거시 인증 시스템 교체 계획을 세워줘"
+```
+
+## `$plan`과 차이
+
+`$plan`은 planner 혼자 빠르게 초안을 만듭니다. `$ralplan`은 세 에이전트가 합의를 거칩니다. 속도보다 안정성이 중요하다면 `$ralplan`을 씁니다.
+
+## 관련 스킬
+
+- [`$deep-interview`](/ko/docs/skills/workflow/deep-interview) — 계획 전 요구 정리
+- [`$ralph`](/ko/docs/skills/workflow/ralph) — 합의된 계획 실행
+- [`$plan`](/ko/docs/skills/workflow/plan) — 단독 계획 (빠른 초안)

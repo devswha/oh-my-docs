@@ -1,0 +1,53 @@
+---
+title: $ultrawork
+description: High-parallelism execution engine that classifies independent tasks by complexity and runs them simultaneously
+---
+
+`$ultrawork` is the parallelism layer of the OMX execution stack. It classifies tasks by complexity, routes them to the appropriate model tier, and runs independent tasks simultaneously without waiting for one to finish before starting the next.
+
+ultrawork is a component. It handles parallel execution and model routing, while `$ralph` layers persistence and verification loops on top, and `$autopilot` layers the full lifecycle above that.
+
+## When to use it
+
+- When you want multiple independent tasks done simultaneously
+- When you need to delegate work to multiple agent tiers at once
+- When you need pure throughput without ralph's persistence overhead
+
+Avoid when: tasks have dependencies between them, or when it's hard to manage post-completion verification separately — `$ralph` is a better fit then.
+
+Trigger keywords: "ulw", "ultrawork", "parallel", "run concurrently", "all at once"
+
+## How to invoke
+
+```
+codex
+> ulw add missing type exports, update the README, and add integration tests for the auth middleware
+```
+
+```
+codex
+> ultrawork implement the /api/users endpoint, add unit tests, and lint-fix the entire src/ directory
+```
+
+## How it works
+
+Receives the task description and decomposes it into independent subtasks. Classifies by complexity into three tiers.
+
+- Simple lookups and small edits → low-cost tier
+- Standard implementation work → standard tier
+- Deep analysis and complex refactoring → high-quality tier
+
+All independent tasks run simultaneously. Only tasks with dependencies are serialized where needed. Long-running work like installs, builds, and tests runs via `run_in_background` so they don't block other tasks.
+
+After all tasks complete, runs a lightweight verification pass. Build and typecheck must pass, affected tests must pass, and no new errors may be introduced. Tasks that fail repeatedly are reported rather than retried indefinitely.
+
+## Outputs
+
+- Completed artifacts from parallel workers (code changes, test results, docs)
+- Lightweight build and test evidence confirming no regressions
+
+## Related skills
+
+- [`$ralph`](/docs/skills/workflow/ralph) — adds persistence, verification loops, and session resume on top of ultrawork
+- [`$swarm`](/docs/skills/workflow/swarm) — fan-out execution specialized for work spanning many files
+- [`$team`](/docs/skills/workflow/team) — full staged pipeline including plan, exec, and verify phases

@@ -1,0 +1,64 @@
+---
+title: 工具
+description: OMX 运行时内部使用的 capability 层
+---
+
+## 什么是工具
+
+工具是 OMX 在推进任务过程中内部使用的运行时 capability。与用户直接调用的 [skill](/zh/docs/skills) 不同，工具是**skill · hook · agent 在背后依赖的底层功能**。
+
+如果 skill 决定"做什么"，那工具就是"让它实际成为可能的那一层"。
+
+## 有了工具才能做到的事
+
+- 在执行中保存和恢复状态
+- 通过 HUD 显示进度
+- 在 wiki 中积累项目知识
+- 截图比较等 visual QA
+- 向 Claude / Gemini 等其他模型进行 cross-CLI 委托
+
+与其说是"用户直接按的按钮"，这个章节更接近**想理解 OMX 为何如此运作时才需要看的部分**。
+
+## 主要工具
+
+### State
+
+[State](/zh/docs/tools/state) — 读写运行中模式状态的节点。`$ralph`、`$team`、`$ultraqa` 等长期运行维持状态的基础。
+
+### HUD
+
+[HUD](/zh/docs/tools/hud) — 查看当前会话状态的窗口。phase、tmux status pane、JSON export 等。
+
+### Wiki
+
+[Wiki](/zh/docs/tools/wiki) — 在 `.omx/wiki/` 下积累持久化项目知识的地方。如果 State 是执行中的信息，Wiki 就是**会话结束后仍需保留的信息**。
+
+### Catalog
+
+[Catalog](/zh/docs/tools/catalog) — OMX 将提示词 · skill · 工具整合成哪种 capability 映射。想理解结构时查看。
+
+### Visual
+
+[Visual](/zh/docs/tools/visual) — 截图与参考图像比较的 capability。通常通过 [`$visual-verdict`](/zh/docs/skills/workflow/visual-verdict) 间接使用。
+
+### Ask Claude / Ask Gemini
+
+[Ask Claude](/zh/docs/tools/ask-claude)、[Ask Gemini](/zh/docs/tools/ask-gemini) — 在当前 Codex 上下文之外向其他模型委托子问题的桥接。用于获取第二意见、无污染摘要、cross-CLI 比较。
+
+## 工具 vs skill
+
+| 区分 | 含义 |
+|---|---|
+| skill | 用户发起的工作流 |
+| 工具 | 该工作流所依赖的底层 capability |
+
+一个工作流执行时，内部会发生 state 更新 → wiki 保存 → HUD 更新 → visual 比较这样的连锁，但用户不需要关心这些单独的调用。
+
+## 什么时候看这里有用
+
+- 想确认 OMX 把状态存在哪里时
+- 想整理 HUD · wiki · state 的区别时
+- 想确认 visual QA 或 provider bridge 在哪个层时
+- 想追踪 skill 背后实际运行了哪些 capability 时
+
+不必从头通读，但想理解 OMX internals 就绕不开这个章节。

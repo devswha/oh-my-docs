@@ -1,0 +1,41 @@
+---
+title: "Ask Gemini"
+description: "The Gemini provider bridge behind OMX cross-CLI delegation, used when a session needs an isolated sub-question answered outside the active Codex context."
+---
+
+Ask Gemini is OMX's Gemini bridge. It lets an active OMX session send a bounded sub-question to Gemini and pull the answer back into the current workflow.
+
+## What it is
+
+This surface is useful when you want:
+
+- another model's perspective on a design or implementation question
+- a large-context lookup where Gemini is a helpful counterpoint
+- a quick comparison against Claude or Codex before committing to an approach
+- an isolated delegated subtask that should stay separate from the current context
+
+## Command surface
+
+The CLI parity entrypoint is:
+
+```bash
+omx ask gemini "Summarize the tradeoffs between RSA and ECDSA for JWT signing"
+omx ask gemini --prompt "Review this migration plan for missing risks"
+omx ask gemini --agent-prompt researcher "Extract the key constraints from this API documentation"
+```
+
+## Why use a bridge at all
+
+OMX is designed around Codex, but it does not assume one model should answer every sub-question. Bridge surfaces like Ask Gemini make it easy to consult another model without abandoning the current session or manually shuttling context between CLIs.
+
+As with the Claude bridge, Gemini delegation runs in a fresh subprocess context. That keeps the answer focused on the sub-question rather than the whole conversation.
+
+## When to reach for it
+
+Use Ask Gemini intentionally, not by reflex. If the current OMX workflow can answer the question directly, staying in the main lane is usually simpler.
+
+## Related
+
+- [CLI Bridges](/docs/integrations/cli-bridges) — overview of cross-CLI consultation patterns
+- [ask-gemini skill](/docs/skills/utility/ask-gemini) — user-facing workflow guidance
+- [Ask Claude](/docs/tools/ask-claude) — equivalent bridge targeting Claude

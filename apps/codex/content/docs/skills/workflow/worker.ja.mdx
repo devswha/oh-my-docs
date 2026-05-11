@@ -1,0 +1,47 @@
+---
+title: $worker
+description: 共有タスクキューから作業を取得して実行し、完了処理後に次の項目に進むエージェントワーカープロトコル
+---
+
+`$worker` は `$team` または `$swarm` に参加する各エージェントセッションが従うプロトコルです。ワーカーは inbox を読み、claim-safe lifecycle API で次のブロックされていないタスクを取得し、作業を行い、タスクを completed または failed に遷移してから次の項目を取得します。この claim-before-work の契約のおかげで、複数のエージェントがキューを共有しても二つのワーカーが同じ作業に触れることはありません。
+
+## いつ使うか
+
+- `$team` または `$swarm` が現在のセッションをチームワーカーとして開始したとき（`OMX_TEAM_WORKER` が設定された場合）
+- キューが空になるまで継続的にタスクを処理するセッションが必要なとき
+- チームリーダーが作業を分解して置いておき、ワーカーが取得して実行する必要があるとき
+- マルチエージェントシステムで信頼できるワーカーループの基本単位が必要なとき
+
+## 呼び出し
+
+`$worker` は通常 `$team` または `$swarm` が自動的に開始します。`OMX_TEAM_WORKER` が設定されたセッションで直接呼び出すこともできます。
+
+```
+codex
+> $worker
+```
+
+```bash
+# team スキルが以下のように開始します:
+OMX_TEAM_WORKER="alpha/worker-2" codex
+```
+
+## 動作方法
+
+起動時に `OMX_TEAM_WORKER` から自分のアイデンティティ（`{teamName}/{workerName}` 形式）をパースし、タスクに触れる前にリーダー mailbox に startup ACK を送ります。
+
+その後 canonical チーム状態ルートを確認し、`.omx/state/team/{team}/workers/{worker}/inbox.md` から inbox を読んでブロックされていない最初のタスクを選択します。`omx team api claim-task` でタスクを claim します。他のワーカーが先に取得していたら claim が失敗して次のタスクに進みます。
+
+作業を完了したら `omx team api transition-task-status` でタスクを completed または failed に遷移し、自分の状態を `idle` に更新して次のタスクを取得するループに戻ります。inbox で shutdown メッセージを受け取ったらリーダーの指示に従ってクリーンアップして終了します。
+
+## 出力
+
+- 作業ディレクトリにコミットされた完了タスクの成果物
+- `.omx/state/team/{team}/tasks/` に更新されたタスク状態ファイル
+- リーダーが確認できるチーム mailbox の ACK とステータスメッセージ
+
+## 関連スキル
+
+- [`$team`](/ja/docs/skills/workflow/team) — ワーカーを開始して調整するコーディネーター
+- [`$swarm`](/ja/docs/skills/workflow/swarm) — 複数のワーカーを並列で生成するファンアウト実行
+- [`$ralph`](/ja/docs/skills/workflow/ralph) — 単一セッション持続実行ループ

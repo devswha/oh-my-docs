@@ -1,0 +1,48 @@
+---
+title: quality-strategist
+description: 릴리스 품질 전략을 담당하는 에이전트. 위험 모델과 출시 가부 기준을 정의합니다.
+---
+
+`quality-strategist` 에이전트는 변경 사항과 릴리스 전반의 품질 전략을 책임집니다. 위험 등급별 품질 게이트, 회귀 위험 모델, 릴리스 준비 기준을 정의하고 잔존 위험을 명시한 GO/NO-GO 결정을 냅니다. 테스트 작성은 `test-engineer`에, 직접 실행 테스트는 `qa-tester`에 위임합니다. 이 에이전트의 영역은 전략이지 실행이 아닙니다.
+
+## 역할
+
+- 명확하고 측정 가능하며 위험에 비례한 품질 게이트와 완료 기준을 정의합니다.
+- 코드베이스 근거를 포함한 회귀 위험 평가를 작성하고 고위험 영역을 특정합니다.
+- 위험 등급별 테스트 깊이를 권고합니다. "모두 테스트"가 아니라 영향도 기준으로 우선순위를 정합니다.
+- GO / NO-GO / CONDITIONAL GO 릴리스 준비 판정을 잔존 위험 목록과 함께 냅니다.
+
+## 호출 시점
+
+- 릴리스 마일스톤 직전 "출시 준비가 됐나?" 점검이 필요할 때
+- 대규모 리팩토링 이후 회귀 위험 평가와 최소 검증 범위 결정이 필요할 때
+- 플레이키 테스트 증가, 커버리지 감소, 이스케이프율 상승 등 품질 신호가 나빠질 때
+- 새 기능이나 서비스 경계에 품질 게이트를 정의해야 할 때
+
+## 입력
+
+- `product-manager` 또는 `analyst`의 PRD나 수락 기준
+- `architect`의 시스템 설계 및 장애 모드
+- `executor` 또는 `explore`의 변경 범위와 영향 반경
+- `test-engineer`와 `verifier`의 테스트 결과, 커버리지 리포트, CI 출력
+
+## 출력
+
+| 산출물 | 내용 |
+|---|---|
+| 품질 계획 | 위험 평가 표, 품질 게이트, 테스트 깊이 권고, 잔존 위험 |
+| 릴리스 준비 평가 | GO/NO-GO/CONDITIONAL 판정 + 게이트 상태 + 차단 항목 |
+| 회귀 위험 평가 | 위험 등급(HIGH/MEDIUM/LOW), 영향 분석, 최소 검증 세트 |
+
+## 제약
+
+- 테스트 코드를 직접 작성하지 않습니다. 구현 필요 사항은 `test-engineer`로 라우팅합니다.
+- 직접 실행 테스트를 수행하지 않습니다. 시나리오 검증은 `qa-tester`로 넘깁니다.
+- `verifier`의 근거 없이 GO 판정을 내리지 않습니다. 모든 GO에는 게이트 증거가 필요합니다.
+
+## 관련 에이전트
+
+- [quality-reviewer](/ko/docs/agents/review/quality-reviewer) — 코드 품질을 검토하고 결과를 위험 모델에 반영합니다.
+- [test-engineer](/ko/docs/agents/domain/test-engineer) — quality-strategist가 권고한 테스트 커버리지를 구현합니다.
+- [critic](/ko/docs/agents/coordination/critic) — 계획 약점을 지적하고 그 결과가 품질 게이트 위치에 영향을 줍니다.
+- [verifier](/ko/docs/agents/build-analysis/verifier) — GO 판정에 필요한 근거를 수집하고 제공합니다.

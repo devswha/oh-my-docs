@@ -1,0 +1,48 @@
+---
+title: $autopilot
+description: 从想法到实现、QA、验证一次性完成的全流程 skill
+---
+
+## 一句话概述
+
+输入一个想法，OMX 会按顺序处理：实现 → QA → 验证。如果中途想调整方向，请使用 `$deep-interview → $ralplan → $ralph` 流程。
+
+## 调用方式
+
+```
+$autopilot "build me a todo app in next.js"
+```
+
+也可通过魔法关键词 `autopilot`、`build me`、`I want a` 激活。
+
+## 何时使用
+
+| 适合 | 避免 |
+|---|---|
+| 原型、小功能 | 需求还不明确时 |
+| 快速验证 end-to-end 流程 | 需要先达成架构共识的工作 |
+| 速度比控制更重要时 | 走错方向代价高的工作 |
+
+## 内部流程
+
+1. explore — 了解当前代码库结构
+2. plan — 确定实现路径
+3. execute — 编写代码
+4. QA (`$ultraqa`) — 测试·验证·修复循环
+5. verify — 收集完成证据
+
+## `$autopilot` vs 基于计划的流程
+
+`$autopilot` 由 OMX 决定大部分流程。如果想手动控制每个步骤，或需要先确认需求，以下顺序更安全。
+
+```
+$deep-interview "帮我整理要做什么"
+$ralplan "制定最安全的计划"
+$ralph "按计划一直执行到完成"
+```
+
+## 相关 skill
+
+- [`$ralph`](/zh/docs/skills/workflow/ralph) — 循环执行直到完成
+- [`$ralplan`](/zh/docs/skills/workflow/ralplan) — 共识驱动的计划
+- [`$deep-interview`](/zh/docs/skills/workflow/deep-interview) — 整理需求

@@ -1,0 +1,71 @@
+---
+title: "OpenClaw"
+description: "将 OMX hook 事件转发至外部 gateway（HTTP、shell command、clawdbot）的 dispatch pipeline。"
+---
+
+OpenClaw 是一条 dispatch pipeline：当 OMX 到达 hook 触发点 — session start、idle、user question、stop、session end — 时，它将上下文包装成结构化的 envelope，发送给已配置的 gateway。
+
+## 概述
+
+这不是需要单独安装的服务，而是设置 `OMX_OPENCLAW=1` 后即可激活的 OMX 内置 dispatch 层。`.codex/.omx-config.json` 中的 gateway 定义决定每个事件发往何处、以何种方式发送。
+
+gateway 分为两种：
+
+- **HTTP endpoint** — webhook 方式，使用 bearer-token 认证。
+- **shell command** — 调用本地 CLI 或 `clawdbot` 等 agent launcher。
+
+## OMX 的使用方式
+
+- **会话生命周期 hook** — 在 `session-start`、`session-idle`、`ask-user-question`、`stop`、`session-end` 时执行。注入 `{{sessionId}}`、`{{tmuxSession}}`、`{{projectName}}`、`{{question}}` 等模板变量。
+- **instruction template** — 为每个 hook 定义 `instruction` 字符串，hook 触发时渲染为发送给 gateway 的消息正文。
+- **gateway routing** — 每个 hook 引用 `gateways` 块中定义的具名 gateway（`local`、`remote` 等）。gateway 定义集中在一处，多个 hook 共同引用。
+- **优先级** — 若 `notifications.openclaw` 与通用别名（`custom_webhook_command`、`custom_cli_command`）同时存在，`notifications.openclaw` 优先，OMX 会输出警告。
+
+## 配置示例
+
+在 session-end 和 ask-user-question 时触发的最小 HTTP gateway 配置：
+
+```json
+{
+  "notifications": {
+    "enabled": true,
+    "openclaw": {
+      "enabled": true,
+      "gateways": {
+        "local": {
+          "type": "http",
+          "url": "http://127.0.0.1:18789/hooks/agent",
+          "headers": { "Authorization": "Bearer ${HOOKS_TOKEN}" }
+        }
+      },
+      "hooks": {
+        "session-end": {
+          "enabled": true,
+          "gateway": "local",
+          "instruction": "OMX task completed for {{projectPath}} (session {{sessionId}})"
+        },
+        "ask-user-question": {
+          "enabled": true,
+          "gateway": "local",
+          "instruction": "OMX needs input: {{question}}"
+        }
+      }
+    }
+  }
+}
+```
+
+在运行 OMX 之前设置环境变量：
+
+```bash
+export OMX_OPENCLAW=1
+export HOOKS_TOKEN="your-token-here"
+```
+
+使用 command gateway（clawdbot agent mode）时，还需设置 `OMX_OPENCLAW_COMMAND=1`，并在 `type: "command"` 配置中将 timeout 设为至少 `120000` ms。agent turn 有时比预期耗时更长，timeout 过短会频繁中断。
+
+## 相关文档
+
+- [Clawhip](/zh/docs/integrations/clawhip) — OpenClaw 所转发事件的 envelope 契约层
+- [CLI Bridges](/zh/docs/integrations/cli-bridges) — `$ask-claude`、`$ask-gemini` 与 team-level 跨 CLI 工作流
+- [Trace](/zh/docs/skills/workflow/trace) — 基于证据追踪会话事件的工作流
