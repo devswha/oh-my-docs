@@ -1,13 +1,13 @@
 ---
 name: docs-image-maker
-description: Plan, generate, and wire reader-friendly images for documentation pages in this monorepo. Use when Codex needs to add illustrations, workflow diagrams, concept art, hero/social images, or generated raster assets to apps/codex, apps/claudecode, or apps/openagent docs; when a user asks to make docs easier to read with images; when using god-tibo-imagen/gti, Codex image generation, or image prompt planning for docs; or when updating MDX image references and previewing them on the local/Tailscale docs server.
+description: Plan, review, generate, and wire reader-friendly documentation updates and images in this monorepo. Use when Codex needs HTML review sheets for docs rewrites/updates/reviews; when adding illustrations, workflow diagrams, concept art, hero/social images, or generated raster assets to apps/codex, apps/claudecode, or apps/openagent docs; when a user asks to make docs easier to read with images; when using god-tibo-imagen/gti, Codex image generation, or image prompt planning for docs; or when updating MDX image references and previewing them on the local/Tailscale docs server.
 ---
 
 # Docs Image Maker
 
 ## Overview
 
-Create docs-ready image assets and MDX placements for the three docs apps. Prefer helpful explanatory visuals over decoration, keep generated files under each app's `public/images/`, and keep locale siblings synchronized.
+Create reviewable docs updates, docs-ready image assets, and MDX placements for the three docs apps. Prefer HTML-first review artifacts for large rewrites or visual decisions, keep generated files under each app's `public/images/`, and keep locale siblings synchronized.
 
 ## Quick start
 
@@ -19,7 +19,18 @@ node .codex/skills/docs-image-maker/scripts/plan-doc-images.mjs --app codex --fr
 node .codex/skills/docs-image-maker/scripts/plan-doc-images.mjs --app codex apps/codex/content/docs/guides/index.mdx
 ```
 
-3. For precise workflow images, create an HTML-first review sheet before committing the final asset:
+3. For docs rewrites, upstream updates, or review-heavy edits, create an HTML docs review sheet before editing MDX:
+
+```bash
+node .codex/skills/docs-image-maker/scripts/make-doc-review-sheet.mjs \
+  --app codex \
+  --page apps/codex/content/docs/skills/workflow/ultragoal.mdx \
+  --locales \
+  --tailscale \
+  --base-url http://100.123.228.51:3101
+```
+
+4. For precise workflow images, create an HTML-first image sheet before committing the final asset:
 
 ```bash
 node .codex/skills/docs-image-maker/scripts/make-image-sheet.mjs \
@@ -30,8 +41,8 @@ node .codex/skills/docs-image-maker/scripts/make-image-sheet.mjs \
   --asset apps/codex/public/images/docs/skills-workflow-ultragoal-flow.svg
 ```
 
-4. Read `references/doc-image-style.md` before writing prompts or inserting images.
-5. If using `god-tibo-imagen`, read `references/god-tibo-imagen.md`, dry-run first, then generate only when the user clearly wants repo image assets created:
+5. Read `references/doc-image-style.md` before writing prompts or inserting images.
+6. If using `god-tibo-imagen`, read `references/god-tibo-imagen.md`, dry-run first, then generate only when the user clearly wants repo image assets created:
 
 ```bash
 node .codex/skills/docs-image-maker/scripts/generate-with-gti.mjs \
@@ -45,6 +56,16 @@ node .codex/skills/docs-image-maker/scripts/generate-with-gti.mjs \
 Use `--live` instead of `--dry-run` for actual generation. If `gti` is unavailable, report the install/auth gap or use another available image-generation surface.
 
 ## Workflow
+
+### 0. Review docs updates with HTML sheets
+
+Use `make-doc-review-sheet.mjs` before substantial MDX rewrites, upstream docs updates, or locale synchronization:
+
+- Output review artifacts under `.omx/artifacts/docs-review/`.
+- Include `--locales` when EN/KO/JA/ZH sibling structure matters.
+- Include `--tailscale` or `--base-url` so the sheet links to the same remote preview URL the user will open.
+- Use `--proposal-file` when comparing a draft rewrite against the current source.
+- Treat the HTML file as scratch/review context. Apply approved changes in MDX and public assets, then verify normally.
 
 ### 1. Choose image purpose
 
@@ -94,11 +115,11 @@ Provider choice:
 
 Use the HTML-first path for workflow diagrams and concept comparisons:
 
-- Generate a portable review sheet under `.omx/artifacts/docs-images/`.
+- Generate a portable image sheet under `.omx/artifacts/docs-images/`.
 - Put each candidate's visual, purpose, image prompt, alt text, and MDX snippet next to each other.
 - Keep the committed final image language-neutral when one asset is shared across locales.
 - Export the selected SVG or use the selected prompt as the input for `gti`/imagegen raster generation.
-- Do not commit `.omx/artifacts/` review sheets unless the user explicitly asks for artifact history.
+- Do not commit `.omx/artifacts/` sheets unless the user explicitly asks for artifact history.
 
 ### 5. Wire MDX
 
@@ -126,4 +147,4 @@ Then use `preview-docs-local` for the app, usually with `--tailscale`, and smoke
 
 - `references/doc-image-style.md` — prompt, placement, accessibility, and locale guidance.
 - `references/god-tibo-imagen.md` — optional `gti` provider notes based on `NomaDamas/god-tibo-imagen`.
-- `references/html-effectiveness.md` — HTML-first review-sheet pattern for visual iteration.
+- `references/html-effectiveness.md` — HTML-first review-sheet pattern for docs rewrite review and visual iteration.
