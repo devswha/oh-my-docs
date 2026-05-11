@@ -1,16 +1,20 @@
-Create a documentation-learning figure for an Oh My CodeX / OMX tutorial page explaining Ultragoal.
+Create a docs-ready educational figure for an Oh My CodeX / OMX tutorial page explaining Ultragoal.
 
-Intent: this must look like an educational diagram inside technical documentation or a training handout, not a marketing hero image, not a wallpaper, and not abstract concept art.
+Use the provided reference image as a strict composition guide. Preserve the exact left-to-right sequence, the five-step structure, the thin arrow connections, the rounded outer container, the generous whitespace, and the clean documentation-page proportions.
 
-Canvas: wide 16:9 figure for a docs article. Use a clean white or very light neutral background with a subtle rounded outer frame. Keep enough whitespace, but make the actual diagram large and readable at documentation-column width.
+Purpose: this image appears inside a technical docs tutorial, like a workbook or training handout figure. It should clarify the workflow, not decorate the page.
 
-Composition: a single horizontal teaching diagram inside one rounded container. Show five concrete step panels connected by thin arrows:
+Canvas: wide 16:9 documentation figure. Clean white or very light neutral background. One subtle rounded outer frame. The diagram should be readable at docs-column width and should not feel like a marketing hero image.
+
+Composition: one horizontal teaching diagram with exactly five concrete step panels connected left to right:
 1. approved plan document with a check badge
-2. stack of durable milestone/story cards
+2. durable milestone/story card stack
 3. ledger or checklist board with rows and check circles
 4. terminal-style handoff card connected to one goal orb
 5. final review shield with a check mark
 
-Style: modern technical learning-material illustration, crisp vector-like line art, thin neutral gray borders, muted off-white fills, sparse soft blue accent, light shadow only, calm and precise. It should feel native to a Fumadocs/Tailwind docs page.
+Style: documentation-native learning material for a Fumadocs/Tailwind page. Flat vector-like UI diagram, crisp geometric line work, thin neutral gray borders, muted off-white fills, sparse soft blue accent, minimal shadow, lots of whitespace. It should feel more like a polished manual diagram than an illustration.
 
-Constraints: no readable text, no letters, no labels, no pseudo-text, no numbers, no logos, no screenshots, no watermark, no dark dramatic background, no busy gradient, no photorealism. Use icons, lines, arrows, check marks, and simple blank rows instead of words.
+Improve only: visual polish, line consistency, icon clarity, spacing, and subtle depth. Do not change the concept or add objects.
+
+Hard constraints: no readable text, no letters, no labels, no pseudo-text, no numbers, no logos, no screenshots, no watermark, no extra panels, no extra objects, no dark dramatic background, no busy gradient, no glossy 3D, no hand-drawn/sketch style, no photorealism, no abstract symbolism.

@@ -48,8 +48,8 @@ node .codex/skills/docs-image-maker/scripts/make-image-sheet.mjs \
 node .codex/skills/docs-image-maker/scripts/generate-with-gti.mjs \
   --app codex \
   --prompt-file .codex/skills/docs-image-maker/assets/prompts/ultragoal-learning-figure.txt \
-  --output apps/codex/public/images/docs/skills-workflow-ultragoal-learning.png \
-  --size 1536x1024 \
+  --output apps/codex/public/images/docs/skills-workflow-ultragoal-learning-v2.png \
+  --size 2048x1152 \
   --dry-run
 ```
 
