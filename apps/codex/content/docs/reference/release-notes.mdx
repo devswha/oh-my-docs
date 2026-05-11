@@ -5,6 +5,25 @@ description: "Detailed OMX release notes with user impact, compatibility, verifi
 
 The [changelog](/docs/reference/changelog) is the short version. Use this page when you need the practical details behind recent releases: what changed, whether you need to migrate, and what was verified before release.
 
+## v0.16.4 — Approved handoffs and runtime completion hardening
+
+[Upstream release notes](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/release-notes-0.16.4.md) · [CHANGELOG entry](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#0164---2026-05-11) · [Readiness evidence](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/qa/release-readiness-0.16.4.md)
+
+### User impact
+
+- Ralph, Team, and planning handoffs keep approved context references, ready context-pack role refs, private context-pack entry metadata, canonical approved PRD aliases, multiline launch hints, visible hint lineage, and Team scale-up handoffs intact.
+- Codex hook setup stays compatible across CLI releases by preferring `[features].hooks = true` when available, retaining the legacy `codex_hooks` fallback, deduping stale aliases, keeping hooks active after clear resets, and detecting stale PostCompact wiring.
+- Runtime ownership and visibility are safer: notify dispatch avoids recursive wrapper chains, setup avoids duplicate hook state, plugin-mode skill discovery and MCP cleanup are hardened, boxed Team state-root precedence is corrected, and HUD visualization stays rooted in runtime authority.
+- Completion gates are harder to overclaim: Ralph completion requires audit evidence, and Ultragoal final completion requires cleanup/review proof before accepting done state.
+
+### Compatibility
+
+No migration is required for normal users. Older Codex installs remain supported through the legacy `codex_hooks` fallback path, while current generated configuration prefers `[features].hooks = true` when the installed CLI advertises it. If local hooks look stale after a Codex CLI upgrade or reset, run `omx setup` and `omx doctor`.
+
+### Verification noted upstream
+
+The upstream readiness record shows green dev/main CI, a successful tag release workflow, GitHub release assets, npm `0.16.4`, `npm run build`, `npm run lint`, `npm run check:no-unused`, targeted release tests, `cargo test`, `npm pack --dry-run`, release body generation, and `git diff --check`. No shipped-tag gaps are listed.
+
 ## v0.14.4 — Frontier default moves to GPT-5.5
 
 [Upstream release notes](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/release-notes-0.14.4.md) · [CHANGELOG entry](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#0144---2026-04-24)

@@ -5,7 +5,24 @@ description: "OMX 发布历史 — 最新版本摘要与上游 CHANGELOG 链接"
 
 完整 changelog 在上游 [`CHANGELOG.md`](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md) 中维护。本页汇总最近的发布信息。
 
-## 最新版本 — v0.14.4
+## 最新版本 — v0.16.4
+
+这是 `0.16.3` 之后的可靠性补丁，强化 approved execution handoff、context-pack metadata visibility、Codex hook feature-flag migration、setup/notify ownership、HUD/runtime state-root visibility、Ralph completion audit evidence 与 Ultragoal completion proof requirements。
+
+**新增内容：**
+- Ralph、Team 与 planning handoff 现在会在执行生命周期中保留 approved context references、context-pack refs、private entry metadata、canonical PRD aliases、ready role refs、multiline launch hints 与 visible-hint lineage。
+- Ralph completion 在接受 done-state claim 前会记录并检查 audit evidence。
+
+**变更内容：**
+- Ultragoal completion 现在要求 final cleanup/review proof，docs/skills 也明确该 stop condition。
+- skill catalog guidance 围绕 active OMX runtime surfaces 进一步收紧。
+
+**修复内容：**
+- Codex hook setup 在支持时优先写入 `[features].hooks = true`，同时保留旧 CLI 的 `[features].codex_hooks = true` fallback，dedupe stale aliases，并在 clear reset 后保持 hooks 生效。
+- approved handoff 在 Team scale-up、multiline launch hints、visible hint lineage fallbacks、context-pack parsing edge cases，以及 stale PostCompact/notify recursion hazards 中都能保留。
+- HUD、boxed Team state-root precedence、plugin-mode skill discovery 与 plugin MCP cleanup 更安全地扎根在 runtime authority 上。
+
+## v0.14.4
 
 这是一个补丁版本，将默认 frontier lane 提升到 `gpt-5.5`，同时保持 standard/mini lane 与 spark lane 的精确模型固定不变。
 

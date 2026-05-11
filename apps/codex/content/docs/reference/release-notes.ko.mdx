@@ -5,6 +5,25 @@ description: "사용자 영향, 호환성, 검증 근거, 업스트림 링크를
 
 [변경 로그](/ko/docs/reference/changelog)는 짧은 요약입니다. 이 페이지는 최근 릴리스의 실제 의미를 볼 때 사용하세요. 무엇이 바뀌었는지, 마이그레이션이 필요한지, 릴리스 전에 무엇을 검증했는지를 함께 정리합니다.
 
+## v0.16.4 — 승인된 핸드오프와 런타임 완료 검증 강화
+
+[업스트림 릴리스 노트](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/release-notes-0.16.4.md) · [CHANGELOG 항목](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#0164---2026-05-11) · [릴리스 준비 근거](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/qa/release-readiness-0.16.4.md)
+
+### 사용자 영향
+
+- Ralph, Team, planning handoff가 approved context reference, ready context-pack role ref, private context-pack entry metadata, canonical approved PRD alias, multiline launch hint, visible hint lineage, Team scale-up handoff를 그대로 보존합니다.
+- Codex hook setup은 지원되는 CLI에서는 `[features].hooks = true`를 우선 사용하고, legacy `codex_hooks` fallback을 유지하며, stale alias dedupe, clear reset 이후 hook 유지, stale PostCompact wiring detection으로 CLI 릴리스 간 호환성을 높입니다.
+- Runtime ownership/visibility가 더 안전해졌습니다. notify dispatch는 recursive wrapper chain을 피하고, setup은 duplicate hook state를 피하며, plugin-mode skill discovery/MCP cleanup이 강화되고, boxed Team state-root precedence와 HUD runtime authority 표시가 정리되었습니다.
+- Completion gate가 과장된 완료 선언을 더 잘 막습니다. Ralph completion은 audit evidence를 요구하고, Ultragoal final completion은 cleanup/review proof가 있어야 done state를 받아들입니다.
+
+### 호환성
+
+일반 사용자는 별도 마이그레이션이 필요 없습니다. 오래된 Codex 설치는 legacy `codex_hooks` fallback으로 계속 지원되고, 최신 생성 config는 설치된 CLI가 지원할 때 `[features].hooks = true`를 우선 사용합니다. Codex CLI 업그레이드나 reset 이후 local hook이 stale해 보이면 `omx setup`과 `omx doctor`를 실행하세요.
+
+### 업스트림 검증 근거
+
+업스트림 readiness record는 dev/main CI green, tag release workflow 성공, GitHub release asset, npm `0.16.4`, `npm run build`, `npm run lint`, `npm run check:no-unused`, targeted release test, `cargo test`, `npm pack --dry-run`, release body generation, `git diff --check`를 기록합니다. shipped tag 기준 남은 gap은 없습니다.
+
 ## v0.14.4 — Frontier 기본값이 GPT-5.5로 이동
 
 [업스트림 릴리스 노트](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/release-notes-0.14.4.md) · [CHANGELOG 항목](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#0144---2026-04-24)

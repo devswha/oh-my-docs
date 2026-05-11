@@ -5,7 +5,24 @@ description: "OMX release history — latest release summary and link to the ups
 
 The full changelog is maintained upstream at [`CHANGELOG.md`](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md). This page summarizes the most recent releases.
 
-## Latest release — v0.14.4
+## Latest release — v0.16.4
+
+A post-`0.16.3` reliability patch for approved execution handoffs, context-pack metadata visibility, Codex hook feature-flag migration, setup/notify ownership, HUD/runtime state-root visibility, Ralph completion audit evidence, and Ultragoal completion proof requirements.
+
+**Added:**
+- Approved context references now carry context-pack refs, private entry metadata, canonical PRD aliases, ready role refs, multiline launch hints, and visible-hint lineage through Ralph, Team, and planning handoffs.
+- Ralph completion now records and checks audit evidence before accepting done-state claims.
+
+**Changed:**
+- Ultragoal completion requires final cleanup/review proof, and the docs/skills make that stop condition explicit.
+- Skill catalog guidance is tightened around active OMX runtime surfaces.
+
+**Fixed:**
+- Codex hook setup now prefers `[features].hooks = true` when supported, keeps the legacy `[features].codex_hooks = true` fallback, dedupes stale aliases, and retains hooks after clear resets.
+- Approved handoffs survive Team scale-up, multiline launch hints, visible hint lineage fallbacks, context-pack parsing edge cases, and stale PostCompact/notify recursion hazards.
+- HUD, boxed Team state-root precedence, plugin-mode skill discovery, and plugin MCP cleanup stay rooted in runtime authority.
+
+## v0.14.4
 
 A patch release that promotes the default frontier lane to `gpt-5.5` while keeping the standard/mini and spark lanes pinned to their existing exact models.
 

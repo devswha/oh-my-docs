@@ -5,7 +5,24 @@ description: "OMX 릴리스 이력 — 최신 릴리스 요약과 업스트림 C
 
 전체 changelog는 업스트림 [`CHANGELOG.md`](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md)에서 관리됩니다. 이 페이지는 최근 릴리스를 요약합니다.
 
-## 최신 릴리스 — v0.14.4
+## 최신 릴리스 — v0.16.4
+
+`0.16.3` 이후 approved execution handoff, context-pack metadata 가시성, Codex hook feature flag migration, setup/notify ownership, HUD/runtime state-root 가시성, Ralph completion audit evidence, Ultragoal completion proof requirement를 강화한 안정화 패치입니다.
+
+**추가 사항:**
+- Ralph, Team, planning handoff가 approved context reference, context-pack ref, private entry metadata, canonical PRD alias, ready role ref, multiline launch hint, visible-hint lineage를 끝까지 보존합니다.
+- Ralph completion은 done-state claim을 받아들이기 전에 audit evidence를 기록하고 확인합니다.
+
+**변경 사항:**
+- Ultragoal completion은 final cleanup/review proof를 요구하며, docs/skills도 이 stop condition을 명시합니다.
+- skill catalog guidance가 active OMX runtime surface 중심으로 더 엄격해졌습니다.
+
+**수정 사항:**
+- Codex hook setup은 지원되는 경우 `[features].hooks = true`를 우선 사용하고, 오래된 CLI를 위해 `[features].codex_hooks = true` fallback을 유지하며, stale alias를 dedupe하고 clear reset 이후에도 hook을 유지합니다.
+- approved handoff가 Team scale-up, multiline launch hint, visible hint lineage fallback, context-pack parsing edge case, stale PostCompact/notify recursion 위험에서도 유지됩니다.
+- HUD, boxed Team state-root precedence, plugin-mode skill discovery, plugin MCP cleanup이 runtime authority에 더 안전하게 고정됩니다.
+
+## v0.14.4
 
 기본 frontier lane을 `gpt-5.5`로 올리면서 standard/mini lane과 spark lane은 기존의 정확한 모델 고정값으로 유지하는 패치 릴리스입니다.
 

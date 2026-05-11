@@ -5,7 +5,24 @@ description: "OMX リリース履歴 — 最新リリース要約とアップス
 
 完全な changelog はアップストリームの [`CHANGELOG.md`](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md) で管理されています。このページは最近のリリースを要約したものです。
 
-## 最新リリース — v0.14.4
+## 最新リリース — v0.16.4
+
+`0.16.3` 以降の approved execution handoff、context-pack metadata visibility、Codex hook feature-flag migration、setup/notify ownership、HUD/runtime state-root visibility、Ralph completion audit evidence、Ultragoal completion proof requirements を強化する信頼性パッチです。
+
+**追加内容:**
+- Ralph、Team、planning handoff が approved context references、context-pack refs、private entry metadata、canonical PRD aliases、ready role refs、multiline launch hints、visible-hint lineage を実行ライフサイクル全体で保持します。
+- Ralph completion は done-state claim を受け入れる前に audit evidence を記録・確認します。
+
+**変更内容:**
+- Ultragoal completion は final cleanup/review proof を必須にし、docs/skills でもその stop condition を明示します。
+- skill catalog guidance は active OMX runtime surfaces を中心により厳密になりました。
+
+**修正内容:**
+- Codex hook setup はサポートされる場合 `[features].hooks = true` を優先し、古い CLI 向けに `[features].codex_hooks = true` fallback を維持し、stale aliases を dedupe し、clear reset 後も hooks を保持します。
+- approved handoff は Team scale-up、multiline launch hints、visible hint lineage fallbacks、context-pack parsing edge cases、stale PostCompact/notify recursion hazards の中でも維持されます。
+- HUD、boxed Team state-root precedence、plugin-mode skill discovery、plugin MCP cleanup は runtime authority により安全に根づきます。
+
+## v0.14.4
 
 デフォルトの frontier lane を `gpt-5.5` に引き上げつつ、standard/mini lane と spark lane は既存の厳密なモデル固定を維持するパッチリリースです。
 
