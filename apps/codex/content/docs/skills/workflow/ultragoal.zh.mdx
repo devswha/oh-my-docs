@@ -7,6 +7,8 @@ description: 将 brief 转成 repo-native OMX artifacts，并协调 Codex goal-m
 
 关键边界是：OMX 不会声称 shell command 可以修改隐藏的 Codex thread state。`omx ultragoal complete-goals` 会 checkpoint repo state，并输出 active Codex agent 应该用 goal tools 执行的明确 handoff。
 
+![Ultragoal 将大型已批准计划连接到一个 aggregate Codex goal、durable story milestones、ledger、明确 handoff 与 final verification 的流程](/images/docs/skills-workflow-ultragoal-flow.svg)
+
 ## 何时使用
 
 - 需要把 brief 拆成多个 durable milestones 时

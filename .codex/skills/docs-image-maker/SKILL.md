@@ -19,8 +19,19 @@ node .codex/skills/docs-image-maker/scripts/plan-doc-images.mjs --app codex --fr
 node .codex/skills/docs-image-maker/scripts/plan-doc-images.mjs --app codex apps/codex/content/docs/guides/index.mdx
 ```
 
-3. Read `references/doc-image-style.md` before writing prompts or inserting images.
-4. If using `god-tibo-imagen`, read `references/god-tibo-imagen.md`, dry-run first, then generate only when the user clearly wants repo image assets created:
+3. For precise workflow images, create an HTML-first review sheet before committing the final asset:
+
+```bash
+node .codex/skills/docs-image-maker/scripts/make-image-sheet.mjs \
+  --app codex \
+  --topic ultragoal \
+  --pick rail \
+  --sheet .omx/artifacts/docs-images/ultragoal.html \
+  --asset apps/codex/public/images/docs/skills-workflow-ultragoal-flow.svg
+```
+
+4. Read `references/doc-image-style.md` before writing prompts or inserting images.
+5. If using `god-tibo-imagen`, read `references/god-tibo-imagen.md`, dry-run first, then generate only when the user clearly wants repo image assets created:
 
 ```bash
 node .codex/skills/docs-image-maker/scripts/generate-with-gti.mjs \
@@ -73,10 +84,21 @@ Use language-neutral prompts unless the image intentionally contains UI text. Pr
 
 Provider choice:
 
-1. **Existing vector/code-native diagram** — use when exact structure matters or text labels are required.
-2. **`god-tibo-imagen` / `gti`** — use for committed PNG assets when installed and authenticated; dry-run first. This uses an unsupported private Codex/ChatGPT backend path, so never commit auth files or debug dumps.
-3. **Built-in `imagegen` skill/tool** — use for conversational bitmap generation or when the environment supports saving the generated asset.
-4. **Fallback** — create an SVG/diagram placeholder and report that live raster generation is blocked.
+1. **HTML-first review sheet** — use when structure, layout, or explanatory clarity matters. Generate a self-contained `.omx/artifacts/docs-images/<topic>.html` sheet with candidates, prompts, alt text, and the selected SVG export.
+2. **Existing vector/code-native diagram** — use when exact structure matters or text labels are required.
+3. **`god-tibo-imagen` / `gti`** — use for committed PNG assets when installed and authenticated; dry-run first. This uses an unsupported private Codex/ChatGPT backend path, so never commit auth files or debug dumps.
+4. **Built-in `imagegen` skill/tool** — use for conversational bitmap generation or when the environment supports saving the generated asset.
+5. **Fallback** — create an SVG/diagram placeholder and report that live raster generation is blocked.
+
+### 4a. HTML-first workflow
+
+Use the HTML-first path for workflow diagrams and concept comparisons:
+
+- Generate a portable review sheet under `.omx/artifacts/docs-images/`.
+- Put each candidate's visual, purpose, image prompt, alt text, and MDX snippet next to each other.
+- Keep the committed final image language-neutral when one asset is shared across locales.
+- Export the selected SVG or use the selected prompt as the input for `gti`/imagegen raster generation.
+- Do not commit `.omx/artifacts/` review sheets unless the user explicitly asks for artifact history.
 
 ### 5. Wire MDX
 
@@ -104,3 +126,4 @@ Then use `preview-docs-local` for the app, usually with `--tailscale`, and smoke
 
 - `references/doc-image-style.md` — prompt, placement, accessibility, and locale guidance.
 - `references/god-tibo-imagen.md` — optional `gti` provider notes based on `NomaDamas/god-tibo-imagen`.
+- `references/html-effectiveness.md` — HTML-first review-sheet pattern for visual iteration.
