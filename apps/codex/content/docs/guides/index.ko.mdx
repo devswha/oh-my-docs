@@ -14,6 +14,7 @@ OMX는 워크플로우가 여러 개라 처음 쓰면 고르는 것부터 막힙
 | 요구사항 자체가 흐릿함 | `$deep-interview` | 구현보다 범위 확정이 먼저 |
 | 방향은 알지만 계획은 없음 | `$ralplan` | 트레이드오프를 먼저 못 박아야 |
 | 계획 있고 한 명이 끝까지 밀어야 함 | `$ralph` | 지속 소유자 + 검증 루프 |
+| 큰 계획을 여러 milestone으로 오래 추적해야 함 | `$ultragoal` | `.omx/ultragoal` ledger + Codex goal handoff |
 | 계획을 여러 lane으로 쪼갤 수 있음 | `$team` | 병렬화 이득이 실제로 있을 때만 |
 | 프로토타입 하나 빠르게 보고 싶음 | `$autopilot` | 제어를 내려놓는 대신 속도 |
 
@@ -75,6 +76,40 @@ $ralph "그 계획대로 끝까지 진행해줘"
 - 아키텍처 · 테스트 · 운영 영향을 같이 봐야 함
 - 요구가 여러 이해관계자를 거쳐 아직 정리 안 됨
 - 중간에 방향 합의가 필요한 큰 작업
+
+---
+
+## `$ultragoal`은 durable goal이 필요할 때
+
+`$ultragoal`은 큰 brief나 승인된 plan을 durable Codex/OMX goal로 바꾸는 흐름입니다. 장기 계획은 `.omx/ultragoal/` 아래에 남기고, story 진행은 ledger로 기록하며, 활성 thread는 Codex goal mode에 명시적으로 handoff합니다.
+
+```bash
+$ultragoal "이 launch plan을 durable goal로 나누고 끝까지 완료해줘"
+```
+
+| 항목 | 상태 |
+|---|---|
+| 제어 수준 | 높음 — plan과 evidence가 파일로 남음 |
+| 지속성 | 높음 — compaction, session 변경, handoff 이후에도 이어가기 쉬움 |
+| 잘 맞는 경우 | 여러 milestone, release train, 큰 리팩터링, 최종 검증이 중요한 작업 |
+| 피할 경우 | 작은 one-shot 수정, 요구가 아직 모호한 작업, 병렬 lane이 더 자연스러운 작업 |
+
+명령 세부사항과 completion gate는 [`$ultragoal`](/ko/docs/skills/workflow/ultragoal) 문서를 보세요.
+
+대표 흐름은 이렇습니다.
+
+```text
+$deep-interview "제품 범위를 정리해줘"
+$ralplan "milestone 기준으로 안전한 계획을 승인해줘"
+$ultragoal "승인된 계획을 durable goal로 바꾸고 완료까지 진행해줘"
+```
+
+선택 기준은 간단합니다.
+
+- **계획은 크지만 순차 milestone으로 추적해야 함** → `$ultragoal`
+- **한 명이 한 맥락으로 끝까지 밀면 충분함** → `$ralph`
+- **frontend / backend / test처럼 동시에 나눌 수 있음** → `$team`
+- **요구가 아직 흐림** → `$deep-interview` 또는 `$ralplan` 먼저
 
 ---
 

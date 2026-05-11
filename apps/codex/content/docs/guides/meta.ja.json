@@ -1,8 +1,11 @@
 {
   "title": "ガイド",
   "pages": [
-    "[どのスキルを使うか](/ja/docs/guides#when-to-use-which-skill)",
-    "[最初に試すこと](/ja/docs/guides#suggested-first-moves)",
-    "[ガイドへの貢献](/ja/docs/guides#contributing-guides)"
+    "[一目でわかる決定表](/ja/docs/guides#一目でわかる決定表)",
+    "[基本パス](/ja/docs/guides#基本パス)",
+    "[$autopilot はいつ使うか](/ja/docs/guides#autopilot-はいつ使うか)",
+    "[計画ベースのフローを先に通すべきとき](/ja/docs/guides#計画ベースのフローを先に通すべきとき)",
+    "[$ultragoal は durable goal が必要なとき](/ja/docs/guides#ultragoal-は-durable-goal-が必要なとき)",
+    "[$team は並列化に価値があるときだけ](/ja/docs/guides#team-は並列化に価値があるときだけ)"
   ]
 }

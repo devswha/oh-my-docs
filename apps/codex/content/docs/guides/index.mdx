@@ -84,6 +84,41 @@ $ralph "carry out that plan to completion"
 - **I need clarification first** → `$deep-interview`
 - **I need an agreed plan first** → `$ralplan`
 - **I need one owner to carry it all the way through** → `$ralph`
+- **I have a large approved plan that must survive sessions** → `$ultragoal`
+
+---
+
+## When should you use `$ultragoal`?
+
+`$ultragoal` is for turning a large brief or approved plan into durable Codex/OMX goals. It writes the long-range plan under `.omx/ultragoal/`, keeps story progress in a ledger, and hands the active thread to Codex goal mode explicitly.
+
+```bash
+$ultragoal "split this launch plan into durable goals and complete them"
+```
+
+### Good fit
+
+- The plan has multiple sequential milestones, not one small edit
+- Progress needs to survive compaction, session changes, or handoff
+- You want an aggregate Codex goal while OMX tracks `G001`, `G002`, and later story evidence
+- Final completion should require cleanup, verification, and review evidence before being marked done
+
+### A different flow may be better when
+
+- the requirements are still unclear → `$deep-interview` or `$ralplan` first
+- one owner can complete the whole job in one continuous loop → `$ralph`
+- the work can be split into independent parallel lanes → `$team`
+- you only need a quick prototype → `$autopilot`
+
+For command details and completion gates, see [`$ultragoal`](/docs/skills/workflow/ultragoal).
+
+A common durable route is:
+
+```bash
+$deep-interview "clarify the product scope"
+$ralplan "produce the approved milestone plan"
+$ultragoal "turn the approved plan into durable goals and complete them"
+```
 
 ---
 

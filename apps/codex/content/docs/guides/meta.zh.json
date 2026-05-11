@@ -1,8 +1,11 @@
 {
   "title": "指南",
   "pages": [
-    "[如何选择技能](/zh/docs/guides#when-to-use-which-skill)",
-    "[建议起步方式](/zh/docs/guides#suggested-first-moves)",
-    "[贡献指南](/zh/docs/guides#contributing-guides)"
+    "[一目了然的决策表](/zh/docs/guides#一目了然的决策表)",
+    "[基本路径](/zh/docs/guides#基本路径)",
+    "[$autopilot 什么时候用](/zh/docs/guides#autopilot-什么时候用)",
+    "[应该先走计划流程的时候](/zh/docs/guides#应该先走计划流程的时候)",
+    "[$ultragoal 适合需要 durable goal 时](/zh/docs/guides#ultragoal-适合需要-durable-goal-时)",
+    "[$team 只在并行化有价值时使用](/zh/docs/guides#team-只在并行化有价值时使用)"
   ]
 }
