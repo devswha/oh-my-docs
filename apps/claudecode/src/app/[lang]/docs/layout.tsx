@@ -24,7 +24,7 @@ export default async function Layout({
       tree={source.getPageTree(lang)}
       nav={{
         title: (
-          <div className="flex items-center gap-2">
+          <div key="docs-nav-title" className="flex items-center gap-2">
             <Image
               src="/logo.png"
               alt="OMC"
