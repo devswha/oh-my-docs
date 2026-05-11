@@ -53,6 +53,14 @@ function commandExists(name) {
   return result.status === 0;
 }
 
+function resolveGtiCommand() {
+  if (commandExists('gti')) return { command: 'gti', prefix: [] };
+  if (commandExists('npm') || commandExists('npx')) {
+    return { command: 'npx', prefix: ['-y', 'god-tibo-imagen'] };
+  }
+  return null;
+}
+
 function ensureSafeOutput(args) {
   if (!args.output) throw new Error('--output is required');
   const output = path.resolve(args.output);
@@ -78,17 +86,19 @@ try {
   for (const image of args.images) {
     if (!existsSync(image)) throw new Error(`Input image not found: ${image}`);
   }
-  if (!commandExists('gti')) {
-    console.error('[generate-with-gti] gti command not found. Install with one of: npm install -g god-tibo-imagen; pip install god-tibo-imagen.');
+  const gti = resolveGtiCommand();
+  if (!gti) {
+    console.error('[generate-with-gti] gti command not found and npx is unavailable. Install with one of: npm install -g god-tibo-imagen; pip install god-tibo-imagen.');
     process.exit(2);
   }
   const gtiArgs = ['--provider', args.provider, '--prompt', prompt, '--output', output];
   if (args.size) gtiArgs.push('--size', args.size);
   for (const image of args.images) gtiArgs.push('--image', image);
   if (args.dryRun) gtiArgs.push('--dry-run');
+  const commandArgs = [...gti.prefix, ...gtiArgs];
 
-  console.error(`[generate-with-gti] Running: gti ${gtiArgs.map((part) => part.includes(' ') ? JSON.stringify(part) : part).join(' ')}`);
-  const result = spawnSync('gti', gtiArgs, { stdio: 'inherit' });
+  console.error(`[generate-with-gti] Running: ${gti.command} ${commandArgs.map((part) => part.includes(' ') ? JSON.stringify(part) : part).join(' ')}`);
+  const result = spawnSync(gti.command, commandArgs, { stdio: 'inherit' });
   process.exit(result.status ?? 1);
 } catch (error) {
   console.error(`[generate-with-gti] ${error.message}`);
