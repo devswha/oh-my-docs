@@ -13,6 +13,10 @@
 - 원본 레포 히스토리는 `git subtree` 방식으로 각 `apps/*` prefix 아래 보존합니다.
 - 배포/환경 값은 앱별로 분리하고, `.env.local` 및 `.vercel` 같은 로컬 상태는 커밋하지 않습니다.
 
+## 마이그레이션 기록
+
+초기 import 기록과 향후 `git subtree pull/split` 절차는 [`MIGRATION.md`](./MIGRATION.md)에 정리되어 있습니다.
+
 ## 자주 쓰는 명령
 
 ```bash

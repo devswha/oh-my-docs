@@ -1,0 +1,49 @@
+# Migration record
+
+This repository was initialized as a monorepo for three previously separate documentation repositories.
+
+## Imported sources
+
+| App prefix | Source repo | Source ref imported | Notes |
+| --- | --- | --- | --- |
+| `apps/codex` | `/home/devswha/workspace/oh-my-codex-docs` | `4a70e78ca29f93bfbed9653c324f60352530f29c` | imported from committed `HEAD` |
+| `apps/claudecode` | `/home/devswha/workspace/oh-my-claudecode-docs` | `b5955764b99e07d9f00008c462b2252b662edc65` | imported from committed `HEAD`; local uncommitted/generated files were intentionally excluded |
+| `apps/openagent` | `/home/devswha/workspace/oh-my-openagent-docs` | `e2668564936c9744d26d700014169565a6663ef5` | imported from committed `HEAD` |
+
+The imports use `git subtree` without `--squash`, so source commit history remains available in this monorepo.
+
+## Directory contract
+
+```text
+apps/
+  codex/       # oh-my-codex-docs
+  claudecode/  # oh-my-claudecode-docs
+  openagent/   # oh-my-openagent-docs
+```
+
+Keep product-specific docs, routes, public assets, and deployment configuration inside the matching `apps/*` directory. Extract shared tooling only when all three apps can use it without changing behavior.
+
+## Follow-up update commands
+
+To pull later changes from a source repo into the matching subtree:
+
+```bash
+git subtree pull --prefix=apps/codex /home/devswha/workspace/oh-my-codex-docs <ref>
+git subtree pull --prefix=apps/claudecode /home/devswha/workspace/oh-my-claudecode-docs <ref>
+git subtree pull --prefix=apps/openagent /home/devswha/workspace/oh-my-openagent-docs <ref>
+```
+
+To split an app subtree back out for upstream synchronization:
+
+```bash
+git subtree split --prefix=apps/codex -b split/codex
+git subtree split --prefix=apps/claudecode -b split/claudecode
+git subtree split --prefix=apps/openagent -b split/openagent
+```
+
+## Validation checklist
+
+- `git status --short --branch` is clean after migration commits.
+- Each app has its original `package.json`, `package-lock.json`, `next.config.mjs`, `source.config.ts`, and `content/docs` tree under `apps/*`.
+- Root scripts can address all apps independently: `npm run lint:*`, `npm run build:*`, `npm run dev:*`.
+- App builds are validated after dependencies are installed in each app.
