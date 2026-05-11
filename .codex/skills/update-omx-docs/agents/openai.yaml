@@ -1,0 +1,4 @@
+interface:
+  display_name: "Update OMX Docs"
+  short_description: "Refresh OMX docs from latest upstream"
+  default_prompt: "Use $update-omx-docs to refresh the Codex/OMX docs from the latest oh-my-codex upstream repository."
