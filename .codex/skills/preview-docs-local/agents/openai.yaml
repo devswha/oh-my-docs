@@ -1,4 +1,4 @@
 interface:
   display_name: "Preview Docs Local"
-  short_description: "Run local docs previews and smoke checks"
+  short_description: "Run local/remote docs previews"
   default_prompt: "Use $preview-docs-local to preview docs changes on a local Next.js server and verify changed pages."

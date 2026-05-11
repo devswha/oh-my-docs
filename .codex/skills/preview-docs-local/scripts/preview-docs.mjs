@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-import { spawn, spawnSync, execFileSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
+import { spawn, spawnSync } from 'node:child_process';
+import { networkInterfaces } from 'node:os';
+import { existsSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -30,9 +31,13 @@ function printHelp() {
   console.log(`Usage: node scripts/preview-docs.mjs <codex|claudecode|openagent> [options]
 
 Options:
-  --host <host>          Hostname for Next dev server (default: 127.0.0.1)
-  --port <port>          Port override (defaults: codex=3101, claudecode=3102, openagent=3103)
-  --path <url-path>      Add a path to smoke-check. Repeatable.
+  --host <host>          Hostname to bind Next dev server (default: 127.0.0.1; remote: 0.0.0.0)
+  --remote              Remote-server mode: bind 0.0.0.0, smoke-check via 127.0.0.1, print external URLs.
+  --public-url <url>    Browser-facing base URL, e.g. http://home-server:3101 or https://docs.example.dev.
+  --check-host <host>   Host used for internal smoke checks (default: bound host, or 127.0.0.1 in --remote).
+  --protocol <scheme>   URL scheme for generated check URLs (default: http).
+  --port <port>         Port override (defaults: codex=3101, claudecode=3102, openagent=3103)
+  --path <url-path>     Add a path to smoke-check. Repeatable.
   --from-git            Derive smoke paths from changed docs files in git diff/status.
   --smoke-only          Do not start Next; smoke-check an already running server.
   --exit-after-smoke    Start server, smoke-check, then stop and exit.
@@ -40,8 +45,13 @@ Options:
   --timeout-ms <ms>     Server readiness timeout (default: 90000)
   --help                Show this help.
 
+Environment:
+  DOCS_PREVIEW_${appName ? appName.toUpperCase() : '<APP>'}_PUBLIC_URL, DOCS_PREVIEW_PUBLIC_URL, or PREVIEW_PUBLIC_URL
+                       Default browser-facing URL when --public-url is omitted.
+
 Examples:
   node .codex/skills/preview-docs-local/scripts/preview-docs.mjs codex --from-git
+  node .codex/skills/preview-docs-local/scripts/preview-docs.mjs codex --remote --public-url http://home-server:3101
   node .codex/skills/preview-docs-local/scripts/preview-docs.mjs codex --path /docs/getting-started --exit-after-smoke
   node .codex/skills/preview-docs-local/scripts/preview-docs.mjs claudecode --smoke-only --port 3102
 `);
@@ -65,14 +75,47 @@ if (!existsSync(join(appRoot, 'package.json'))) {
   process.exit(1);
 }
 
-const host = argValue('--host', '127.0.0.1');
+const remote = hasFlag('--remote');
+const protocol = argValue('--protocol', 'http');
+const host = argValue('--host', remote ? '0.0.0.0' : '127.0.0.1');
+const checkHost = argValue(
+  '--check-host',
+  remote || host === '0.0.0.0' || host === '::' ? '127.0.0.1' : host,
+);
 const port = Number(argValue('--port', app.port));
 const timeoutMs = Number(argValue('--timeout-ms', 90_000));
-const baseUrl = `http://${host}:${port}`;
+const checkBaseUrl = `${protocol}://${checkHost}:${port}`;
 const dryRun = hasFlag('--dry-run');
 const smokeOnly = hasFlag('--smoke-only');
 const exitAfterSmoke = hasFlag('--exit-after-smoke');
 const fromGit = hasFlag('--from-git');
+
+function normalizeBaseUrl(value) {
+  if (!value) return null;
+  return value.replace(/\/+$/, '');
+}
+
+function envPublicUrl() {
+  const appSpecific = `DOCS_PREVIEW_${appName.toUpperCase()}_PUBLIC_URL`;
+  return process.env[appSpecific] ?? process.env.DOCS_PREVIEW_PUBLIC_URL ?? process.env.PREVIEW_PUBLIC_URL ?? null;
+}
+
+function publicBaseUrls() {
+  const explicit = normalizeBaseUrl(argValue('--public-url', envPublicUrl()));
+  if (explicit) return [explicit];
+  if (!remote) return [checkBaseUrl];
+
+  const urls = new Set();
+  for (const addresses of Object.values(networkInterfaces())) {
+    for (const address of addresses ?? []) {
+      if (address.family === 'IPv4' && !address.internal) {
+        urls.add(`${protocol}://${address.address}:${port}`);
+      }
+    }
+  }
+  urls.add(`${protocol}://<remote-host>:${port}`);
+  return [...urls];
+}
 
 function normalizePath(path) {
   if (!path) return null;
@@ -131,14 +174,18 @@ const smokePaths = [...new Set([
   ...(fromGit ? gitChangedDocsPaths() : []),
 ])];
 const pathsToCheck = smokePaths.length ? smokePaths : defaultPaths();
-const urls = pathsToCheck.map((path) => `${baseUrl}${path}`);
+const checkUrls = pathsToCheck.map((path) => `${checkBaseUrl}${path}`);
+const previewUrls = publicBaseUrls().flatMap((baseUrl) => pathsToCheck.map((path) => `${baseUrl}${path}`));
 const command = ['npm', '--prefix', app.path, 'run', 'dev', '--', '--hostname', host, '--port', String(port)];
 
 if (dryRun) {
   console.log(`[dry-run] app=${appName} (${app.label})`);
   console.log(`[dry-run] command=${command.join(' ')}`);
+  console.log(`[dry-run] internal smoke base=${checkBaseUrl}`);
   console.log('[dry-run] smoke URLs:');
-  for (const url of urls) console.log(`- ${url}`);
+  for (const url of checkUrls) console.log(`- ${url}`);
+  console.log('[dry-run] browser preview URLs:');
+  for (const url of previewUrls) console.log(`- ${url}`);
   process.exit(0);
 }
 
@@ -158,8 +205,8 @@ async function waitForUrl(url, deadline) {
 }
 
 async function smokeCheck() {
-  console.log(`[preview-docs] Smoke-checking ${urls.length} URL(s):`);
-  for (const url of urls) {
+  console.log(`[preview-docs] Smoke-checking ${checkUrls.length} internal URL(s):`);
+  for (const url of checkUrls) {
     const status = await waitForUrl(url, Date.now() + timeoutMs);
     console.log(`[preview-docs] OK ${status} ${url}`);
   }
@@ -180,7 +227,8 @@ process.on('SIGTERM', () => {
 process.on('exit', stopChild);
 
 if (!smokeOnly) {
-  console.log(`[preview-docs] Starting ${app.label} at ${baseUrl}`);
+  console.log(`[preview-docs] Starting ${app.label} bound to ${host}:${port}`);
+  console.log(`[preview-docs] Internal smoke base: ${checkBaseUrl}`);
   console.log(`[preview-docs] ${command.join(' ')}`);
   child = spawn(command[0], command.slice(1), {
     cwd: REPO_ROOT,
@@ -197,8 +245,8 @@ if (!smokeOnly) {
 
 try {
   await smokeCheck();
-  console.log('[preview-docs] Preview URLs:');
-  for (const url of urls) console.log(`- ${url}`);
+  console.log('[preview-docs] Browser preview URLs:');
+  for (const url of previewUrls) console.log(`- ${url}`);
   if (smokeOnly || exitAfterSmoke) {
     stopChild();
     process.exit(0);
