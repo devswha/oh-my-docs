@@ -1,0 +1,36 @@
+---
+title: Explore
+description: 빠른 코드베이스 grep과 contextual 패턴 발견. 지능보다 속도.
+---
+
+Explore는 grep 에이전트입니다. 빠른 패턴 발견, 코드베이스 전반 구조화된 검색, "X 어디서 쓰임?" 같은 질문. Librarian과 같은 fallback chain — 같은 utility model family.
+
+## 기본 모델
+
+| 필드 | 값 |
+|---|---|
+| 기본 | `openai/gpt-5.4-mini-fast` |
+| 스타일 | utility — 깊이보다 속도 |
+
+## Runtime fallback chain
+
+`gpt-5.4-mini-fast` → `opencode-go/qwen3.5-plus` → `vercel/minimax-m2.7-highspeed` → `opencode-go\|vercel/minimax-m2.7` → `anthropic\|opencode\|vercel/claude-haiku-4-5` → `openai\|opencode\|vercel/gpt-5.4-nano`.
+
+## 도구 제한
+
+read-only. 차단: `write`, `edit`, `task`, `call_omo_agent`. grep 레인만.
+
+## 언제 부르는가
+
+- `Ask @explore for the policy on this feature.`
+- 구현 전 패턴 발견 (기존 코드가 X를 어떻게 처리?).
+- 지능이 아니라 속도가 병목인 빠른 스캔.
+
+## 하지 않는 것
+
+- Opus에서 실행 — 순수 비용 낭비. Explore는 속도가 필요.
+- 결정. 결과를 오케스트레이터에 넘기고 종료.
+
+## 출처
+
+upstream `docs/reference/features.md#core-agents`와 `src/shared/model-requirements.ts` 기준.

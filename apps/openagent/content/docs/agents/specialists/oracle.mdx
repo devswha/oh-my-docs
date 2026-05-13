@@ -1,0 +1,37 @@
+---
+title: Oracle
+description: Read-only architecture and debugging consultant. High-IQ second opinion without execution authority.
+---
+
+Oracle is the consultant. Read-only, GPT-native, tuned for sustained reasoning across unfamiliar patterns, security concerns, and multi-system tradeoffs. Sisyphus delegates here when a decision needs a strong second opinion before code moves.
+
+## Default model
+
+| Field | Value |
+|---|---|
+| Default | `openai\|github-copilot\|opencode\|vercel/gpt-5.5` (variant `high`) |
+| Style | Principle-driven |
+
+## Runtime fallback chain
+
+`gpt-5.5 (high)` → `google\|github-copilot\|opencode\|vercel/gemini-3.1-pro (high)` → `anthropic\|github-copilot\|opencode\|vercel/claude-opus-4-7 (max)` → `opencode-go\|vercel/glm-5.1`.
+
+## Tool restrictions
+
+Read-only. Blocked: `write`, `edit`, `task`, `call_omo_agent`. Designed to advise, not implement.
+
+## When to invoke
+
+- `Ask @oracle to review this design and propose an architecture.`
+- Multi-system tradeoffs where one wrong call cascades.
+- Security or threat-model decisions that benefit from sustained reasoning.
+
+## What it doesn't do
+
+- Make changes — read-only by design.
+- Delegate work — no `task`/`call_omo_agent`. Sisyphus drives any follow-up.
+- Run on MiniMax — coherence loss on sustained reasoning; the substitution rules in [Agent-Model Matching](/docs/agents/model-matching) call this out explicitly.
+
+## Source Notes
+
+Aligned with upstream `docs/reference/features.md#core-agents`, `docs/reference/features.md#tool-restrictions`, and `src/shared/model-requirements.ts`.

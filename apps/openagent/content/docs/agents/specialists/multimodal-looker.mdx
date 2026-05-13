@@ -1,0 +1,35 @@
+---
+title: Multimodal-Looker
+description: Vision specialist. Analyzes PDFs, images, and diagrams to extract information for the rest of the system.
+---
+
+Multimodal-Looker is the eyes. PDFs, screenshots, design mockups, architecture diagrams — anything visual that another agent needs to understand. Invoked through the `look_at` tool by Sisyphus or directly addressed.
+
+## Default model
+
+| Field | Value |
+|---|---|
+| Default | `openai\|opencode\|vercel/gpt-5.5` (variant `medium`) |
+| Style | Vision-first |
+
+## Runtime fallback chain
+
+`gpt-5.5 (medium)` → `opencode-go\|vercel/kimi-k2.6` → `zai-coding-plan\|vercel/glm-4.6v` → `openai\|github-copilot\|opencode\|vercel/gpt-5-nano`.
+
+## Tool restrictions
+
+`read` only. The tightest restriction of any agent — it can read inputs, look at them, and return a description. It cannot edit, delegate, or shell out.
+
+## When to invoke
+
+- `look_at(...)` from Sisyphus when an image or PDF is in the conversation.
+- Direct `@multimodal-looker` for screenshot QA.
+
+## What it doesn't do
+
+- Anything except read + describe. By design.
+- Run on text-only models — `glm-4.6v` is the explicit visual GLM variant in the fallback chain for that reason.
+
+## Source Notes
+
+Aligned with upstream `docs/reference/features.md#core-agents` and `src/shared/model-requirements.ts`.

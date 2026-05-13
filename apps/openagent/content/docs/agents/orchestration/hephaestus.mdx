@@ -1,0 +1,41 @@
+---
+title: Hephaestus
+description: GPT-native autonomous deep worker. Give it a goal, not a recipe.
+---
+
+Hephaestus runs on GPT-5.5. Give it a goal — exploration, research, end-to-end execution all happen without hand-holding. It is built for principle-driven prompts, the opposite of Sisyphus's mechanics-driven style. The name comes from the Greek god of forge and craftsmanship: the legitimate craftsman, born from necessity.
+
+## Default model
+
+| Field | Value |
+|---|---|
+| Default | `openai\|github-copilot\|venice\|opencode\|vercel/gpt-5.5` (variant `medium`) |
+| Style | Principle-driven — concise XML-tagged prompt |
+| Provider requirement | Requires a GPT-capable provider — single-entry chain, no Claude fallback |
+
+## Runtime fallback chain
+
+GPT-5.5 medium only. There is intentionally no Claude or non-GPT fallback. The `no-hephaestus-non-gpt` hook enforces this — Hephaestus must run on GPT.
+
+## When to invoke
+
+Switch to Hephaestus explicitly when the work needs:
+
+- Deep architectural reasoning across many files.
+- Complex debugging that benefits from goal-oriented exploration.
+- Cross-domain knowledge synthesis without hand-holding.
+
+Sisyphus's `task(category: "deep")` also routes deep work, but Hephaestus is the named lane for "this task is purely GPT-native deep work."
+
+## Tool surface
+
+Full toolset. Runs autonomously, so it can spend many tokens on exploration before producing output.
+
+## What it doesn't do
+
+- Run on Claude or MiniMax models — both are wrong fits for GPT-native autonomy. The hook blocks this.
+- Replace Sisyphus's orchestrator role — Sisyphus delegates work; Hephaestus completes a single goal.
+
+## Source Notes
+
+Aligned with upstream `docs/reference/features.md#core-agents` and `src/shared/model-requirements.ts`. Substitution policy lives in [Agent-Model Matching](/docs/agents/model-matching).

@@ -1,0 +1,42 @@
+---
+title: Sisyphus
+description: The default orchestrator. Plans, delegates, executes, and refuses to stop until the work is verified.
+---
+
+Sisyphus is the main orchestrator. It reads intent, breaks the work into a todo list, fans out to specialists in parallel, and verifies completion before returning. The name comes from the myth — Sisyphus pushes the boulder every day and never stops. The agent is tuned to behave the same way: when work is unfinished, it goes back to work.
+
+## Default model
+
+| Field | Value |
+|---|---|
+| Default | `anthropic\|github-copilot\|opencode\|vercel/claude-opus-4-7` (variant `max`) |
+| Style | Mechanics-driven — ~1,100-line Claude-optimized prompt |
+| Extended thinking | 32k budget |
+
+## Runtime fallback chain
+
+`claude-opus-4-7 (max)` → `opencode-go\|vercel/kimi-k2.6` → `kimi-for-coding/k2p5` → `opencode\|moonshotai\|moonshotai-cn\|firmware\|ollama-cloud\|aihubmix\|vercel/kimi-k2.5` → `openai\|github-copilot\|opencode\|vercel/gpt-5.5 (medium)` → `zai-coding-plan\|opencode\|vercel/glm-5` → `opencode/big-pickle`.
+
+Substitution rules: [Agent-Model Matching](/docs/agents/model-matching). Kimi K2.5/2.6 are the recommended Claude alternatives; older GPT models are not.
+
+## When to invoke
+
+Sisyphus is the default agent — you almost always already have it. Explicit cases:
+
+- A task has more than one step and needs parallel research + implementation.
+- The work needs verification before reporting done.
+- You typed `ultrawork` / `ulw` — Sisyphus drives the loop.
+
+## Tool surface
+
+Full toolset including `task`, `call_omo_agent`, `background_output`, `background_cancel`, LSP, AST-grep, hashline edit, and the task system. Sisyphus delegates by category, not by model name — see [Concepts → Category + Skill](/docs/concepts).
+
+## What it doesn't do
+
+- Run on incompatible GPT models — the `no-sisyphus-gpt` hook blocks them. GPT-5.4 and GPT-5.5 have dedicated prompt paths and are allowed.
+- Take over Prometheus's interview lane — `@plan` enters Prometheus mode instead.
+- Replace Hephaestus's autonomous deep work — for that, switch to Hephaestus explicitly.
+
+## Source Notes
+
+Aligned with upstream `docs/reference/features.md#core-agents` and `src/shared/model-requirements.ts`. The orchestration flow is in [Orchestration overview](/docs/agents/orchestration).

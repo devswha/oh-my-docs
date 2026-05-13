@@ -1,0 +1,31 @@
+---
+title: Momus
+description: 무자비한 계획 리뷰어. 파일 참조·acceptance criteria·검증이 구체적이지 않으면 거부.
+---
+
+Momus는 검증자입니다. Metis가 더 이상 불평하지 않는 Prometheus 초안에 대해, Momus가 명확성/검증 가능성/완전성을 리뷰합니다. 모호한 표현, 누락된 파일 참조, 테스트 불가능한 acceptance criteria — 모두 Prometheus로 돌려보내 조이게 합니다.
+
+## 기본 모델
+
+| 필드 | 값 |
+|---|---|
+| 기본 | `openai\|github-copilot\|opencode\|vercel/gpt-5.5` (variant `xhigh`) |
+| 스타일 | principle-driven (GPT-native) |
+
+`xhigh` reasoning은 의도적입니다 — Momus의 일은 잘못된 부분 찾기지 쉬운 부분이 아닙니다. GPT-5.5 xhigh가 가장 깨끗한 "decision complete?" 체크를 줍니다.
+
+## Runtime fallback chain
+
+`gpt-5.5 (xhigh)` → `anthropic\|github-copilot\|opencode\|vercel/claude-opus-4-7 (max)` → `google\|github-copilot\|opencode\|vercel/gemini-3.1-pro (high)` → `opencode-go\|vercel/glm-5.1`.
+
+## 도구 제한
+
+write/edit/위임 불가. 리뷰만.
+
+## 언제 실행되는가
+
+Metis가 갭을 더 못 찾으면, `/start-work`용 commit 직전. 가장 빡센 리뷰 패스가 필요할 때 `@momus`.
+
+## 출처
+
+upstream `docs/reference/features.md#planning-agents`, `#tool-restrictions`, `src/shared/model-requirements.ts` 기준.

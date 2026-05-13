@@ -1,0 +1,43 @@
+---
+title: Prometheus
+description: Strategic planner. Interviews you, surfaces ambiguity, and writes a plan before execution touches the codebase.
+---
+
+Prometheus is the planning lane. Press **Tab** in the OpenCode UI or type `@plan "<your task>"` from Sisyphus to enter Prometheus mode. It interviews you, researches your codebase to ground the questions, surfaces edge cases you hadn't considered, and writes a `.sisyphus/plans/*.md` plan. Then `/start-work` activates Atlas to execute it.
+
+## Default model
+
+| Field | Value |
+|---|---|
+| Default | `anthropic\|github-copilot\|opencode\|vercel/claude-opus-4-7` (variant `max`) |
+| Style | Dual-prompt — Claude (mechanics-driven, ~1,100 lines) or GPT (principle-driven, ~121 lines) |
+| Switch | `isGptModel()` at runtime |
+
+When the resolved model is GPT-5.4 or GPT-5.5, Prometheus loads the GPT prompt. Otherwise it loads the Claude prompt. You don't choose; the runtime does.
+
+## Runtime fallback chain
+
+`claude-opus-4-7 (max)` → `openai\|github-copilot\|opencode\|vercel/gpt-5.5 (high)` → `opencode-go\|vercel/glm-5.1` → `google\|github-copilot\|opencode\|vercel/gemini-3.1-pro`.
+
+## When to invoke
+
+- Multi-day projects with unclear scope.
+- Critical production changes that need a documented decision trail.
+- Complex refactors where "what to build" is half the work.
+
+Skip Prometheus when the task fits in one prompt or one file — `ulw` is faster.
+
+## Tool surface
+
+Read + research tools plus the `task` tool for delegating spike research to specialists. Cannot edit production code directly; that's by design.
+
+Output constraint enforced by the `prometheus-md-only` hook — plans must be markdown.
+
+## What it doesn't do
+
+- Edit production code — its lane is plans, not commits. Atlas executes the plan.
+- Stop after one question — it iterates until scope is "Decision Complete."
+
+## Source Notes
+
+Aligned with upstream `docs/reference/features.md#planning-agents` and `src/shared/model-requirements.ts`. Why Claude and GPT need different prompts is covered in [Agent-Model Matching](/docs/agents/model-matching).

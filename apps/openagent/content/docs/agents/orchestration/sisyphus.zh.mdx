@@ -1,0 +1,16 @@
+---
+title: Sisyphus
+description: The default orchestrator. Stub for zh.
+---
+
+Main orchestrator. Plans, delegates, executes, verifies. Never stops until done.
+
+**Default model:** `claude-opus-4-7` (max). Style: mechanics-driven (~1,100-line Claude prompt). Extended thinking: 32k.
+
+**Fallback chain:** Opus → Kimi K2.6 → Kimi K2.5 → GPT-5.5 (medium) → GLM-5 → big-pickle. See [Agent-Model Matching](/zh/docs/agents/model-matching).
+
+**Hook:** `no-sisyphus-gpt` blocks incompatible GPT models; GPT-5.4 / GPT-5.5 have dedicated prompt paths.
+
+## Source Notes
+
+Aligned with upstream `docs/reference/features.md` and `src/shared/model-requirements.ts`.

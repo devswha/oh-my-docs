@@ -1,0 +1,16 @@
+---
+title: Prometheus
+description: Strategic planner with interview mode. Stub for ja.
+---
+
+Press **Tab** or `@plan "<task>"` to enter Prometheus mode. Interviews you, grounds questions in the codebase, writes `.sisyphus/plans/*.md`, then `/start-work` activates Atlas.
+
+**Default model:** `claude-opus-4-7` (max). Dual-prompt — Claude or GPT, switched by `isGptModel()` at runtime.
+
+**Fallback:** Opus → GPT-5.5 (high) → GLM-5.1 → Gemini-3.1-pro.
+
+**Constraints:** `prometheus-md-only` hook enforces markdown output. Cannot edit production code.
+
+## Source Notes
+
+Aligned with upstream `docs/reference/features.md` and `src/shared/model-requirements.ts`.

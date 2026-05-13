@@ -1,0 +1,29 @@
+---
+title: Metis
+description: Pre-planning gap analyzer. Surfaces hidden intent, ambiguity, and AI failure points before a plan hardens.
+---
+
+Metis is the gap finder. It reads a Prometheus draft (or a user prompt headed for planning) and surfaces what's *missing* — hidden intent, missing constraints, ambiguous scope, and the failure modes an autonomous agent is most likely to hit on this work. Output goes back to Prometheus, who iterates the plan.
+
+## Default model
+
+| Field | Value |
+|---|---|
+| Default | `anthropic\|github-copilot\|opencode\|vercel/claude-sonnet-4-6` |
+| Style | Mechanics-driven |
+
+## Runtime fallback chain
+
+`claude-sonnet-4-6` → `anthropic\|github-copilot\|opencode\|vercel/claude-opus-4-7 (max)` → `openai\|github-copilot\|opencode\|vercel/gpt-5.5 (high)` → `opencode-go\|vercel/glm-5.1` → `kimi-for-coding/k2p5`.
+
+## Tool restrictions
+
+Read-only. Designed to advise Prometheus, not edit or delegate.
+
+## When it runs
+
+Automatically, as part of the Prometheus flow before a plan is committed to `.sisyphus/plans/`. Explicitly via `@metis` when you want a gap review without entering full Prometheus mode.
+
+## Source Notes
+
+Aligned with upstream `docs/reference/features.md#planning-agents` and `src/shared/model-requirements.ts`.

@@ -1,0 +1,37 @@
+---
+title: Atlas
+description: 계획 실행자. /start-work에 활성화되어 Prometheus 계획을 검증된 task로 바꿉니다.
+---
+
+Atlas는 todo 오케스트레이터입니다. Prometheus 계획을 읽고, 적절한 모양의 task로 쪼개고, 특화된 subagent에게 위임하고, 단계 사이에 학습을 축적하고, 각 완료를 독립적으로 검증합니다. 레인은 _실행_이지 계획이 아닙니다 — 무엇을 빌드할지는 Prometheus가 결정했고, Atlas는 그걸 끝까지 끌고 갑니다.
+
+## 기본 모델
+
+| 필드 | 값 |
+|---|---|
+| 기본 | `anthropic\|github-copilot\|opencode\|vercel/claude-sonnet-4-6` |
+| 스타일 | Dual-prompt — Claude 또는 GPT, `isGptModel()`로 전환 |
+
+Sonnet은 Claude family 규율을 잃지 않으면서 todo 관리에 충분히 빠르고 싸다. fallback으로 GPT-5.5가 인계받으면 Atlas는 GPT 프롬프트로 자동 전환.
+
+## Runtime fallback chain
+
+`claude-sonnet-4-6` → `opencode-go\|vercel/kimi-k2.6` → `openai\|github-copilot\|opencode\|vercel/gpt-5.5 (medium)` → `opencode-go\|vercel/minimax-m2.7`.
+
+## 언제 부르는가
+
+직접 호출하는 일은 드뭅니다 — `/start-work [plan-name]`이 최신 Prometheus 계획에 대해 호출. 직접 호출은 중단된 계획 재개용.
+
+## 도구 표면
+
+`task_*` 도구 (task system 기본 ON). `task`/`call_omo_agent`로 다른 오케스트레이터에게 재위임은 못함 — fan-out은 task system 하나로, 실행이 평면적이고 책임 있게 유지됩니다.
+
+## 하지 않는 것
+
+- 계획 생성 — Prometheus 레인.
+- 다른 오케스트레이터에게 재위임 — Atlas는 실행, subagent는 특화.
+- 단일 task 실패 시 중단 — `todo-continuation-enforcer` hook이 진행 유지.
+
+## 출처
+
+upstream `docs/reference/features.md#orchestration-agents`와 `src/shared/model-requirements.ts` 기준. 전체 plan→execute 흐름은 [Orchestration 개요](/ko/docs/agents/orchestration).

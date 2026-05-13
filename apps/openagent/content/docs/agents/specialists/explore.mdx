@@ -1,0 +1,36 @@
+---
+title: Explore
+description: Fast codebase grep and contextual pattern discovery. Speed over intelligence.
+---
+
+Explore is the grep agent. Fast pattern discovery, structured search across the codebase, "where is X used" questions. Same fallback chain as Librarian — it's the same utility model family.
+
+## Default model
+
+| Field | Value |
+|---|---|
+| Default | `openai/gpt-5.4-mini-fast` |
+| Style | Utility — speed over depth |
+
+## Runtime fallback chain
+
+`gpt-5.4-mini-fast` → `opencode-go/qwen3.5-plus` → `vercel/minimax-m2.7-highspeed` → `opencode-go\|vercel/minimax-m2.7` → `anthropic\|opencode\|vercel/claude-haiku-4-5` → `openai\|opencode\|vercel/gpt-5.4-nano`.
+
+## Tool restrictions
+
+Read-only. Blocked: `write`, `edit`, `task`, `call_omo_agent`. Grep lane only.
+
+## When to invoke
+
+- `Ask @explore for the policy on this feature.`
+- Pre-implementation pattern discovery (how does the existing code do X?).
+- Fast scans where intelligence isn't the bottleneck — speed is.
+
+## What it doesn't do
+
+- Run on Opus — pure cost waste; Explore needs speed.
+- Decide. Hands findings to the orchestrator and stops.
+
+## Source Notes
+
+Aligned with upstream `docs/reference/features.md#core-agents` and `src/shared/model-requirements.ts`.

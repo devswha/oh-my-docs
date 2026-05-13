@@ -1,0 +1,37 @@
+---
+title: Atlas
+description: Plan executor. Activates on /start-work and turns a Prometheus plan into verified tasks.
+---
+
+Atlas is the todo orchestrator. It reads a Prometheus plan, splits it into the right shape of tasks, delegates to specialized subagents, accumulates learnings between steps, and verifies each completion independently. The lane is _execution_, not planning — Prometheus already decided what to build; Atlas drives it to done.
+
+## Default model
+
+| Field | Value |
+|---|---|
+| Default | `anthropic\|github-copilot\|opencode\|vercel/claude-sonnet-4-6` |
+| Style | Dual-prompt — Claude or GPT, switched by `isGptModel()` |
+
+Sonnet is fast and cheap enough for todo management without giving up Claude-family discipline. When GPT-5.5 takes over via fallback, Atlas auto-switches to the GPT prompt.
+
+## Runtime fallback chain
+
+`claude-sonnet-4-6` → `opencode-go\|vercel/kimi-k2.6` → `openai\|github-copilot\|opencode\|vercel/gpt-5.5 (medium)` → `opencode-go\|vercel/minimax-m2.7`.
+
+## When to invoke
+
+You don't usually invoke Atlas directly — `/start-work [plan-name]` does it for you on the latest Prometheus plan. Direct invocation is for resuming a previously interrupted plan.
+
+## Tool surface
+
+Has `task_*` tools (task system enabled by default). Cannot use `task`/`call_omo_agent` to delegate work to other agents — its only fan-out is the task system, which keeps the execution flat and accountable.
+
+## What it doesn't do
+
+- Generate the plan — that is Prometheus's lane.
+- Re-delegate to other orchestrators — Atlas executes; subagents specialize.
+- Stop when a single task fails — the `todo-continuation-enforcer` hook keeps it moving.
+
+## Source Notes
+
+Aligned with upstream `docs/reference/features.md#orchestration-agents` and `src/shared/model-requirements.ts`. The full plan-then-execute flow lives in [Orchestration overview](/docs/agents/orchestration).

@@ -1,0 +1,14 @@
+---
+title: Sisyphus-Junior
+description: Category-spawned executor for task() delegations. Stub for zh.
+---
+
+Materializes a `task(category: "...")` delegation as a single-goal session. Model is selected from the category default. Cannot re-delegate (no `task`, no `call_omo_agent`).
+
+**General fallback:** Sonnet → Kimi K2.6 → GPT-5.5 (medium) → MiniMax M2.7 → big-pickle.
+
+Category map: `visual-engineering`→Gemini 3.1 Pro, `ultrabrain`→GPT-5.5 xhigh, `deep`→GPT-5.5 medium, `artistry`→Gemini 3.1 Pro high, `quick`→GPT-5.4 mini, `unspecified-low`→Sonnet, `unspecified-high`→Opus (max), `writing`→Gemini 3 flash.
+
+## Source Notes
+
+Aligned with upstream `docs/reference/features.md` and `src/shared/model-requirements.ts`.

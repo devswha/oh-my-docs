@@ -1,0 +1,43 @@
+---
+title: Prometheus
+description: 전략 planner. 인터뷰로 모호함을 발굴하고, 실행이 코드를 건드리기 전에 계획을 작성합니다.
+---
+
+Prometheus는 계획 레인입니다. OpenCode UI에서 **Tab**을 누르거나 Sisyphus 위에서 `@plan "<작업>"`을 입력하면 Prometheus 모드 진입. 사용자를 인터뷰하고, 코드베이스를 조사해 질문을 grounding하고, 못 본 엣지 케이스를 들춰내고, `.sisyphus/plans/*.md` 계획을 작성합니다. 그 다음 `/start-work`가 Atlas를 깨워 실행합니다.
+
+## 기본 모델
+
+| 필드 | 값 |
+|---|---|
+| 기본 | `anthropic\|github-copilot\|opencode\|vercel/claude-opus-4-7` (variant `max`) |
+| 스타일 | Dual-prompt — Claude (mechanics-driven, ~1,100줄) 또는 GPT (principle-driven, ~121줄) |
+| 전환 | runtime에 `isGptModel()` |
+
+해석된 모델이 GPT-5.4/GPT-5.5면 Prometheus는 GPT 프롬프트를 로드. 그 외에는 Claude 프롬프트. 사용자가 고르는 게 아니라 runtime이 고름.
+
+## Runtime fallback chain
+
+`claude-opus-4-7 (max)` → `openai\|github-copilot\|opencode\|vercel/gpt-5.5 (high)` → `opencode-go\|vercel/glm-5.1` → `google\|github-copilot\|opencode\|vercel/gemini-3.1-pro`.
+
+## 언제 부르는가
+
+- 범위가 불명확한 다중일 프로젝트.
+- 결정 trail 문서가 필요한 프로덕션 변경.
+- "무엇을 빌드할지"가 절반인 복잡한 리팩토링.
+
+작업이 프롬프트 하나/파일 하나에 들어가면 Prometheus 건너뛰고 `ulw`가 빠릅니다.
+
+## 도구 표면
+
+read + 리서치 도구 + spike 리서치를 specialist에게 위임할 때 쓰는 `task`. 프로덕션 코드 직접 편집은 의도적으로 막힘 — Atlas가 실행 담당.
+
+`prometheus-md-only` hook으로 출력 제약 — 계획은 마크다운 only.
+
+## 하지 않는 것
+
+- 프로덕션 코드 편집 — 레인이 계획이지 커밋이 아님. Atlas가 실행.
+- 질문 하나로 종료 — 범위가 "Decision Complete"가 될 때까지 반복.
+
+## 출처
+
+upstream `docs/reference/features.md#planning-agents`와 `src/shared/model-requirements.ts` 기준. Claude와 GPT가 다른 프롬프트가 필요한 이유는 [에이전트-모델 매칭](/ko/docs/agents/model-matching).

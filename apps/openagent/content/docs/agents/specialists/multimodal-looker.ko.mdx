@@ -1,0 +1,35 @@
+---
+title: Multimodal-Looker
+description: 비전 전문가. PDF, 이미지, 다이어그램을 분석해 나머지 시스템에 정보를 제공.
+---
+
+Multimodal-Looker는 시스템의 눈입니다. PDF, 스크린샷, 디자인 모크업, 아키텍처 다이어그램 — 다른 에이전트가 이해해야 하는 시각 자료. Sisyphus가 `look_at` 도구로 부르거나 직접 명시 호출.
+
+## 기본 모델
+
+| 필드 | 값 |
+|---|---|
+| 기본 | `openai\|opencode\|vercel/gpt-5.5` (variant `medium`) |
+| 스타일 | vision-first |
+
+## Runtime fallback chain
+
+`gpt-5.5 (medium)` → `opencode-go\|vercel/kimi-k2.6` → `zai-coding-plan\|vercel/glm-4.6v` → `openai\|github-copilot\|opencode\|vercel/gpt-5-nano`.
+
+## 도구 제한
+
+`read` 전용. 모든 에이전트 중 가장 엄격한 제한 — 입력 읽기, 보기, 설명 반환. 편집/위임/shell out 모두 불가.
+
+## 언제 부르는가
+
+- 대화에 이미지/PDF가 있을 때 Sisyphus가 `look_at(...)` 호출.
+- 스크린샷 QA용으로 직접 `@multimodal-looker`.
+
+## 하지 않는 것
+
+- read + 설명 외 모든 것. 설계상.
+- 텍스트 전용 모델에서 실행 — fallback의 `glm-4.6v`는 명시적 visual GLM 변종.
+
+## 출처
+
+upstream `docs/reference/features.md#core-agents`와 `src/shared/model-requirements.ts` 기준.

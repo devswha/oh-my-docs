@@ -1,0 +1,42 @@
+---
+title: Sisyphus-Junior
+description: 카테고리로 spawn되는 executor. `task(category: ...)` 위임을 실제로 실행하는 에이전트.
+---
+
+Sisyphus-Junior는 category 위임을 실체화하는 에이전트입니다. Sisyphus나 Atlas가 `task(category: "deep", prompt: "...")`를 호출하면 하네스가 해당 category 기본 모델로 Sisyphus-Junior 세션을 spawn합니다. junior는 단일 목표로 작업 실행 후 반환. 재위임 불가 — 계약입니다.
+
+## 기본 모델
+
+| 필드 | 값 |
+|---|---|
+| 기본 | _(category 의존 — [개념 → Category + Skill](/ko/docs/concepts) 참고)_ |
+| 일반 fallback (category 조회 실패 시) | `anthropic\|github-copilot\|opencode\|vercel/claude-sonnet-4-6` → `opencode-go\|vercel/kimi-k2.6` → `openai\|github-copilot\|opencode\|vercel/gpt-5.5 (medium)` → `opencode-go\|vercel/minimax-m2.7` → `opencode/big-pickle` |
+
+category가 모델을 결정합니다.
+
+- `visual-engineering` → Gemini 3.1 Pro
+- `ultrabrain` → GPT-5.5 xhigh
+- `deep` → GPT-5.5 medium
+- `artistry` → Gemini 3.1 Pro high
+- `quick` → GPT-5.4 mini
+- `unspecified-low` → Claude Sonnet 4.6
+- `unspecified-high` → Claude Opus 4.7 (max)
+- `writing` → Gemini 3 flash
+
+## 도구 제한
+
+대부분 자유, 단 **재위임 불가**. `task` 없음, `call_omo_agent` 없음. 각 junior는 완료까지 실행. 재귀는 설계상 불가능.
+
+## 언제 실행되는가
+
+Sisyphus, Atlas 등 임의 에이전트가 `task(category: "...")` 호출 시. 사용자가 직접 Sisyphus-Junior를 부르지는 않습니다.
+
+## 하지 않는 것
+
+- 재위임 — 무한 위임 footgun 봉쇄.
+- 자기 모델 선택 — category가 결정.
+- 무한정 turn 실행 — 필요 시 `max_member_turns`와 team mode 한도 적용.
+
+## 출처
+
+upstream `docs/reference/features.md#orchestration-agents`와 `src/shared/model-requirements.ts` 기준. category 카탈로그와 skill 조합은 [Features → 카테고리](/ko/docs/reference/features).

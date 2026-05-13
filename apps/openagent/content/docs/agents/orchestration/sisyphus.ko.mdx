@@ -1,0 +1,42 @@
+---
+title: Sisyphus
+description: 기본 오케스트레이터. 계획·위임·실행하고, 검증되기 전까지 멈추지 않습니다.
+---
+
+Sisyphus는 메인 오케스트레이터입니다. 의도를 읽고, 작업을 todo로 쪼개고, 전문가들에게 병렬로 위임하고, 반환 전에 완료를 검증합니다. 이름은 신화에서 왔습니다 — Sisyphus는 매일 바위를 밀고 멈추지 않습니다. 에이전트도 같은 식으로 튜닝되어 있어, 작업이 안 끝나면 다시 일로 돌아갑니다.
+
+## 기본 모델
+
+| 필드 | 값 |
+|---|---|
+| 기본 | `anthropic\|github-copilot\|opencode\|vercel/claude-opus-4-7` (variant `max`) |
+| 스타일 | mechanics-driven — ~1,100 줄짜리 Claude-최적화 프롬프트 |
+| Extended thinking | 32k 예산 |
+
+## Runtime fallback chain
+
+`claude-opus-4-7 (max)` → `opencode-go\|vercel/kimi-k2.6` → `kimi-for-coding/k2p5` → `opencode\|moonshotai\|moonshotai-cn\|firmware\|ollama-cloud\|aihubmix\|vercel/kimi-k2.5` → `openai\|github-copilot\|opencode\|vercel/gpt-5.5 (medium)` → `zai-coding-plan\|opencode\|vercel/glm-5` → `opencode/big-pickle`.
+
+치환 규칙은 [에이전트-모델 매칭](/ko/docs/agents/model-matching). Kimi K2.5/2.6이 권장 Claude 대안. 구형 GPT는 비권장.
+
+## 언제 부르는가
+
+Sisyphus는 기본 에이전트라 대부분 이미 활성. 명시 호출 케이스:
+
+- 작업이 2단계 이상이고 병렬 리서치+구현이 필요.
+- 보고 전에 검증이 필요.
+- `ultrawork` / `ulw`를 입력 — Sisyphus가 루프를 운전.
+
+## 도구 표면
+
+`task`, `call_omo_agent`, `background_output`, `background_cancel`, LSP, AST-grep, hashline edit, task system 포함 풀 도구셋. Sisyphus는 model 이름이 아니라 category로 위임 — [개념 → Category + Skill](/ko/docs/concepts).
+
+## 하지 않는 것
+
+- 호환 안 되는 GPT 모델에서 실행 — `no-sisyphus-gpt` hook이 차단. GPT-5.4와 GPT-5.5는 전용 prompt 경로가 있어 허용.
+- Prometheus의 인터뷰 레인 점유 — `@plan`이 Prometheus 모드로 진입.
+- Hephaestus의 autonomous deep work 대체 — 그건 명시적으로 Hephaestus로.
+
+## 출처
+
+upstream `docs/reference/features.md#core-agents`와 `src/shared/model-requirements.ts` 기준. 오케스트레이션 흐름은 [Orchestration 개요](/ko/docs/agents/orchestration).

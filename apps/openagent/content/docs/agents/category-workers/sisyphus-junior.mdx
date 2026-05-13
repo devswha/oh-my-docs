@@ -1,0 +1,42 @@
+---
+title: Sisyphus-Junior
+description: Category-spawned executor. The agent that actually runs a `task(category: ...)` delegation.
+---
+
+Sisyphus-Junior is the agent that materializes a category delegation. When Sisyphus or Atlas calls `task(category: "deep", prompt: "...")`, the harness spawns a Sisyphus-Junior session with that category's default model. The junior runs the task with one focused goal and returns. Cannot re-delegate — that's the contract.
+
+## Default model
+
+| Field | Value |
+|---|---|
+| Default | _(category-dependent — see [Concepts → Category + Skill](/docs/concepts))_ |
+| General fallback (when category lookup misses) | `anthropic\|github-copilot\|opencode\|vercel/claude-sonnet-4-6` → `opencode-go\|vercel/kimi-k2.6` → `openai\|github-copilot\|opencode\|vercel/gpt-5.5 (medium)` → `opencode-go\|vercel/minimax-m2.7` → `opencode/big-pickle` |
+
+The category drives the model:
+
+- `visual-engineering` → Gemini 3.1 Pro
+- `ultrabrain` → GPT-5.5 xhigh
+- `deep` → GPT-5.5 medium
+- `artistry` → Gemini 3.1 Pro high
+- `quick` → GPT-5.4 mini
+- `unspecified-low` → Claude Sonnet 4.6
+- `unspecified-high` → Claude Opus 4.7 (max)
+- `writing` → Gemini 3 flash
+
+## Tool restrictions
+
+Tools mostly unrestricted — but **cannot delegate**. No `task`, no `call_omo_agent`. Each junior runs to completion; recursion is by design impossible.
+
+## When it runs
+
+Whenever Sisyphus, Atlas, or any other agent invokes `task(category: "...")`. The user does not invoke Sisyphus-Junior directly.
+
+## What it doesn't do
+
+- Re-delegate — kills the infinite-delegation foot-gun.
+- Pick its own model — the category does.
+- Run for unbounded turns — `max_member_turns` and team-mode bounds apply when relevant.
+
+## Source Notes
+
+Aligned with upstream `docs/reference/features.md#orchestration-agents` and `src/shared/model-requirements.ts`. The category catalog and skill-pairing patterns live in [Features → Categories](/docs/reference/features).

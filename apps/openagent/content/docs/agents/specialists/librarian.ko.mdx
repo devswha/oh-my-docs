@@ -1,0 +1,36 @@
+---
+title: Librarian
+description: 멀티 레포 분석과 문서 조회. evidence-based 답변, 의견 아님.
+---
+
+Librarian은 retrieval 담당입니다. 멀티 레포 분석, 문서 조회, OSS 구현 예시 — 코드베이스와 라이브러리 문서가 실제로 말하는 것에 기반한 답변. 모델이 "생각"하는 게 아니라. 속도 우선, 의도적으로 저렴.
+
+## 기본 모델
+
+| 필드 | 값 |
+|---|---|
+| 기본 | `openai/gpt-5.4-mini-fast` |
+| 스타일 | utility — 깊이보다 속도 |
+
+## Runtime fallback chain
+
+`gpt-5.4-mini-fast` → `opencode-go/qwen3.5-plus` → `vercel/minimax-m2.7-highspeed` → `opencode-go\|vercel/minimax-m2.7` → `anthropic\|opencode\|vercel/claude-haiku-4-5` → `openai\|opencode\|vercel/gpt-5.4-nano`.
+
+## 도구 제한
+
+read-only. 차단: `write`, `edit`, `task`, `call_omo_agent`. 회수 레인 전용.
+
+## 언제 부르는가
+
+- `Ask @librarian how this is implemented — why does the behavior keep changing?`
+- cross-repo 패턴 조회 ("FastAPI는 X를 어떻게 처리하지?").
+- 결정 전 문서 grounding.
+
+## 하지 않는 것
+
+- Opus에서 실행 — 막대한 비용 낭비. [에이전트-모델 매칭](/ko/docs/agents/model-matching)이 명시 경고.
+- 의견 합성 — 회수지 오케스트레이션 아님.
+
+## 출처
+
+upstream `docs/reference/features.md#core-agents`와 `src/shared/model-requirements.ts` 기준.

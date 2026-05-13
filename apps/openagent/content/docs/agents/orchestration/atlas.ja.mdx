@@ -1,0 +1,16 @@
+---
+title: Atlas
+description: Plan executor — activates on /start-work. Stub for ja.
+---
+
+Reads Prometheus plans and drives them through the task system. Sonnet by default; dual-prompt with GPT auto-switch via `isGptModel()`.
+
+**Default model:** `claude-sonnet-4-6`.
+
+**Fallback:** Sonnet → Kimi K2.6 → GPT-5.5 (medium) → MiniMax M2.7.
+
+**Cannot delegate** via `task`/`call_omo_agent` — its only fan-out is the task system. `todo-continuation-enforcer` keeps it moving past single-task failures.
+
+## Source Notes
+
+Aligned with upstream `docs/reference/features.md` and `src/shared/model-requirements.ts`.

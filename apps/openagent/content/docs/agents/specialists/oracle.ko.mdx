@@ -1,0 +1,37 @@
+---
+title: Oracle
+description: read-only 아키텍처/디버깅 컨설턴트. 실행 권한 없는 high-IQ second opinion.
+---
+
+Oracle은 컨설턴트입니다. read-only, GPT-native, 익숙치 않은 패턴/보안/멀티 시스템 트레이드오프에서 지속 reasoning에 튜닝. Sisyphus는 코드가 움직이기 전에 강한 second opinion이 필요할 때 여기 위임합니다.
+
+## 기본 모델
+
+| 필드 | 값 |
+|---|---|
+| 기본 | `openai\|github-copilot\|opencode\|vercel/gpt-5.5` (variant `high`) |
+| 스타일 | principle-driven |
+
+## Runtime fallback chain
+
+`gpt-5.5 (high)` → `google\|github-copilot\|opencode\|vercel/gemini-3.1-pro (high)` → `anthropic\|github-copilot\|opencode\|vercel/claude-opus-4-7 (max)` → `opencode-go\|vercel/glm-5.1`.
+
+## 도구 제한
+
+read-only. 차단: `write`, `edit`, `task`, `call_omo_agent`. 조언이 목적, 구현 아님.
+
+## 언제 부르는가
+
+- `Ask @oracle to review this design and propose an architecture.`
+- 하나 잘못 결정하면 연쇄 폭발하는 멀티 시스템 트레이드오프.
+- 지속 reasoning이 도움 되는 보안/위협 모델 결정.
+
+## 하지 않는 것
+
+- 변경 — read-only 설계.
+- 위임 — `task`/`call_omo_agent` 없음. 후속은 Sisyphus.
+- MiniMax에서 실행 — 지속 reasoning에서 coherence 상실. [에이전트-모델 매칭](/ko/docs/agents/model-matching) 명시.
+
+## 출처
+
+upstream `docs/reference/features.md#core-agents`, `#tool-restrictions`, `src/shared/model-requirements.ts` 기준.

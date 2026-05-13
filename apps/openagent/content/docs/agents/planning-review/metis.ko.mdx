@@ -1,0 +1,29 @@
+---
+title: Metis
+description: 사전 계획 갭 분석가. 계획이 굳기 전 숨은 의도·모호함·AI 실패 지점을 발굴.
+---
+
+Metis는 gap finder입니다. Prometheus 초안(또는 계획 단계로 향하는 사용자 프롬프트)을 읽고 *빠진 것*을 들춰냅니다 — 숨은 의도, 누락된 제약, 모호한 범위, 자율 에이전트가 이 작업에서 부딪힐 가능성이 가장 큰 실패 모드. 결과는 Prometheus로 돌아가 계획이 반복됩니다.
+
+## 기본 모델
+
+| 필드 | 값 |
+|---|---|
+| 기본 | `anthropic\|github-copilot\|opencode\|vercel/claude-sonnet-4-6` |
+| 스타일 | mechanics-driven |
+
+## Runtime fallback chain
+
+`claude-sonnet-4-6` → `anthropic\|github-copilot\|opencode\|vercel/claude-opus-4-7 (max)` → `openai\|github-copilot\|opencode\|vercel/gpt-5.5 (high)` → `opencode-go\|vercel/glm-5.1` → `kimi-for-coding/k2p5`.
+
+## 도구 제한
+
+read-only. Prometheus를 조언하는 게 목적이지 편집/위임 아님.
+
+## 언제 실행되는가
+
+Prometheus 흐름의 일부로 자동 — 계획이 `.sisyphus/plans/`에 commit되기 전. 풀 Prometheus 모드 없이 갭 리뷰만 원하면 `@metis`.
+
+## 출처
+
+upstream `docs/reference/features.md#planning-agents`와 `src/shared/model-requirements.ts` 기준.

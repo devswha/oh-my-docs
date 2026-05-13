@@ -1,0 +1,41 @@
+---
+title: Hephaestus
+description: GPT-native autonomous deep worker. 절차가 아니라 목표를 줍니다.
+---
+
+Hephaestus는 GPT-5.5에서 돕니다. 목표만 주면 탐색·리서치·end-to-end 실행이 hand-holding 없이 일어납니다. principle-driven 프롬프트용으로 빌드되었으며 Sisyphus의 mechanics-driven 스타일의 반대입니다. 이름은 그리스 신화의 대장간의 신에서 왔습니다 — 필요에서 태어난, 정당한 장인.
+
+## 기본 모델
+
+| 필드 | 값 |
+|---|---|
+| 기본 | `openai\|github-copilot\|venice\|opencode\|vercel/gpt-5.5` (variant `medium`) |
+| 스타일 | principle-driven — 짧은 XML 태그 프롬프트 |
+| 필수 provider | GPT-capable provider 필요. single-entry chain, Claude fallback 없음. |
+
+## Runtime fallback chain
+
+GPT-5.5 medium만. Claude나 비-GPT fallback은 의도적으로 없음. `no-hephaestus-non-gpt` hook이 강제 — Hephaestus는 GPT에서만 돔.
+
+## 언제 부르는가
+
+다음일 때 Hephaestus를 명시 호출:
+
+- 여러 파일 가로지르는 deep 아키텍처 reasoning.
+- 목표 지향 탐색이 도움 되는 복잡한 디버깅.
+- hand-holding 없는 cross-domain 지식 합성.
+
+Sisyphus의 `task(category: "deep")`도 deep 작업을 라우팅하지만, Hephaestus는 "이 작업은 순수 GPT-native deep work"라고 명시할 때의 레인.
+
+## 도구 표면
+
+풀 도구셋. autonomous 실행이라 출력 전 탐색에 많은 토큰을 씁니다.
+
+## 하지 않는 것
+
+- Claude나 MiniMax 모델에서 실행 — 둘 다 GPT-native autonomy에 부적합. hook이 차단.
+- Sisyphus의 오케스트레이터 역할 대체 — Sisyphus는 위임, Hephaestus는 단일 목표 완료.
+
+## 출처
+
+upstream `docs/reference/features.md#core-agents`와 `src/shared/model-requirements.ts` 기준. 치환 정책은 [에이전트-모델 매칭](/ko/docs/agents/model-matching).

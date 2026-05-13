@@ -1,0 +1,31 @@
+---
+title: Momus
+description: Ruthless plan reviewer. Rejects vague plans until file references, acceptance criteria, and verification are concrete.
+---
+
+Momus validates. Once Prometheus has a draft Metis no longer complains about, Momus reviews it for clarity, verifiability, and completeness. Vague language, missing file references, untestable acceptance criteria — all rejected back to Prometheus for tightening.
+
+## Default model
+
+| Field | Value |
+|---|---|
+| Default | `openai\|github-copilot\|opencode\|vercel/gpt-5.5` (variant `xhigh`) |
+| Style | Principle-driven (GPT-native) |
+
+`xhigh` reasoning is used deliberately — Momus's job is to find what's wrong, not what's easy. GPT-5.5's xhigh variant gives the cleanest "decision complete?" check.
+
+## Runtime fallback chain
+
+`gpt-5.5 (xhigh)` → `anthropic\|github-copilot\|opencode\|vercel/claude-opus-4-7 (max)` → `google\|github-copilot\|opencode\|vercel/gemini-3.1-pro (high)` → `opencode-go\|vercel/glm-5.1`.
+
+## Tool restrictions
+
+Cannot write, edit, or delegate. Reviews only.
+
+## When it runs
+
+After Metis stops finding gaps, before the plan is committed for `/start-work`. Explicitly via `@momus` when you want the harshest review pass.
+
+## Source Notes
+
+Aligned with upstream `docs/reference/features.md#planning-agents`, `#tool-restrictions`, and `src/shared/model-requirements.ts`.

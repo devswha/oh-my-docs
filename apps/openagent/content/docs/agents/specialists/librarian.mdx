@@ -1,0 +1,36 @@
+---
+title: Librarian
+description: Multi-repo analysis and documentation lookup. Evidence-based answers, never opinions.
+---
+
+Librarian retrieves. Multi-repo analysis, doc lookup, OSS implementation examples — answers grounded in what the codebase and library docs actually say, not what the model "thinks." Speed-first, intentionally cheap.
+
+## Default model
+
+| Field | Value |
+|---|---|
+| Default | `openai/gpt-5.4-mini-fast` |
+| Style | Utility — speed over depth |
+
+## Runtime fallback chain
+
+`gpt-5.4-mini-fast` → `opencode-go/qwen3.5-plus` → `vercel/minimax-m2.7-highspeed` → `opencode-go\|vercel/minimax-m2.7` → `anthropic\|opencode\|vercel/claude-haiku-4-5` → `openai\|opencode\|vercel/gpt-5.4-nano`.
+
+## Tool restrictions
+
+Read-only. Blocked: `write`, `edit`, `task`, `call_omo_agent`. Retrieval lane only.
+
+## When to invoke
+
+- `Ask @librarian how this is implemented — why does the behavior keep changing?`
+- Cross-repo pattern lookup ("how does FastAPI handle X?").
+- Documentation grounding before a decision.
+
+## What it doesn't do
+
+- Run on Opus — massive cost waste. Substitution rules in [Agent-Model Matching](/docs/agents/model-matching) explicitly call this out.
+- Synthesize opinions — retrieval, not orchestration.
+
+## Source Notes
+
+Aligned with upstream `docs/reference/features.md#core-agents` and `src/shared/model-requirements.ts`.
