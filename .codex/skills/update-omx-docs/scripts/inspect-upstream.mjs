@@ -162,7 +162,9 @@ function canonicalizeWithinExisting(target) {
   }
   return realpathSync(current);
 }
-const cacheRootAllowedReal = realpathSync(resolve(root, '.omx/cache'));
+const cacheRootAllowed = resolve(root, '.omx/cache');
+mkdirSync(cacheRootAllowed, { recursive: true });
+const cacheRootAllowedReal = realpathSync(cacheRootAllowed);
 const upstreamRootReal = canonicalizeWithinExisting(upstreamRoot);
 if (
   upstreamRootReal !== cacheRootAllowedReal &&
