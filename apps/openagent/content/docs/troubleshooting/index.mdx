@@ -1,0 +1,20 @@
+---
+title: Troubleshooting
+description: Provider-specific quirks and the workarounds that keep OmO running until upstream lands the proper fix.
+---
+
+OmO routes work across many providers, and each provider has its own corner cases. This section captures the ones that actually bite users in practice — what the symptom looks like, where the misbehavior comes from, and the safest workaround that does not require waiting for an upstream fix.
+
+## Provider-specific
+
+<Cards>
+  <Card title="Ollama" href="/docs/troubleshooting/ollama">`JSON Parse error: Unexpected EOF` and why tool-calling agents need `stream: false`.</Card>
+</Cards>
+
+## First-line checks before reaching for a workaround
+
+- `bunx oh-my-openagent doctor --verbose` — surfaces provider auth state, model-capability cache freshness, and effective model resolution. Most "agent is wrong" bugs are model-resolution bugs in disguise.
+- `opencode auth list` — confirms which provider you're actually authenticated against.
+- `opencode models` — confirms the model is reachable from your current auth.
+
+When a problem is reproducible end-to-end with `doctor` clean and the model listed, the issue is usually provider-layer (this section) or SDK-layer (upstream).

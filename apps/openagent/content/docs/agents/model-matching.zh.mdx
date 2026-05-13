@@ -1,0 +1,52 @@
+---
+title: Agent-Model Matching
+description: When the native model is unavailable, which substitutes preserve each agent's character. Stub for zh.
+---
+
+## Two prompt styles
+
+| Style | Best fit |
+|---|---|
+| Mechanics-driven | Claude family, Kimi K2.5/2.6, GLM 5/5.1 |
+| Principle-driven | GPT-5.4 / GPT-5.5 |
+
+Dual-prompt agents (Prometheus, Atlas) switch at runtime via `isGptModel()`.
+
+## Family alternatives
+
+### Claude family (Sisyphus, Atlas, Sisyphus-Junior, Metis, Prometheus, `unspecified-*`)
+
+`claude-opus-4-7 (max)` → `claude-sonnet-4-6` → **Kimi K2.5/2.6 (recommended)** → **GLM 5/5.1** → `big-pickle`.
+
+### GPT family (Hephaestus, Oracle, Momus, `deep`, `ultrabrain`, `quick`)
+
+`gpt-5.5 / gpt-5.4` → `gpt-5.3-codex` → **DeepSeek v3.2 (limited)** → MiniMax (utility only).
+
+### Gemini family (`visual-engineering`, `artistry`, Multimodal-Looker)
+
+`gemini-3.1-pro (high)` → `gemini-3-flash` → **Qwen 3.6-plus / 3.5-plus**.
+
+## Cheat sheet
+
+| Lose | Swap | Avoid |
+|---|---|---|
+| Claude Opus/Sonnet | Kimi → GLM → Big Pickle | Older GPT |
+| GPT-5.4/5.5 | GPT-5.3 Codex → DeepSeek | MiniMax (except utility) |
+| Gemini 3.1 Pro | Qwen | Claude/Kimi (wrong style) |
+
+## Dangerous overrides
+
+- Hephaestus → Claude or MiniMax (built for GPT-style autonomy).
+- Oracle → MiniMax (coherence loss).
+- Explore/Librarian → Opus (cost waste).
+- `visual-engineering` → Kimi/GLM (wrong reasoning style).
+
+## Resolution
+
+`Override → Category default → User fallback_models → Provider fallback chain → System default`.
+
+`bunx oh-my-openagent doctor --verbose` shows the effective resolution.
+
+## Source Notes
+
+Aligned with upstream `docs/guide/agent-model-matching.md`. Authoritative chains in `src/shared/model-requirements.ts`.

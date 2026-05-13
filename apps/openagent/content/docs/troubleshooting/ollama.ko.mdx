@@ -1,0 +1,78 @@
+---
+title: Ollama
+description: tool-calling 에이전트가 JSON Parse error로 죽는 이유와, SDK가 NDJSON을 제대로 처리할 때까지 streaming을 끄는 우회 방법.
+---
+
+## 증상
+
+OmO 에이전트를 Ollama 모델로 돌릴 때 — 특히 `explore`가 `mcp_grep_search`를 호출하는 식의 도구 사용 시 — 다음 에러가 납니다.
+
+```text
+JSON Parse error: Unexpected EOF
+```
+
+## 왜 그런지
+
+Ollama는 `stream: true`일 때 **NDJSON**을 돌려줍니다. 줄마다 별도 JSON 객체죠.
+
+```ndjson
+{"message":{"tool_calls":[{"function":{"name":"read","arguments":{"filePath":"README.md"}}}]}, "done":false}
+{"message":{"content":""}, "done":true}
+```
+
+OpenCode(따라서 OmO)가 올라타 있는 Claude Code SDK는 tool-call 응답에 대해 단일 JSON 객체를 기대합니다. 라인 경계에서 EOF로 오인하고 throw하죠.
+
+SDK 레벨 미스매치입니다.
+
+- Ollama는 의도적으로 streaming tool call에 NDJSON을 씁니다.
+- SDK는 NDJSON 줄 사이의 `tool_calls`를 병합하지 않습니다.
+- OmO는 SDK 위에 있어서 하네스 내부에서 패치할 수 없습니다.
+
+## 우회 — Ollama streaming 끄기
+
+Ollama provider를 NDJSON 대신 단일 JSON으로 응답하도록 설정합니다.
+
+```json
+{
+  "provider": "ollama",
+  "model": "qwen3-coder",
+  "stream": false
+}
+```
+
+`stream`은 OpenCode provider 설정이지 OmO 에이전트 설정이 아닙니다. `oh-my-openagent.jsonc`의 `agents.{name}` 밑이 아니라 OpenCode provider config에서 잡으세요.
+
+대가:
+
+- 턴 당 wall clock이 조금 느려집니다 (token-by-token stream 없음).
+- 턴 진행 중 인터랙티브 피드백이 사라집니다.
+- 대신 tool-calling Ollama 에이전트가 다시 동작합니다.
+
+## 우회 검증
+
+`stream: false`가 tool-call 경로를 실제로 고치는지 빠르게 curl로 확인하세요.
+
+```bash
+curl -s http://localhost:11434/api/chat \
+  -d '{
+    "model": "qwen3-coder",
+    "messages": [{"role": "user", "content": "Read file README.md"}],
+    "stream": false,
+    "tools": [{"type": "function", "function": {"name": "read", "description": "Read a file", "parameters": {"type": "object", "properties": {"filePath": {"type": "string"}}, "required": ["filePath"]}}}]
+  }'
+```
+
+NDJSON이 아니라 단일 JSON이 떨어져야 정상입니다.
+
+## streaming이 정말 필요하다면
+
+해당 세션을 **도구 미사용 에이전트**로 한정하세요. 단순 텍스트 생성, prose, chat 정도. Explore, Librarian, Sisyphus delegation, MCP 호출 등 어떤 도구라도 부르는 순간 같은 parse error로 돌아옵니다.
+
+## 추적
+
+- Upstream 이슈: [code-yeongyu/oh-my-openagent#1124](https://github.com/code-yeongyu/oh-my-openagent/issues/1124) (close — 우회 방법 문서화됨).
+- Ollama API 문서: <https://github.com/ollama/ollama/blob/main/docs/api.md>.
+
+## 출처
+
+upstream `docs/troubleshooting/ollama.md`와 일치. 진짜 fix는 OmO가 아니라 SDK에 있습니다 — SDK가 NDJSON 줄 간 `tool_calls`를 병합해주면 이 우회는 필요 없어집니다.

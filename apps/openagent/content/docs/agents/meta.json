@@ -3,6 +3,7 @@
   "pages": [
     "orchestration",
     "team-mode",
+    "model-matching",
     "specialists",
     "planning-review",
     "category-workers"

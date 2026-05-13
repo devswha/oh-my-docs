@@ -1,0 +1,49 @@
+---
+title: Ollama
+description: Tool-calling agents fail with JSON Parse error. Disable streaming on Ollama.
+---
+
+## Symptom
+
+```text
+JSON Parse error: Unexpected EOF
+```
+
+Hit when an OmO agent (e.g. `explore` with `mcp_grep_search`) calls tools against an Ollama model.
+
+## Cause
+
+Ollama returns NDJSON with `stream: true`. The Claude Code SDK that OpenCode/OmO sit on expects a single JSON object per tool-call response and chokes on the line boundary.
+
+## Workaround
+
+Configure your Ollama provider with `stream: false`:
+
+```json
+{
+  "provider": "ollama",
+  "model": "qwen3-coder",
+  "stream": false
+}
+```
+
+This is an OpenCode provider setting, not an `agents.{name}` setting in `oh-my-openagent.jsonc`.
+
+## Trade-off
+
+- Slightly slower per-turn wall clock.
+- No streaming feedback.
+- Tool-calling agents work again.
+
+## If you need streaming
+
+Use only non-tool agents (prose, chat). Anything that invokes a tool will hit the same error.
+
+## Tracking
+
+- [code-yeongyu/oh-my-openagent#1124](https://github.com/code-yeongyu/oh-my-openagent/issues/1124)
+- <https://github.com/ollama/ollama/blob/main/docs/api.md>
+
+## Source Notes
+
+Aligned with upstream `docs/troubleshooting/ollama.md`.

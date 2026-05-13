@@ -1,0 +1,120 @@
+---
+title: 에이전트-모델 매칭
+description: 각 에이전트의 프롬프트는 특정 모델 패밀리에 맞춰져 있습니다. 어디서 모델을 안전하게 바꿀 수 있고, 어디서 망가지는지, 그리고 치환 치트시트.
+---
+
+OmO는 에이전트마다 작업 스타일에 맞는 모델을 배정합니다. 모델은 단순히 "더 똑똑하거나 덜 똑똑한 게" 아니라 프롬프트를 해석하는 방식이 다릅니다. Sisyphus의 ~1,100 줄짜리 오케스트레이션 프롬프트와 Hephaestus의 principle-driven deep-work 프롬프트는 호환되지 않습니다 — 패밀리가 중요합니다.
+
+이 페이지는 치환 기준입니다. 기본 모델이 없을 때 캐릭터를 유지해주는 모델은 무엇이고, 조용히 망가뜨리는 모델은 무엇인지.
+
+## 두 가지 프롬프트 스타일
+
+| 스타일 | 잘 맞는 모델 | 좋아하는 것 |
+|---|---|---|
+| **Mechanics-driven** | Claude 패밀리, Kimi K2.5/2.6, GLM 5/5.1 | 긴 체크리스트, 템플릿, 단계별 절차. 규칙이 많을수록 더 순응. |
+| **Principle-driven** | GPT-5.4와 GPT-5.5 | 짧은 원칙, XML 구조, 명시적 결정 기준. 규칙이 많을수록 모순 표면이 커져 drift. |
+
+dual-prompt 에이전트(Prometheus, Atlas)는 runtime에 `isGptModel()`로 모델 패밀리를 감지해서 프롬프트를 자동 교체합니다. 그 외는 한 패밀리 전용입니다.
+
+## 패밀리별 대안
+
+### Claude 패밀리 — communicative, instruction-following
+
+사용처: Sisyphus, Atlas, Sisyphus-Junior, Metis(Claude 경로), Prometheus(Claude 경로), `unspecified-low`, `unspecified-high`.
+
+| 우선순위 | 모델 | provider |
+|---|---|---|
+| 1 | `claude-opus-4-7` (max) | `anthropic`, `github-copilot`, `opencode`, `vercel` |
+| 2 | `claude-sonnet-4-6` | 동일 |
+| 3 | **`kimi-k2.5` / `kimi-k2.6`** — 권장 대안 | `opencode-go`, `kimi-for-coding`, `moonshotai`, `opencode`, `vercel` |
+| 4 | **`glm-5` / `glm-5.1`** — 수용 가능 대안 | `opencode-go`, `zai-coding-plan`, `opencode`, `vercel` |
+| 5 | `big-pickle` (GLM 4.6) | `opencode` |
+
+Sisyphus의 중첩된 todo+delegation 프롬프트에서 Kimi K2.5/2.6이 GLM보다 잘 버팁니다. 둘 다 있으면 Kimi.
+
+### GPT 패밀리 — principle-driven, autonomous
+
+사용처: Hephaestus, Oracle, Momus, `deep`, `ultrabrain`, `quick`, Prometheus(GPT 경로), Atlas(GPT 경로).
+
+| 우선순위 | 모델 | provider |
+|---|---|---|
+| 1 | `gpt-5.5` / `gpt-5.4` (pro / xhigh / high / medium) | `openai`, `github-copilot`, `opencode`, `vercel` |
+| 2 | `gpt-5.3-codex` | 동일 |
+| 3 | **DeepSeek** (`deepseek-v3.2`, `deepseek-chat-v3.1`) — 제한적 대안 | `openrouter/deepseek` (수동으로 `fallback_models`에 추가) |
+| 4 | **MiniMax** — 유틸리티 체인 외에는 강력히 비권장 | `opencode-go`, `opencode`, `openrouter/minimax` |
+
+DeepSeek은 GPT의 autonomous exploration 캐릭터를 유지합니다. MiniMax는 멀티스텝 deep work에서 일관성을 잃습니다 — grep 스타일 utility 에이전트(Explore, Librarian, `quick`)에만 쓰고 Hephaestus/Oracle에는 절대 쓰지 마세요.
+
+### Gemini 패밀리 — 시각/디자인, 다른 reasoning 스타일
+
+사용처: `visual-engineering`, `artistry`, Oracle(시각 fallback), Multimodal-Looker.
+
+| 우선순위 | 모델 | provider |
+|---|---|---|
+| 1 | `gemini-3.1-pro` (high) | `google`, `github-copilot`, `opencode`, `vercel` |
+| 2 | `gemini-3-flash` | 동일 |
+| 3 | **Qwen** (`qwen3.6-plus`, `qwen3.5-plus`) — 대안 | `opencode-go`, `openrouter/qwen` |
+
+GLM/Kimi는 시각 작업에서 Gemini 대체가 아닙니다. Qwen을 쓰세요.
+
+## 치환 치트시트
+
+| 잃은 것 | 대체(순서대로) | 피할 것 |
+|---|---|---|
+| Claude Opus / Sonnet | Kimi K2.5/K2.6 → GLM 5 → Big Pickle | 구형 GPT |
+| GPT-5.4 / 5.5 | GPT-5.3 Codex → DeepSeek v3.2 | MiniMax (utility 외) |
+| Gemini 3.1 Pro | Qwen 3.6-plus / 3.5-plus | Claude / Kimi (reasoning 스타일 불일치) |
+| Grok Code Fast 1 (Explore) | GPT-5.4 Mini Fast → MiniMax M2.7 Highspeed → Claude Haiku | Opus (비용 낭비) |
+
+## 안전 vs 위험 오버라이드
+
+**안전** — 같은 personality:
+
+- Sisyphus: Opus → Sonnet, Kimi K2.5/2.6, GLM 5.
+- Prometheus: Opus → GPT-5.5 (GPT 프롬프트로 자동 전환).
+- Atlas: Claude Sonnet 4.6 → Kimi K2.5, GPT-5.5 (자동 전환).
+
+**위험** — personality 불일치:
+
+- **Sisyphus → 구형 GPT**: 여전히 부적합. Sisyphus 전용 GPT 프롬프트 경로는 GPT-5.4와 GPT-5.5뿐.
+- **Hephaestus → Claude**: Codex 스타일 자율 작업용. Claude로는 재현 불가.
+- **Hephaestus → MiniMax**: 멀티스텝 deep work에서 일관성 상실. 절대 금지.
+- **Oracle → MiniMax**: 동일 — Oracle은 sustained reasoning 필요.
+- **Explore / Librarian → Opus**: 비용 낭비. 속도가 핵심.
+- **`visual-engineering` → Kimi / GLM**: reasoning 스타일이 다름. Gemini 없으면 Qwen.
+
+## runtime model resolution
+
+파이프라인(`src/shared/model-resolution-pipeline.ts`):
+
+1. **Override** — UI 선택 또는 사용자 명시 config.
+2. **Category default** — 에이전트에 `category`가 잡혀 있을 때.
+3. **User `fallback_models`** — 사용자가 설정한 체인. 하드코딩 체인보다 먼저.
+4. **Provider fallback chain** — `src/shared/model-requirements.ts`의 빌트인.
+5. **System default** — OpenCode 기본.
+
+variant와 `reasoningEffort`는 모델이 지원하는 값으로 normalize되므로 cross-provider override가 hard fail 없이 점진적으로 degrade됩니다.
+
+`bunx oh-my-openagent doctor --verbose`로 실제 model resolution을 확인하고, `bunx oh-my-openagent refresh-model-capabilities`로 로컬 models.dev 캐시를 갱신하세요.
+
+## 권장 스택
+
+### OpenCode Go + OpenAI Plus/Pro — 가성비 1순위
+
+월 ~30 USD. Anthropic + OpenAI + Google 직접 구독(~60+ USD)보다 비용·커버리지 모두 우위.
+
+- Hephaestus는 GPT-5.5 (ChatGPT Plus 경로).
+- Sisyphus/Atlas는 Kimi K2.6 (OpenCode Go 경로) — Anthropic 구독 없이 Claude-like.
+- `visual-engineering`은 Gemini 미연결 시 Qwen 3.6-plus.
+
+### All-native — 최고 품질
+
+Anthropic + OpenAI + Google. Sisyphus는 Opus, Hephaestus는 GPT-5.5, `visual-engineering`은 Gemini 3.1 Pro. 가장 비쌈.
+
+### OpenCode Go only — 예산
+
+Kimi K2.6 + GLM-5.1 + Qwen + MiniMax. 가장 싼 풀스택 경로. Hephaestus 비활성(GPT 필요). 트레이드오프: autonomous deep work 없음.
+
+## 출처
+
+upstream `docs/guide/agent-model-matching.md` 미러. 정식 fallback chain은 `src/shared/model-requirements.ts`. 에이전트가 카테고리를 통해 작업을 디스패치하는 로직은 [Orchestration](./orchestration.md)에 있습니다.

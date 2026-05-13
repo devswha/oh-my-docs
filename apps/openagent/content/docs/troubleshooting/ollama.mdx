@@ -1,0 +1,78 @@
+---
+title: Ollama
+description: Why tool-calling agents fail with JSON Parse error and how to disable streaming until the SDK lands proper NDJSON support.
+---
+
+## Symptom
+
+Running an OmO agent against an Ollama model — especially one that uses tools, like `explore` calling `mcp_grep_search` — raises:
+
+```text
+JSON Parse error: Unexpected EOF
+```
+
+## Why it happens
+
+Ollama returns **NDJSON** when `stream: true`, with each line being a separate JSON object:
+
+```ndjson
+{"message":{"tool_calls":[{"function":{"name":"read","arguments":{"filePath":"README.md"}}}]}, "done":false}
+{"message":{"content":""}, "done":true}
+```
+
+The Claude Code SDK that OpenCode (and therefore OmO) sits on top of expects a single JSON object per tool-call response, not a stream of lines. The parser hits the line boundary, treats it as EOF, and throws.
+
+This is an SDK-level mismatch:
+
+- Ollama returns NDJSON for streamed tool calls **by design**.
+- The SDK does not merge `tool_calls` across NDJSON lines.
+- OmO sits on top of the SDK and cannot patch this from inside the harness.
+
+## Workaround — disable streaming on Ollama
+
+Tell your Ollama provider to return one JSON object instead of NDJSON:
+
+```json
+{
+  "provider": "ollama",
+  "model": "qwen3-coder",
+  "stream": false
+}
+```
+
+`stream` is an OpenCode-level provider setting, not an OmO agent setting. Configure it in your OpenCode provider config, not under `agents.{name}` in `oh-my-openagent.jsonc`.
+
+Trade-off:
+
+- Slightly slower wall-clock time per turn (no token-by-token stream).
+- No interactive feedback while a turn is running.
+- All tool-calling Ollama agents work again.
+
+## Verifying the fix
+
+Quick curl to confirm `stream: false` actually fixes the tool-call path:
+
+```bash
+curl -s http://localhost:11434/api/chat \
+  -d '{
+    "model": "qwen3-coder",
+    "messages": [{"role": "user", "content": "Read file README.md"}],
+    "stream": false,
+    "tools": [{"type": "function", "function": {"name": "read", "description": "Read a file", "parameters": {"type": "object", "properties": {"filePath": {"type": "string"}}, "required": ["filePath"]}}}]
+  }'
+```
+
+You should get one JSON object back, not a stream of newline-delimited objects.
+
+## If you really need streaming
+
+Limit the affected session to **non-tool agents** — simple text generation, prose, or chat. Anything that invokes a tool (Explore, Librarian, Sisyphus delegation, MCP calls, etc.) will hit the same parse error.
+
+## Tracking
+
+- Upstream issue: [code-yeongyu/oh-my-openagent#1124](https://github.com/code-yeongyu/oh-my-openagent/issues/1124) (closed — workaround documented).
+- Ollama API docs: <https://github.com/ollama/ollama/blob/main/docs/api.md>.
+
+## Source Notes
+
+Aligned with upstream `docs/troubleshooting/ollama.md`. The proper fix lives in the SDK, not in OmO — once the SDK merges `tool_calls` across NDJSON lines, the workaround becomes unnecessary.

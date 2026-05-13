@@ -1,0 +1,20 @@
+---
+title: 문제 해결
+description: provider별 quirk와, upstream 패치가 풀리기 전까지 OmO를 굴러가게 해주는 우회 방법들.
+---
+
+OmO는 여러 provider를 가로질러 작업을 라우팅합니다. provider마다 자기만의 코너 케이스가 있고, 실제로 사용자를 무는 사례들을 여기에 모읍니다 — 어떤 증상으로 나타나는지, 어디서 비롯되는지, upstream fix를 기다리지 않고 쓸 수 있는 가장 안전한 우회는 무엇인지.
+
+## Provider별
+
+<Cards>
+  <Card title="Ollama" href="/ko/docs/troubleshooting/ollama">`JSON Parse error: Unexpected EOF`와 tool-calling 에이전트에 왜 `stream: false`가 필요한지.</Card>
+</Cards>
+
+## 우회 코드를 짜기 전 1차 점검
+
+- `bunx oh-my-openagent doctor --verbose` — provider 인증 상태, model capability 캐시 신선도, 실제 model resolution을 보여줍니다. "에이전트가 이상하다"는 대부분 model resolution 문제로 위장된 것입니다.
+- `opencode auth list` — 어떤 provider로 실제 로그인되어 있는지 확인.
+- `opencode models` — 해당 모델이 현재 인증에서 도달 가능한지 확인.
+
+`doctor`가 깨끗하고 모델도 보이는데 문제가 재현된다면, 보통 provider-layer(이 섹션) 또는 SDK-layer(upstream) 이슈입니다.
