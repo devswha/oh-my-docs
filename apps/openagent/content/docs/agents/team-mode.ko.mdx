@@ -1,0 +1,136 @@
+---
+title: 팀 모드
+description: 공유 메일박스, 공유 task 목록, 옵션 tmux 레이아웃 위에서 여러 에이전트를 병렬로 운영합니다. 기본 OFF.
+---
+
+Team mode는 Sisyphus가 정해진 수의 에이전트를 병렬로 돌리도록 해주고, 메일박스와 task 목록을 공유합니다. **기본은 OFF**입니다. 단일 레인 오케스트레이션보다 명확한 이점이 있을 때 켜세요 — 병렬 탐색, 다단계 리팩토링, 조사→구현 파이프라인이 그렇습니다.
+
+## 활성화
+
+사용자 config `~/.config/opencode/oh-my-openagent.jsonc` 또는 프로젝트 config `.opencode/oh-my-openagent.jsonc`에 추가하고 OpenCode를 재시작합니다.
+
+```jsonc
+{
+  "team_mode": {
+    "enabled": true,
+    "max_parallel_members": 4,
+    "max_members": 8,
+    "tmux_visualization": false
+  }
+}
+```
+
+재시작 후 12개 `team_*` 도구가 노출됩니다.
+
+### 전체 config 스키마
+
+전부 `team_mode` 아래입니다.
+
+| 필드 | 타입 | 기본값 |
+|---|---|---|
+| `enabled` | boolean | `false` |
+| `tmux_visualization` | boolean | `false` |
+| `max_parallel_members` | int (1–8) | `4` |
+| `max_members` | int (1–8) | `8` |
+| `max_messages_per_run` | int (≥1) | `10000` |
+| `max_wall_clock_minutes` | int (≥1) | `120` |
+| `max_member_turns` | int (≥1) | `500` |
+| `base_dir` | string | `~/.omo` |
+| `message_payload_max_bytes` | int (≥1024) | `32768` |
+| `recipient_unread_max_bytes` | int (≥1024) | `262144` |
+| `mailbox_poll_interval_ms` | int (≥500) | `3000` |
+
+## 팀 정의
+
+팀 spec은 `~/.omo/teams/{name}/config.json`(사용자) 또는 `<project>/.omo/teams/{name}/config.json`(프로젝트)에 있습니다. 같은 이름이면 프로젝트 scope가 우선합니다.
+
+```json
+{
+  "name": "ccapi-explorers",
+  "description": "Explore the ccapi project structure.",
+  "lead": { "kind": "subagent_type", "subagent_type": "sisyphus" },
+  "members": [
+    { "kind": "category", "name": "scout-1", "category": "deep", "prompt": "src/ 디렉토리에서 auth 패턴을 탐색." },
+    { "kind": "category", "name": "scout-2", "category": "quick", "prompt": "테스트에서 auth 커버리지 점검." }
+  ]
+}
+```
+
+`version`, `createdAt`, `leadAgentId`는 선택입니다. 로더가 자동으로 채웁니다. 최상위에 `lead: {...}`를 쓰거나, 멤버 하나에 `isLead: true`를 달거나, 멤버가 정확히 한 명이면 둘 다 생략해도 됩니다.
+
+### Member kind
+
+- `kind: "subagent_type"` — 직접 에이전트 (`atlas`, `sisyphus`, `sisyphus-junior`, `hephaestus`). `prompt`는 선택.
+- `kind: "category"` — `sisyphus-junior`를 통해 해당 category 모델로 라우팅. `prompt` **필수**.
+
+### 허용 에이전트
+
+- **가능:** `sisyphus`, `atlas`, `sisyphus-junior`.
+- **조건부:** `hephaestus` (`teammate: "allow"` 권한 필요. 없으면 `subagent_type: "sisyphus"`로 감싸세요).
+- **불가:** `oracle`, `librarian`, `explore`, `multimodal-looker`, `metis`, `momus`, `prometheus`. 메일박스 상태를 쓸 수 없는 에이전트입니다. 이런 에이전트는 `delegate-task`를 쓰세요.
+
+## 수명 주기
+
+1. `team_create`로 팀과 멤버 세션을 생성합니다.
+2. 리드가 `team_send_message`와 `team_task_create`로 작업을 위임합니다.
+3. 멤버가 task를 claim하고 (`team_task_update`의 `status: "claimed"`), `team_send_message`로 결과를 보고합니다.
+4. `team_shutdown_request`로 종료를 요청하고, `team_approve_shutdown` 또는 `team_reject_shutdown`로 응답합니다.
+5. `team_delete`가 runtime 상태, worktree, 옵션 tmux 레이아웃을 정리합니다. 활성 멤버가 있으면 거부됩니다.
+
+## 12개 도구
+
+| 도구 | 용도 |
+|---|---|
+| `team_create` | 팀 생성. |
+| `team_delete` | 팀 해체 (리드 전용, 활성 멤버 없을 때만). |
+| `team_shutdown_request` | 리드가 멤버에게 종료 요청. |
+| `team_approve_shutdown` / `team_reject_shutdown` | 응답. |
+| `team_send_message` | peer-to-peer 메일박스. 리드만 브로드캐스트 가능. |
+| `team_task_create` / `_list` / `_update` / `_get` | 공유 task 목록. |
+| `team_status` | runtime 집계 뷰. |
+| `team_list` | 선언된/활성 팀 목록. |
+
+## 기본 한도
+
+- 멤버 최대 8명, 동시 실행 4명.
+- 메시지 본문 32 KB, 수신자별 미읽음 256 KB.
+- 실행당 메시지 10 000개, wall clock 120분, 멤버당 turn 500회.
+
+## 옵션: 멤버별 worktree
+
+멤버 항목에 `"worktreePath": "../wt-scout"`을 추가합니다. 경로는 상대/절대 모두 가능하지만 brane 이름만 적으면 거부됩니다. `git` 필요.
+
+## 옵션: tmux 시각화
+
+`tmux_visualization: true`로 켭니다. tmux 세션 안에서 실행하고 `tmux`가 `PATH`에 있어야 합니다. 각 멤버가 `opencode attach`로 자기 세션에 붙는 전용 tmux pane을 받고, TUI가 실시간으로 표시됩니다. 멤버별 종료는 해당 pane만 닫고 레이아웃을 재배치합니다. tmux 실패는 팀 생성을 막지 않고 격리됩니다.
+
+## 팀 모드가 하지 않는 것
+
+- 중첩 팀 없음 — 멤버는 `team_create`를 호출할 수 없습니다.
+- 동기 응답 대기 없음 — `team_send_message`는 fire-and-forget.
+- 멤버 주도 `delegate-task` 없음 — 예산 기본 0.
+- 강제 종료 우회 없음 — `team_delete`는 활성 멤버를 거부합니다.
+
+## 저장 구조
+
+```text
+~/.omo/
+├── teams/{name}/config.json
+├── .highwatermark
+└── runtime/{teamRunId}/
+    ├── state.json
+    ├── inboxes/{member}/{uuid}.json
+    ├── inboxes/{member}/.delivering-{uuid}.json
+    ├── inboxes/{member}/processed/
+    └── tasks/{id}.json
+```
+
+`.delivering-{uuid}.json`은 `promptAsync` live delivery 중에만 존재합니다. 성공 시 `processed/`로 commit, 실패 시 `{uuid}.json`으로 release, 크래시로 남으면 팀 resume 시 10분 TTL로 회수됩니다. `listUnreadMessages`는 dotfile 항목을 무시해 fallback poll이 중복 주입하지 않습니다.
+
+## 진단
+
+`bunx oh-my-openagent doctor`에 `team-mode` 체크가 포함됩니다. tmux/git 가용성, 선언된 팀 개수, 활성 runtime 디렉토리를 보고합니다.
+
+## 출처
+
+upstream `docs/guide/team-mode.md`와 일치. 구현은 `src/team/`, runtime 계약은 `.sisyphus/plans/team-mode.md`에 있습니다.

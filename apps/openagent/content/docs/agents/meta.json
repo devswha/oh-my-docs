@@ -2,6 +2,7 @@
   "title": "Agents",
   "pages": [
     "orchestration",
+    "team-mode",
     "specialists",
     "planning-review",
     "category-workers"

@@ -1,0 +1,136 @@
+---
+title: Team Mode
+description: Parallel multi-agent coordination with a shared mailbox, shared task list, and an optional tmux layout. OFF by default.
+---
+
+Team mode lets Sisyphus run a bounded group of agents in parallel, sharing a mailbox and a task list. It is **off by default**. Enable it when bounded coordination beats single-lane orchestration — parallel exploration, long-running multi-stage refactors, or research-then-implementation pipelines.
+
+## Enable
+
+Add to user config `~/.config/opencode/oh-my-openagent.jsonc` or project config `.opencode/oh-my-openagent.jsonc`, then restart OpenCode:
+
+```jsonc
+{
+  "team_mode": {
+    "enabled": true,
+    "max_parallel_members": 4,
+    "max_members": 8,
+    "tmux_visualization": false
+  }
+}
+```
+
+After restart, the 12 `team_*` tools become available.
+
+### Full config schema
+
+All fields live under `team_mode`.
+
+| Field | Type | Default |
+|---|---|---|
+| `enabled` | boolean | `false` |
+| `tmux_visualization` | boolean | `false` |
+| `max_parallel_members` | int (1–8) | `4` |
+| `max_members` | int (1–8) | `8` |
+| `max_messages_per_run` | int (≥1) | `10000` |
+| `max_wall_clock_minutes` | int (≥1) | `120` |
+| `max_member_turns` | int (≥1) | `500` |
+| `base_dir` | string | `~/.omo` |
+| `message_payload_max_bytes` | int (≥1024) | `32768` |
+| `recipient_unread_max_bytes` | int (≥1024) | `262144` |
+| `mailbox_poll_interval_ms` | int (≥500) | `3000` |
+
+## Define a team
+
+Team specs live under `~/.omo/teams/{name}/config.json` (user) or `<project>/.omo/teams/{name}/config.json` (project). Project scope wins when names collide.
+
+```json
+{
+  "name": "ccapi-explorers",
+  "description": "Explore the ccapi project structure.",
+  "lead": { "kind": "subagent_type", "subagent_type": "sisyphus" },
+  "members": [
+    { "kind": "category", "name": "scout-1", "category": "deep", "prompt": "Scout src/ for auth patterns." },
+    { "kind": "category", "name": "scout-2", "category": "quick", "prompt": "Scout tests for auth coverage." }
+  ]
+}
+```
+
+`version`, `createdAt`, and `leadAgentId` are optional — the loader fills them. Use top-level `lead: {...}`, mark a member with `isLead: true`, or omit both when the team has exactly one member.
+
+### Member kinds
+
+- `kind: "subagent_type"` — direct agent (`atlas`, `sisyphus`, `sisyphus-junior`, `hephaestus`). `prompt` optional.
+- `kind: "category"` — routed through `sisyphus-junior` with the chosen category model. `prompt` is **required**.
+
+### Eligible agents
+
+- **Eligible:** `sisyphus`, `atlas`, `sisyphus-junior`.
+- **Conditional:** `hephaestus` (needs `teammate: "allow"`; otherwise wrap as `subagent_type: "sisyphus"`).
+- **Hard-reject:** `oracle`, `librarian`, `explore`, `multimodal-looker`, `metis`, `momus`, `prometheus`. These cannot write mailbox state. Use `delegate-task` instead.
+
+## Lifecycle
+
+1. `team_create` spawns the team and member sessions.
+2. The lead delegates work via `team_send_message` and `team_task_create`.
+3. Members claim tasks (`team_task_update` with `status: "claimed"`) and report back via `team_send_message`.
+4. `team_shutdown_request` invites a member to wrap up; respond with `team_approve_shutdown` or `team_reject_shutdown`.
+5. `team_delete` tears down runtime state, worktrees, and the optional tmux layout. Active members block deletion until they shut down.
+
+## 12 tools
+
+| Tool | Purpose |
+|---|---|
+| `team_create` | Spawn a team. |
+| `team_delete` | Tear down (lead only, no active members). |
+| `team_shutdown_request` | Lead asks a member to wrap up. |
+| `team_approve_shutdown` / `team_reject_shutdown` | Member or lead responds to a shutdown request. |
+| `team_send_message` | Peer-to-peer mailbox; lead-only broadcast. |
+| `team_task_create` / `_list` / `_update` / `_get` | Shared task list. |
+| `team_status` | Aggregate runtime view. |
+| `team_list` | Declared and active teams. |
+
+## Bounds (defaults)
+
+- 8 members max, 4 in flight.
+- 32 KB per message body, 256 KB per recipient unread.
+- 10 000 messages per run, 120 minutes wall clock, 500 turns per member.
+
+## Optional: per-member worktrees
+
+Add `"worktreePath": "../wt-scout"` to a member entry. The path is filesystem-relative or absolute; bare branch names are rejected. Requires `git`.
+
+## Optional: tmux visualization
+
+Set `tmux_visualization: true`. Requires running inside a tmux session with `tmux` on `PATH`. Each member gets a pane attached to its session via `opencode attach`, running the full TUI so streaming output is live. Per-member shutdown closes just that pane and rebalances the layout. Tmux failures never block team creation.
+
+## What team mode does NOT do
+
+- No nested teams — members cannot call `team_create`.
+- No synchronous reply waits — `team_send_message` is fire-and-forget.
+- No member-driven `delegate-task` — budget defaults to 0.
+- No shutdown bypass — `team_delete` rejects active members.
+
+## Storage layout
+
+```text
+~/.omo/
+├── teams/{name}/config.json
+├── .highwatermark
+└── runtime/{teamRunId}/
+    ├── state.json
+    ├── inboxes/{member}/{uuid}.json
+    ├── inboxes/{member}/.delivering-{uuid}.json
+    ├── inboxes/{member}/processed/
+    └── tasks/{id}.json
+```
+
+`.delivering-{uuid}.json` reservations live only during in-flight `promptAsync` delivery: committed to `processed/` on success, released to `{uuid}.json` on failure, reclaimed on team resume after a 10-minute TTL if stranded. `listUnreadMessages` ignores dotfile entries so fallback polls never double-inject.
+
+## Diagnostics
+
+`bunx oh-my-openagent doctor` includes a `team-mode` check that reports tmux/git availability, declared team count, and active runtime dirs.
+
+## Source Notes
+
+Aligned with upstream `docs/guide/team-mode.md`. Implementation lives in `src/team/` with the runtime contracts in `.sisyphus/plans/team-mode.md`.

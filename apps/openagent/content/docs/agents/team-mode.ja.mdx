@@ -1,0 +1,65 @@
+---
+title: チームモード
+description: 共有メールボックスと共有タスクリスト上で複数エージェントを並列実行する OFF-by-default モード。
+---
+
+## What it is
+
+Team mode lets Sisyphus run a bounded group of agents in parallel with a shared mailbox and shared task list. OFF by default.
+
+## Enable
+
+```jsonc
+// ~/.config/opencode/oh-my-openagent.jsonc or <project>/.opencode/oh-my-openagent.jsonc
+{
+  "team_mode": {
+    "enabled": true,
+    "max_parallel_members": 4,
+    "max_members": 8,
+    "tmux_visualization": false
+  }
+}
+```
+
+Restart OpenCode. 12 `team_*` tools become available.
+
+## Define a team
+
+Team specs live under `~/.omo/teams/{name}/config.json` (user) or `<project>/.omo/teams/{name}/config.json` (project). Project scope wins on name collisions.
+
+```json
+{
+  "name": "ccapi-explorers",
+  "description": "Explore the ccapi project structure.",
+  "lead": { "kind": "subagent_type", "subagent_type": "sisyphus" },
+  "members": [
+    { "kind": "category", "name": "scout-1", "category": "deep", "prompt": "Scout src/ for auth patterns." },
+    { "kind": "category", "name": "scout-2", "category": "quick", "prompt": "Scout tests for auth coverage." }
+  ]
+}
+```
+
+## Eligible agents
+
+- **Eligible:** sisyphus, atlas, sisyphus-junior.
+- **Conditional:** hephaestus (requires `teammate: "allow"`).
+- **Hard-reject:** oracle, librarian, explore, multimodal-looker, metis, momus, prometheus.
+
+## Bounds (defaults)
+
+- 8 members max, 4 in flight.
+- 32 KB per message, 256 KB per recipient unread.
+- 10 000 messages / 120 minutes / 500 member-turns per run.
+
+## Optional
+
+- `worktreePath` per member — requires `git`.
+- `tmux_visualization: true` — requires tmux on `PATH`; per-member panes attached via `opencode attach`.
+
+## Diagnostics
+
+`bunx oh-my-openagent doctor` reports a `team-mode` check covering tmux/git availability, declared team count, and active runtime dirs.
+
+## Source Notes
+
+Aligned with upstream `docs/guide/team-mode.md`. Implementation in `src/team/`.
