@@ -1,0 +1,4 @@
+interface:
+  display_name: "Update OmO Docs"
+  short_description: "Refresh OpenAgent (OmO) docs from latest upstream"
+  default_prompt: "Use $update-omo-docs to refresh the OpenAgent/OmO docs from the latest oh-my-openagent upstream repository."
