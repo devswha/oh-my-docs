@@ -5,6 +5,7 @@ import {
   mkdirSync,
   readFileSync,
   readdirSync,
+  realpathSync,
   statSync,
 } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
@@ -149,13 +150,26 @@ const upstreamRoot = resolve(root, cachePath);
 
 // Containment guard: refuse to perform destructive git ops outside the
 // .omx/cache/ tree, since this script does `git reset --hard` + `clean -fd`.
-const cacheRootAllowed = resolve(root, '.omx/cache');
+// Canonicalize through realpathSync so symlinks inside .omx/cache that point
+// elsewhere can't slip the destructive ops onto a sibling tree. The cache
+// dir itself may not exist yet, so walk up to the nearest existing parent.
+function canonicalizeWithinExisting(target) {
+  let current = target;
+  while (!existsSync(current)) {
+    const parent = dirname(current);
+    if (parent === current) break;
+    current = parent;
+  }
+  return realpathSync(current);
+}
+const cacheRootAllowedReal = realpathSync(resolve(root, '.omx/cache'));
+const upstreamRootReal = canonicalizeWithinExisting(upstreamRoot);
 if (
-  upstreamRoot !== cacheRootAllowed &&
-  !upstreamRoot.startsWith(`${cacheRootAllowed}/`)
+  upstreamRootReal !== cacheRootAllowedReal &&
+  !upstreamRootReal.startsWith(`${cacheRootAllowedReal}/`)
 ) {
   console.error(
-    `[inspect-upstream] Refusing to operate on --cache outside .omx/cache/: ${upstreamRoot}`,
+    `[inspect-upstream] Refusing to operate on --cache outside .omx/cache/: ${upstreamRoot} (real: ${upstreamRootReal})`,
   );
   process.exit(1);
 }

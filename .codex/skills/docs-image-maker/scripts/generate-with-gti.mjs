@@ -51,10 +51,16 @@ function parseArgs(argv) {
 }
 
 function commandExists(name) {
-  // Use shell:false and `command -v` directly to avoid shell-injection risk
-  // if a caller ever passes a non-literal name.
+  // `command -v` is a POSIX shell builtin, so it can't be invoked directly
+  // via spawnSync('command', ...). Pass through sh with the name as $1 so
+  // it is never interpolated into the script string — safe regardless of
+  // what the caller provides.
   if (!/^[A-Za-z0-9_.-]+$/.test(name)) return false;
-  const result = spawnSync('command', ['-v', name], { encoding: 'utf8', shell: false });
+  const result = spawnSync(
+    'sh',
+    ['-c', 'command -v "$1" >/dev/null 2>&1', '_', name],
+    { encoding: 'utf8' },
+  );
   return result.status === 0;
 }
 

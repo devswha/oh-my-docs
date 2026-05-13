@@ -183,7 +183,15 @@ try {
   }
   const repoRoot = findRepoRoot();
   const absAppRoot = path.resolve(repoRoot, APPS[args.app]);
-  let files = args.files.map((file) => path.resolve(file));
+  // Resolve explicit file args first against cwd (the natural shell meaning),
+  // then fall back to repo root so the script also works from outside the
+  // repo with a repo-relative path.
+  let files = args.files.map((file) => {
+    if (path.isAbsolute(file)) return file;
+    const cwdResolved = path.resolve(file);
+    if (existsSync(cwdResolved)) return cwdResolved;
+    return path.resolve(repoRoot, file);
+  });
   if (args.fromGit) files.push(...gitFiles(absAppRoot, repoRoot));
   files = [...new Set(files)].filter((file) => existsSync(file));
   if (files.length === 0) {

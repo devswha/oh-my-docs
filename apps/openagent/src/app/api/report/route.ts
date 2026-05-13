@@ -148,19 +148,6 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  if (body.kind === 'vote') {
-    console.log(
-      JSON.stringify({
-        type: 'vote',
-        ts: new Date().toISOString(),
-        path: body.path,
-        locale: body.locale,
-        value: body.value,
-      }),
-    );
-    return NextResponse.json({ ok: true });
-  }
-
   if (!process.env.TURNSTILE_SECRET_KEY) {
     console.error('Missing TURNSTILE_SECRET_KEY');
     return NextResponse.json({ error: 'Server misconfigured' }, { status: 500 });
@@ -175,6 +162,19 @@ export async function POST(req: NextRequest) {
       { error: 'Verification failed' },
       { status: 403 },
     );
+  }
+
+  if (body.kind === 'vote') {
+    console.log(
+      JSON.stringify({
+        type: 'vote',
+        ts: new Date().toISOString(),
+        path: body.path,
+        locale: body.locale,
+        value: body.value,
+      }),
+    );
+    return NextResponse.json({ ok: true });
   }
 
   const token = process.env.GITHUB_REPORT_TOKEN;

@@ -49,34 +49,42 @@ async function configure(name, project) {
     return;
   }
 
-  const res = await fetch(url, {
-    method: 'PATCH',
-    headers: {
-      Authorization: `Bearer ${process.env.VERCEL_TOKEN}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(body),
-    signal: AbortSignal.timeout(30_000),
-  });
-
-  const text = await res.text();
-  if (!res.ok) {
-    console.error(`[vercel-configure-projects] ${name} failed: HTTP ${res.status}`);
-    console.error(text);
-    failed.push({ name, status: res.status });
-    return;
-  }
-
-  let parsed;
   try {
-    parsed = JSON.parse(text);
-  } catch {
-    parsed = {};
+    const res = await fetch(url, {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Bearer ${process.env.VERCEL_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(30_000),
+    });
+
+    const text = await res.text();
+    if (!res.ok) {
+      console.error(`[vercel-configure-projects] ${name} failed: HTTP ${res.status}`);
+      console.error(text);
+      failed.push({ name, reason: `HTTP ${res.status}` });
+      return;
+    }
+
+    let parsed;
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      parsed = {};
+    }
+    console.log(
+      `[vercel-configure-projects] ${name}: rootDirectory=${parsed.rootDirectory ?? project.rootDirectory}`,
+    );
+    succeeded.push(name);
+  } catch (err) {
+    // Network errors, timeouts, fetch aborts — keep going so other projects
+    // still report; surface in the summary.
+    const reason = err instanceof Error ? err.message : String(err);
+    console.error(`[vercel-configure-projects] ${name} failed: ${reason}`);
+    failed.push({ name, reason });
   }
-  console.log(
-    `[vercel-configure-projects] ${name}: rootDirectory=${parsed.rootDirectory ?? project.rootDirectory}`,
-  );
-  succeeded.push(name);
 }
 
 for (const name of names) {
@@ -88,7 +96,7 @@ if (dryRun) {
 } else {
   console.log(`[vercel-configure-projects] Summary: ${succeeded.length} succeeded, ${failed.length} failed.`);
   if (failed.length) {
-    for (const f of failed) console.error(`  - ${f.name} (HTTP ${f.status})`);
+    for (const f of failed) console.error(`  - ${f.name}: ${f.reason}`);
     process.exit(1);
   }
 }
