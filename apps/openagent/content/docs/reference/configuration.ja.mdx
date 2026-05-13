@@ -1,0 +1,45 @@
+---
+title: Configuration
+description: Agent and category option surfaces, runtime fallback, experimental flags, and provider-specific notes. Stub for ja.
+---
+
+The quick-reference page covers the basics; this page is the full option surface. JSONC is supported (line/block comments, trailing commas).
+
+## Agent options
+
+Available agents: `sisyphus`, `hephaestus`, `prometheus`, `oracle`, `librarian`, `explore`, `multimodal-looker`, `metis`, `momus`, `atlas`, `sisyphus-junior`.
+
+Key fields: `model`, `fallback_models`, `temperature`, `top_p`, `prompt` / `prompt_append` (with `file://` URIs), `tools`, `disable`, `category`, `variant`, `maxTokens`, `thinking`, `reasoningEffort`, `textVerbosity`, `permission`.
+
+Variant and `reasoningEffort` are normalized to the values the target model supports. Cross-provider overrides degrade gracefully instead of failing hard.
+
+Disable wholesale: `{ "disabled_agents": ["oracle"] }`.
+
+## Category options
+
+Same shape as agent options minus permission/file fields. `is_unstable_agent` forces background mode plus monitoring (auto-enabled for Gemini models).
+
+## `fallback_models`
+
+A single string or a mixed array. Object entries support `model`, `variant`, `reasoningEffort`, `temperature`, `top_p`, `maxTokens`, `thinking`. Per-model settings apply only when that fallback model is selected.
+
+## Runtime fallback
+
+```json
+{ "runtime_fallback": { "enabled": true, "retry_on_errors": [400, 429, 503, 529], "max_fallback_attempts": 3, "cooldown_seconds": 60, "timeout_seconds": 30 } }
+```
+
+For proxy APIs, widen `retry_on_errors` and shrink timers.
+
+## Experimental flags
+
+`task_system` (default `true` since v3.14), `aggressive_truncation`, `auto_resume`, `disable_omo_env`, `dynamic_context_pruning` (with `turn_protection`, deduplication, supersede_writes, purge_errors strategies).
+
+## Provider-specific
+
+- **Ollama** — set `stream: false` on the OpenCode provider. See [Ollama Troubleshooting](/ja/docs/troubleshooting/ollama).
+- **Google (Antigravity OAuth)** — install `opencode-antigravity-auth` for multi-account load balancing and variant-based thinking.
+
+## Source Notes
+
+Mirrors upstream `docs/reference/configuration.md`. Quick-lookup is in [Reference](/ja/docs/reference); model substitution rules are in [Agent-Model Matching](/ja/docs/agents/model-matching).

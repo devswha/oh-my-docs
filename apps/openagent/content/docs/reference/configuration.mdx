@@ -1,0 +1,248 @@
+---
+title: Configuration
+description: Agent and category option surfaces, runtime fallback, experimental flags, and provider-specific notes that don't fit on the quick-reference page.
+---
+
+The quick-reference page covers the basics. This page is the option surface: every field you'd reach for when customizing an agent, a category, fallback behavior, or a provider quirk.
+
+JSONC is supported in every plugin config file, with `// line`, `/* block */` comments, and trailing commas.
+
+## Agent options
+
+Override built-in agent settings under `agents.{name}`. Available agents: `sisyphus`, `hephaestus`, `prometheus`, `oracle`, `librarian`, `explore`, `multimodal-looker`, `metis`, `momus`, `atlas`, `sisyphus-junior`.
+
+```json
+{
+  "agents": {
+    "explore": { "model": "anthropic/claude-haiku-4-5", "temperature": 0.5 },
+    "multimodal-looker": { "disable": true }
+  }
+}
+```
+
+| Option | Type | Description |
+|---|---|---|
+| `model` | string | Model override (`provider/model`). |
+| `fallback_models` | string \| array | Fallback chain. Strings, or mixed strings + per-model objects. |
+| `temperature` | number | Sampling temperature. |
+| `top_p` | number | Top-p sampling. |
+| `prompt` | string | Replace system prompt. Supports `file://` URIs. |
+| `prompt_append` | string | Append to system prompt. Supports `file://` URIs. |
+| `tools` | array | Allowed tool list. |
+| `disable` | boolean | Disable this agent. |
+| `mode` | string | Agent mode. |
+| `color` | string | UI color. |
+| `permission` | object | Per-tool permissions (see below). |
+| `category` | string | Inherit model from category. |
+| `variant` | string | Variant: `max` / `high` / `medium` / `low` / `xhigh`. Normalized to supported values. |
+| `maxTokens` | number | Max response tokens. |
+| `thinking` | object | Anthropic extended thinking. |
+| `reasoningEffort` | string | OpenAI reasoning: `none` / `minimal` / `low` / `medium` / `high` / `xhigh`. Normalized. |
+| `textVerbosity` | string | `low` / `medium` / `high`. |
+| `providerOptions` | object | Provider-specific options. |
+
+Disable agents wholesale with `{ "disabled_agents": ["oracle", "multimodal-looker"] }`.
+
+Override Tab cycling order with `agent_order` (e.g. `["hephaestus", "sisyphus", "prometheus", "atlas"]`); omitted core agents keep their default relative order.
+
+### Anthropic extended thinking
+
+```json
+{ "agents": { "oracle": { "thinking": { "type": "enabled", "budgetTokens": 200000 } } } }
+```
+
+### Per-tool permissions
+
+```json
+{
+  "agents": {
+    "explore": {
+      "permission": {
+        "edit": "deny",
+        "bash": "ask",
+        "webfetch": "allow"
+      }
+    }
+  }
+}
+```
+
+| Permission | Values |
+|---|---|
+| `edit` | `ask` / `allow` / `deny` |
+| `bash` | `ask` / `allow` / `deny` or per-command (`{ "git": "allow", "rm": "deny" }`) |
+| `webfetch` | `ask` / `allow` / `deny` |
+| `doom_loop` | `ask` / `allow` / `deny` |
+| `external_directory` | `ask` / `allow` / `deny` |
+
+### File URIs for prompts
+
+`prompt` and `prompt_append` accept `file://` URIs for both agents and categories. Paths can be absolute (`file:///abs/path`), project-relative (`file://./rel/path`), or home-relative (`file://~/path`). Unreadable URIs insert a warning placeholder instead of failing hard.
+
+## Category options
+
+```json
+{ "categories": { "deep": { "model": "openai/gpt-5.5", "variant": "medium" } } }
+```
+
+| Option | Type | Description |
+|---|---|---|
+| `model` | string | Model override. |
+| `fallback_models` | string \| array | Fallback chain (same shape as agent option). |
+| `temperature` | number | Sampling temperature. |
+| `top_p` | number | Top-p sampling. |
+| `maxTokens` | number | Max response tokens. |
+| `thinking` | object | Anthropic extended thinking. |
+| `reasoningEffort` | string | OpenAI reasoning effort. |
+| `textVerbosity` | string | Text verbosity. |
+| `tools` | array | Allowed tools. |
+| `prompt_append` | string | Append to system prompt. |
+| `variant` | string | Model variant. Normalized. |
+| `description` | string | Shown in `task()` tool prompt. |
+| `is_unstable_agent` | boolean | Force background mode + monitoring. Auto-enabled for Gemini models. |
+
+Disable categories: `{ "disabled_categories": ["ultrabrain"] }`. Built-in defaults apply only if the category is present in your config; otherwise the system default model is used.
+
+## `fallback_models` with per-model settings
+
+`fallback_models` accepts a single string or an array. Array entries can be plain strings or objects with per-fallback settings:
+
+```jsonc
+{
+  "agents": {
+    "sisyphus": {
+      "model": "anthropic/claude-opus-4-7",
+      "fallback_models": [
+        "openai/gpt-5.5",
+        { "model": "google/gemini-3.1-pro", "variant": "high", "temperature": 0.2 },
+        { "model": "anthropic/claude-sonnet-4-6", "thinking": { "type": "enabled", "budgetTokens": 64000 } }
+      ]
+    }
+  }
+}
+```
+
+Object entries support: `model`, `variant`, `reasoningEffort`, `temperature`, `top_p`, `maxTokens`, `thinking`. Per-model settings are **fallback-only** — they apply only when that specific fallback model is selected. If you omit the provider prefix, OmO infers it from the current/default provider.
+
+## Runtime fallback
+
+Auto-switches to backup models on API errors.
+
+```json
+{ "runtime_fallback": true }
+```
+
+Or full control:
+
+```json
+{
+  "runtime_fallback": {
+    "enabled": true,
+    "retry_on_errors": [400, 429, 503, 529],
+    "max_fallback_attempts": 3,
+    "cooldown_seconds": 60,
+    "timeout_seconds": 30,
+    "notify_on_fallback": true
+  }
+}
+```
+
+| Option | Default | Description |
+|---|---|---|
+| `enabled` | `false` | Enable runtime fallback. |
+| `retry_on_errors` | `[400, 429, 503, 529]` | HTTP codes that trigger fallback. Provider key errors are also classified. |
+| `max_fallback_attempts` | `3` | Max attempts per session (1–20). |
+| `cooldown_seconds` | `60` | Seconds before retrying a failed model. |
+| `timeout_seconds` | `30` | Seconds before forcing next fallback. Set to `0` to disable timeout-based escalation. |
+| `notify_on_fallback` | `true` | Toast notification on model switch. |
+
+### Speeding up proxy-API fallback
+
+Proxy APIs sometimes return non-standard codes (`401`, `403`, `404`) for quota exhaustion. Widen `retry_on_errors` and shrink the timers:
+
+```jsonc
+{
+  "runtime_fallback": {
+    "enabled": true,
+    "retry_on_errors": [400, 401, 403, 404, 429, 500, 502, 503, 504],
+    "max_fallback_attempts": 3,
+    "cooldown_seconds": 15,
+    "timeout_seconds": 10
+  }
+}
+```
+
+## Sisyphus task system
+
+Task system is controlled by `experimental.task_system` (defaults to `true` since v3.14). When enabled, `TodoWrite` / `TodoRead` are replaced by `task_create`, `task_get`, `task_list`, `task_update`.
+
+```json
+{
+  "sisyphus": {
+    "tasks": {
+      "storage_path": ".sisyphus/tasks",
+      "claude_code_compat": false
+    }
+  }
+}
+```
+
+| Option | Default | Description |
+|---|---|---|
+| `storage_path` | `.sisyphus/tasks` | Storage path (relative to project root). |
+| `task_list_id` | — | Force task list ID (alternative to env `ULTRAWORK_TASK_LIST_ID`). |
+| `claude_code_compat` | `false` | Enable Claude Code path compatibility mode. |
+
+Disable the system entirely: `{ "experimental": { "task_system": false } }`.
+
+## Experimental flags
+
+```jsonc
+{
+  "experimental": {
+    "task_system": true,
+    "aggressive_truncation": false,
+    "auto_resume": false,
+    "disable_omo_env": false,
+    "dynamic_context_pruning": {
+      "enabled": false,
+      "turn_protection": { "enabled": true, "turns": 3 },
+      "strategies": {
+        "deduplication": { "enabled": true },
+        "supersede_writes": { "enabled": true, "aggressive": false },
+        "purge_errors": { "enabled": true, "turns": 5 }
+      }
+    }
+  }
+}
+```
+
+| Option | Default | Description |
+|---|---|---|
+| `truncate_all_tool_outputs` | `false` | Truncate all tool outputs, not just whitelisted ones. |
+| `aggressive_truncation` | `false` | Aggressively truncate when the token limit is exceeded. |
+| `auto_resume` | `false` | Auto-resume after thinking-block recovery. |
+| `disable_omo_env` | `false` | Disable the auto-injected `<omo-env>` block. Improves cache hit rate. |
+| `task_system` | `true` | Enable the Sisyphus task system. |
+| `dynamic_context_pruning.enabled` | `false` | Auto-prune old tool outputs to manage context window. |
+| `dynamic_context_pruning.turn_protection.turns` | `3` | Recent turns protected from pruning (1–10). |
+| `strategies.deduplication` | `true` | Remove duplicate tool calls. |
+| `strategies.supersede_writes` | `true` | Prune write inputs when the file is later read. |
+| `strategies.supersede_writes.aggressive` | `false` | Prune any write if any subsequent read exists. |
+| `strategies.purge_errors.turns` | `5` | Turns before pruning errored tool inputs. |
+
+## Provider-specific
+
+### Ollama
+
+Streaming **must** be disabled or tool-calling agents will hit `JSON Parse error: Unexpected EOF`. Configure `stream: false` in your OpenCode provider settings (not under `agents.{name}` in `oh-my-openagent.jsonc`). See [Ollama Troubleshooting](/docs/troubleshooting/ollama) for details.
+
+Common models: `ollama/qwen3-coder`, `ollama/ministral-3:14b`, `ollama/lfm2.5-thinking`.
+
+### Google (Antigravity OAuth)
+
+Install [`opencode-antigravity-auth`](https://github.com/NoeFabris/opencode-antigravity-auth) for Google Gemini. Provides multi-account load balancing (up to 10 accounts), dual quota (Antigravity + Gemini CLI), and variant-based thinking. Override agent models in the plugin config because Antigravity uses different model names than the built-in Google auth.
+
+## Source Notes
+
+Mirrors upstream `docs/reference/configuration.md`. The quick-lookup surface lives in [Reference](/docs/reference); the agent fallback chains and "when do I swap models" cheat sheet live in [Agent-Model Matching](/docs/agents/model-matching).

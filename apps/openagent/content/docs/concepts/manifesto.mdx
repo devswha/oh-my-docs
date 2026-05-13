@@ -1,0 +1,104 @@
+---
+title: Manifesto
+description: Why OmO is built around the idea that human intervention during agentic work is a failure signal.
+---
+
+OmO is opinionated. The features exist because of a small set of principles, and most product decisions follow from them. This page is the principles, not the feature list.
+
+## Human intervention is a failure signal
+
+Autonomous driving: if a human has to take the wheel, that is not a feature, it is the system failing. The car could not handle the situation on its own.
+
+Coding is the same. When you find yourself fixing the AI's half-finished code, manually correcting obvious mistakes, guiding the agent step-by-step, or repeatedly clarifying the same requirements — that is not collaboration. That is the AI failing to do its job.
+
+OmO is designed so that intervention is the exception, not the loop.
+
+## Indistinguishable code
+
+Code written by the agent should be indistinguishable from code written by a senior engineer. Not "AI-generated code that needs cleanup." Not "a good starting point." The actual, final, production-ready code.
+
+In practice:
+
+- Existing codebase patterns followed exactly.
+- Error handling done without being asked.
+- Tests that test the right thing.
+- No AI slop — no over-engineering, no scope creep, no decorative abstraction.
+- Comments only when they add value.
+
+If you can tell whether a commit was made by a human or an agent, the agent has failed.
+
+## Token cost vs productivity
+
+Higher token usage is fine when it increases productivity. Parallel research, end-to-end completion without intervention, thorough verification, and accumulated knowledge across tasks are worth the spend.
+
+Unnecessary waste isn't. The system optimizes for:
+
+- Cheaper models (Haiku, Flash, GPT-5.4 Mini) on the utility lane.
+- No redundant exploration when context is already sufficient.
+- Caching learnings across sessions.
+- Stopping when "enough" is reached.
+
+Token efficiency matters, but not at the cost of work quality or human cognitive load.
+
+## Minimize human cognitive load
+
+The human's job is to say what they want. Everything else is the agent's job.
+
+Two paths to the same result:
+
+- **Prometheus mode** — say "I want to add authentication." Prometheus researches the codebase, asks clarifying questions grounded in actual findings, surfaces edge cases you hadn't considered, and writes a plan. You provide intent; the agent provides structure.
+- **Ultrawork mode** — say `ulw add authentication`. The agent figures out the right approach, researches best practices, follows conventions, and keeps going until done. You provide intent; the agent handles everything.
+
+The human expresses what they want, not how it gets done.
+
+## Predictable, continuous, delegatable
+
+The ideal agent works like a compiler: markdown in, working code out.
+
+- **Predictable.** Same codebase patterns, same requirements, same constraints → consistent output. Not random, not surprising, not "creative" in ways nobody asked for.
+- **Continuous.** Work survives interruptions. Session crashes resume with `/start-work`. Multi-day projects preserve context. The agent maintains state; you do not.
+- **Delegatable.** Clear acceptance criteria, verified independently. Self-correcting on failure. Escalation only when truly needed. Complete work, not "mostly done."
+
+## The core loop
+
+```text
+Human Intent  →  Agent Execution  →  Verified Result
+      ↑                                      ↓
+      └──────────────── Minimum ─────────────┘
+        (intervention only on true failure)
+```
+
+The OmO surface area maps onto this loop:
+
+| Feature | Purpose |
+|---|---|
+| Prometheus | Extract intent through intelligent interview. |
+| Metis | Catch ambiguities before they become bugs. |
+| Momus | Verify plans are complete before execution. |
+| Sisyphus orchestrator | Coordinate work without human micromanagement. |
+| Todo continuation | Force completion, prevent "I'm done" lies. |
+| Category system | Route to the optimal model without a human decision. |
+| Background agents | Parallel research without blocking the user. |
+| Wisdom accumulation | Learn from work, do not repeat mistakes. |
+
+## What this means in practice
+
+You should be able to:
+
+1. Describe what you want at any level of detail.
+2. Let the agent interview you when scope is unclear.
+3. Confirm the plan, or skip straight to `ulw`.
+4. Walk away.
+5. Come back to completed, verified, production-ready work.
+
+If you cannot do this, something in the system needs to improve.
+
+## The future being built
+
+A world where human developers focus on **what** to build, not on how to get AI to build it; where code quality is independent of who wrote it; where complex projects are as approachable as simple ones, just slower; and where "prompt engineering" becomes as obsolete as "compiler debugging."
+
+The agent should be invisible — not hidden, but reliable enough that nobody has to think about it. Like electricity. You flip the switch, the light comes on. You don't think about the power grid.
+
+## Source Notes
+
+Aligned with upstream `docs/manifesto.md`. The product reality check (name, domain, who maintains it) lives upstream; this site keeps the principles a doc rather than a status page.

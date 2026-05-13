@@ -1,0 +1,40 @@
+---
+title: Manifesto
+description: OmO is built around the idea that human intervention during agentic work is a failure signal. Stub for ja.
+---
+
+OmO is opinionated. Most features follow from a small set of principles.
+
+## Human intervention is a failure signal
+
+If a human has to take the wheel of a self-driving car, that is the system failing. Same with coding. Fixing half-done agent code, correcting obvious mistakes, repeating requirements — that is not collaboration.
+
+## Indistinguishable code
+
+Agent code should be indistinguishable from senior-engineer code. Patterns followed. Error handling without prompting. Tests that test the right thing. No slop.
+
+## Token cost vs productivity
+
+Higher token usage is fine when it raises productivity (parallel research, end-to-end completion, verification, learning). Unnecessary waste is not.
+
+## Minimize cognitive load
+
+Human says **what**. Agent handles **how**. Two paths: Prometheus interview, or `ulw` ultrawork.
+
+## Predictable, continuous, delegatable
+
+Compiler-like behavior. Same inputs → consistent output. Survives interruptions (`/start-work`). Verifies completion independently.
+
+## The core loop
+
+```text
+Human Intent → Agent Execution → Verified Result
+      ↑                                ↓
+      └──────────── Minimum ───────────┘
+```
+
+Features map onto this loop: Prometheus, Metis, Momus, Sisyphus orchestrator, todo continuation, category system, background agents, wisdom accumulation.
+
+## Source Notes
+
+Aligned with upstream `docs/manifesto.md`.

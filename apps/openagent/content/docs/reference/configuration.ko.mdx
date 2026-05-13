@@ -1,0 +1,248 @@
+---
+title: Configuration
+description: agent/category 옵션 표면, runtime fallback, experimental flag, provider별 quirk — 빠른 참고 페이지에 다 못 담은 깊은 설정.
+---
+
+빠른 참고 페이지는 기본만 다룹니다. 이 페이지는 옵션 표면입니다: 에이전트, 카테고리, fallback 동작, provider quirk를 커스터마이즈할 때 손이 가는 모든 필드.
+
+모든 plugin config는 JSONC 지원입니다 — `// line`, `/* block */` 주석, trailing comma 모두 OK.
+
+## Agent 옵션
+
+`agents.{name}` 밑에서 내장 설정을 오버라이드합니다. 사용 가능한 에이전트: `sisyphus`, `hephaestus`, `prometheus`, `oracle`, `librarian`, `explore`, `multimodal-looker`, `metis`, `momus`, `atlas`, `sisyphus-junior`.
+
+```json
+{
+  "agents": {
+    "explore": { "model": "anthropic/claude-haiku-4-5", "temperature": 0.5 },
+    "multimodal-looker": { "disable": true }
+  }
+}
+```
+
+| 옵션 | 타입 | 설명 |
+|---|---|---|
+| `model` | string | 모델 오버라이드 (`provider/model`). |
+| `fallback_models` | string \| array | fallback chain. 문자열 또는 문자열 + per-model 객체 혼합. |
+| `temperature` | number | sampling temperature. |
+| `top_p` | number | top-p sampling. |
+| `prompt` | string | system prompt 교체. `file://` URI 지원. |
+| `prompt_append` | string | system prompt 추가. `file://` URI 지원. |
+| `tools` | array | 허용된 tool 목록. |
+| `disable` | boolean | 이 에이전트 비활성화. |
+| `mode` | string | agent mode. |
+| `color` | string | UI 색상. |
+| `permission` | object | 도구별 권한 (아래 참고). |
+| `category` | string | category에서 model 상속. |
+| `variant` | string | `max` / `high` / `medium` / `low` / `xhigh`. 미지원 값은 가까운 값으로 정규화. |
+| `maxTokens` | number | 최대 응답 토큰. |
+| `thinking` | object | Anthropic extended thinking. |
+| `reasoningEffort` | string | OpenAI reasoning: `none` / `minimal` / `low` / `medium` / `high` / `xhigh`. 정규화. |
+| `textVerbosity` | string | `low` / `medium` / `high`. |
+| `providerOptions` | object | provider 별 옵션. |
+
+전체 비활성화는 `{ "disabled_agents": ["oracle", "multimodal-looker"] }`.
+
+Tab 사이클링 순서를 바꾸려면 `agent_order` (예: `["hephaestus", "sisyphus", "prometheus", "atlas"]`). 누락된 core agent는 기존 상대 순서를 유지합니다.
+
+### Anthropic extended thinking
+
+```json
+{ "agents": { "oracle": { "thinking": { "type": "enabled", "budgetTokens": 200000 } } } }
+```
+
+### 도구별 권한
+
+```json
+{
+  "agents": {
+    "explore": {
+      "permission": {
+        "edit": "deny",
+        "bash": "ask",
+        "webfetch": "allow"
+      }
+    }
+  }
+}
+```
+
+| 권한 | 값 |
+|---|---|
+| `edit` | `ask` / `allow` / `deny` |
+| `bash` | `ask` / `allow` / `deny` 또는 명령별 (`{ "git": "allow", "rm": "deny" }`) |
+| `webfetch` | `ask` / `allow` / `deny` |
+| `doom_loop` | `ask` / `allow` / `deny` |
+| `external_directory` | `ask` / `allow` / `deny` |
+
+### prompt에 file URI
+
+`prompt`와 `prompt_append`는 에이전트와 category 모두에서 `file://` URI를 받습니다. 절대 경로(`file:///abs/path`), 프로젝트 상대(`file://./rel/path`), home 상대(`file://~/path`) 가능. 읽기 실패 시 hard fail이 아니라 prompt에 경고 placeholder를 끼워 넣습니다.
+
+## Category 옵션
+
+```json
+{ "categories": { "deep": { "model": "openai/gpt-5.5", "variant": "medium" } } }
+```
+
+| 옵션 | 타입 | 설명 |
+|---|---|---|
+| `model` | string | 모델 오버라이드. |
+| `fallback_models` | string \| array | fallback chain (agent 옵션과 동일 구조). |
+| `temperature` | number | sampling temperature. |
+| `top_p` | number | top-p sampling. |
+| `maxTokens` | number | 최대 응답 토큰. |
+| `thinking` | object | Anthropic extended thinking. |
+| `reasoningEffort` | string | OpenAI reasoning effort. |
+| `textVerbosity` | string | text verbosity. |
+| `tools` | array | 허용 tool. |
+| `prompt_append` | string | system prompt 추가. |
+| `variant` | string | 모델 변형. 정규화. |
+| `description` | string | `task()` tool prompt에 표시. |
+| `is_unstable_agent` | boolean | background mode + 모니터링 강제. Gemini 모델은 자동 ON. |
+
+비활성화: `{ "disabled_categories": ["ultrabrain"] }`. 내장 기본은 config에 해당 카테고리가 있을 때만 적용됩니다. 없으면 시스템 default 모델.
+
+## per-model 설정이 붙는 `fallback_models`
+
+`fallback_models`는 문자열 하나 또는 배열을 받습니다. 배열 항목은 평범한 문자열이거나 per-fallback 설정 객체입니다.
+
+```jsonc
+{
+  "agents": {
+    "sisyphus": {
+      "model": "anthropic/claude-opus-4-7",
+      "fallback_models": [
+        "openai/gpt-5.5",
+        { "model": "google/gemini-3.1-pro", "variant": "high", "temperature": 0.2 },
+        { "model": "anthropic/claude-sonnet-4-6", "thinking": { "type": "enabled", "budgetTokens": 64000 } }
+      ]
+    }
+  }
+}
+```
+
+객체 항목 필드: `model`, `variant`, `reasoningEffort`, `temperature`, `top_p`, `maxTokens`, `thinking`. per-model 설정은 **fallback 전용**입니다 — 해당 fallback 모델이 실제 선택될 때만 적용됩니다. provider prefix를 생략하면 OmO가 현재/기본 provider에서 추론합니다.
+
+## Runtime fallback
+
+API 에러 발생 시 backup 모델로 자동 전환.
+
+```json
+{ "runtime_fallback": true }
+```
+
+또는 풀 컨트롤:
+
+```json
+{
+  "runtime_fallback": {
+    "enabled": true,
+    "retry_on_errors": [400, 429, 503, 529],
+    "max_fallback_attempts": 3,
+    "cooldown_seconds": 60,
+    "timeout_seconds": 30,
+    "notify_on_fallback": true
+  }
+}
+```
+
+| 옵션 | 기본 | 설명 |
+|---|---|---|
+| `enabled` | `false` | runtime fallback 활성화. |
+| `retry_on_errors` | `[400, 429, 503, 529]` | fallback을 트리거하는 HTTP code. provider key 에러도 분류됩니다. |
+| `max_fallback_attempts` | `3` | 세션당 최대 시도 (1–20). |
+| `cooldown_seconds` | `60` | 실패한 모델 재시도 전 대기 초. |
+| `timeout_seconds` | `30` | 다음 fallback으로 강제 전환까지 초. `0`이면 timeout 기반 escalation 비활성화. |
+| `notify_on_fallback` | `true` | 모델 전환 시 toast. |
+
+### proxy API fallback 가속
+
+proxy API는 quota 소진에 비표준 코드(`401`, `403`, `404`)를 돌려주기도 합니다. `retry_on_errors`를 넓히고 타이머를 좁히세요.
+
+```jsonc
+{
+  "runtime_fallback": {
+    "enabled": true,
+    "retry_on_errors": [400, 401, 403, 404, 429, 500, 502, 503, 504],
+    "max_fallback_attempts": 3,
+    "cooldown_seconds": 15,
+    "timeout_seconds": 10
+  }
+}
+```
+
+## Sisyphus task system
+
+`experimental.task_system`이 제어 (v3.14부터 `true`가 기본). 활성화되면 `TodoWrite`/`TodoRead`가 `task_create`, `task_get`, `task_list`, `task_update`로 대체됩니다.
+
+```json
+{
+  "sisyphus": {
+    "tasks": {
+      "storage_path": ".sisyphus/tasks",
+      "claude_code_compat": false
+    }
+  }
+}
+```
+
+| 옵션 | 기본 | 설명 |
+|---|---|---|
+| `storage_path` | `.sisyphus/tasks` | 저장 경로 (프로젝트 루트 기준). |
+| `task_list_id` | — | task list ID 강제 (env `ULTRAWORK_TASK_LIST_ID` 대체). |
+| `claude_code_compat` | `false` | Claude Code path 호환 모드. |
+
+시스템 전체 비활성화: `{ "experimental": { "task_system": false } }`.
+
+## Experimental 플래그
+
+```jsonc
+{
+  "experimental": {
+    "task_system": true,
+    "aggressive_truncation": false,
+    "auto_resume": false,
+    "disable_omo_env": false,
+    "dynamic_context_pruning": {
+      "enabled": false,
+      "turn_protection": { "enabled": true, "turns": 3 },
+      "strategies": {
+        "deduplication": { "enabled": true },
+        "supersede_writes": { "enabled": true, "aggressive": false },
+        "purge_errors": { "enabled": true, "turns": 5 }
+      }
+    }
+  }
+}
+```
+
+| 옵션 | 기본 | 설명 |
+|---|---|---|
+| `truncate_all_tool_outputs` | `false` | whitelisted가 아닌 모든 tool output truncate. |
+| `aggressive_truncation` | `false` | token 한도 초과 시 공격적으로 truncate. |
+| `auto_resume` | `false` | thinking block 복구 후 자동 재개. |
+| `disable_omo_env` | `false` | auto-injected `<omo-env>` 블록 비활성화. cache hit rate 개선. |
+| `task_system` | `true` | Sisyphus task system 활성화. |
+| `dynamic_context_pruning.enabled` | `false` | 컨텍스트 윈도우 관리를 위해 오래된 tool output 자동 prune. |
+| `dynamic_context_pruning.turn_protection.turns` | `3` | prune에서 보호되는 최근 turn 수 (1–10). |
+| `strategies.deduplication` | `true` | 중복 tool 호출 제거. |
+| `strategies.supersede_writes` | `true` | 파일이 이후에 read되면 write 입력 prune. |
+| `strategies.supersede_writes.aggressive` | `false` | 이후 read가 하나라도 있으면 write prune. |
+| `strategies.purge_errors.turns` | `5` | 에러난 tool 입력을 prune하기까지의 turn 수. |
+
+## Provider별
+
+### Ollama
+
+streaming을 **반드시** 꺼야 합니다. 안 그러면 tool-calling 에이전트가 `JSON Parse error: Unexpected EOF`로 죽습니다. OpenCode provider 설정에 `stream: false`를 두세요 (`oh-my-openagent.jsonc`의 `agents.{name}` 밑이 아닙니다). 자세한 내용은 [Ollama Troubleshooting](/ko/docs/troubleshooting/ollama).
+
+자주 쓰는 모델: `ollama/qwen3-coder`, `ollama/ministral-3:14b`, `ollama/lfm2.5-thinking`.
+
+### Google (Antigravity OAuth)
+
+Gemini용으로 [`opencode-antigravity-auth`](https://github.com/NoeFabris/opencode-antigravity-auth)를 설치하세요. 멀티 계정 load balancing(최대 10개), 듀얼 quota(Antigravity + Gemini CLI), variant 기반 thinking 제공. plugin config에서 agent 모델을 명시 오버라이드하세요 — Antigravity는 내장 Google auth와 모델 이름이 다릅니다.
+
+## 출처
+
+upstream `docs/reference/configuration.md`와 일치. 빠른 lookup은 [Reference](/ko/docs/reference)에, "언제 모델을 바꿀까" 치트시트는 [Agent-Model Matching](/ko/docs/agents/model-matching)에 있습니다.

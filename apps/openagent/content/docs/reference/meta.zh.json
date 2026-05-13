@@ -3,6 +3,7 @@
   "pages": [
     "[Config Files](/zh/docs/reference#config-files)",
     "[CLI](/zh/docs/reference#cli)",
-    "[Telemetry](/zh/docs/reference#telemetry)"
+    "[Telemetry](/zh/docs/reference#telemetry)",
+    "configuration"
   ]
 }
