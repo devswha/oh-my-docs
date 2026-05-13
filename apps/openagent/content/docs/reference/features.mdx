@@ -1,0 +1,189 @@
+---
+title: Features
+description: Full catalog of what OmO ships — agents, categories, skills, commands, tools, hooks, MCPs, recovery, and Claude Code compat.
+---
+
+OmO is a multi-model orchestration harness for OpenCode. The other pages are journeys (getting started, agents, configuration). This page is the surface area — every feature, organized by area, with pointers into the deep-dive page when one exists.
+
+## Architecture snapshot
+
+| Subsystem | Count |
+|---|---|
+| Feature modules (`src/features/`) | 20 |
+| Tool directories (`src/tools/`) | 16 |
+| Exposed tools | 20 (minimum) – 39 (with all gates on) |
+| Base hooks (5 tiers) | 52 |
+| Hooks with `team_mode.enabled` | 59 (+1 Tool Guard, +2 Transform, +4 team session handlers) |
+| MCP tiers | 3 (built-in remote, `.mcp.json` loader, skill-embedded) |
+| Plugin startup managers | 4 (Tmux session, Background, Skill MCP, Config) |
+| Config phases | 6 (provider, plugin-components, agents, tools, MCPs, commands) |
+| Canonical core agent order | Sisyphus → Hephaestus → Prometheus → Atlas |
+
+## Agents (11)
+
+Core ordering is deterministic via injected `order` field. Override with `agent_order` in plugin config.
+
+| Agent | Default model | Lane |
+|---|---|---|
+| **Sisyphus** | `claude-opus-4-7` (max) | Main orchestrator — plans, delegates, executes with todo-driven workflow. |
+| **Hephaestus** | `gpt-5.5` (medium) | Autonomous deep worker. Requires a GPT-capable provider. |
+| **Prometheus** | `claude-opus-4-7` (max) | Strategic planner with interview mode. Dual-prompt (Claude / GPT). |
+| **Atlas** | `claude-sonnet-4-6` | Todo-list orchestrator. Executes Prometheus plans. Dual-prompt. |
+| **Oracle** | `gpt-5.5` (high) | Read-only architecture / debugging consultant. |
+| **Librarian** | `gpt-5.4-mini-fast` | Multi-repo analysis and doc/OSS lookup. Read-only. |
+| **Explore** | `gpt-5.4-mini-fast` | Fast codebase grep. Read-only. |
+| **Multimodal-Looker** | `gpt-5.5` (medium) | Vision over PDFs, images, diagrams. `read` only. |
+| **Metis** | `claude-sonnet-4-6` | Pre-planning analyzer — surfaces hidden intent and ambiguity. Read-only. |
+| **Momus** | `gpt-5.5` (xhigh) | Plan reviewer. Read-only. |
+| **Sisyphus-Junior** | (category-dependent) | Category-spawned executor. Cannot re-delegate. |
+
+Substitution policy and fallback chains live in [Agent-Model Matching](/docs/agents/model-matching). Tool restrictions per agent are summarized in [Configuration → Agent permissions](/docs/reference/configuration#per-tool-permissions).
+
+## Categories (8 built-in)
+
+Categories describe **what kind of work** a task is. Sisyphus-Junior runs the task with the assigned category's model.
+
+| Category | Default model | Use |
+|---|---|---|
+| `visual-engineering` | `google/gemini-3.1-pro` (high) | Frontend, UI/UX, design, animation. |
+| `ultrabrain` | `openai/gpt-5.5` (xhigh) | Hard logic, architecture, deep reasoning. |
+| `deep` | `openai/gpt-5.5` (medium) | Goal-oriented autonomous problem-solving. **One goal + one deliverable per call.** |
+| `artistry` | `google/gemini-3.1-pro` (high) | Creative or unconventional work. |
+| `quick` | `openai/gpt-5.4-mini` | Trivial single-file changes, typo fixes. |
+| `unspecified-low` | `anthropic/claude-sonnet-4-6` | Low-effort general work. |
+| `unspecified-high` | `anthropic/claude-opus-4-7` (max) | High-effort general work. |
+| `writing` | `google/gemini-3-flash` | Documentation, prose, technical writing. |
+
+Custom categories: define under `categories.<name>` in plugin config. Schema and examples in [Configuration → Category options](/docs/reference/configuration#category-options).
+
+## Built-in skills (7)
+
+Skills inject specialized knowledge plus optional MCPs.
+
+| Skill | Trigger | Purpose |
+|---|---|---|
+| **git-master** | commit, rebase, squash, "who wrote", "when was X added" | Atomic commit architect + rebase surgeon + history archaeologist. Auto-detects repo's commit style from last 30 commits. |
+| **playwright** | Browser tasks, testing, screenshots | Browser automation via Playwright MCP. |
+| **agent-browser** | Browser tasks on agent-browser | Browser automation via the `agent-browser` CLI. |
+| **dev-browser** | Stateful browser scripting | Persistent page state for iterative workflows and authenticated sessions. |
+| **frontend-ui-ux** | UI/UX tasks, styling | Bold aesthetic direction, distinctive typography, cohesive palettes. |
+| **review-work** | "review work", "review my work", "QA my work" | Launches 5 parallel background sub-agents for goal verification, code quality, security, hands-on QA, and context mining. |
+| **ai-slop-remover** | "remove AI slop", "de-AI", "humanize" | Strips verbose comments, redundant error handling, over-engineered patterns. |
+
+Custom skills: drop a `SKILL.md` into `.opencode/skills/`, `.claude/skills/`, `.agents/skills/`, or their user-scope equivalents. Priority order: project > user > opencode > builtin/plugin. Disable built-ins via `disabled_skills`.
+
+## Commands (8 built-in)
+
+Slash commands recognized inside an OpenCode session.
+
+| Command | Purpose |
+|---|---|
+| `/init-deep` | Generate hierarchical `AGENTS.md`. `--create-new`, `--max-depth=N`. |
+| `/ralph-loop "<goal>"` | Self-referential loop until completion. |
+| `/ulw-loop "<goal>"` | Same with ultrawork mode on. |
+| `/cancel-ralph` | Cancel an active Ralph loop. |
+| `/refactor <target>` | LSP + AST-grep + architecture + TDD refactor. |
+| `/start-work [plan]` | Activate Atlas on the latest Prometheus plan. |
+| `/stop-continuation` | Stop ralph loop, todo continuation, boulder state. |
+| `/handoff` | Generate a structured handoff doc. |
+
+Full reference: [Quick Commands](/docs/reference/quick-commands).
+
+## Tools
+
+Tool registration is config-gated; the surface ranges from 20 to 39 tools.
+
+| Group | Tools |
+|---|---|
+| Code search | `grep`, `glob` |
+| Edit | `edit` (hash-anchored `LINE#ID`) |
+| LSP | `lsp_diagnostics`, `lsp_prepare_rename`, `lsp_rename`, `lsp_goto_definition`, `lsp_find_references`, `lsp_symbols` |
+| AST-Grep | `ast_grep_search`, `ast_grep_replace` (25 languages) |
+| Delegation | `call_omo_agent`, `task`, `background_output`, `background_cancel` |
+| Visual | `look_at` (PDFs, images, diagrams via Multimodal-Looker) |
+| Skill | `skill`, `skill_mcp` |
+| Session | `session_list`, `session_read`, `session_search`, `session_info` |
+| Task system (`experimental.task_system: true`) | `task_create`, `task_get`, `task_list`, `task_update` |
+| Interactive | `interactive_bash` (tmux-based for vim, htop, pudb, …) |
+
+## Hooks (52 base, 59 with team mode)
+
+Hooks intercept and modify behavior at six event types: **PreToolUse**, **PostToolUse**, **Message**, **Event**, **Transform**, **Params**.
+
+Composition (base):
+
+| Tier | Count |
+|---|---|
+| Session | 24 |
+| Tool Guard | 14 |
+| Transform | 5 |
+| Continuation | 7 |
+| Skill | 2 |
+
+Key hooks by area:
+
+| Area | Hooks |
+|---|---|
+| Context injection | `directory-agents-injector`, `directory-readme-injector`, `rules-injector`, `compaction-context-injector` |
+| Productivity | `keyword-detector` (ultrawork/ulw/search/analyze/team), `think-mode`, `ralph-loop`, `auto-slash-command`, `category-skill-reminder` |
+| Quality | `comment-checker`, `thinking-block-validator`, `write-existing-file-guard`, `hashline-read-enhancer`, `hashline-edit-diff-enhancer` |
+| Recovery | `session-recovery`, `anthropic-context-window-limit-recovery`, `runtime-fallback`, `model-fallback`, `json-error-recovery` |
+| Notifications | `auto-update-checker`, `background-notification`, `session-notification`, `agent-usage-reminder` |
+| Task management | `task-resume-info`, `delegate-task-retry`, `empty-task-response-detector`, `tasks-todowrite-disabler` |
+| Continuation | `todo-continuation-enforcer`, `compaction-todo-preserver`, `unstable-agent-babysitter` |
+| Specialized | `prometheus-md-only`, `no-sisyphus-gpt`, `no-hephaestus-non-gpt`, `sisyphus-junior-notepad` |
+
+Disable specific hooks: `{ "disabled_hooks": ["comment-checker"] }`. Claude Code's `settings.json` hooks are honored too via `claude-code-hooks`.
+
+## MCPs (3 tiers)
+
+| Tier | Source | Examples |
+|---|---|---|
+| Built-in | `src/mcp/` | `websearch` (Exa), `context7` (library docs), `grep_app` (GitHub code search) |
+| `.mcp.json` loader | Project / user `.mcp.json` / `.claude.json` | Custom remote MCP servers with `${VAR}` expansion |
+| Skill-embedded | `SKILL.md` `mcp:` frontmatter | Playwright, custom per-skill MCPs |
+
+Skill MCP clients are isolated per session by `${sessionID}:${skillName}:${serverName}`.
+
+OAuth-protected remote MCPs follow OAuth 2.1 with PKCE, RFC 9728/8414 discovery, RFC 7591 dynamic client registration, RFC 8707 resource indicators, token storage at `~/.config/opencode/mcp-oauth.json` (chmod 0600), auto-refresh on 401, and step-up on 403. CLI helper:
+
+```bash
+bunx oh-my-openagent mcp oauth login <server-name> --server-url https://api.example.com
+```
+
+## Context injection
+
+- **Directory `AGENTS.md` walk** — reading a file injects every `AGENTS.md` from that file's directory up to the project root. Auto-disabled on OpenCode 1.1.37+ (native AGENTS.md injection).
+- **Conditional rules** — files in `.claude/rules/*.{md,mdc}` and `~/.claude/rules/` get injected when `globs` match or `alwaysApply: true`.
+- **README directory hint** — neighboring `README.md` is injected for directory context.
+
+## Recovery
+
+Session failures are recovered transparently:
+
+| Failure | Recovery |
+|---|---|
+| Missing tool results | Reconstruct recoverable state; skip invalid tool-part IDs. |
+| Thinking block violations | Recover from API thinking-block mismatches. |
+| Empty messages | Reconstruct message history. |
+| Context window limit | Intelligent compaction. |
+| JSON parse errors | Recover from malformed tool outputs. |
+
+Enable `experimental.auto_resume` for automatic retry after recovery.
+
+## Claude Code compatibility
+
+OmO loads Claude Code config from familiar paths.
+
+| Type | Locations |
+|---|---|
+| Commands | `~/.config/opencode/commands/`, `.claude/commands/` |
+| Skills | `~/.config/opencode/skills/*/SKILL.md`, `.claude/skills/*/SKILL.md` |
+| Agents | `~/.config/opencode/agents/*.md`, `.claude/agents/*.md` |
+| MCPs | `~/.claude.json`, `~/.config/opencode/.mcp.json`, `.mcp.json`, `.claude/.mcp.json` |
+
+Disable specific surfaces via `claude_code.{mcp,commands,skills,agents,hooks,plugins}: false`. Disable specific marketplace plugins via `claude_code.plugins_override`.
+
+## Source Notes
+
+Aligned with upstream `docs/reference/features.md`. Configuration knobs live in [Configuration](/docs/reference/configuration); model resolution and capability normalization live in [Model Capabilities](/docs/reference/model-capabilities); substitution rules live in [Agent-Model Matching](/docs/agents/model-matching).

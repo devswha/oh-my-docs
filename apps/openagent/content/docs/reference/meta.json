@@ -7,7 +7,10 @@
     "[Agent Options](/docs/reference#agent-options)",
     "[Categories](/docs/reference#categories)",
     "[Install Flags](/docs/reference#install-flags)",
-    "[Environment](/docs/reference#environment)",
-    "configuration"
+    "configuration",
+    "features",
+    "quick-commands",
+    "environment",
+    "model-capabilities"
   ]
 }

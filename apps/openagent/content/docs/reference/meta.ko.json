@@ -7,7 +7,10 @@
     "[Agent 옵션](/ko/docs/reference#agent-옵션)",
     "[Category](/ko/docs/reference#category)",
     "[Install Flags](/ko/docs/reference#install-flags)",
-    "[Environment](/ko/docs/reference#environment)",
-    "configuration"
+    "configuration",
+    "features",
+    "quick-commands",
+    "environment",
+    "model-capabilities"
   ]
 }

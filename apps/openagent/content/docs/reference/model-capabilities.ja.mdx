@@ -1,0 +1,39 @@
+---
+title: Model Capabilities
+description: How OmO resolves model capabilities, refreshes the cache, and normalizes unsupported settings. Stub for ja.
+---
+
+## Resolution layers
+
+1. Runtime provider metadata.
+2. `models.dev` (bundled snapshot + optional refreshed cache).
+3. Compatibility aliases (`src/shared/model-capability-aliases.ts`).
+4. Heuristic family detection.
+
+## Refresh
+
+```bash
+bunx oh-my-openagent refresh-model-capabilities
+```
+
+Auto-refresh config:
+
+```jsonc
+{ "model_capabilities": { "enabled": true, "auto_refresh_on_start": true, "refresh_timeout_ms": 5000, "source_url": "https://models.dev/api.json" } }
+```
+
+## Normalization
+
+Unsupported `variant` / `reasoningEffort` / `temperature` / `top_p` / `maxTokens` / `thinking` values are normalized or dropped instead of erroring. Cross-provider fallback chains degrade gracefully.
+
+## Diagnostics
+
+`bunx oh-my-openagent doctor --verbose` shows effective resolution, fallback-compat warnings, and override-compat details.
+
+## Alias policy
+
+Built-in agent/category requirements use canonical model IDs. Aliases only preserve historic names and provider-specific decorations, must include a rationale and tests, and pass `bun run test:model-capabilities` before snapshot refresh PRs.
+
+## Source Notes
+
+Aligned with upstream `docs/reference/configuration.md` and `docs/model-capabilities-maintenance.md`.

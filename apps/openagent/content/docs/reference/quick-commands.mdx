@@ -1,0 +1,61 @@
+---
+title: Quick Commands
+description: Slash commands and short keywords OmO recognizes inside an OpenCode session.
+---
+
+OmO ships a handful of slash commands that map to workflows the harness already knows how to run. They're the fastest way to enter a specific mode without typing the full prompt skeleton.
+
+## Workflow
+
+| Command | Purpose |
+|---|---|
+| `/init-deep` | Generate hierarchical `AGENTS.md` files throughout the project so future agents start with full context. Supports `--create-new` and `--max-depth=N`. |
+| `/ralph-loop "<goal>"` | Self-referential development loop until completion. Detects `<promise>DONE</promise>`, auto-continues on early stops, capped by `default_max_iterations` (100). |
+| `/ulw-loop "<goal>"` | Same as `ralph-loop` but with ultrawork mode on — parallel agents, background tasks, aggressive exploration. |
+| `/cancel-ralph` | Cancel an active Ralph loop. |
+| `/refactor <target>` | Toolchain-driven refactor: LSP rename + AST-grep + architecture analysis + TDD verification. Supports `--scope=<file\|module\|project>` and `--strategy=<safe\|aggressive>`. |
+| `/start-work [plan-name]` | Activate Atlas on the latest Prometheus plan. |
+| `/stop-continuation` | Stop ralph loop, todo continuation, and boulder state for this session. |
+| `/handoff` | Generate a structured handoff doc — current state, what was done, what remains, relevant paths. |
+
+## Keyword triggers
+
+These are not slash commands; the harness watches user prompts for them and activates the matching mode.
+
+| Keyword | Mode |
+|---|---|
+| `ultrawork`, `ulw` | Ultrawork — parallel agents, background tasks, runs until verified. |
+| `search` | Forces retrieval-first delegation through Explore/Librarian. |
+| `analyze` | Routes to the deep-analysis category with extended reasoning. |
+| `team` | Engages team mode if enabled in config. |
+
+## Tab cycling
+
+In the OpenCode UI, Tab cycles through core agents in a deterministic order: **Sisyphus → Hephaestus → Prometheus → Atlas → …**. Override with `agent_order` in plugin config; unknown or duplicate names are ignored with a config toast.
+
+## Background invocation
+
+Agents can be addressed explicitly inside a session:
+
+```text
+Ask @oracle to review this design and propose an architecture.
+Ask @librarian how this is implemented — why does the behavior keep changing?
+Ask @explore for the policy on this feature.
+```
+
+For background tasks, use the `task()` tool with `run_in_background=true` and retrieve results later via `background_output(task_id="…")`.
+
+## Custom commands
+
+Add your own slash commands by dropping markdown files into any of:
+
+- `.opencode/command/*.md` (project, OpenCode native)
+- `~/.config/opencode/command/*.md` (user, OpenCode native)
+- `.claude/commands/*.md` (project, Claude Code compat)
+- `~/.config/opencode/commands/*.md` (user, Claude Code compat)
+
+Disable built-ins via `{ "disabled_commands": ["init-deep", "start-work"] }`.
+
+## Source Notes
+
+Aligned with upstream `docs/reference/cli.md` and `docs/reference/features.md`. The full feature catalog (commands, keyword triggers, agent inventory, tools, hooks, MCPs) lives in [Features](/docs/reference/features).

@@ -1,0 +1,31 @@
+---
+title: Environment Variables
+description: All environment variables OmO reads, what they do, and the defaults they override.
+---
+
+OmO honors a small set of environment variables for telemetry control and OpenCode integration. They override config-file values, so use them when you need a one-shot toggle without editing JSONC.
+
+## Telemetry
+
+| Variable | Default behavior | Effect when set |
+|---|---|---|
+| `OMO_SEND_ANONYMOUS_TELEMETRY` | Anonymous active-install telemetry on (one event per UTC day, hashed install ID). | Set to `0`, `false`, or `no` to disable. No PostHog person profiles are created either way. |
+| `OMO_DISABLE_POSTHOG` | PostHog ingestion enabled when telemetry runs. | Set to `1` or `true` to disable PostHog specifically (legacy opt-out). Equivalent to disabling telemetry for current behavior. |
+| `POSTHOG_API_KEY` | Uses the built-in OmO PostHog project key. | Override with your own PostHog project key. |
+| `POSTHOG_HOST` | Defaults to `https://us.i.posthog.com`. | Point to a different PostHog ingestion endpoint (self-hosted or EU). |
+
+## OpenCode integration
+
+| Variable | Effect |
+|---|---|
+| `OPENCODE_CONFIG_DIR` | Override the directory OpenCode reads its config from. Useful for profile isolation when running multiple OmO setups side-by-side. |
+| `OPENCODE_DEFAULT_AGENT` | Default agent for `bunx oh-my-openagent run`. Used as the second fallback after `--agent` and before plugin config's `default_run_agent`. |
+| `ULTRAWORK_TASK_LIST_ID` | Force a specific task list ID for the Sisyphus task system. Equivalent to setting `sisyphus.tasks.task_list_id` in plugin config. |
+
+## Doctor surfaces these
+
+`bunx oh-my-openagent doctor --verbose` prints the effective state of each variable along with config-file resolution, so you can confirm a shell override actually reached the runtime.
+
+## Source Notes
+
+Aligned with upstream `docs/reference/configuration.md` and `docs/reference/features.md`. The runtime reads these via `process.env` at startup; changes take effect on the next `opencode` session.

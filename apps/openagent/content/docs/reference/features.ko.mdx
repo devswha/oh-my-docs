@@ -1,0 +1,187 @@
+---
+title: 기능
+description: OmO가 제공하는 모든 것 — 에이전트, 카테고리, 스킬, 명령, 도구, hook, MCP, 복구, Claude Code 호환.
+---
+
+OmO는 OpenCode 위에서 도는 멀티 모델 오케스트레이션 하네스입니다. 다른 페이지들이 여정(시작하기, 에이전트, configuration)을 다룬다면, 이 페이지는 표면적입니다 — 모든 기능을 영역별로 정리하고, 깊이 있는 페이지가 있으면 그쪽으로 연결합니다.
+
+## 아키텍처 스냅샷
+
+| 서브시스템 | 수 |
+|---|---|
+| Feature 모듈 (`src/features/`) | 20 |
+| Tool 디렉토리 (`src/tools/`) | 16 |
+| 노출 도구 | 20 (최소) – 39 (모든 게이트 ON) |
+| 기본 hook (5 tier) | 52 |
+| `team_mode.enabled` 시 hook | 59 (+1 Tool Guard, +2 Transform, +4 team session handler) |
+| MCP tier | 3 (built-in remote, `.mcp.json` loader, skill-embedded) |
+| 플러그인 시작 매니저 | 4 (Tmux Session, Background, Skill MCP, Config) |
+| Config phase | 6 (provider, plugin-components, agents, tools, MCPs, commands) |
+| Canonical core agent 순서 | Sisyphus → Hephaestus → Prometheus → Atlas |
+
+## 에이전트 (11)
+
+Core 순서는 주입되는 `order` 필드로 결정됩니다. plugin config의 `agent_order`로 override 가능.
+
+| 에이전트 | 기본 모델 | 레인 |
+|---|---|---|
+| **Sisyphus** | `claude-opus-4-7` (max) | 메인 오케스트레이터 — todo-driven으로 계획·위임·실행. |
+| **Hephaestus** | `gpt-5.5` (medium) | 자율 deep worker. GPT 가능 provider 필요. |
+| **Prometheus** | `claude-opus-4-7` (max) | 인터뷰 모드의 전략 planner. dual-prompt (Claude / GPT). |
+| **Atlas** | `claude-sonnet-4-6` | Todo-list 오케스트레이터. Prometheus 계획 실행. dual-prompt. |
+| **Oracle** | `gpt-5.5` (high) | read-only 아키텍처/디버깅 컨설턴트. |
+| **Librarian** | `gpt-5.4-mini-fast` | 멀티 레포 분석 + 문서/OSS 조회. read-only. |
+| **Explore** | `gpt-5.4-mini-fast` | 빠른 코드베이스 grep. read-only. |
+| **Multimodal-Looker** | `gpt-5.5` (medium) | PDF/이미지/다이어그램 비전. `read` 전용. |
+| **Metis** | `claude-sonnet-4-6` | 사전 plan 분석 — 숨은 의도와 모호함 발굴. read-only. |
+| **Momus** | `gpt-5.5` (xhigh) | plan reviewer. read-only. |
+| **Sisyphus-Junior** | (category 의존) | category에서 spawn되는 executor. 재위임 불가. |
+
+치환 정책과 fallback chain은 [에이전트-모델 매칭](/ko/docs/agents/model-matching), 에이전트별 도구 제한은 [Configuration → 도구별 권한](/ko/docs/reference/configuration#%EB%8F%84%EA%B5%AC%EB%B3%84-%EA%B6%8C%ED%95%9C).
+
+## 카테고리 (빌트인 8개)
+
+카테고리는 **어떤 종류의 작업인가**를 표현합니다. Sisyphus-Junior가 해당 카테고리 모델로 실행합니다.
+
+| Category | 기본 모델 | 용도 |
+|---|---|---|
+| `visual-engineering` | `google/gemini-3.1-pro` (high) | Frontend, UI/UX, 디자인, 애니메이션. |
+| `ultrabrain` | `openai/gpt-5.5` (xhigh) | Hard logic, 아키텍처, deep reasoning. |
+| `deep` | `openai/gpt-5.5` (medium) | 목표 지향 autonomous 문제 해결. **호출당 목표 1개 + 산출물 1개.** |
+| `artistry` | `google/gemini-3.1-pro` (high) | 창의/비관습 작업. |
+| `quick` | `openai/gpt-5.4-mini` | 단일 파일 수정, typo fix. |
+| `unspecified-low` | `anthropic/claude-sonnet-4-6` | 저효 general. |
+| `unspecified-high` | `anthropic/claude-opus-4-7` (max) | 고효 general. |
+| `writing` | `google/gemini-3-flash` | 문서/prose/테크니컬 라이팅. |
+
+커스텀 카테고리: plugin config의 `categories.<name>`에 정의. 스키마와 예시는 [Configuration → Category 옵션](/ko/docs/reference/configuration#category-%EC%98%B5%EC%85%98).
+
+## 빌트인 스킬 (7개)
+
+스킬은 특화 지식 + 옵션 MCP를 주입합니다.
+
+| 스킬 | 트리거 | 용도 |
+|---|---|---|
+| **git-master** | commit, rebase, squash, "누가 썼는지", "언제 추가됐는지" | Atomic commit architect + rebase surgeon + history archaeologist. 직전 30개 커밋에서 스타일 자동 감지. |
+| **playwright** | 브라우저 작업, 테스트, 스크린샷 | Playwright MCP. |
+| **agent-browser** | agent-browser 기반 브라우저 작업 | `agent-browser` CLI 기반. |
+| **dev-browser** | stateful 브라우저 스크립팅 | 반복 워크플로우와 인증 세션을 위한 persistent page state. |
+| **frontend-ui-ux** | UI/UX, 스타일링 | bold 미학 방향, 차별적 타이포, 일관된 팔레트. |
+| **review-work** | "review work", "review my work", "QA my work" | 5개 병렬 백그라운드 sub-agent: goal verification, code quality, security, hands-on QA, context mining. |
+| **ai-slop-remover** | "remove AI slop", "de-AI", "humanize" | 장황한 주석, 잉여 에러 처리, over-engineered 패턴 제거. |
+
+커스텀 스킬: `.opencode/skills/`, `.claude/skills/`, `.agents/skills/` 또는 user-scope에 `SKILL.md` 추가. 우선순위: project > user > opencode > builtin/plugin. 빌트인 비활성화는 `disabled_skills`.
+
+## 명령 (빌트인 8개)
+
+OpenCode 세션 안에서 인식되는 슬래시 명령. 풀 참고는 [빠른 명령](/ko/docs/reference/quick-commands).
+
+| 명령 | 용도 |
+|---|---|
+| `/init-deep` | 계층 `AGENTS.md` 생성. `--create-new`, `--max-depth=N`. |
+| `/ralph-loop "<목표>"` | 완료까지 도는 self-referential 루프. |
+| `/ulw-loop "<목표>"` | 동일 + ultrawork ON. |
+| `/cancel-ralph` | 진행 중인 Ralph 취소. |
+| `/refactor <대상>` | LSP + AST-grep + 아키텍처 + TDD 리팩토링. |
+| `/start-work [plan]` | 최신 Prometheus 계획에 Atlas 활성화. |
+| `/stop-continuation` | ralph loop, todo continuation, boulder state 중단. |
+| `/handoff` | 구조화된 handoff 문서 생성. |
+
+## 도구
+
+도구 등록은 config 게이트입니다. 표면은 20~39개.
+
+| 그룹 | 도구 |
+|---|---|
+| 코드 검색 | `grep`, `glob` |
+| 편집 | `edit` (hash-anchored `LINE#ID`) |
+| LSP | `lsp_diagnostics`, `lsp_prepare_rename`, `lsp_rename`, `lsp_goto_definition`, `lsp_find_references`, `lsp_symbols` |
+| AST-Grep | `ast_grep_search`, `ast_grep_replace` (25개 언어) |
+| 위임 | `call_omo_agent`, `task`, `background_output`, `background_cancel` |
+| 비전 | `look_at` (PDF/이미지/다이어그램, Multimodal-Looker 경유) |
+| 스킬 | `skill`, `skill_mcp` |
+| 세션 | `session_list`, `session_read`, `session_search`, `session_info` |
+| Task 시스템 (`experimental.task_system: true`) | `task_create`, `task_get`, `task_list`, `task_update` |
+| 인터랙티브 | `interactive_bash` (tmux 기반, vim/htop/pudb 등) |
+
+## Hook (기본 52, team mode 시 59)
+
+Hook은 **PreToolUse / PostToolUse / Message / Event / Transform / Params** 6개 이벤트에서 동작을 가로채고 수정합니다.
+
+기본 구성:
+
+| Tier | 수 |
+|---|---|
+| Session | 24 |
+| Tool Guard | 14 |
+| Transform | 5 |
+| Continuation | 7 |
+| Skill | 2 |
+
+영역별 주요 hook:
+
+| 영역 | Hook |
+|---|---|
+| 컨텍스트 주입 | `directory-agents-injector`, `directory-readme-injector`, `rules-injector`, `compaction-context-injector` |
+| 생산성 | `keyword-detector` (ultrawork/ulw/search/analyze/team), `think-mode`, `ralph-loop`, `auto-slash-command`, `category-skill-reminder` |
+| 품질 | `comment-checker`, `thinking-block-validator`, `write-existing-file-guard`, `hashline-read-enhancer`, `hashline-edit-diff-enhancer` |
+| 복구 | `session-recovery`, `anthropic-context-window-limit-recovery`, `runtime-fallback`, `model-fallback`, `json-error-recovery` |
+| 알림 | `auto-update-checker`, `background-notification`, `session-notification`, `agent-usage-reminder` |
+| Task 관리 | `task-resume-info`, `delegate-task-retry`, `empty-task-response-detector`, `tasks-todowrite-disabler` |
+| Continuation | `todo-continuation-enforcer`, `compaction-todo-preserver`, `unstable-agent-babysitter` |
+| 특수 | `prometheus-md-only`, `no-sisyphus-gpt`, `no-hephaestus-non-gpt`, `sisyphus-junior-notepad` |
+
+비활성화: `{ "disabled_hooks": ["comment-checker"] }`. Claude Code `settings.json`의 hook은 `claude-code-hooks` 경유로 그대로 동작.
+
+## MCP (3 tier)
+
+| Tier | 출처 | 예시 |
+|---|---|---|
+| 빌트인 | `src/mcp/` | `websearch` (Exa), `context7` (라이브러리 문서), `grep_app` (GitHub 코드 검색) |
+| `.mcp.json` loader | 프로젝트/사용자 `.mcp.json` / `.claude.json` | 커스텀 원격 MCP. `${VAR}` 확장 지원. |
+| Skill-embedded | `SKILL.md`의 `mcp:` 프론트매터 | Playwright, skill-specific MCP |
+
+skill MCP 클라이언트는 `${sessionID}:${skillName}:${serverName}` 키로 세션별 격리.
+
+OAuth 보호 원격 MCP는 OAuth 2.1 + PKCE + RFC 9728/8414 discovery + RFC 7591 dynamic client registration + RFC 8707 resource indicators 지원. 토큰은 `~/.config/opencode/mcp-oauth.json` (chmod 0600), 401에서 자동 갱신, 403에서 step-up. CLI:
+
+```bash
+bunx oh-my-openagent mcp oauth login <server-name> --server-url https://api.example.com
+```
+
+## 컨텍스트 주입
+
+- **디렉토리 `AGENTS.md` walk** — 파일을 읽으면 그 디렉토리부터 프로젝트 루트까지의 모든 `AGENTS.md`가 주입됩니다. OpenCode 1.1.37+에서는 native AGENTS.md 주입이 있어 자동 비활성화.
+- **조건부 규칙** — `.claude/rules/*.{md,mdc}`와 `~/.claude/rules/`의 파일은 `globs`가 매치되거나 `alwaysApply: true`일 때 주입.
+- **README 디렉토리 힌트** — 인접한 `README.md`도 디렉토리 컨텍스트로 주입.
+
+## 복구
+
+세션 실패는 투명하게 복구됩니다.
+
+| 실패 | 복구 |
+|---|---|
+| tool result 누락 | 복구 가능한 tool 상태 재구성, 잘못된 tool-part ID는 스킵. |
+| thinking block 위반 | API thinking block 불일치 복구. |
+| 빈 메시지 | 메시지 히스토리 재구성. |
+| context window 한도 | intelligent compaction. |
+| JSON parse 에러 | 잘못된 tool output 복구. |
+
+`experimental.auto_resume`을 켜면 복구 후 자동 재시도.
+
+## Claude Code 호환
+
+OmO는 Claude Code config를 익숙한 경로에서 로드합니다.
+
+| 종류 | 위치 |
+|---|---|
+| Commands | `~/.config/opencode/commands/`, `.claude/commands/` |
+| Skills | `~/.config/opencode/skills/*/SKILL.md`, `.claude/skills/*/SKILL.md` |
+| Agents | `~/.config/opencode/agents/*.md`, `.claude/agents/*.md` |
+| MCPs | `~/.claude.json`, `~/.config/opencode/.mcp.json`, `.mcp.json`, `.claude/.mcp.json` |
+
+표면별 비활성화: `claude_code.{mcp,commands,skills,agents,hooks,plugins}: false`. 특정 marketplace plugin 비활성화: `claude_code.plugins_override`.
+
+## 출처
+
+upstream `docs/reference/features.md` 기준. config 노브는 [Configuration](/ko/docs/reference/configuration), 모델 해석과 정규화는 [Model Capabilities](/ko/docs/reference/model-capabilities), 치환 규칙은 [에이전트-모델 매칭](/ko/docs/agents/model-matching).

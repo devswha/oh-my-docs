@@ -1,0 +1,88 @@
+---
+title: Model Capabilities
+description: How OmO resolves what a model can do, where the data comes from, and how to refresh the cache.
+---
+
+OmO normalizes model settings (`variant`, `reasoningEffort`, `temperature`, `top_p`, `maxTokens`, `thinking`) against each model's reported capabilities instead of failing hard when a setting isn't supported. This page is the model-capability source-of-truth.
+
+## Resolution layers
+
+The resolver tries each source in order until it gets an answer:
+
+1. **Runtime metadata** from the connected provider.
+2. **`models.dev` data** — bundled snapshot shipped with OmO, optionally refreshed into a local cache.
+3. **Compatibility aliases** in `src/shared/model-capability-aliases.ts` (historic OmO names and provider-specific decorations).
+4. **Heuristic family detection** as the last resort.
+
+## Refreshing the local cache
+
+OmO can refresh a local `models.dev` snapshot at startup. Manual refresh:
+
+```bash
+bunx oh-my-openagent refresh-model-capabilities
+```
+
+Auto-refresh:
+
+```jsonc
+{
+  "model_capabilities": {
+    "enabled": true,
+    "auto_refresh_on_start": true,
+    "refresh_timeout_ms": 5000,
+    "source_url": "https://models.dev/api.json"
+  }
+}
+```
+
+| Field | Default | Purpose |
+|---|---|---|
+| `enabled` | enabled unless explicitly `false` | Master switch for capability resolution. |
+| `auto_refresh_on_start` | refresh unless explicitly `false` | Hit `models.dev` during startup. |
+| `refresh_timeout_ms` | `5000` | Cap for the startup refresh attempt. |
+| `source_url` | `https://models.dev/api.json` | Override the snapshot endpoint. |
+
+Manual refresh is also available through `bunx oh-my-openagent refresh-model-capabilities`. Provider runtime metadata still wins over the cached snapshot when both are present.
+
+## Diagnostics
+
+`bunx oh-my-openagent doctor` (and `--verbose`) reports:
+
+- Effective model resolution for every agent and category.
+- Warnings when a configured model relies on compatibility fallback instead of native metadata.
+- Override-compatibility details (which settings were kept, normalized, or dropped).
+
+Use it when a setting in your plugin config looks like it isn't taking effect — it's usually a capability mismatch, not a config typo.
+
+## Normalization rules
+
+| Setting | Behavior |
+|---|---|
+| `variant` | Downgraded to the closest supported value (e.g., `xhigh` → `high` on `o-series`; GPT-5 keeps all variants through `xhigh`). |
+| `reasoningEffort` | Downgraded or removed if unsupported (Claude doesn't support it → removed; GPT-4.1 doesn't support reasoning → removed). |
+| `temperature`, `top_p` | Removed if the model's metadata says it doesn't honor them. |
+| `maxTokens` | Capped at the model's reported max output limit. |
+| `thinking` | Removed if the target model doesn't support thinking. |
+
+This is what lets cross-provider `fallback_models` chains degrade gracefully — a config tuned for Opus's thinking budget still works when the runtime falls back to GPT-5.5.
+
+## Aliases — internal policy
+
+These rules are for contributors maintaining `src/shared/model-capability-aliases.ts`:
+
+- Built-in OmO agent/category requirements must use **canonical model IDs**.
+- Aliases exist only to preserve compatibility with historical OmO names or provider-specific decorations.
+- New decorated names (`-high`, `-low`, `-thinking`) should not be added when a canonical ID plus structured settings expresses the same thing.
+- Provider/config aliases are normalized at the edge; internals continue with the canonical ID.
+
+When adding an alias:
+
+- Update `src/shared/model-capability-aliases.ts` with a rationale.
+- Cover it explicitly in tests.
+- Ensure the canonical target exists in the bundled `models.dev` snapshot.
+
+`bun run test:model-capabilities` enforces these invariants in CI before the scheduled `refresh-model-capabilities` workflow opens a snapshot-refresh PR.
+
+## Source Notes
+
+Aligned with upstream `docs/reference/configuration.md` and `docs/model-capabilities-maintenance.md`. The substitution decisions OmO makes per-agent live in [Agent-Model Matching](/docs/agents/model-matching); the override surface lives in [Configuration](/docs/reference/configuration).

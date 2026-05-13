@@ -1,0 +1,34 @@
+---
+title: Quick Commands
+description: Slash commands and keyword triggers OmO recognizes inside an OpenCode session. Stub for ja.
+---
+
+## Workflow commands
+
+| Command | Purpose |
+|---|---|
+| `/init-deep` | Generate hierarchical `AGENTS.md` (supports `--create-new`, `--max-depth=N`). |
+| `/ralph-loop "<goal>"` | Self-referential loop until completion. |
+| `/ulw-loop "<goal>"` | Same as ralph-loop with ultrawork mode on. |
+| `/cancel-ralph` | Cancel an active Ralph loop. |
+| `/refactor <target>` | LSP + AST-grep + architecture + TDD refactor. |
+| `/start-work [plan-name]` | Activate Atlas on the latest Prometheus plan. |
+| `/stop-continuation` | Stop ralph loop, todo continuation, boulder state. |
+| `/handoff` | Generate a structured handoff document. |
+
+## Keyword triggers
+
+| Keyword | Mode |
+|---|---|
+| `ultrawork`, `ulw` | Ultrawork mode. |
+| `search` | Retrieval-first delegation. |
+| `analyze` | Deep-analysis category. |
+| `team` | Team mode (if enabled). |
+
+## Tab cycling
+
+`Sisyphus → Hephaestus → Prometheus → Atlas → …`. Override via `agent_order`.
+
+## Source Notes
+
+Aligned with upstream `docs/reference/cli.md` and `docs/reference/features.md`.

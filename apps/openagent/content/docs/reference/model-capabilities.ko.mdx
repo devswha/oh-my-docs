@@ -1,0 +1,88 @@
+---
+title: 모델 capability
+description: OmO가 모델 capability를 해석하는 방식, 데이터 출처, 캐시 갱신 방법.
+---
+
+OmO는 모델 설정(`variant`, `reasoningEffort`, `temperature`, `top_p`, `maxTokens`, `thinking`)을 각 모델의 보고된 capability에 맞게 정규화합니다 — 미지원 값에 hard fail 하지 않습니다. 이 페이지가 모델 capability의 single source of truth입니다.
+
+## 해석 계층
+
+다음 순서로 답을 찾을 때까지 시도합니다.
+
+1. **runtime metadata** — 연결된 provider에서 받음.
+2. **`models.dev` 데이터** — OmO에 번들된 snapshot, 선택적으로 로컬 캐시로 갱신.
+3. **호환 alias** — `src/shared/model-capability-aliases.ts` (역사적 OmO 이름과 provider별 데코레이션).
+4. **휴리스틱 family 감지** — 최후 수단.
+
+## 로컬 캐시 갱신
+
+OmO는 시작 시 로컬 `models.dev` snapshot을 갱신할 수 있습니다. 수동:
+
+```bash
+bunx oh-my-openagent refresh-model-capabilities
+```
+
+자동:
+
+```jsonc
+{
+  "model_capabilities": {
+    "enabled": true,
+    "auto_refresh_on_start": true,
+    "refresh_timeout_ms": 5000,
+    "source_url": "https://models.dev/api.json"
+  }
+}
+```
+
+| 필드 | 기본 | 용도 |
+|---|---|---|
+| `enabled` | 명시적으로 `false`가 아니면 활성 | capability 해석 마스터 스위치. |
+| `auto_refresh_on_start` | 명시적으로 `false`가 아니면 갱신 | 시작 시 `models.dev` 히트. |
+| `refresh_timeout_ms` | `5000` | 시작 시 갱신 시도 상한. |
+| `source_url` | `https://models.dev/api.json` | snapshot endpoint override. |
+
+provider runtime metadata는 둘 다 있을 때 캐시 snapshot보다 우선합니다.
+
+## 진단
+
+`bunx oh-my-openagent doctor` (와 `--verbose`)가 보여주는 것:
+
+- 모든 agent와 category의 실효 model resolution.
+- 설정된 모델이 native metadata가 아니라 호환 fallback에 의존할 때의 경고.
+- override 호환성 세부(어떤 설정이 유지·정규화·제거됐는지).
+
+plugin config의 설정이 안 먹는 것 같을 때 쓰세요 — 보통 config 오타가 아니라 capability 불일치입니다.
+
+## 정규화 규칙
+
+| 설정 | 동작 |
+|---|---|
+| `variant` | 가장 가까운 지원값으로 downgrade (예: `o-series`에서 `xhigh` → `high`. GPT-5는 `xhigh`까지 전부 통과). |
+| `reasoningEffort` | 미지원 시 downgrade 또는 제거 (Claude는 미지원 → 제거. GPT-4.1는 reasoning 미지원 → 제거). |
+| `temperature`, `top_p` | 모델 metadata가 안 받는다고 하면 제거. |
+| `maxTokens` | 모델의 보고된 최대 출력 한도로 캡. |
+| `thinking` | 대상 모델이 thinking 미지원이면 제거. |
+
+이 덕분에 cross-provider `fallback_models` 체인이 무너지지 않습니다 — Opus thinking budget에 맞춘 config가 runtime이 GPT-5.5로 fallback해도 동작합니다.
+
+## Alias — 내부 정책
+
+`src/shared/model-capability-aliases.ts`를 유지하는 컨트리뷰터용 규칙입니다.
+
+- 빌트인 OmO agent/category 요구사항은 **canonical model ID**를 써야 함.
+- Alias는 역사적 OmO 이름이나 provider별 데코레이션 호환에만 존재.
+- 새 데코레이션 이름(`-high`, `-low`, `-thinking`)은 canonical ID + 구조화된 설정으로 같은 걸 표현할 수 있다면 추가하지 말 것.
+- provider/config alias는 edge에서 정규화하고 내부는 canonical ID로 진행.
+
+Alias 추가 시:
+
+- `src/shared/model-capability-aliases.ts`에 사유와 함께 추가.
+- 테스트로 명시 커버.
+- canonical target이 번들된 `models.dev` snapshot에 존재하는지 확인.
+
+CI는 `bun run test:model-capabilities`로 다음 invariant를 강제합니다 — 자동 snapshot refresh PR이 열리기 전에 통과해야 합니다.
+
+## 출처
+
+upstream `docs/reference/configuration.md`와 `docs/model-capabilities-maintenance.md` 기준. OmO가 agent별로 내리는 치환 결정은 [에이전트-모델 매칭](/ko/docs/agents/model-matching)에, override 표면은 [Configuration](/ko/docs/reference/configuration)에 있습니다.

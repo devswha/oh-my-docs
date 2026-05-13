@@ -1,0 +1,31 @@
+---
+title: 환경 변수
+description: OmO가 읽는 환경 변수 전체와 각각이 덮어쓰는 기본 동작.
+---
+
+OmO는 텔레메트리 제어와 OpenCode 통합에 관해 소량의 환경 변수를 읽습니다. config 파일 값을 덮어쓰므로, JSONC를 건드리지 않고 일회성으로 토글하고 싶을 때 쓰면 됩니다.
+
+## 텔레메트리
+
+| 변수 | 기본 동작 | 설정 시 효과 |
+|---|---|---|
+| `OMO_SEND_ANONYMOUS_TELEMETRY` | 익명 active-install 텔레메트리 ON (UTC 하루 1회, hashed install ID). | `0`, `false`, `no`로 끄기. 어느 쪽이든 PostHog person profile은 만들지 않습니다. |
+| `OMO_DISABLE_POSTHOG` | 텔레메트리 동작 시 PostHog ingestion 사용. | `1` 또는 `true`로 PostHog만 끄기 (legacy 옵트아웃). 현재 동작 기준으로는 텔레메트리 끄기와 동일. |
+| `POSTHOG_API_KEY` | 빌트인 OmO PostHog 프로젝트 키 사용. | 본인 PostHog 프로젝트 키로 override. |
+| `POSTHOG_HOST` | `https://us.i.posthog.com`. | 다른 PostHog ingestion endpoint (self-host 또는 EU) 지정. |
+
+## OpenCode 통합
+
+| 변수 | 효과 |
+|---|---|
+| `OPENCODE_CONFIG_DIR` | OpenCode가 config를 읽는 디렉토리 override. 여러 OmO 셋업을 병렬로 돌릴 때 프로파일 격리에 유용. |
+| `OPENCODE_DEFAULT_AGENT` | `bunx oh-my-openagent run`의 기본 에이전트. `--agent` 다음, plugin config `default_run_agent` 앞 우선순위. |
+| `ULTRAWORK_TASK_LIST_ID` | Sisyphus task system의 task list ID 강제. plugin config의 `sisyphus.tasks.task_list_id`와 동등. |
+
+## doctor가 노출함
+
+`bunx oh-my-openagent doctor --verbose`는 각 변수의 실효 상태를 config 파일 resolution과 함께 출력합니다. shell override가 실제로 runtime까지 닿았는지 확인하세요.
+
+## 출처
+
+upstream `docs/reference/configuration.md`와 `docs/reference/features.md` 기준. runtime은 시작 시 `process.env`로 읽고, 변경은 다음 `opencode` 세션부터 적용됩니다.

@@ -1,0 +1,25 @@
+---
+title: Environment Variables
+description: Telemetry and OpenCode integration variables OmO reads. Stub for ja.
+---
+
+## Telemetry
+
+| Variable | Effect |
+|---|---|
+| `OMO_SEND_ANONYMOUS_TELEMETRY=0` | Disable anonymous active-install telemetry. |
+| `OMO_DISABLE_POSTHOG=1` | Disable PostHog ingestion (legacy opt-out). |
+| `POSTHOG_API_KEY` | Override built-in PostHog project key. |
+| `POSTHOG_HOST` | Override ingestion host (default `https://us.i.posthog.com`). |
+
+## OpenCode integration
+
+| Variable | Effect |
+|---|---|
+| `OPENCODE_CONFIG_DIR` | Override OpenCode config directory. |
+| `OPENCODE_DEFAULT_AGENT` | Default agent for `bunx oh-my-openagent run`. |
+| `ULTRAWORK_TASK_LIST_ID` | Force Sisyphus task list ID. |
+
+## Source Notes
+
+Aligned with upstream `docs/reference/configuration.md` and `docs/reference/features.md`.

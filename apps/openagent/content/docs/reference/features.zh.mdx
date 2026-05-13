@@ -1,0 +1,46 @@
+---
+title: Features
+description: Full catalog of what OmO ships. Stub for zh.
+---
+
+## Architecture snapshot
+
+20 feature modules · 16 tool directories (20–39 tools depending on gates) · 52 base hooks (59 with team mode) · 3 MCP tiers · 4 startup managers · 6 config phases.
+
+Canonical core agent order: Sisyphus → Hephaestus → Prometheus → Atlas.
+
+## Agents (11)
+
+Sisyphus, Hephaestus, Prometheus, Atlas, Oracle, Librarian, Explore, Multimodal-Looker, Metis, Momus, Sisyphus-Junior. Tool restrictions and fallback chains in [Agent-Model Matching](/zh/docs/agents/model-matching).
+
+## Categories (8)
+
+`visual-engineering`, `ultrabrain`, `deep`, `artistry`, `quick`, `unspecified-low`, `unspecified-high`, `writing`. See [Configuration](/zh/docs/reference/configuration) for schema.
+
+## Built-in skills (7)
+
+`git-master`, `playwright`, `agent-browser`, `dev-browser`, `frontend-ui-ux`, `review-work`, `ai-slop-remover`.
+
+## Commands (8)
+
+`/init-deep`, `/ralph-loop`, `/ulw-loop`, `/cancel-ralph`, `/refactor`, `/start-work`, `/stop-continuation`, `/handoff`. See [Quick Commands](/zh/docs/reference/quick-commands).
+
+## Tools
+
+`grep`, `glob`, `edit` (hash-anchored), LSP (6), AST-grep (2), delegation (`task` / `call_omo_agent` / `background_*`), `look_at`, `skill` / `skill_mcp`, session tools (4), task system tools (4), `interactive_bash`.
+
+## Hooks
+
+52 base / 59 with team mode. Six event types (PreToolUse, PostToolUse, Message, Event, Transform, Params). Notable: `directory-agents-injector`, `keyword-detector`, `comment-checker`, `runtime-fallback`, `session-recovery`, `todo-continuation-enforcer`.
+
+## MCPs
+
+Three tiers: built-in (`websearch`, `context7`, `grep_app`), `.mcp.json` loader, skill-embedded. OAuth 2.1 + PKCE supported for remote MCPs.
+
+## Claude Code compatibility
+
+OmO loads Claude Code commands, skills, agents, MCPs, and hooks. Disable per surface via `claude_code.{mcp,commands,skills,agents,hooks,plugins}: false`.
+
+## Source Notes
+
+Aligned with upstream `docs/reference/features.md`.

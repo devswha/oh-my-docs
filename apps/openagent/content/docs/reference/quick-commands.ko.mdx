@@ -1,0 +1,61 @@
+---
+title: 빠른 명령
+description: OpenCode 세션 안에서 OmO가 인식하는 슬래시 명령과 키워드.
+---
+
+OmO는 하네스가 이미 알고 있는 워크플로우로 매핑되는 슬래시 명령 한 묶음을 제공합니다. 풀 프롬프트를 다 치지 않고 특정 모드에 바로 들어가는 가장 빠른 방법입니다.
+
+## 워크플로우
+
+| 명령 | 용도 |
+|---|---|
+| `/init-deep` | 프로젝트 전반에 계층적 `AGENTS.md` 파일을 생성해 이후 에이전트가 풀 컨텍스트로 시작하게 합니다. `--create-new`, `--max-depth=N` 지원. |
+| `/ralph-loop "<목표>"` | 완료 시까지 도는 self-referential 개발 루프. `<promise>DONE</promise>` 감지, 조기 중단 시 자동 재개, `default_max_iterations` (100) 한도. |
+| `/ulw-loop "<목표>"` | `ralph-loop`과 동일하되 ultrawork 모드 ON — 병렬 에이전트, 백그라운드 태스크, 적극적 탐색. |
+| `/cancel-ralph` | 진행 중인 Ralph 루프 취소. |
+| `/refactor <대상>` | 툴체인 기반 리팩토링: LSP rename + AST-grep + 아키텍처 분석 + TDD 검증. `--scope=<file\|module\|project>`, `--strategy=<safe\|aggressive>` 지원. |
+| `/start-work [plan-name]` | 최신 Prometheus 계획에 Atlas 활성화. |
+| `/stop-continuation` | 이 세션의 ralph loop, todo continuation, boulder state 모두 중단. |
+| `/handoff` | 현재 상태/완료/잔여/관련 경로를 담은 구조화된 handoff 문서 생성. |
+
+## 키워드 트리거
+
+슬래시 명령이 아니라, 하네스가 사용자 프롬프트에서 다음 키워드를 감지하면 해당 모드를 켭니다.
+
+| 키워드 | 모드 |
+|---|---|
+| `ultrawork`, `ulw` | Ultrawork — 병렬 에이전트, 백그라운드 태스크, 검증될 때까지 진행. |
+| `search` | Explore/Librarian을 통한 retrieval-first 위임 강제. |
+| `analyze` | 확장 reasoning이 붙은 deep-analysis 카테고리로 라우팅. |
+| `team` | config에서 켜져 있으면 team 모드 진입. |
+
+## Tab cycling
+
+OpenCode UI에서 Tab은 core agent를 결정된 순서로 순환합니다. **Sisyphus → Hephaestus → Prometheus → Atlas → …**. plugin config의 `agent_order`로 override 가능. 알 수 없는/중복 이름은 toast로 알리고 무시됩니다.
+
+## 명시 호출
+
+세션 안에서 에이전트를 직접 부를 수 있습니다.
+
+```text
+@oracle한테 이 설계를 리뷰하고 아키텍처를 제안해달라고 해줘.
+@librarian한테 이게 어떻게 구현됐는지 — 왜 동작이 계속 바뀌는지 물어봐.
+@explore에게 이 기능 정책 좀 찾아달라고 해줘.
+```
+
+백그라운드 작업은 `task()` 도구의 `run_in_background=true`로 띄우고, 나중에 `background_output(task_id="…")`로 결과를 회수합니다.
+
+## 커스텀 명령
+
+다음 위치에 마크다운 파일을 두면 커스텀 슬래시 명령이 됩니다.
+
+- `.opencode/command/*.md` (프로젝트, OpenCode native)
+- `~/.config/opencode/command/*.md` (사용자, OpenCode native)
+- `.claude/commands/*.md` (프로젝트, Claude Code 호환)
+- `~/.config/opencode/commands/*.md` (사용자, Claude Code 호환)
+
+빌트인 비활성화: `{ "disabled_commands": ["init-deep", "start-work"] }`.
+
+## 출처
+
+upstream `docs/reference/cli.md`와 `docs/reference/features.md` 기준. 전체 기능 카탈로그(명령, 키워드 트리거, 에이전트 인벤토리, 도구, hook, MCP)는 [Features](/ko/docs/reference/features)에 있습니다.
