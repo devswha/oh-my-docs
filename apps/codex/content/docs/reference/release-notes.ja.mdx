@@ -5,6 +5,26 @@ description: "ユーザー影響、互換性、検証根拠、アップストリ
 
 [変更ログ](/ja/docs/reference/changelog) は短い要約です。このページでは、最近のリリースで何が変わったのか、移行が必要か、リリース前に何が検証されたのかを確認できます。
 
+## v0.17.0 — Hermes MCP、`$design`、plugin discovery、adversarial UltraQA
+
+[アップストリームリリースノート](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/release-notes-0.17.0.md) · [CHANGELOG 項目](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#0170---2026-05-12) · [リリース準備証拠](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/qa/release-readiness-0.17.0.md)
+
+### ユーザー影響
+
+- Hermes MCP は bounded coordination bridge を追加し、tmux scrollback や raw private state を公開せずに session list/status、audited follow-up dispatch、safe artifact read、session start、log tail、final coordination report を提供します。
+- `$design` は repo-local `DESIGN.md` を作成または更新する canonical workflow になります。古い `frontend-ui-ux` shortcut は互換性のためだけに残ります。
+- Plugin-mode setup は local Codex plugin marketplace discovery で OMX skill を公開し、plugin cache を検証し、Hermes を含む plugin-scoped MCP metadata を公開します。
+- `$ultraqa` は adversarial dynamic e2e coverage を要求します。hostile scenario modeling、prompt-injection attempt、interrupt/cancel/resume case、stale state check、有用な temporary harness、explicit cleanup evidence を含みます。
+- Runtime hardening は Windows native hook、tmux continuation ownership、startup shell isolation、committed project-memory loading、Ultragoal task-scoped goal reconciliation を改善します。
+
+### 互換性
+
+通常ユーザーに移行は不要です。既存の `$frontend-ui-ux` prompt は compatibility shortcut として引き続き route されますが、リポジトリに残す durable product/UI/frontend/design-system の決定は新しい [`$design`](/ja/docs/skills/workflow/design) から始めてください。アップグレード後に plugin-mode skill discovery や Hermes MCP metadata が stale に見える場合は、`omx setup` と `omx doctor` を実行してください。
+
+### アップストリーム検証証拠
+
+アップストリーム readiness record は、その snapshot で local release preparation は PASS、external publication は PENDING と記録しています。Local gate には previous-tag ancestry、version metadata sync、build/lint/no-unused、targeted MCP/Hermes state-path test、Cargo test、final full release gate、`$code-review` approval、release body generation、`npm pack --dry-run` が含まれました。Targeted Node release suite は 467 tests に通過し、Rust tests も通過しました。generated release body SHA-256 は `e1fdf5bd7961ee7d1370046114301f2939007828d91e9fd361fdb6a7515cae7e`、dry-run package shasum は `64b6cb807fab9ddb6213dde72472df137c8e81db` です。
+
 ## v0.16.4 — Approved handoffs と runtime completion hardening
 
 [アップストリームリリースノート](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/release-notes-0.16.4.md) · [CHANGELOG entry](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#0164---2026-05-11) · [Readiness evidence](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/qa/release-readiness-0.16.4.md)

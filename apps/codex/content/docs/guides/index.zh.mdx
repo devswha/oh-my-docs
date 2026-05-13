@@ -1,137 +1,124 @@
 ---
-title: 指南
-description: 根据当前情况选择 OMX 哪个流程的决策指南
+title: Use cases and guides
+description: 为当前任务选择合适的 OMX 工作流
 ---
 
-## 如何选择流程
+## 探索 use cases
 
-OMX 有多个工作流，初次使用时光是选择就令人犯难。本页不是罗列 skill 名称的文档，而是帮你判断**当前是什么情况应该选哪个流程**。
+当你知道任务类型，但不确定应该由哪个 OMX flow 负责时，请使用本页。
 
-## 一目了然的决策表
+最短规则是：任务模糊时先澄清，错误代价高时先规划，已批准计划需要持久化时交给 `$ultragoal`，只有真正存在并行性时才拆成团队。
 
-| 情况 | 首选 | 原因 |
+## 决策表
+
+| 情况 | 起点 | 原因 |
 |---|---|---|
-| 需求本身模糊 | `$deep-interview` | 应先确定范围，再开始实现 |
-| 有方向但没有计划 | `$ralplan` | 需要先锁定权衡取舍 |
-| 有计划且要一人推进到底 | `$ralph` | 持续所有者 + 验证循环 |
-| 大型计划需要按多个 milestone 长期追踪 | `$ultragoal` | `.omx/ultragoal` ledger + Codex goal handoff |
-| 计划可以拆分到多个 lane | `$team` | 仅在并行化真正有收益时使用 |
-| 想快速看到原型 | `$autopilot` | 放弃控制换取速度 |
+| 需求模糊 | `$deep-interview` | 实现前必须澄清 scope |
+| 方向明确但没有计划 | `$ralplan` | 先固定 tradeoff 和 test |
+| 需要 UI/UX、前端或 design-system 方向 | `$design` | 实现前用 repo-local `DESIGN.md` 固定基准 |
+| 紧密耦合的工作需要一个 context | `$ralph` | 让单一 owner 维持一个验证循环 |
+| 大计划跨多个 milestone | `$ultragoal` | 持久化 goal、ledger 和 handoff evidence |
+| 可以拆成独立 lane | `$team` | 并行化确实有价值 |
+| 想快速看到 prototype | `$autopilot` | 用较少控制换取速度 |
+| 重点是验证和修复 | `$ultraqa` | 循环 test、diagnosis 和 repair |
 
-几乎所有选择都可以用这张表解决。以下是各项目为何在那个位置的详细说明。
+## 默认 guided flow
 
----
-
-## 基本路径
-
-初次使用 OMX，标准路径有三条。
+如果你刚开始使用 OMX，建议先走一次三步 route，再使用 shortcut。
 
 ```text
-$deep-interview "帮我整理认证变更的范围"
-$ralplan "请批准最安全的实现路径"
-$ralph "请把批准的计划执行完毕"
+$deep-interview "clarify the authentication change"
+$ralplan "approve the safest implementation path"
+$ultragoal "turn the approved plan into durable goals and complete them"
 ```
 
-理解这三条为何分开，就能看清 OMX 是怎么运作的。
+| 步骤 | 作用 |
+|------|------|
+| `$deep-interview` | 需求模糊时整理任务 |
+| `$ralplan` | 实现前对计划和 tradeoff 达成一致 |
+| `$ultragoal` | 将已批准计划转成 durable goal、ledger evidence 和 completion checkpoint |
 
-- **`$deep-interview`** — 需求模糊时先用问题梳理清楚。比起代码，先确定"做什么"更重要。
-- **`$ralplan`** — planner / architect / critic 反复迭代直到达成共识。在实现前锁定权衡取舍。
-- **`$ralph`** — 拿着批准的计划，循环执行直到出现完成证据。
+之后你可以用 `$autopilot` 快速交给 full-pipeline execution，但先走这条 route 可以看清各阶段。
 
-也可以用 `$autopilot` 一步到位，但**至少手动走一遍这三个阶段，才能真正感受 OMX 在做什么。** 之后才能判断什么时候可以走捷径。
-
----
-
-## `$autopilot` 什么时候用
-
-把一个想法从实现 → QA → 验证一次性全部委托时。
+## 用 `$autopilot` 快速制作原型
 
 ```bash
 $autopilot "build me a todo app in next.js"
 ```
 
-| 项目 | 状态 |
-|---|---|
-| 控制程度 | 低 — OMX 决定大部分流程 |
-| 速度 | 快 — 一次观察整个管道 |
-| 适合的情况 | 原型、小功能、end-to-end 验证 |
-| 应避免的情况 | 需求模糊时、需要先做计划共识的任务 |
+适合：
 
-简单来说，`$autopilot` 是"快速看全局"，基于计划的流程是"有控制地推进"。
+- 小功能或 throwaway prototype
+- 运维风险低
+- 想快速观察完整 pipeline
 
----
+如果需求不清楚、architecture risk 较大，或必须显式 plan approval，请选择其他 flow。
 
-## 应该先走计划流程的时候
-
-范围宽泛，或走错方向代价高昂的任务，延迟执行反而更快。
+## 实现前先规划
 
 ```text
-$deep-interview "帮我整理需要做什么"
-$ralplan "帮我制定最安全的计划"
-$ralph "按那个计划执行到底"
+$deep-interview "clarify what we need to build"
+$ralplan "produce the safest implementation plan"
+$ultragoal "turn that plan into durable goals and complete them"
 ```
 
-特别适合这个路径的情况：
+当 architecture、testing、data migration、security、operations 影响重要时，这是更安全的路径，因为已批准计划会作为 durable goal 保留下来，而不是只存在于一次执行循环中。
 
-- 需要同时考虑架构 · 测试 · 运营影响
-- 需求经过多个利益相关方尚未整理清楚
-- 需要中途达成方向共识的大型任务
+## 用 `$design` 在 UI 工作前确定设计基准
 
----
-
-## `$ultragoal` 适合需要 durable goal 时
-
-`$ultragoal` 会把大型 brief 或已批准 plan 转成 durable Codex/OMX goals。长期计划保存在 `.omx/ultragoal/` 下，story progress 写入 ledger，active thread 则明确 handoff 给 Codex goal mode。
-
-![Ultragoal 将已批准 plan 连接到 durable milestones、ledger、Codex goal handoff 与 final review evidence 的流程](/images/docs/skills-workflow-ultragoal-learning-v2.png)
+当产品、UI/UX、前端或 design-system 决策需要在实现前成为 repo 的 durable source of truth 时，使用 [`$design`](/zh/docs/skills/workflow/design)。它会检查现有 UI 证据，只询问设计关键的缺失上下文，并创建或刷新 repo root 的 `DESIGN.md`。
 
 ```bash
-$ultragoal "turn this launch plan into durable goals and complete them"
+$design "create a design contract for the dashboard refresh"
 ```
 
-| 项目 | 状态 |
-|---|---|
-| 控制程度 | 高 — plan 与 evidence 都保存在文件中 |
-| 持续性 | 高 — compaction、session change、handoff 后更容易继续 |
-| 适合的情况 | 多个 milestone、release train、大型 refactor、最终验证很重要的任务 |
-| 应避免的情况 | 小型 one-shot edit、需求仍模糊的任务、更适合 parallel lane 的任务 |
+合适的后续流程：
 
-命令细节与 completion gate 请参见 [`$ultragoal`](/zh/docs/skills/workflow/ultragoal)。
+- frontend、backend、test 可以清晰拆分时，把已批准 design contract 交给 `$team`
+- design plan 跨多个 milestone 时，交给 `$ultragoal`
+- 只有在需要匹配已批准 screenshot、mockup、image 或 live URL 时，才使用 `$visual-ralph`
 
-典型流程如下：
 
-```text
-$deep-interview "帮我整理产品范围"
-$ralplan "按 milestone 制定安全计划并批准"
-$ultragoal "把批准的计划转成 durable goals 并完成"
-```
+## 用 `$ultragoal` 跟踪 durable milestone
 
-判断方式很简单：
+`$ultragoal` 会把宽泛 brief 或已批准 plan 转成 durable Codex/OMX goal。它把长期计划写入 `.omx/ultragoal/`，用 ledger 跟踪进度，并明确把当前 thread handoff 到 Codex goal mode。
 
-- **计划很大，但需要按 sequential milestone 追踪** → `$ultragoal`
-- **一个人用同一上下文推进到底就够了** → `$ralph`
-- **可以像 frontend / backend / test 那样并行拆分** → `$team`
-- **需求还不清楚** → 先用 `$deep-interview` 或 `$ralplan`
-
----
-
-## `$team` 只在并行化有价值时使用
-
-`$team` 不是"永远更快的模式"。只有**实际上可以拆分的任务**时才有价值。
+![Ultragoal 将 brief 转成 durable state，handoff 到 Codex goal，把 checkpoint evidence 写回 ledger，并进入 final gate 的流程](/images/docs/guides-ultragoal-flow.svg)
 
 ```bash
-$team 3:executor "请并行执行批准的计划"
+$ultragoal "split this launch plan into durable goals and complete them"
 ```
 
-| 项目 | 状态 |
-|---|---|
-| 控制程度 | 中～高 — 需要提前设计拆分方式 |
-| 并行性 | 高 — 多个 lane 同时进行 |
-| 适合的情况 | frontend / backend / test 这类自然分开的任务 |
-| 应避免的情况 | 范围模糊、并行化只会增加冲突 |
+适用于需要经受 context compaction 或 handoff 的 multi-milestone launch、release train 和大型 refactor。
 
-应该避免的信号：
+## 用 `$team` 拆分并行工作
 
-- 需求模糊 → 先用 `$deep-interview`
-- 需要一个上下文贯穿到底 → `$ralph`
-- lane 之间可能产生冲突 → 顺序处理更快
+```bash
+$team 3:executor "execute the approved plan in parallel"
+```
+
+![$team 创建 shared state，启动 worker lane，收集 task claim 与 ACK/heartbeat，并在完成后 shutdown 的流程](/images/docs/guides-team-flow.svg)
+
+适合：
+
+- frontend、backend、test 可以独立推进
+- file ownership 可以明确分配
+- 计划已经批准
+
+如果需求模糊、必须保持一个 context，或并行 lane 大多只会制造 merge conflict，请避免 team mode。
+
+## 用 `$ultraqa` 验证并修复
+
+当 green build 还不够、还需要确认 hostile/edge condition 下的真实行为时，使用 [`$ultraqa`](/zh/docs/skills/workflow/ultraqa)。它会把 baseline check 与 adversarial dynamic e2e scenario 结合起来，诊断失败、应用修复、清理 temporary harness，并输出 evidence report。
+
+```bash
+$ultraqa --tests
+$ultraqa --custom "the report export rejects stale state"
+```
+
+适合：
+
+- prompt injection、cancel/resume、stale state、misleading success output 很重要的 CLI 或 workflow 变更
+- 需要 failure evidence 与 cleanup proof 的 release-readiness 检查
+- unit test 已通过但仍需要 dynamic behavior probe 的功能
+

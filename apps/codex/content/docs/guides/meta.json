@@ -1,10 +1,13 @@
 {
-  "title": "Guides",
+  "title": "Use cases and guides",
   "pages": [
-    "[Understanding the default execution path](/docs/guides#understanding-the-default-execution-path)",
-    "[When should you use $autopilot?](/docs/guides#when-should-you-use-autopilot)",
-    "[When should you use plan-driven workflows?](/docs/guides#when-should-you-use-plan-driven-workflows)",
-    "[When should you use $ultragoal?](/docs/guides#when-should-you-use-ultragoal)",
-    "[When should you use $team?](/docs/guides#when-should-you-use-team)"
+    "[Decision table](/docs/guides#decision-table)",
+    "[Default guided flow](/docs/guides#default-guided-flow)",
+    "[Prototype quickly with $autopilot](/docs/guides#prototype-quickly-with-autopilot)",
+    "[Plan before implementation](/docs/guides#plan-before-implementation)",
+    "[Design before UI work with $design](/docs/guides#design-before-ui-work-with-design)",
+    "[Track durable milestones with $ultragoal](/docs/guides#track-durable-milestones-with-ultragoal)",
+    "[Split parallel work with $team](/docs/guides#split-parallel-work-with-team)",
+    "[Verify and repair with $ultraqa](/docs/guides#verify-and-repair-with-ultraqa)"
   ]
 }

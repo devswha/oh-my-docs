@@ -19,6 +19,7 @@ description: OMX スキルをワークフローとユーティリティに分け
 |---|---|
 | [`$deep-interview`](/ja/docs/skills/workflow/deep-interview) | 要件が曖昧なとき質問で整理 |
 | [`$ralplan`](/ja/docs/skills/workflow/ralplan) | planner · architect · critic の合意計画 |
+| [`$design`](/ja/docs/skills/workflow/design) | プロダクト/UI/フロントエンド決定のために repo-local `DESIGN.md` を作成・更新 |
 | [`$ralph`](/ja/docs/skills/workflow/ralph) | 完了証拠が出るまで繰り返し実行 |
 | [`$team`](/ja/docs/skills/workflow/team) | 並列レーンに分割して同時実行 |
 | [`$autopilot`](/ja/docs/skills/workflow/autopilot) | アイデア → 実装 → QA → 検証を一括処理 |
@@ -43,7 +44,7 @@ description: OMX スキルをワークフローとユーティリティに分け
 ```text
 $deep-interview "認証変更の内容を明確にしてくれ"
 $ralplan "最も安全な実装パスを承認してくれ"
-$ralph "承認された計画を最後まで完了してくれ"
+$ultragoal "承認された計画を durable goal に分けて完了してくれ"
 ```
 
 この三つに慣れたら、あとは状況に応じて選択すればよいです。
@@ -52,7 +53,7 @@ $ralph "承認された計画を最後まで完了してくれ"
 |---|---|
 | 何を作るか曖昧 | `$deep-interview` |
 | まず計画を合意 | `$ralplan` |
-| 一人で最後まで押し進める | `$ralph` |
+| 承認済み計画を長く残す | `$ultragoal` |
 | 並列化が可能 | `$team` |
 | 全工程を一括処理 | `$autopilot` |
 
@@ -68,7 +69,7 @@ $autopilot "build me a todo app in next.js"
 
 向いているケース: プロトタイプ、小さな機能、end-to-end 確認。
 
-**`$deep-interview → $ralplan → $ralph`** — 制御優先、ステップを分離。
+**`$deep-interview → $ralplan → $ultragoal`** — 制御優先、durable goal でステップを分離。
 
 向いているケース: スコープが広い作業、方向合意が先の作業、間違えたときコストが高い作業。
 
@@ -84,4 +85,4 @@ $team 3:executor "承認された計画を並列で実行してくれ"
 - 順次処理では速度が出ない大きな作業
 - 計画がすでにあり、レーンに分配可能な場合
 
-逆に要件が曖昧だったり、レーン間で衝突しそうな場合は `$ralph` の方が安全です。
+逆に要件が曖昧なら先に明確化して計画してください。レーン間で衝突しそうな場合は承認済み plan を `$ultragoal` に保存し、結合度の高い単一 owner ループが必要なときだけ `$ralph` を選びます。

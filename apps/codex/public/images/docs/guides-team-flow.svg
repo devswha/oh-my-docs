@@ -1,0 +1,89 @@
+<svg width="2401" height="500" viewBox="0 0 2401 500" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Team parallel worker workflow</title>
+  <desc id="desc">An approved plan enters team mode, which writes shared context and state, launches worker lanes, lets workers claim tasks and report heartbeats, then the leader checks status, shuts the team down, and finishes.</desc>
+  <defs>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap");
+      .bg { fill: #fdfbf7; }
+      .line { stroke: #b3b1a7; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .dash { stroke: #b3b1a7; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 3 8; fill: none; }
+      .boundary { stroke: #dcdad2; stroke-width: 1.1; stroke-linecap: round; stroke-dasharray: 2 7; fill: none; }
+      .green-box { fill: #f0f7eb; stroke: #b8dca8; stroke-width: 1.5; }
+      .purple-box { fill: #f5f3ff; stroke: #b7adf1; stroke-width: 1.5; }
+      .purple-outline { fill: none; stroke: #b7adf1; stroke-width: 1.5; }
+      .file-box { fill: #ffffff; stroke: #d6cff0; stroke-width: 1.1; }
+      .orange-pill { fill: #fff8f5; stroke: #f0b6a4; stroke-width: 1.5; }
+      .txt { font-family: "Space Grotesk", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; text-anchor: middle; dominant-baseline: middle; font-weight: 600; letter-spacing: -0.005em; }
+      .mono { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-weight: 500; letter-spacing: 0; }
+      .green { fill: #5a913e; }
+      .purple { fill: #6b62aa; }
+      .orange { fill: #c65f40; }
+      .label { fill: #7a7872; font-weight: 450; font-size: 22px; }
+      .file { font-size: 23px; fill: #6b62aa; font-weight: 500; }
+      .main { font-size: 34px; }
+      .sub { font-size: 25px; }
+      .left { text-anchor: end; }
+      .right { text-anchor: start; }
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M1.5 1.5 L9 5 L1.5 8.5" fill="none" stroke="#b3b1a7" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" width="2401" height="500"/>
+
+  <!-- Input task or approved plan -->
+  <rect class="orange-pill" x="250" y="242" width="170" height="76" rx="38"/>
+  <text class="txt orange main" x="335" y="282">Plan</text>
+
+  <path class="line" d="M440 280 H535" marker-end="url(#arrow)"/>
+
+  <!-- Team launch -->
+  <text class="txt label" x="675" y="198">N workers + role</text>
+  <rect class="green-box" x="555" y="230" width="240" height="100" rx="10"/>
+  <text class="txt green main mono" x="675" y="268">$team</text>
+  <text class="txt green sub mono" x="675" y="304">omx team</text>
+
+  <path class="line" d="M815 280 H910" marker-end="url(#arrow)"/>
+
+  <!-- Shared context and team state -->
+  <text class="txt label" x="1060" y="183">shared state</text>
+  <rect class="purple-box" x="930" y="198" width="260" height="164" rx="10"/>
+  <rect class="file-box" x="960" y="218" width="200" height="38" rx="6"/>
+  <text class="txt file mono" x="1060" y="238">context/</text>
+  <rect class="file-box" x="960" y="264" width="200" height="38" rx="6"/>
+  <text class="txt file mono" x="1060" y="284">tasks/</text>
+  <rect class="file-box" x="960" y="310" width="200" height="38" rx="6"/>
+  <text class="txt file mono" x="1060" y="330">mailbox</text>
+
+  <path class="line" d="M1210 280 H1305" marker-end="url(#arrow)"/>
+
+  <!-- Parallel worker panes -->
+  <text class="txt label" x="1445" y="198">tmux panes</text>
+  <rect class="green-box" x="1325" y="230" width="240" height="100" rx="10"/>
+  <text class="txt green main" x="1445" y="268">workers</text>
+  <text class="txt green sub" x="1445" y="304">claim tasks</text>
+
+  <path class="line" d="M1585 280 H1680" marker-end="url(#arrow)"/>
+
+  <!-- Leader monitors and closes loop -->
+  <text class="txt label" x="1815" y="198">leader monitor</text>
+  <rect class="purple-outline" x="1700" y="230" width="230" height="100" rx="10"/>
+  <text class="txt purple sub mono" x="1815" y="268">status</text>
+  <text class="txt purple sub mono" x="1815" y="304">shutdown</text>
+
+  <path class="line" d="M1950 280 H2045" marker-end="url(#arrow)"/>
+
+  <!-- Done -->
+  <rect class="orange-pill" x="2065" y="242" width="170" height="76" rx="38"/>
+  <text class="txt orange main" x="2150" y="282">Done</text>
+
+  <!-- Concept boundary: leader-owned state vs worker execution -->
+  <text class="txt label left" x="1258" y="92">team state</text>
+  <text class="txt label right" x="1278" y="92">worker lanes</text>
+  <path class="boundary" d="M1268 116 V410"/>
+
+  <!-- Workers report back to the shared queue/mailbox -->
+  <path class="dash" d="M1445 335 C 1330 420, 1168 420, 1165 350" marker-end="url(#arrow)"/>
+  <text class="txt label" x="1305" y="438">claim / ACK / heartbeat</text>
+</svg>

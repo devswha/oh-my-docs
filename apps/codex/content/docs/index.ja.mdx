@@ -1,91 +1,117 @@
 ---
 title: Oh My CodeX
-description: "OpenAI Codex CLI 向けマルチエージェントオーケストレーション。学習コストゼロ。"
+description: "OpenAI Codex CLI のためのマルチエージェント・オーケストレーション。学習曲線ゼロ。"
 ---
 
 ![Oh My CodeX](/images/omx-social-preview.jpg)
 
-**OpenAI Codex CLI 向けマルチエージェントオーケストレーション。学習コストゼロ。**
+**OpenAI Codex CLI のためのマルチエージェント・オーケストレーション。学習曲線ゼロ。**
 
-_Codex プロンプトを学ぶ必要はありません。OMX をそのまま使ってください。_
+_Codex のプロンプトを覚える必要はありません。OMX を使うだけです。_
 
-Oh My CodeX (OMX) は OpenAI Codex CLI の上で動作するワークフローレイヤーです。1 回の呼び出しで専用エージェントプロンプトを連携させ、複雑な開発タスクをエンドツーエンドで自動化します。
+Oh My CodeX (OMX) は OpenAI Codex CLI の上で動作するワークフローレイヤーです。Codex をコーディングエンジンとして使いながら、曖昧なタスクを要件整理、承認済み計画、実装、検証へ進めるドキュメント型の流れを追加します。
 
 ## クイックスタート
 
-### 第 1 ステップ — Codex CLI をインストール
+<Steps>
+  <Step>
+    ### Codex CLI をインストール
 
-```bash
-npm i -g @openai/codex
-```
+    ```bash
+    npm i -g @openai/codex
+    codex login
+    ```
+  </Step>
+  <Step>
+    ### OMX をインストールして設定
 
-### 第 2 ステップ — OMX をインストール
+    ```bash
+    npm i -g oh-my-codex
+    omx setup
+    ```
+  </Step>
+  <Step>
+    ### インストールを検証
 
-```bash
-npm i -g oh-my-codex
-```
+    ```bash
+    omx doctor
+    codex login status
+    omx exec --skip-git-repo-check -C . "Reply with exactly OMX-EXEC-OK"
+    ```
+  </Step>
+  <Step>
+    ### 最初のタスクを送る
 
-### 第 3 ステップ — セットアップ
+    ```bash
+    omx --madmax --high
+    ```
 
-```bash
-omx setup
-```
+    セッション内で標準の guided flow を実行します。
 
-### 第 4 ステップ — 最初のセッションのスモークテストを実行
+    ```text
+    $deep-interview "clarify the authentication change"
+    $ralplan "approve the safest implementation path"
+    $ultragoal "turn the approved plan into durable goals and complete them"
+    ```
+  </Step>
+</Steps>
 
-```bash
-omx doctor
-codex login status
-omx exec --skip-git-repo-check -C . "Reply with exactly OMX-EXEC-OK"
-```
+## ドキュメントの流れ
 
-### 第 5 ステップ — 推奨方法で OMX を起動
-
-```bash
-omx --madmax --high
-```
-
-そのセッション内で、標準ワークフローを試してください:
-
-```
-$deep-interview "認証変更の要件を明確にして"
-$ralplan "もっとも安全な実装パスを承認して"
-$ralph "承認済みの計画を完了まで進めて"
-```
-
-承認済みの計画に並列実行が必要なら、`$ralph` の代わりに `$team 3:executor "承認済みの計画を並列実行して"` を使ってください。
-
-## ドキュメント
+OMX が初めての場合は、この順番で読むのが自然です。
 
 <Cards>
-  <Card title="Getting Started" href="/ja/docs/getting-started">
-    インストール、セットアップ確認、そして最初の良い OMX セッション
+  <Card title="Quickstart" href="/ja/docs/getting-started">
+    Codex CLI と OMX をインストールし、setup path を選び、ランタイムを検証して最初のタスクを送ります。
   </Card>
-  <Card title="Core Concepts" href="/ja/docs/concepts">
-    エージェント、スキル、フック、`.omx/` ランタイム状態
+  <Card title="Use cases" href="/ja/docs/guides">
+    プロトタイプ、plan-first 作業、durable goal、並列実行、QA loop のどれを使うか選びます。
   </Card>
-  <Card title="Guides" href="/ja/docs/guides">
-    計画、実行、QA、デバッグの推奨ワークフロー
+  <Card title="Core concepts" href="/ja/docs/concepts">
+    エージェント、スキル、フック、状態管理がどう噛み合うかを理解します。
   </Card>
+  <Card title="Migrate" href="/ja/docs/reference/migration">
+    旧 OMX 構成や関連 agent setup を現在の Codex-native 構成へ移します。
+  </Card>
+</Cards>
+
+## OMX を使う
+
+クイックスタートの後は、以下のセクションを製品マニュアルとして使えます。
+
+<Cards>
   <Card title="Agents" href="/ja/docs/agents">
-    33 個の役割別プロンプトのリファレンス
+    探索、計画、実装、レビュー、検証のための role-specific prompt surface。
   </Card>
   <Card title="Skills" href="/ja/docs/skills">
-    ワークフロー / ユーティリティスキル、呼び出し規則、利用ガイド
+    `$deep-interview`、`$ralplan`、`$ultragoal`、`$team` などのワークフロー/ユーティリティ入口。
   </Card>
   <Card title="Hooks" href="/ja/docs/hooks">
-    Codex ライフサイクル統合、キーワードルーティング、フック動作
+    Codex lifecycle 統合、キーワードルーティング、stop gate、ランタイム動作。
   </Card>
   <Card title="Tools" href="/ja/docs/tools">
-    State、HUD、Wiki、Visual、プロバイダーブリッジなどランタイムが内部で使う機能層
+    State、HUD、Wiki、Visual、provider bridge などのランタイム capability surface。
   </Card>
   <Card title="Integrations" href="/ja/docs/integrations">
-    OpenClaw、Clawhip、MCP、クロス CLI 相互運用
+    OpenClaw、Clawhip、MCP、クロス CLI 相互運用。
   </Card>
-  <Card title="Reference" href="/ja/docs/reference">
-    設定、クイックコマンド、環境変数、契約
+</Cards>
+
+## 設定、自動化、学習
+
+正確な名前、運用の詳細、リリース履歴が必要なときに使うセクションです。
+
+<Cards>
+  <Card title="Configuration reference" href="/ja/docs/reference/configuration">
+    設定ファイル、フック、launch flag、優先順位のルール。
+  </Card>
+  <Card title="Quick commands" href="/ja/docs/reference/quick-commands">
+    今すぐ必要なコマンドを最短で見つけます。
+  </Card>
+  <Card title="Changelog" href="/ja/docs/reference/changelog">
+    何が変わり、いつ出荷され、アップグレード後に何を確認するかを見ます。
   </Card>
   <Card title="Support" href="/ja/docs/support">
-    FAQ、Issue 報告、サポートチャネル
+    FAQ、Issue 報告、サポートチャネル。
   </Card>
 </Cards>

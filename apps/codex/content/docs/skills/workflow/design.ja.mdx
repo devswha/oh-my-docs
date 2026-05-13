@@ -1,0 +1,66 @@
+---
+title: $design
+description: プロダクト、UI/UX、フロントエンド、デザインシステム決定のための canonical DESIGN.md ワークフロー
+---
+
+`$design` は v0.17 で追加された公式デザインワークフローです。実装前にリポジトリローカルの `DESIGN.md` を作成または更新し、プロダクト、UI/UX、フロントエンド、デザインシステムの決定を永続的な source of truth として残します。
+
+## いつ使うか
+
+- UI/フロントエンド実装の前にデザイン方針が必要なとき。
+- リポジトリに継続的に参照できる design brief や design-system contract がないとき。
+- 既存の画面、コンポーネント、アセット、スクリーンショットを再利用可能な guidance にまとめたいとき。
+- プロダクトやデザインの文脈が不足しており、質問、明示的な仮定、open question として記録する必要があるとき。
+- `$ralph`、`$team`、実装作業の前に機能の design contract が必要なとき。
+
+## 呼び出し
+
+```bash
+$design "create a design contract for the dashboard refresh"
+```
+
+## 動作方法
+
+1. `DESIGN.md`、ドキュメント、route、layout、component、theme file、token、asset、screenshot、mockup、Storybook、visual-regression artifact を先に確認します。
+2. ユーザー、jobs、プロダクト目標、ブランド制約、主要フロー、アクセシビリティ目標、デバイス対応、実装制約など、デザイン判断に必要な不足文脈だけを尋ねます。
+3. リポジトリルートの `DESIGN.md` を作成または更新し、必須セクションを埋めます。
+4. 以後の UI/UX/フロントエンド実装と review は `DESIGN.md` を契約として参照します。
+
+## 必須の `DESIGN.md` セクション
+
+- Source of truth
+- Brand
+- Product goals
+- Personas and jobs
+- Information architecture
+- Design principles
+- Visual language
+- Components
+- Accessibility
+- Responsive behavior
+- Interaction states
+- Content voice
+- Implementation constraints
+- Open questions
+
+## `$design` vs `$frontend-ui-ux`
+
+`$design` が canonical workflow です。`$frontend-ui-ux` は古いプロンプト互換の shortcut として残りますが、リポジトリに残すべきプロダクト、UI/UX、フロントエンド、デザインシステムの決定は、新しい作業では `$design` から始めてください。
+
+## `$design` vs `$visual-ralph`
+
+`$design` は永続的な design source of truth を作る役割です。承認済みの generated image、static mockup、screenshot、live URL を実装し、視覚的な反復で一致させる必要がある場合のみ `$visual-ralph` を使います。両方必要な場合は、先に `$design` を実行してから、承認済みの visual reference を `$visual-ralph` に渡します。
+
+## 完了チェックリスト
+
+- 既存の design doc、asset、component、screenshot、theme file を確認した、または存在しないと記録した。
+- 不足している product/design context が回答、仮定、または open question として記録されている。
+- リポジトリルートに `DESIGN.md` があり、必須セクションを含んでいる。
+- 後続の UI/UX/フロントエンド作業が、暗黙の好みではなく `DESIGN.md` を引用している。
+- `$visual-ralph` handoff がある場合、`DESIGN.md` governance とは別物として明確に分けている。
+
+## 関連スキル
+
+- [`$ralph`](/ja/docs/skills/workflow/ralph) — デザインが固まった後、実装を検証完了まで進める
+- [`$team`](/ja/docs/skills/workflow/team) — design contract が安定したら frontend/backend/test lane に分割する
+- [`$ultraqa`](/ja/docs/skills/workflow/ultraqa) — 実装後の敵対的検証

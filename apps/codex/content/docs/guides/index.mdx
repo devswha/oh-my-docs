@@ -1,148 +1,124 @@
 ---
-title: Guides
-description: A practical overview of how to apply OMX to real tasks.
+title: Use cases and guides
+description: Choose the right OMX workflow for the task in front of you
 ---
 
-## Practical guides
+## Explore use cases
 
-Once you understand the core concepts, the next step is learning how to apply OMX to real work.
+Use this page when you know what kind of work you have, but not which OMX flow should own it.
 
-This page is less about listing skill names and more about **helping you choose the right execution flow for the situation you are in**.
+The shortest rule is: clarify first when the task is fuzzy, plan first when the cost of being wrong is high, hand the approved plan to `$ultragoal` when work should persist, and split into a team only when parallelism is real.
 
----
+## Decision table
 
-## Understanding the default execution path
+| Situation | Start with | Why |
+|---|---|---|
+| Requirements are vague | `$deep-interview` | Scope has to be clarified before implementation |
+| Direction is known but the plan is not | `$ralplan` | Tradeoffs and tests should be fixed first |
+| UI/UX, frontend, or design-system direction is needed | `$design` | Creates or refreshes repo-local `DESIGN.md` before implementation |
+| Tightly coupled work needs one context | `$ralph` | Keeps one owner in a single verification loop |
+| A large plan spans milestones | `$ultragoal` | Persists goals, ledgers, and handoff evidence |
+| Work can split into independent lanes | `$team` | Parallelism has real value |
+| You want a quick prototype | `$autopilot` | Trades control for speed |
+| You mainly need verification and fixes | `$ultraqa` | Loops tests, diagnosis, and repair |
 
-If you want to experience OMX properly for the first time, this is the most recommended baseline flow:
+## Default guided flow
 
-```bash
+If you are new to OMX, use the three-step route once before reaching for shortcuts.
+
+```text
 $deep-interview "clarify the authentication change"
 $ralplan "approve the safest implementation path"
-$ralph "carry the approved plan to completion"
+$ultragoal "turn the approved plan into durable goals and complete them"
 ```
-
-This flow matters because each step has a different job.
 
 | Step | Role |
 |------|------|
-| `$deep-interview` | Clarify the task when the requirements are still fuzzy |
+| `$deep-interview` | Clarify the task when requirements are fuzzy |
 | `$ralplan` | Agree on the plan and tradeoffs before implementation |
-| `$ralph` | Push the approved plan through implementation and verification |
+| `$ultragoal` | Convert the approved plan into durable goals, ledger evidence, and completion checkpoints |
 
-You *can* hand everything to `$autopilot` immediately, but it is usually worth experiencing this default path once so you understand how OMX moves.
+You can use `$autopilot` for fast full-pipeline execution later, but this route makes the stages visible.
 
----
-
-## When should you use `$autopilot`?
-
-`$autopilot` is the headline workflow when you want OMX to take an idea all the way through implementation, QA, and validation.
+## Prototype quickly with `$autopilot`
 
 ```bash
 $autopilot "build me a todo app in next.js"
 ```
 
-### Good fit
+Good fit:
 
-- You want to see a full result quickly
-- The requirements are not especially complex
-- You do not want to manually manage planning, execution, and QA
-- You want to try OMX on a throwaway prototype or a small feature
+- small feature or throwaway prototype
+- low operational risk
+- you want to observe the full pipeline quickly
 
-### A different flow may be better when
+Choose a different flow when requirements are unclear, the architecture is risky, or explicit plan approval matters.
 
-- the requirements are still unclear → `$deep-interview`
-- you need agreement on the plan first → `$ralplan`
-- one persistent owner should carry the work through verification → `$ralph`
-- you need to explicitly divide work across parallel lanes → `$team`
+## Plan before implementation
 
-In short: `$autopilot` is great for **fast full-pipeline execution**, while `deep-interview → ralplan → ralph` is the **more controllable default path**.
-
----
-
-## When should you use plan-driven workflows?
-
-One of OMX's strengths is that you do not have to jump straight into implementation. You can separate **clarification → plan approval → execution**.
-
-That flow looks like this:
-
-```bash
+```text
 $deep-interview "clarify what we need to build"
 $ralplan "produce the safest implementation plan"
-$ralph "carry out that plan to completion"
+$ultragoal "turn that plan into durable goals and complete them"
 ```
 
-### This is especially useful when
+This is the safer path when architecture, testing, data migration, security, or operations impact matters, because the approved plan is preserved as durable goals instead of living only in one execution loop.
 
-- the task is broad and risky to implement blindly
-- architecture, testing, or operations impact matters
-- the user request is not fully shaped yet
-- you need to agree on direction before touching code
+## Design before UI work with `$design`
 
-### A simple way to think about it
+Use [`$design`](/docs/skills/workflow/design) when product, UI/UX, frontend, or design-system choices should become a durable repo source of truth before implementation starts. It inspects existing UI evidence, interviews only for missing design-critical context, and creates or refreshes repo-root `DESIGN.md`.
 
-- **I want to see something fast** → `$autopilot`
-- **I need clarification first** → `$deep-interview`
-- **I need an agreed plan first** → `$ralplan`
-- **I need one owner to carry it all the way through** → `$ralph`
-- **I have a large approved plan that must survive sessions** → `$ultragoal`
+```bash
+$design "create a design contract for the dashboard refresh"
+```
 
----
+Good follow-ups:
 
-## When should you use `$ultragoal`?
+- hand the approved design contract to `$team` when frontend, backend, and tests can split cleanly
+- hand it to `$ultragoal` when the design plan spans multiple milestones
+- use `$visual-ralph` only when an approved screenshot, mockup, image, or live URL must be matched visually
 
-`$ultragoal` is for turning a large brief or approved plan into durable Codex/OMX goals. It writes the long-range plan under `.omx/ultragoal/`, keeps story progress in a ledger, and hands the active thread to Codex goal mode explicitly.
 
-![Ultragoal turns an approved plan into durable milestones, a ledger, a Codex goal handoff, and final review evidence.](/images/docs/skills-workflow-ultragoal-learning-v2.png)
+## Track durable milestones with `$ultragoal`
+
+`$ultragoal` turns a broad brief or approved plan into durable Codex/OMX goals. It writes the long-range plan under `.omx/ultragoal/`, tracks progress in a ledger, and hands the active thread to Codex goal mode explicitly.
+
+![Ultragoal creates durable state from a brief, hands the active thread to a Codex goal, records checkpoint evidence, and ends at a final gate.](/images/docs/guides-ultragoal-flow.svg)
 
 ```bash
 $ultragoal "split this launch plan into durable goals and complete them"
 ```
 
-### Good fit
+Use it for multi-milestone launches, release trains, and large refactors that must survive context compaction or handoff.
 
-- The plan has multiple sequential milestones, not one small edit
-- Progress needs to survive compaction, session changes, or handoff
-- You want an aggregate Codex goal while OMX tracks `G001`, `G002`, and later story evidence
-- Final completion should require cleanup, verification, and review evidence before being marked done
-
-### A different flow may be better when
-
-- the requirements are still unclear → `$deep-interview` or `$ralplan` first
-- one owner can complete the whole job in one continuous loop → `$ralph`
-- the work can be split into independent parallel lanes → `$team`
-- you only need a quick prototype → `$autopilot`
-
-For command details and completion gates, see [`$ultragoal`](/docs/skills/workflow/ultragoal).
-
-A common durable route is:
-
-```bash
-$deep-interview "clarify the product scope"
-$ralplan "produce the approved milestone plan"
-$ultragoal "turn the approved plan into durable goals and complete them"
-```
-
----
-
-## When should you use `$team`?
-
-`$team` works best when the approved plan contains work that is genuinely worth splitting into parallel lanes.
+## Split parallel work with `$team`
 
 ```bash
 $team 3:executor "execute the approved plan in parallel"
 ```
 
-### Good fit
+![Team mode writes shared state, launches worker lanes, lets workers claim tasks, reports ACKs and heartbeats, then shuts down when work is complete.](/images/docs/guides-team-flow.svg)
 
-- The work can be split into frontend / backend / testing lanes
-- The task spans multiple files or subsystems
-- Sequential execution would be unnecessarily slow
-- You already have a plan and can distribute it across workers
+Good fit:
 
-### Not a good fit
+- frontend, backend, and tests can move independently
+- file ownership can be assigned clearly
+- the plan is already approved
 
-- The requirements are still unclear
-- Parallelism would create more merge friction than speed
-- One persistent owner needs to keep the whole context in hand
+Avoid team mode when the requirements are unclear, one context needs to stay intact, or parallel lanes would mostly create merge conflicts.
 
-So `$team` is not the “better mode” by default. It is the right mode **only when parallelism has real value**.
+## Verify and repair with `$ultraqa`
+
+Use [`$ultraqa`](/docs/skills/workflow/ultraqa) when correctness depends on behavior under hostile or edge conditions, not only on a green build. It combines baseline checks with adversarial dynamic e2e scenarios, diagnoses failures, applies fixes, cleans up temporary harnesses, and reports evidence.
+
+```bash
+$ultraqa --tests
+$ultraqa --custom "the report export rejects stale state"
+```
+
+Good fit:
+
+- CLI or workflow changes where prompt injection, cancel/resume, stale state, or misleading success output matters
+- release-readiness checks that need failure evidence and cleanup proof
+- features that passed unit tests but still need dynamic behavior probes
+

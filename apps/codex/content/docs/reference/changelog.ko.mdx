@@ -5,7 +5,27 @@ description: "OMX 릴리스 이력 — 최신 릴리스 요약과 업스트림 C
 
 전체 changelog는 업스트림 [`CHANGELOG.md`](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md)에서 관리됩니다. 이 페이지는 최근 릴리스를 요약합니다.
 
-## 최신 릴리스 — v0.16.4
+## 최신 릴리스 — v0.17.0
+
+`0.16.4` 이후의 minor release입니다. bounded Hermes MCP coordination, canonical `$design` workflow guidance, plugin-mode skill marketplace exposure, 더 강한 UltraQA adversarial contract, Windows native-hook reliability, tmux ownership safety, startup shell isolation, committed project-memory loading, Ultragoal task-scoped goal reconciliation에 초점을 맞췄습니다.
+
+**추가 사항:**
+- Hermes MCP bridge: tmux scrollback이나 raw private state를 노출하지 않고 session/status read, audited follow-up dispatch, safe artifact read, log tail, session start, coordination report를 bounded tool로 제공합니다.
+- Canonical design workflow: `DESIGN.md`와 mirror된 `$design` skill guidance가 design workflow를 정의하며, `frontend-ui-ux`는 deprecated되었습니다.
+- Plugin-mode skill discovery: setup이 local Codex plugin marketplace/cache와 Hermes를 포함한 plugin-scoped MCP metadata를 등록·검증합니다.
+
+**변경 사항:**
+- `$ultraqa`는 adversarial by contract가 되어 hostile scenario modeling, prompt-injection attempt, interrupt/cancel/resume, stale state check, 필요 시 temporary harness, cleanup evidence를 요구합니다.
+- CLI-first runtime authority guidance가 CLI runtime이 소유하는 동작과 MCP/default setup path를 더 명확히 구분합니다.
+
+**수정 사항:**
+- Windows native hook launch가 PowerShell `ProcessStartInfo` shim을 통해 stdio와 exit status를 보존합니다.
+- Tmux continuation은 follow-up prompt 주입 전에 mode/session/window ownership을 검증합니다.
+- Startup tmux launch는 Codex 시작 전에 shell rc fan-out을 피합니다.
+- Ultragoal은 완료된 task-scoped aggregate Codex goal을 strict evidence gate와 함께 active OMX story로 reconcile할 수 있습니다.
+- Release-review MCP/Hermes test는 inherited runtime env를 isolate하고 macOS temp root를 canonicalize합니다.
+
+## v0.16.4
 
 `0.16.3` 이후 approved execution handoff, context-pack metadata 가시성, Codex hook feature flag migration, setup/notify ownership, HUD/runtime state-root 가시성, Ralph completion audit evidence, Ultragoal completion proof requirement를 강화한 안정화 패치입니다.
 

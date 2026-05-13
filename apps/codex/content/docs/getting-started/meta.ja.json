@@ -1,9 +1,8 @@
 {
   "title": "クイックスタート",
   "pages": [
-    "[前提条件](/ja/docs/getting-started#prerequisites)",
-    "[インストール](/ja/docs/getting-started#install)",
-    "[初回実行](/ja/docs/getting-started#first-run)",
-    "[次のステップ](/ja/docs/getting-started#next-steps)"
+    "[前提条件](/ja/docs/getting-started#前提条件)",
+    "[Setup](/ja/docs/getting-started#setup)",
+    "[初回セッション](/ja/docs/getting-started#初回セッション)"
   ]
 }

@@ -1,141 +1,136 @@
 ---
-title: 시작하기
-description: oh-my-codex(OMX) 설치부터 첫 세션까지 빠르게 시작하기
+title: 빠른 시작
+description: OMX를 설치하고 setup path를 고른 뒤 런타임을 검증하고 첫 작업을 보내기
 ---
 
-## 시작하기
+## 빠른 시작
 
-oh-my-codex(OMX)를 처음 쓴다면, 아래 순서대로 따라가면 됩니다.
+깨끗한 환경에서 동작하는 OMX 세션까지 가장 짧고 안전하게 가고 싶을 때 이 페이지를 따라가면 됩니다.
 
-1. [설치](#설치-방법) - Codex CLI와 OMX 설치, `omx setup` 실행
-2. [첫 세션](#첫-세션-시작하기) - 실행 경계를 확인하고 권장 워크플로우 실행
+OMX는 [OpenAI Codex CLI](https://github.com/openai/codex) 위에서 실행됩니다. 먼저 Codex를 설치하고, 그 위에 요구사항 정리, 계획, 실행, 팀, 검증을 위한 orchestration layer로 OMX를 추가합니다.
 
-OMX는 [OpenAI Codex CLI](https://github.com/openai/codex) 위에서 동작하는 워크플로우 레이어입니다. Codex를 실행 엔진으로 유지하면서 역할별 에이전트 프롬프트, 스킬, 훅을 얹어 주기 때문에, 막연한 아이디어에서 동작하는 코드까지 하나의 일관된 루프로 가져갈 수 있습니다.
-
-### 사전 요구사항
+## 사전 요구사항
 
 | 항목 | 요구사항 |
 |------|----------|
-| Node.js | 22+ 권장 (최소 20+) |
-| [Codex CLI](https://github.com/openai/codex) | 설치 및 인증 필수 |
+| Node.js | 22+ 권장, 최소 20+ |
+| Codex CLI | 설치 및 인증 완료 |
 | 운영체제 | macOS 또는 Linux 권장 |
-| tmux | durable team runtime을 쓸 경우 필요 |
+| tmux | durable team session에 필요 |
 
 <Callout type="info">
-네이티브 Windows에서는 동작이 깨지거나 일관되지 않을 수 있습니다. 가능하면 macOS 또는 Linux 환경에서 시작하는 것을 권장합니다.
+현재 OMX 런타임은 native Windows에서 일관되지 않을 수 있습니다. 가능하면 macOS, Linux, WSL, 또는 remote Linux 개발 호스트를 권장합니다.
 </Callout>
 
----
+## Setup
 
-## 설치 방법
+처음 어떤 방식으로 OMX를 사용할지에 맞춰 setup path를 고릅니다.
 
-### Codex CLI 설치
+<Tabs items={["로컬", "팀", "검증"]}>
+  <Tab>
+    ### 로컬 세션 추천
 
-먼저 Codex CLI를 설치합니다.
+    저장소에서 첫 실제 작업을 할 때 이 경로를 사용합니다.
 
-```bash
-npm install -g @openai/codex
-```
+    <Steps>
+      <Step>
+        #### Codex CLI 설치
 
-설치 후 인증합니다.
+        ```bash
+        npm install -g @openai/codex
+        codex login
+        ```
+      </Step>
+      <Step>
+        #### OMX 설치
 
-```bash
-codex login
-```
+        ```bash
+        npm install -g oh-my-codex
+        omx setup
+        ```
+      </Step>
+      <Step>
+        #### 설치 확인
 
-### OMX 설치
+        ```bash
+        omx doctor
+        codex login status
+        ```
+      </Step>
+      <Step>
+        #### 리더 세션 실행
 
-그다음 OMX를 설치합니다.
+        ```bash
+        omx --madmax --high
+        ```
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab>
+    ### 팀 런타임
 
-```bash
-npm install -g oh-my-codex
-```
+    계획에 여러 lane이 필요하거나 tmux pane을 통해 작업을 오래 유지해야 할 때 사용합니다.
 
-### setup 실행
+    ```bash
+    npm install -g @openai/codex oh-my-codex
+    codex login
+    omx setup
+    omx --tmux --madmax --high
+    ```
 
-설치가 끝났다면 setup을 실행합니다.
+    작업을 나눌 만큼 명확해진 뒤에만 병렬 실행을 시작합니다.
 
-```bash
-omx setup
-```
+    ```text
+    $team 3:executor "execute the approved plan in parallel"
+    ```
+  </Tab>
+  <Tab>
+    ### 검증용 스모크 테스트
 
-`omx setup`은 다음을 자동으로 처리합니다.
+    CLI, 인증, 모델 호출 경로가 동작하는지만 확인할 때 사용합니다.
 
-- `.codex/config.toml` 작성 및 `codex_hooks = true` 활성화
-- `.codex/hooks.json`에 OMX 훅 명령 등록
-- `.omx/` 프로젝트 상태 디렉터리 생성
-- 세션 프롬프트에 OMX 에이전트 컨텍스트 연결
+    ```bash
+    omx doctor
+    codex login status
+    omx exec --skip-git-repo-check -C . "Reply with exactly OMX-EXEC-OK"
+    ```
 
-### 설치 확인
-
-설치가 제대로 되었는지 먼저 확인합니다.
-
-```bash
-omx doctor
-```
-
-`omx doctor`는 누락된 파일, 훅, 로컬 런타임 전제 조건을 점검합니다.
-
----
-
-## 첫 세션 시작하기
-
-설치 확인이 끝났다면, 이제 실행 경계를 확인하고 첫 세션을 시작해 보면 됩니다.
-
-### 실행 경계 확인
-
-아래 명령으로 현재 셸과 설정에서 실제 모델 호출이 가능한지 확인합니다.
-
-```bash
-codex login status
-omx exec --skip-git-repo-check -C . "Reply with exactly OMX-EXEC-OK"
-```
-
-- `codex login status`는 현재 인증 상태를 확인합니다.
-- `omx exec` 스모크 테스트는 활성화된 Codex 프로필이 실제로 요청을 보내고 응답을 끝까지 받을 수 있는지 확인합니다.
-
-### 권장 실행 방식
-
-OMX는 아래 방식으로 시작하는 것을 권장합니다.
-
-```bash
-omx --madmax --high
-```
-
-리더 세션을 tmux 안에서 명시적으로 띄우고 싶다면:
-
-```bash
-omx --tmux --madmax --high
-```
+    기대 응답은 정확히 `OMX-EXEC-OK`입니다.
+  </Tab>
+</Tabs>
 
 <Callout type="warn">
-`--madmax`는 Codex 승인과 샌드박싱을 우회합니다. 의도적으로 사용할 때만 켜세요.
+`--madmax`는 Codex 승인과 sandboxing을 우회합니다. 해당 실행 경계가 의도된 저장소와 환경에서만 사용하세요.
 </Callout>
 
-### 기본 워크플로우 실행
+## 첫 세션
 
-첫 세션에서는 아래 순서를 추천합니다.
+첫 유용한 세션에서는 작지만 실제적인 작업을 보내고 기본 guided flow를 한 번 타보는 것이 좋습니다.
 
-```bash
-$deep-interview "인증 변경 사항을 명확히 해줘"
-$ralplan "가장 안전한 구현 경로를 승인해줘"
-$ralph "승인된 계획을 끝까지 완료해줘"
+```text
+$deep-interview "clarify the authentication change"
+$ralplan "approve the safest implementation path"
+$ultragoal "turn the approved plan into durable goals and complete them"
 ```
 
-각 단계의 의미는 다음과 같습니다.
+각 명령은 서로 다른 단계를 맡습니다.
 
-| 단계 | 역할 |
-|------|------|
-| `$deep-interview` | 요구사항이 모호할 때 질문으로 생각을 정리 |
-| `$ralplan` | 구현 전에 가장 안전한 계획을 합의 |
-| `$ralph` | 승인된 계획을 계속 밀고 가며 완료까지 수행 |
+| 단계 | 하는 일 |
+|------|---------|
+| `$deep-interview` | 코드 변경 전에 모호한 요구사항을 정리 |
+| `$ralplan` | 더 안전한 구현 및 테스트 계획 작성 |
+| `$ultragoal` | 승인된 계획을 durable goal, ledger evidence, completion checkpoint로 전환 |
 
-승인된 계획에 병렬 실행이 필요하다면 마지막 단계를 아래처럼 바꾸면 됩니다.
+승인된 계획이 자연스럽게 병렬화된다면 마지막 명령을 아래처럼 바꿉니다.
 
-```bash
-$team 3:executor "승인된 계획을 병렬로 실행해줘"
+```text
+$team 3:executor "execute the approved plan in parallel"
 ```
 
-- 병렬 작업이 필요하면 `$team`
-- 한 명의 지속적인 소유자가 끝까지 밀어붙이는 흐름이면 `$ralph`
+### 첫 프롬프트 예시
 
+```text
+$deep-interview "help me scope a safer signup flow change"
+$ralplan "plan the least risky way to add this report export"
+$ultragoal "split the approved report export plan into durable goals and complete them"
+```

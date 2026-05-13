@@ -1,7 +1,8 @@
 {
-  "title": "시작하기",
+  "title": "빠른 시작",
   "pages": [
-    "[설치 방법](/ko/docs/getting-started#설치-방법)",
-    "[첫 세션 시작하기](/ko/docs/getting-started#첫-세션-시작하기)"
+    "[사전 요구사항](/ko/docs/getting-started#사전-요구사항)",
+    "[Setup](/ko/docs/getting-started#setup)",
+    "[첫 세션](/ko/docs/getting-started#첫-세션)"
   ]
 }

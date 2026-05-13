@@ -12,7 +12,7 @@ Create reviewable docs updates, docs-ready image assets, and MDX placements for 
 ## Quick start
 
 1. Identify target app and page. Defaults: OMX/Codex → `codex`, Claude Code → `claudecode`, OpenAgent → `openagent`.
-2. Run the planner when placement/path is not obvious:
+2. Run the planner when placement/path is not obvious. It groups locale sibling MDX files and suggests one shared image asset per canonical docs page:
 
 ```bash
 node .codex/skills/docs-image-maker/scripts/plan-doc-images.mjs --app codex --from-git
@@ -53,7 +53,7 @@ node .codex/skills/docs-image-maker/scripts/generate-with-gti.mjs \
   --dry-run
 ```
 
-Use `--live` instead of `--dry-run` for actual generation. If `gti` is unavailable, report the install/auth gap or use another available image-generation surface.
+Use `--live` instead of `--dry-run` for actual generation. If `gti` is unavailable, report the install/auth gap or use another available image-generation surface. Only pass `--use-npx` when the user explicitly accepts running the package through `npx -y god-tibo-imagen`.
 
 ## Workflow
 
@@ -107,8 +107,8 @@ Provider choice:
 
 1. **HTML-first review sheet** — use when structure, layout, or explanatory clarity matters. Generate a self-contained `.omx/artifacts/docs-images/<topic>.html` sheet with candidates, prompts, alt text, and the selected SVG export.
 2. **Existing vector/code-native diagram** — use when exact structure matters or text labels are required.
-3. **`god-tibo-imagen` / `gti`** — use for committed PNG assets when installed and authenticated; dry-run first. This uses an unsupported private Codex/ChatGPT backend path, so never commit auth files or debug dumps.
-4. **Built-in `imagegen` skill/tool** — use for conversational bitmap generation or when the environment supports saving the generated asset.
+3. **`god-tibo-imagen` / `gti`** — use for committed PNG assets when installed and authenticated; dry-run first. This uses an unsupported private Codex/ChatGPT backend path, so never commit auth files or debug dumps. Do not silently install/run it via `npx`; use `--use-npx` only after explicit user acceptance.
+4. **Built-in `imagegen` skill/tool** — use for conversational bitmap generation or when the environment supports saving the generated asset. Do not rely on chat-only image output for a repo-committed docs asset unless there is a concrete save/export path.
 5. **Fallback** — create an SVG/diagram placeholder and report that live raster generation is blocked.
 
 ### 4a. HTML-first workflow
@@ -148,4 +148,6 @@ Then use `preview-docs-local` for the app, usually with `--tailscale`, and smoke
 - `references/doc-image-style.md` — prompt, placement, accessibility, and locale guidance.
 - `references/god-tibo-imagen.md` — optional `gti` provider notes based on `NomaDamas/god-tibo-imagen`.
 - `references/html-effectiveness.md` — HTML-first review-sheet pattern for docs rewrite review and visual iteration.
+- `references/anthropic-style-diagram.md` — recipe for code-native technical workflow diagrams (states, handoffs, file artifacts, feedback loops) in the visual language of Anthropic's "Building effective agents" guide. Use for precise, label-heavy SVG diagrams that must remain crisp and localizable; pairs with the template below.
+- `assets/svg-templates/anthropic-style-template.svg` — starter SVG with the full palette, fonts, marker, and a placeholder 5-node backbone.
 - `assets/prompts/ultragoal-learning-figure.txt` — model prompt for an educational Ultragoal docs figure.

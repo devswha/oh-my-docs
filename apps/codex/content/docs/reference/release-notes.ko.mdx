@@ -5,6 +5,26 @@ description: "사용자 영향, 호환성, 검증 근거, 업스트림 링크를
 
 [변경 로그](/ko/docs/reference/changelog)는 짧은 요약입니다. 이 페이지는 최근 릴리스의 실제 의미를 볼 때 사용하세요. 무엇이 바뀌었는지, 마이그레이션이 필요한지, 릴리스 전에 무엇을 검증했는지를 함께 정리합니다.
 
+## v0.17.0 — Hermes MCP, `$design`, plugin discovery, adversarial UltraQA
+
+[업스트림 릴리스 노트](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/release-notes-0.17.0.md) · [CHANGELOG 항목](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#0170---2026-05-12) · [릴리스 준비 근거](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/qa/release-readiness-0.17.0.md)
+
+### 사용자 영향
+
+- Hermes MCP는 tmux scrollback이나 raw private state를 노출하지 않고 session list/status, audited follow-up dispatch, safe artifact read, session start, log tail, final coordination report를 제공하는 bounded coordination bridge를 추가합니다.
+- `$design`가 repo-local `DESIGN.md`를 만들거나 갱신하는 canonical workflow가 됩니다. 기존 `frontend-ui-ux` shortcut은 compatibility 용도로만 남습니다.
+- Plugin-mode setup은 local Codex plugin marketplace discovery로 OMX skill을 노출하고, plugin cache를 검증하며, Hermes를 포함한 plugin-scoped MCP metadata를 게시합니다.
+- `$ultraqa`는 adversarial dynamic e2e coverage를 요구합니다. hostile scenario modeling, prompt-injection attempt, interrupt/cancel/resume case, stale state check, 유용한 temporary harness, explicit cleanup evidence가 포함됩니다.
+- Runtime hardening은 Windows native hook, tmux continuation ownership, startup shell isolation, committed project-memory loading, Ultragoal task-scoped goal reconciliation을 개선합니다.
+
+### 호환성
+
+일반 사용자는 별도 마이그레이션이 필요 없습니다. 기존 `$frontend-ui-ux` prompt는 compatibility shortcut으로 계속 동작하지만, 저장소에 남아야 하는 product/UI/frontend/design-system 결정은 새 [`$design`](/ko/docs/skills/workflow/design)에서 시작하세요. 업그레이드 뒤 plugin-mode skill discovery나 Hermes MCP metadata가 stale해 보이면 `omx setup`과 `omx doctor`를 실행하세요.
+
+### 업스트림 검증 근거
+
+업스트림 readiness record는 해당 snapshot에서 local release preparation은 PASS, external publication은 PENDING이라고 기록합니다. Local gate에는 previous-tag ancestry, version metadata sync, build/lint/no-unused, targeted MCP/Hermes state-path test, Cargo test, final full release gate, `$code-review` approval, release body generation, `npm pack --dry-run`이 포함되었습니다. Targeted Node release suite 467개가 통과했고 Rust test도 통과했으며, generated release body SHA-256은 `e1fdf5bd7961ee7d1370046114301f2939007828d91e9fd361fdb6a7515cae7e`, dry-run package shasum은 `64b6cb807fab9ddb6213dde72472df137c8e81db`였습니다.
+
 ## v0.16.4 — 승인된 핸드오프와 런타임 완료 검증 강화
 
 [업스트림 릴리스 노트](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/release-notes-0.16.4.md) · [CHANGELOG 항목](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#0164---2026-05-11) · [릴리스 준비 근거](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/qa/release-readiness-0.16.4.md)

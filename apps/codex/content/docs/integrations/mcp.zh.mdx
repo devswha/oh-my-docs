@@ -1,28 +1,47 @@
 ---
 title: "MCP"
-description: "OMX 发现并调用 Model Context Protocol 服务器的方式。"
+description: "OMX 发现并调用 Model Context Protocol 服务器的方式，包含 v0.17 新增的 bounded Hermes bridge。"
 ---
 
-Model Context Protocol（MCP）是一项开放标准，允许 AI 客户端通过统一接口调用外部工具。OMX 作为 MCP 客户端运行，在 skill、hook 和 agent workflow 中调用已注册的 MCP 服务器，访问文件系统、API 和专业服务。
+Model Context Protocol（MCP）是一项开放标准，允许 AI 客户端通过统一接口调用外部工具。OMX 作为 MCP 客户端运行，在 skill、hook 和 agent workflow 中调用已注册的 MCP 服务器，以访问文件系统、API、runtime state 和 coordination service。
 
 ## 概述
 
-这是一个 client-server 协议：MCP 客户端（OMX/Codex）发送结构化的 tool-call 请求，MCP 服务器返回结构化响应。每个 MCP 服务器公开一组具名工具。OMX 在启动时发现已配置的服务器，并在 skill 和 hook 中直接调用这些工具。
+MCP 是 client-server protocol：客户端（OMX/Codex）发送结构化 tool-call request，每个 MCP 服务器从一组具名工具中返回结构化 response。OMX 在启动时发现已配置服务器，并在 workflow 需要外部 state 或 service 时从 skill 与 hook 调用这些工具。
 
 ## OMX 的使用方式
 
-- **skill 层 tool call** — `$wiki`、`$trace`、`$team` 等 skill 在执行过程中调用 `wiki_add`、`state_read`、`TeamCreate` 等 MCP tool。
-- **hook 层 integration** — hook 脚本在 OMX 任务前后调用 MCP tool 读写状态。
-- **支持的服务器** — OMX 默认识别以下服务器：
-  - `filesystem` — 本地文件读写
-  - `github` — issue、PR、code search
-  - `context7` — 库文档查询
-  - `oh-my-claudecode_t` — OMX plugin 服务器，公开 state、notepad、wiki、LSP、AST、team 工具。
-- **配置位置** — 在 Claude Code 配置文件（`~/.claude/settings.json`）的 `mcpServers` 键下注册。每个条目包含 `command`、可选 `args`、可选 `env` override。
+- **Skill-level tool call** — `$wiki`、`$trace`、`$team`、`$ultraqa` 等 skill 可以为 state、note、artifact、coordination 调用 MCP tool。
+- **Hook-level integration** — hook script 在 OMX 操作前后读写 workflow state，并保持 runtime view 最新。
+- **Plugin-mode metadata** — v0.17 setup 会注册并验证 local Codex plugin marketplace/cache 与 plugin-scoped MCP metadata，使 plugin-installed OMX surface 可以暴露 MCP capability。
+- **Configuration** — MCP server 注册在 client settings 的 `mcpServers` 下。每个条目包含 `command`、可选 `args` 和可选 `env` override。
+
+## 支持的服务器
+
+OMX 默认识别以下 server category：
+
+- `filesystem` — 在配置 root 内读取/写入 local file
+- `github` — issue、PR、code search
+- `context7` — library documentation lookup
+- `oh-my-claudecode_t` — 暴露 state、notepad、wiki、LSP、AST、team tool 的 OMX plugin server
+- `omx-hermes` — v0.17 新增的 bounded Hermes coordination bridge
+
+## v0.17 Hermes MCP bridge
+
+Hermes 是面向 OMX session 的 opt-in coordination bridge。它提供以下 bounded tool：
+
+- session list 与 status read
+- safe session start
+- audited follow-up dispatch
+- bounded log tail 与 session-history tail
+- safe artifact listing/read
+- final coordination report
+
+Hermes 有意比 tmux access 更窄。它不会暴露 raw tmux scrollback 或 raw private state。artifact/history read 是 bounded 的，并限制在 OMX-owned path 内；follow-up dispatch 走 audited coordination path，而不是 arbitrary pane injection。
 
 ## 配置示例
 
-注册 filesystem 和 GitHub MCP 服务器：
+注册 filesystem、GitHub、Context7 和 Hermes-style server：
 
 ```json
 {
@@ -39,19 +58,30 @@ Model Context Protocol（MCP）是一项开放标准，允许 AI 客户端通过
     "context7": {
       "command": "npx",
       "args": ["-y", "@upstash/context7-mcp"]
+    },
+    "omx-hermes": {
+      "command": "omx",
+      "args": ["mcp", "hermes"]
     }
   }
 }
 ```
 
-注册后即可在 skill 中直接调用该服务器的工具：
+注册后，skill 可以通过 client runtime 调用这些工具：
 
-```
+```text
 codex
 > $wiki add "the DB schema lives in src/db/schema.ts"
 ```
 
+## Safety boundary
+
+- 只需要 runtime coordination 时，优先使用 bounded MCP tool，而不是 raw shell/tmux access。
+- 不要把 Hermes 当作 secret-reading surface；它用于 coordination metadata、bounded artifact 和 audited follow-up。
+- artifact root 与 session-history path 应保持在 OMX-owned directory 内。
+- v0.17 升级后如果 plugin-mode discovery 看起来 stale，请运行 `omx setup` 和 `omx doctor` 刷新 marketplace/cache 与 MCP metadata。
+
 ## 相关文档
 
-- [OpenClaw](/zh/docs/integrations/openclaw) — 可触发 MCP 动作的 hook 事件 gateway
-- [CLI Bridges](/zh/docs/integrations/cli-bridges) — 在 MCP 和 shell bridge 之上运行的跨 CLI 快捷命令
+- [OpenClaw](/zh/docs/integrations/openclaw) — 可触发 MCP 动作的 hook-event gateway
+- [CLI Bridges](/zh/docs/integrations/cli-bridges) — 在 MCP 和 shell bridge 之上运行的 cross-CLI shortcut

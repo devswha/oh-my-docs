@@ -1,9 +1,8 @@
 {
   "title": "快速开始",
   "pages": [
-    "[前提条件](/zh/docs/getting-started#prerequisites)",
-    "[安装](/zh/docs/getting-started#install)",
-    "[首次运行](/zh/docs/getting-started#first-run)",
-    "[后续步骤](/zh/docs/getting-started#next-steps)"
+    "[前提条件](/zh/docs/getting-started#前提条件)",
+    "[Setup](/zh/docs/getting-started#setup)",
+    "[首次会话](/zh/docs/getting-started#首次会话)"
   ]
 }

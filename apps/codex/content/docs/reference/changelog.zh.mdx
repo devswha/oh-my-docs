@@ -5,7 +5,27 @@ description: "OMX 发布历史 — 最新版本摘要与上游 CHANGELOG 链接"
 
 完整 changelog 在上游 [`CHANGELOG.md`](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md) 中维护。本页汇总最近的发布信息。
 
-## 最新版本 — v0.16.4
+## 最新版本 — v0.17.0
+
+这是 `0.16.4` 之后的 minor release，重点是新的 coordination 与 workflow surface：bounded Hermes MCP coordination、canonical `$design` workflow guidance、plugin-mode skill marketplace exposure、更强的 UltraQA adversarial contract、Windows native-hook reliability、tmux ownership safety、startup shell isolation、committed project-memory loading，以及 Ultragoal task-scoped goal reconciliation。
+
+**新增内容：**
+- Hermes MCP bridge：在不暴露 tmux scrollback 或 raw private state 的情况下，提供 session/status read、audited follow-up dispatch、safe artifact read、log tail、session start 与 coordination report 的 bounded tool。
+- Canonical design workflow：`DESIGN.md` 与镜像的 `$design` skill guidance 现在定义 design workflow；`frontend-ui-ux` 已 deprecated。
+- Plugin-mode skill discovery：setup 会注册并验证 local Codex plugin marketplace/cache，以及包含 Hermes 的 plugin-scoped MCP metadata。
+
+**变更内容：**
+- `$ultraqa` 现在是 adversarial by contract，要求 hostile scenario modeling、prompt-injection attempt、interrupt/cancel/resume、stale state check、必要时 temporary harness，以及 cleanup evidence。
+- CLI-first runtime authority guidance 更清楚地区分 CLI runtime 拥有的行为与 MCP/default setup path。
+
+**修复内容：**
+- Windows native hook launch 通过 PowerShell `ProcessStartInfo` shim 保留 stdio 与 exit status。
+- Tmux continuation 在注入 follow-up prompt 前验证 mode/session/window ownership。
+- Startup tmux launch 避免 Codex 启动前的 shell rc fan-out。
+- Ultragoal 可以在 strict evidence gate 下，把已完成的 task-scoped aggregate Codex goal reconcile 回 active OMX story。
+- Release-review MCP/Hermes test 隔离 inherited runtime env，并 canonicalize macOS temp root。
+
+## v0.16.4
 
 这是 `0.16.3` 之后的可靠性补丁，强化 approved execution handoff、context-pack metadata visibility、Codex hook feature-flag migration、setup/notify ownership、HUD/runtime state-root visibility、Ralph completion audit evidence 与 Ultragoal completion proof requirements。
 

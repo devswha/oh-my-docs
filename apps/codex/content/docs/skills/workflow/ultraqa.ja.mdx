@@ -1,54 +1,103 @@
 ---
 title: $ultraqa
-description: テスト・ビルド・lint が通過するまで診断-修正-再実行を自動で繰り返す QA サイクル
+description: 敵対的シナリオを生成し、失敗を修正し、cleanup evidence まで報告する dynamic e2e QA ワークフロー
 ---
 
-`$ultraqa` は最初の失敗で止まらない自律 QA ループです。品質検査を実行し、失敗したら Architect エージェントが根本原因を診断し、Executor エージェントが修正を適用してから再検査します。最大 5 サイクル繰り返し、同じ失敗が 3 回連続した場合は構造的な問題と判断して早期終了します。
+`$ultraqa` は v0.17 で敵対的 QA ワークフローに強化されました。通常の検証コマンドも実行しますが、build/lint/typecheck/test が緑になっただけでは完了と見なしません。対象を安全に実行、シミュレーション、または harness 化できる場合、dynamic end-to-end scenario、hostile user modeling、cleanup check、structured evidence report まで実施します。
 
 ## いつ使うか
 
-- ビルド、テスト、lint、型検査を自分でデバッグせずに通過させたいとき
-- 壊れたコードベースを受け取って体系的な最初の修正パスが必要なとき
-- 機能完成後にレビュー前の検証を自動化したいとき
-- サイクルごとの進捗ログを見ながら追いかけたいとき
+- 「テストが通った」以上の強い証拠が必要なとき。
+- 機能が CLI、workflow state、MCP tool、agent、prompt、setup、hook、user-facing flow に関わるとき。
+- 失敗を診断し、正確に修正し、目標達成または bounded stop condition まで rerun したいとき。
+- stale state、prompt injection、cancel/resume、misleading success、dirty worktree regression を review 前に捕捉したいとき。
 
-トリガーキーワード: "ultraqa", "fix until tests pass", "qa cycle", "make the build pass"
+トリガーキーワード: `ultraqa`、`fix until tests pass`、`qa cycle`、`make the build pass`。
 
 ## 呼び出し
 
-```
+```text
 codex
-> ultraqa --tests
+> $ultraqa --tests
 ```
 
-```
+```text
 codex
 > $ultraqa --build
 ```
 
-```
+```text
 codex
-> $ultraqa --custom "no TypeScript errors in packages/api"
+> $ultraqa --custom "the CLI rejects stale session state"
 ```
 
-利用可能なターゲットフラグ: `--tests`、`--build`、`--lint`、`--typecheck`、`--custom "パターン"`、`--interactive`
+利用できる goal flag: `--tests`、`--build`、`--lint`、`--typecheck`、`--custom "pattern"`、`--interactive`。
 
-## 動作方法
+## v0.17 contract
 
-ターゲットフラグをパースしてサイクル 1 を開始します。該当コマンドを実行して終了コードや出力パターンで結果を確認します。すでに通過状態なら即座に成功メッセージを出して終了します。
+成功を宣言する前に、`$ultraqa` は次の列を持つ scenario matrix を作成し、維持します。
 
-失敗した場合、Architect エージェントが出力を分析して根本原因と具体的な修正方向を示します。Executor エージェントがその修正を正確に適用し、カウンターが上がってから検査を再実行します。目標達成、5 サイクル消費、または同じ失敗 3 回連続のいずれかになるまで繰り返します。
+| Column | 意味 |
+|---|---|
+| Scenario ID | `ADV-E2E-003` のような安定 ID |
+| Intent | 証明するリスクまたは behavior |
+| User/attacker model | normal user、careless operator、malicious prompt、stale runtime、flaky environment |
+| Setup | 必要な fixture、state、service、branch、harness |
+| Command/harness | 正確な command、script、browser step、generated harness |
+| Expected signal | 成功を証明する exit code、output、UI state、artifact、state transition |
+| Actual result | 観測した output と exit status |
+| Fixes applied | 関連 fix または `none` |
+| Evidence | log、test output、screenshot、artifact、transcript excerpt |
+| Cleanup | 削除済み、意図的に保持、または理由付き blocked |
 
-各サイクルごとに `[ULTRAQA Cycle N/5]` 進捗行が出力されます。状態は `.omx/state/ultraqa-state.json` に記録され、完了またはキャンセル時に削除されます。
+## 必須 scenario class
 
-## 出力
+通常パスに加えて、関連があり安全な敵対的 class を含めます。
 
-- Architect-Executor 修正ループで修正されたソースファイル
-- サイクルごとの失敗サマリーと修正内容を含む進捗ログ
-- 成功時はサイクル数とともに終了メッセージ、未達成時は根本原因診断メッセージ
+1. Malformed input: invalid JSON、missing field、bad flag、oversized string、unusual Unicode、path traversal-like value、corrupted state。
+2. Repeated interruption: 繰り返しの `continue`、stop/cancel/abort 表現、中断された command output、partial progress 後の retry。
+3. Prompt injection: instruction override、verification skip、secret exfiltration、state deletion、false success claim の試み。
+4. Cancel/resume: active-state cleanup、resume detection、stale in-progress state、cancellation 後の fresh run。
+5. Stale state: 古い `.omx/state` file、mismatched session、missing timestamp、contradictory phase metadata。
+6. Dirty worktree: 既存の変更、untracked generated file、unrelated work を上書きまたは隠していない証拠。
+7. Hung command: explicit timeout、killed child process、recovery note。
+8. Flaky test: rerun strategy、failure clustering、一度の幸運な pass による false green の回避。
+9. Misleading success output: success-looking text だが non-zero exit、skipped test、hidden failure、truncated log がある場合。
+
+## Dynamic harness ルール
+
+- 既存テストが behavior を覆えない場合、temporary test、script、fixture、harness を生成します。
+- project-native test tool と小さな throwaway harness を優先します。
+- 生成した artifact はすべて scenario matrix に記録します。
+- hang する可能性がある command には bounded timeout を使います。
+- exit code と output semantics を両方検証し、成功に見える text だけを信じません。
+- unrelated user work を削除、書き換え、隠蔽しません。
+
+## Cycle flow
+
+1. adversarial QA を計画: goal、success criteria、safety bounds、stop condition、runnable surface、scenario matrix を整理します。
+2. baseline verification を実行: tests、build、lint、typecheck、custom command。
+3. Matrix の dynamic e2e scenario を実行します。
+4. 失敗を architecture-level root cause と safety impact で診断します。
+5. 正確な fix を適用します。
+6. 意図的に保持するものを除き、temporary harness、state、log、process を片付けます。
+7. 目標達成、5 cycle 消費、同一失敗 3 回、または safety boundary で停止するまで rerun します。
+
+## Completion report
+
+最終 `$ultraqa` report には次を含めます。
+
+- Goal and success criteria
+- Scenario matrix
+- Exit code と主要 evidence 付きの command 一覧
+- 発見した failure と root cause
+- 適用した fix と regression evidence
+- Cleanup and rollback status
+- Residual risk または blocked scenario
+- 必要に応じて evidence link、log、screenshot、transcript、artifact
 
 ## 関連スキル
 
-- [`$ralph`](/ja/docs/skills/workflow/ralph) — ultraqa サイクルを包む持続検証ループ
-- [`$autopilot`](/ja/docs/skills/workflow/autopilot) — QA ステップに ultraqa を使う全体パイプライン
-- [`$tdd`](/ja/docs/skills/workflow/tdd) — 失敗テストを先に書くテスト駆動開発
+- [`$ralph`](/ja/docs/skills/workflow/ralph) — `$ultraqa` を包む、または後続に置ける persistent verification loop
+- [`$autopilot`](/ja/docs/skills/workflow/autopilot) — QA を validation phase として使う full pipeline
+- [`$tdd`](/ja/docs/skills/workflow/tdd) — 実装前の test-first development

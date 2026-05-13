@@ -1,137 +1,124 @@
 ---
-title: 가이드
-description: 지금 상황에 OMX의 어느 흐름을 꺼낼지 고르는 결정 가이드
+title: 사용 사례와 가이드
+description: 지금 작업에 맞는 OMX 워크플로우를 고르는 방법
 ---
 
-## 어떤 흐름을 고를지
+## 사용 사례 살펴보기
 
-OMX는 워크플로우가 여러 개라 처음 쓰면 고르는 것부터 막힙니다. 이 페이지는 스킬 이름을 나열하는 문서가 아니라, **지금 어떤 상황이면 어떤 흐름을 꺼내야 하는지** 결정을 돕는 쪽입니다.
+해야 할 일의 종류는 대략 알지만 어떤 OMX 워크플로우에 맡겨야 할지 헷갈릴 때 이 페이지를 참고하세요.
 
-## 한 눈에 보는 결정표
+기준은 간단합니다. 작업이 흐릿하면 먼저 요구사항을 명확히 하고, 틀렸을 때 비용이 크면 구현 전에 계획합니다. 승인된 계획은 오래 유지되어야 하면 `$ultragoal`로 넘기고, 실제로 독립해서 진행할 수 있는 부분이 있을 때만 팀으로 나눕니다.
+
+## 결정표
 
 | 상황 | 첫 선택 | 이유 |
 |---|---|---|
-| 요구사항 자체가 흐릿함 | `$deep-interview` | 구현보다 범위 확정이 먼저 |
-| 방향은 알지만 계획은 없음 | `$ralplan` | 트레이드오프를 먼저 못 박아야 |
-| 계획 있고 한 명이 끝까지 밀어야 함 | `$ralph` | 지속 소유자 + 검증 루프 |
-| 큰 계획을 여러 milestone으로 오래 추적해야 함 | `$ultragoal` | `.omx/ultragoal` ledger + Codex goal handoff |
-| 계획을 여러 lane으로 쪼갤 수 있음 | `$team` | 병렬화 이득이 실제로 있을 때만 |
-| 프로토타입 하나 빠르게 보고 싶음 | `$autopilot` | 제어를 내려놓는 대신 속도 |
+| 요구사항이 모호함 | `$deep-interview` | 구현 전에 범위를 먼저 정해야 함 |
+| 방향은 알지만 계획이 없음 | `$ralplan` | 절충안과 테스트 기준을 먼저 고정해야 함 |
+| UI/UX, 프런트엔드, 디자인 시스템 방향이 필요함 | `$design` | 구현 전에 repo-local `DESIGN.md`로 기준을 고정함 |
+| 결합도가 높아 한 컨텍스트가 필요함 | `$ralph` | 단일 소유자가 하나의 검증 루프를 유지함 |
+| 큰 계획이 여러 마일스톤으로 이어짐 | `$ultragoal` | 목표, 진행 장부, 인계 근거를 지속적으로 저장함 |
+| 일을 독립적인 작업 축으로 나눌 수 있음 | `$team` | 병렬화의 이득이 실제로 있음 |
+| 빠르게 프로토타입을 보고 싶음 | `$autopilot` | 일부 제어를 내려놓고 속도를 얻음 |
+| 검증과 수정이 핵심임 | `$ultraqa` | 테스트, 진단, 수정을 반복함 |
 
-거의 모든 선택이 이 표 하나로 끝납니다. 아래는 각 항목이 왜 그런 자리에 있는지 풀어 쓴 내용입니다.
+## 기본 안내 흐름
 
----
-
-## 기본 경로
-
-OMX를 처음 쓴다면 표준 경로는 셋입니다.
+OMX가 처음이라면 단축 경로부터 쓰기보다 아래 세 단계를 한 번 거쳐 보세요.
 
 ```text
-$deep-interview "인증 변경 스코프를 정리해줘"
-$ralplan "가장 안전한 구현 경로를 승인해줘"
-$ralph "승인된 계획을 끝까지 완료해줘"
+$deep-interview "clarify the authentication change"
+$ralplan "approve the safest implementation path"
+$ultragoal "turn the approved plan into durable goals and complete them"
 ```
 
-이 셋이 왜 분리되어 있는지부터 이해하면 OMX가 어떻게 움직이는지 보입니다.
+| 단계 | 역할 |
+|------|------|
+| `$deep-interview` | 요구사항이 흐릿할 때 작업을 명확히 정리함 |
+| `$ralplan` | 구현 전에 계획과 절충안을 합의함 |
+| `$ultragoal` | 승인된 계획을 durable goal, ledger evidence, completion checkpoint로 전환함 |
 
-- **`$deep-interview`** — 요구가 모호할 때 질문으로 먼저 정리. 코드보다 "무엇을 만들지" 확정이 먼저.
-- **`$ralplan`** — planner / architect / critic이 합의할 때까지 반복. 구현 직전에 트레이드오프를 고정.
-- **`$ralph`** — 승인된 계획을 잡고 완료 증거가 나올 때까지 반복 실행.
+나중에는 `$autopilot`에 전체 실행 흐름을 빠르게 맡길 수 있습니다. 다만 이 기본 흐름을 먼저 거치면 각 단계가 어디에서 가치를 내는지 더 잘 보입니다.
 
-`$autopilot` 하나로 퉁칠 수도 있지만, **한 번은 이 세 단계를 손으로 타봐야 OMX가 뭘 하는지 감이 옵니다.** 그 다음에 언제 단축해도 되는지가 보입니다.
-
----
-
-## `$autopilot`은 언제 쓰나
-
-아이디어 하나를 구현 → QA → 검증까지 한 번에 맡길 때.
+## `$autopilot`으로 빠르게 프로토타입 만들기
 
 ```bash
 $autopilot "build me a todo app in next.js"
 ```
 
-| 항목 | 상태 |
-|---|---|
-| 제어 수준 | 낮음 — OMX가 흐름 대부분을 결정 |
-| 속도 | 빠름 — 파이프라인 전체를 한 번에 관찰 |
-| 잘 맞는 경우 | 프로토타입, 작은 기능, end-to-end 확인 |
-| 피할 경우 | 요구가 흐릴 때, 계획 합의가 먼저인 작업 |
+잘 맞는 경우:
 
-짧게 말하면 `$autopilot`은 "빨리 전체를 본다", 계획 기반 흐름은 "제어하면서 간다".
+- 작은 기능이나 버려도 되는 프로토타입
+- 운영 위험이 낮은 작업
+- 전체 실행 흐름을 빠르게 확인하고 싶은 경우
 
----
+요구사항이 불명확하거나, 아키텍처 위험이 크거나, 명시적인 계획 승인이 중요하다면 다른 워크플로우를 고르세요.
 
-## 계획 기반 흐름을 먼저 타야 할 때
-
-범위가 넓거나, 잘못된 방향이 비싼 작업이면 실행을 늦추는 쪽이 오히려 빠릅니다.
+## 구현 전에 계획하기
 
 ```text
-$deep-interview "무엇을 만들어야 하는지 정리해줘"
-$ralplan "가장 안전한 계획을 세워줘"
-$ralph "그 계획대로 끝까지 진행해줘"
+$deep-interview "clarify what we need to build"
+$ralplan "produce the safest implementation plan"
+$ultragoal "turn that plan into durable goals and complete them"
 ```
 
-이 경로가 특히 유용한 경우:
+아키텍처, 테스트, 데이터 마이그레이션, 보안, 운영 영향이 중요한 작업에는 이 경로가 더 안전합니다. 승인된 계획이 한 번의 실행 루프 안에만 남지 않고 durable goal로 보존되기 때문입니다.
 
-- 아키텍처 · 테스트 · 운영 영향을 같이 봐야 함
-- 요구가 여러 이해관계자를 거쳐 아직 정리 안 됨
-- 중간에 방향 합의가 필요한 큰 작업
+## `$design`로 UI 작업 전에 설계 기준 세우기
 
----
-
-## `$ultragoal`은 durable goal이 필요할 때
-
-`$ultragoal`은 큰 brief나 승인된 plan을 durable Codex/OMX goal로 바꾸는 흐름입니다. 장기 계획은 `.omx/ultragoal/` 아래에 남기고, story 진행은 ledger로 기록하며, 활성 thread는 Codex goal mode에 명시적으로 handoff합니다.
-
-![Ultragoal이 승인된 계획을 durable milestone, ledger, Codex goal handoff, 최종 review evidence로 이어주는 흐름](/images/docs/skills-workflow-ultragoal-learning-v2.png)
+제품, UI/UX, 프런트엔드, 디자인 시스템 결정이 구현 전에 repo의 durable source of truth로 남아야 한다면 [`$design`](/ko/docs/skills/workflow/design)을 사용합니다. 기존 UI 근거를 확인하고, 디자인에 꼭 필요한 누락 맥락만 질문한 뒤, repo root의 `DESIGN.md`를 만들거나 갱신합니다.
 
 ```bash
-$ultragoal "이 launch plan을 durable goal로 나누고 끝까지 완료해줘"
+$design "create a design contract for the dashboard refresh"
 ```
 
-| 항목 | 상태 |
-|---|---|
-| 제어 수준 | 높음 — plan과 evidence가 파일로 남음 |
-| 지속성 | 높음 — compaction, session 변경, handoff 이후에도 이어가기 쉬움 |
-| 잘 맞는 경우 | 여러 milestone, release train, 큰 리팩터링, 최종 검증이 중요한 작업 |
-| 피할 경우 | 작은 one-shot 수정, 요구가 아직 모호한 작업, 병렬 lane이 더 자연스러운 작업 |
+좋은 후속 흐름:
 
-명령 세부사항과 completion gate는 [`$ultragoal`](/ko/docs/skills/workflow/ultragoal) 문서를 보세요.
+- frontend, backend, test를 깔끔하게 나눌 수 있으면 승인된 design contract를 `$team`으로 넘김
+- design plan이 여러 milestone으로 이어지면 `$ultragoal`로 넘김
+- 승인된 screenshot, mockup, image, live URL을 시각적으로 맞춰야 할 때만 `$visual-ralph`를 사용
 
-대표 흐름은 이렇습니다.
 
-```text
-$deep-interview "제품 범위를 정리해줘"
-$ralplan "milestone 기준으로 안전한 계획을 승인해줘"
-$ultragoal "승인된 계획을 durable goal로 바꾸고 완료까지 진행해줘"
-```
+## `$ultragoal`로 지속 가능한 마일스톤 추적하기
 
-선택 기준은 간단합니다.
+`$ultragoal`은 넓은 작업 개요나 승인된 계획을 오래 유지되는 Codex/OMX 목표로 바꿉니다. 장기 계획을 `.omx/ultragoal/` 아래에 기록하고, 진행 장부로 상태를 추적하며, 현재 스레드를 Codex goal mode로 명시적으로 인계합니다.
 
-- **계획은 크지만 순차 milestone으로 추적해야 함** → `$ultragoal`
-- **한 명이 한 맥락으로 끝까지 밀면 충분함** → `$ralph`
-- **frontend / backend / test처럼 동시에 나눌 수 있음** → `$team`
-- **요구가 아직 흐림** → `$deep-interview` 또는 `$ralplan` 먼저
-
----
-
-## `$team`은 병렬화 가치가 있을 때만
-
-`$team`은 "항상 더 빠른 모드"가 아닙니다. **실제로 나눌 수 있는 작업이 있을 때**만 가치가 나옵니다.
+![Ultragoal이 작업 개요를 지속 상태로 만들고, Codex goal로 인계한 뒤 체크포인트 근거를 진행 장부에 되돌려 최종 게이트까지 가는 흐름](/images/docs/guides-ultragoal-flow.svg)
 
 ```bash
-$team 3:executor "승인된 계획을 병렬로 실행해줘"
+$ultragoal "split this launch plan into durable goals and complete them"
 ```
 
-| 항목 | 상태 |
-|---|---|
-| 제어 수준 | 중간~높음 — 분할을 미리 설계해야 함 |
-| 병렬성 | 높음 — 여러 lane 동시 진행 |
-| 잘 맞는 경우 | frontend / backend / test처럼 자연스럽게 나뉘는 작업 |
-| 피할 경우 | 범위가 흐림, 병렬화가 충돌만 늘림 |
+컨텍스트 압축이나 작업 인계를 견뎌야 하는 다중 마일스톤 출시, 릴리스 트레인, 큰 리팩터링에 사용합니다.
 
-피해야 하는 신호:
+## `$team`으로 병렬 작업 나누기
 
-- 요구가 모호 → `$deep-interview` 먼저
-- 한 맥락을 끝까지 붙잡고 가야 함 → `$ralph`
-- lane끼리 충돌할 것 같음 → 순차가 더 빠름
+```bash
+$team 3:executor "execute the approved plan in parallel"
+```
+
+![$team이 공유 상태를 만들고 작업자 흐름을 띄운 뒤, 작업 claim과 ACK/heartbeat를 모아 완료 시 종료하는 흐름](/images/docs/guides-team-flow.svg)
+
+잘 맞는 경우:
+
+- 프런트엔드, 백엔드, 테스트가 독립적으로 진행될 수 있음
+- 파일 소유 범위를 명확히 나눌 수 있음
+- 계획이 이미 승인됨
+
+요구사항이 모호하거나, 하나의 컨텍스트를 계속 유지해야 하거나, 병렬 작업 흐름이 대부분 병합 충돌을 만들 것 같다면 team mode는 피하세요.
+
+## `$ultraqa`로 검증과 수리 반복하기
+
+초록색 build만으로는 충분하지 않고 hostile/edge condition에서의 실제 동작까지 확인해야 한다면 [`$ultraqa`](/ko/docs/skills/workflow/ultraqa)를 사용합니다. baseline check와 adversarial dynamic e2e scenario를 함께 돌리고, 실패를 진단해 고친 뒤, temporary harness cleanup과 evidence report까지 남깁니다.
+
+```bash
+$ultraqa --tests
+$ultraqa --custom "the report export rejects stale state"
+```
+
+잘 맞는 경우:
+
+- prompt injection, cancel/resume, stale state, misleading success output이 중요한 CLI 또는 workflow 변경
+- failure evidence와 cleanup proof가 필요한 release-readiness 확인
+- unit test는 통과했지만 dynamic behavior probe가 더 필요한 기능
+

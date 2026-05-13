@@ -1,11 +1,13 @@
 {
-  "title": "Guides",
+  "title": "사용 사례와 가이드",
   "pages": [
-    "[한 눈에 보는 결정표](/ko/docs/guides#한-눈에-보는-결정표)",
-    "[기본 경로](/ko/docs/guides#기본-경로)",
-    "[$autopilot은 언제 쓰나](/ko/docs/guides#autopilot은-언제-쓰나)",
-    "[계획 기반 흐름을 먼저 타야 할 때](/ko/docs/guides#계획-기반-흐름을-먼저-타야-할-때)",
-    "[$ultragoal은 durable goal이 필요할 때](/ko/docs/guides#ultragoal은-durable-goal이-필요할-때)",
-    "[$team은 병렬화 가치가 있을 때만](/ko/docs/guides#team은-병렬화-가치가-있을-때만)"
+    "[결정표](/ko/docs/guides#결정표)",
+    "[기본 안내 흐름](/ko/docs/guides#기본-안내-흐름)",
+    "[$autopilot으로 빠르게 프로토타입 만들기](/ko/docs/guides#autopilot으로-빠르게-프로토타입-만들기)",
+    "[구현 전에 계획하기](/ko/docs/guides#구현-전에-계획하기)",
+    "[$design로 UI 작업 전에 설계 기준 세우기](/ko/docs/guides#design로-ui-작업-전에-설계-기준-세우기)",
+    "[$ultragoal로 지속 가능한 마일스톤 추적하기](/ko/docs/guides#ultragoal로-지속-가능한-마일스톤-추적하기)",
+    "[$team으로 병렬 작업 나누기](/ko/docs/guides#team으로-병렬-작업-나누기)",
+    "[$ultraqa로 검증과 수리 반복하기](/ko/docs/guides#ultraqa로-검증과-수리-반복하기)"
   ]
 }

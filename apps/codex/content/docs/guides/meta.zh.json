@@ -1,11 +1,13 @@
 {
-  "title": "指南",
+  "title": "使用场景与指南",
   "pages": [
-    "[一目了然的决策表](/zh/docs/guides#一目了然的决策表)",
-    "[基本路径](/zh/docs/guides#基本路径)",
-    "[$autopilot 什么时候用](/zh/docs/guides#autopilot-什么时候用)",
-    "[应该先走计划流程的时候](/zh/docs/guides#应该先走计划流程的时候)",
-    "[$ultragoal 适合需要 durable goal 时](/zh/docs/guides#ultragoal-适合需要-durable-goal-时)",
-    "[$team 只在并行化有价值时使用](/zh/docs/guides#team-只在并行化有价值时使用)"
+    "[决策表](/zh/docs/guides#决策表)",
+    "[默认 guided flow](/zh/docs/guides#默认-guided-flow)",
+    "[用 $autopilot 快速制作原型](/zh/docs/guides#用-autopilot-快速制作原型)",
+    "[实现前先规划](/zh/docs/guides#实现前先规划)",
+    "[用 $design 在 UI 工作前确定设计基准](/zh/docs/guides#用-design-在-ui-工作前确定设计基准)",
+    "[用 $ultragoal 跟踪 durable milestone](/zh/docs/guides#用-ultragoal-跟踪-durable-milestone)",
+    "[用 $team 拆分并行工作](/zh/docs/guides#用-team-拆分并行工作)",
+    "[用 $ultraqa 验证并修复](/zh/docs/guides#用-ultraqa-验证并修复)"
   ]
 }

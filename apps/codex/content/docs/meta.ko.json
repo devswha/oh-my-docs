@@ -1,6 +1,6 @@
 {
   "title": "OMX 문서",
-  "pages": ["index", "getting-started", "concepts", "guides",
+  "pages": ["index", "getting-started", "guides", "concepts",
             "agents", "skills", "hooks", "tools",
             "integrations", "reference", "support"]
 }

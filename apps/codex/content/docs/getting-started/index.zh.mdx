@@ -1,140 +1,136 @@
 ---
 title: 快速开始
-description: 从安装 oh-my-codex (OMX) 到跑完第一次会话的最短路径
+description: 安装 OMX，选择 setup path，验证运行时，并发送第一个任务
 ---
 
 ## 快速开始
 
-如果是第一次用 oh-my-codex (OMX)，按下面的顺序走:
+如果你想从干净环境最短路径进入一个可用的 OMX 会话，请按照本页操作。
 
-1. [安装](#install) — 安装 Codex CLI 与 OMX，然后运行 `omx setup`
-2. [首次会话](#first-session) — 确认执行边界并跑通推荐的工作流
+OMX 运行在 [OpenAI Codex CLI](https://github.com/openai/codex) 之上。先安装 Codex，再把 OMX 作为需求澄清、规划、执行、团队协作和验证的 orchestration layer 加上去。
 
-OMX 是运行在 [OpenAI Codex CLI](https://github.com/openai/codex) 之上的工作流层。它把 Codex 保留为执行引擎，叠加角色化的 agent prompt、skill 与 hook，让一个模糊想法可以在同一个循环里跑到可运行的代码。
-
-### 前置条件
+## 前提条件
 
 | 项目 | 要求 |
-|------|----------|
-| Node.js | 建议 22+ (最低 20+) |
-| [Codex CLI](https://github.com/openai/codex) | 必须已安装并完成认证 |
-| 操作系统 | 建议 macOS 或 Linux |
-| tmux | 使用持久化 team runtime 时需要 |
+|------|------|
+| Node.js | 推荐 22+，最低 20+ |
+| Codex CLI | 已安装并完成认证 |
+| OS | 推荐 macOS 或 Linux |
+| tmux | durable team session 需要 |
 
 <Callout type="info">
-原生 Windows 可能出现不一致或异常行为。建议尽量使用 macOS 或 Linux。
+当前 OMX 运行时在 native Windows 上可能不一致。建议优先使用 macOS、Linux、WSL 或 remote Linux 开发主机。
 </Callout>
 
----
+## Setup
 
-## 安装
+根据第一次想如何使用 OMX 来选择 setup path。
 
-### 安装 Codex CLI
+<Tabs items={["本地", "团队", "验证"]}>
+  <Tab>
+    ### 推荐本地会话
 
-先安装 Codex CLI。
+    在仓库中第一次处理真实任务时使用这条路径。
 
-```bash
-npm install -g @openai/codex
-```
+    <Steps>
+      <Step>
+        #### 安装 Codex CLI
 
-然后完成认证。
+        ```bash
+        npm install -g @openai/codex
+        codex login
+        ```
+      </Step>
+      <Step>
+        #### 安装 OMX
 
-```bash
-codex login
-```
+        ```bash
+        npm install -g oh-my-codex
+        omx setup
+        ```
+      </Step>
+      <Step>
+        #### 检查安装
 
-### 安装 OMX
+        ```bash
+        omx doctor
+        codex login status
+        ```
+      </Step>
+      <Step>
+        #### 启动 leader 会话
 
-接着安装 OMX。
+        ```bash
+        omx --madmax --high
+        ```
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab>
+    ### 团队运行时
 
-```bash
-npm install -g oh-my-codex
-```
+    当计划需要多个 lane，或需要通过 tmux pane 保持工作时使用。
 
-### 运行 setup
+    ```bash
+    npm install -g @openai/codex oh-my-codex
+    codex login
+    omx setup
+    omx --tmux --madmax --high
+    ```
 
-两边都装好以后运行 setup。
+    只有当任务已经清晰到可以拆分时，再启动并行执行。
 
-```bash
-omx setup
-```
+    ```text
+    $team 3:executor "execute the approved plan in parallel"
+    ```
+  </Tab>
+  <Tab>
+    ### 仅验证的 smoke test
 
-`omx setup` 会自动完成以下工作:
+    只想证明 CLI、认证和模型调用路径可用时使用。
 
-- 写入 `.codex/config.toml` 并启用 `codex_hooks = true`
-- 在 `.codex/hooks.json` 注册 OMX 的 hook 命令
-- 创建 `.omx/` 项目状态目录
-- 把 OMX agent 上下文接入会话 prompt
+    ```bash
+    omx doctor
+    codex login status
+    omx exec --skip-git-repo-check -C . "Reply with exactly OMX-EXEC-OK"
+    ```
 
-### 验证安装
+    预期响应必须准确为 `OMX-EXEC-OK`。
+  </Tab>
+</Tabs>
 
-确认安装正常。
-
-```bash
-omx doctor
-```
-
-`omx doctor` 会检查缺失的文件、hook 以及本地运行时前置条件。
-
----
+<Callout type="warn">
+`--madmax` 会绕过 Codex approvals 和 sandboxing。只在你明确接受该执行边界的仓库和环境中使用。
+</Callout>
 
 ## 首次会话
 
-安装通过后，先确认执行边界，再开始第一次会话。
+第一次有用的会话，建议发送一个小但真实的任务，并完整走一次默认 guided flow。
 
-### 确认执行边界
-
-确认当前 shell 与配置真的能发起模型调用。
-
-```bash
-codex login status
-omx exec --skip-git-repo-check -C . "Reply with exactly OMX-EXEC-OK"
+```text
+$deep-interview "clarify the authentication change"
+$ralplan "approve the safest implementation path"
+$ultragoal "turn the approved plan into durable goals and complete them"
 ```
 
-- `codex login status` 显示当前认证状态。
-- `omx exec` 这一次冒烟测试证明当前活跃的 Codex profile 确实可以发出请求并完整收回响应。
+每个命令负责不同阶段。
 
-### 推荐启动方式
-
-OMX 推荐用下面的方式启动。
-
-```bash
-omx --madmax --high
-```
-
-如果要在 tmux 内明确拉起 leader 会话:
-
-```bash
-omx --tmux --madmax --high
-```
-
-<Callout type="warn">
-`--madmax` 会绕过 Codex 的审批和沙箱。请有意识地使用。
-</Callout>
-
-### 运行标准工作流
-
-首次会话建议按下面的顺序跑。
-
-```bash
-$deep-interview "澄清认证改动"
-$ralplan "批准最安全的实现路径"
-$ralph "把已批准的计划推进到完成"
-```
-
-每一步的意义:
-
-| 步骤 | 作用 |
+| 阶段 | 作用 |
 |------|------|
-| `$deep-interview` | 需求模糊时通过提问澄清 |
-| `$ralplan` | 实现前敲定最安全的计划 |
-| `$ralph` | 持续推动已批准的计划，直到完成 |
+| `$deep-interview` | 在代码变更前澄清模糊需求 |
+| `$ralplan` | 生成更安全的实现和测试计划 |
+| `$ultragoal` | 将已批准计划转成 durable goal、ledger evidence 与 completion checkpoint |
 
-已批准的计划需要并行执行时，把最后一步换成:
+如果已批准计划天然适合并行，把最后一个命令替换为：
 
-```bash
-$team 3:executor "并行执行已批准的计划"
+```text
+$team 3:executor "execute the approved plan in parallel"
 ```
 
-- 需要并行工作时 → `$team`
-- 需要一个 owner 把事情扛到底时 → `$ralph`
+### 第一个提示示例
+
+```text
+$deep-interview "help me scope a safer signup flow change"
+$ralplan "plan the least risky way to add this report export"
+$ultragoal "split the approved report export plan into durable goals and complete them"
+```

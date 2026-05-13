@@ -1,54 +1,103 @@
 ---
 title: $ultraqa
-description: 테스트·빌드·lint가 통과할 때까지 진단-수정-재실행을 자동으로 반복하는 QA 사이클
+description: 적대적 시나리오를 만들고, 실패를 고치고, cleanup evidence까지 보고하는 dynamic e2e QA 워크플로우
 ---
 
-`$ultraqa`는 첫 번째 실패에서 멈추지 않는 자율 QA 루프입니다. 품질 검사를 실행하고, 실패하면 Architect 에이전트가 근본 원인을 진단하고, Executor 에이전트가 수정을 적용한 뒤 다시 검사합니다. 최대 5사이클 반복하고, 같은 실패가 3번 연속 나오면 구조적 문제로 판단해 일찍 종료합니다.
+`$ultraqa`는 v0.17에서 적대적 QA 워크플로우로 강화되었습니다. 기존처럼 일반 검증 명령도 실행하지만, 이제 build/lint/typecheck/test가 초록색이라는 이유만으로 완료하지 않습니다. 대상 동작을 안전하게 실행, 시뮬레이션, harness 처리할 수 있다면 dynamic end-to-end scenario, hostile user modeling, cleanup check, structured evidence report까지 수행해야 합니다.
 
 ## 언제 쓰나
 
-- 빌드, 테스트, lint, 타입 검사를 직접 디버깅하지 않고 통과시키고 싶을 때
-- 깨진 코드베이스를 받아서 체계적인 첫 번째 수정 패스가 필요할 때
-- 기능 완성 후 리뷰 전에 검증을 자동화하고 싶을 때
-- 사이클별 진행 로그를 보면서 따라가고 싶을 때
+- “테스트가 통과했다”보다 강한 증거가 필요할 때
+- 기능이 CLI, workflow state, MCP tool, agent, prompt, setup, hook, user-facing flow를 건드릴 때
+- 실패를 진단하고, 정확히 고치고, 목표 달성이나 bounded stop condition까지 rerun하고 싶을 때
+- stale state, prompt injection, cancel/resume, misleading success, dirty worktree regression을 review 전에 잡고 싶을 때
 
-트리거 키워드: "ultraqa", "fix until tests pass", "qa cycle", "make the build pass"
+트리거 키워드: `ultraqa`, `fix until tests pass`, `qa cycle`, `make the build pass`.
 
-## 호출 방법
+## 호출
 
-```
+```text
 codex
-> ultraqa --tests
+> $ultraqa --tests
 ```
 
-```
+```text
 codex
 > $ultraqa --build
 ```
 
-```
+```text
 codex
-> $ultraqa --custom "no TypeScript errors in packages/api"
+> $ultraqa --custom "the CLI rejects stale session state"
 ```
 
-사용 가능한 목표 플래그: `--tests`, `--build`, `--lint`, `--typecheck`, `--custom "패턴"`, `--interactive`
+사용 가능한 goal flag: `--tests`, `--build`, `--lint`, `--typecheck`, `--custom "pattern"`, `--interactive`.
 
-## 동작 방식
+## v0.17 contract
 
-목표 플래그를 파싱하고 사이클 1을 시작합니다. 해당 명령을 실행해 종료 코드나 출력 패턴으로 결과를 확인합니다. 이미 통과 상태면 바로 성공 메시지를 내고 종료합니다.
+성공을 선언하기 전에 `$ultraqa`는 아래 column을 가진 scenario matrix를 만들고 유지합니다.
 
-실패하면 Architect 에이전트가 출력을 분석해 근본 원인과 구체적인 수정 방향을 제시합니다. Executor 에이전트가 그 수정을 정확히 적용하고, 카운터가 올라간 뒤 검사를 다시 실행합니다. 목표 달성, 5사이클 소진, 또는 같은 실패 3회 연속 중 하나가 될 때까지 반복합니다.
+| Column | 의미 |
+|---|---|
+| Scenario ID | `ADV-E2E-003` 같은 안정적인 ID |
+| Intent | 어떤 risk 또는 behavior를 증명하는지 |
+| User/attacker model | normal user, careless operator, malicious prompt, stale runtime, flaky environment |
+| Setup | 필요한 fixture, state, service, branch, harness |
+| Command/harness | 정확한 command, script, browser step, generated harness |
+| Expected signal | 성공을 증명하는 exit code, output, UI state, artifact, state transition |
+| Actual result | 관찰한 output과 exit status |
+| Fixes applied | 연결된 수정 또는 `none` |
+| Evidence | log, test output, screenshot, artifact, transcript excerpt |
+| Cleanup | 제거, 의도적으로 보존, 또는 사유가 있는 blocked 상태 |
 
-각 사이클마다 `[ULTRAQA Cycle N/5]` 진행 줄이 출력됩니다. 상태는 `.omx/state/ultraqa-state.json`에 기록되고 완료 또는 취소 시 삭제됩니다.
+## 필수 scenario class
 
-## 출력
+정상 경로와 함께 관련 있고 안전한 적대적 class를 포함합니다.
 
-- Architect-Executor 수리 루프로 수정된 소스 파일
-- 사이클별 실패 요약과 수정 내용을 담은 진행 로그
-- 성공 시 사이클 수와 함께 종료 메시지, 미달성 시 근본 원인 진단 메시지
+1. Malformed input: invalid JSON, missing field, bad flag, oversized string, unusual Unicode, path traversal-like value, corrupted state.
+2. Repeated interruption: 반복 `continue`, stop/cancel/abort 표현, 끊긴 command output, partial progress 이후 retry.
+3. Prompt injection: instruction override, verification skip, secret exfiltration, state deletion, false success claim 시도.
+4. Cancel/resume: active-state cleanup, resume detection, stale in-progress state, cancellation 이후 fresh run.
+5. Stale state: 오래된 `.omx/state` file, mismatched session, missing timestamp, contradictory phase metadata.
+6. Dirty worktree: 기존 수정, untracked generated file, unrelated work를 덮거나 숨기지 않았다는 증거.
+7. Hung command: explicit timeout, killed child process, recovery note.
+8. Flaky test: rerun strategy, failure clustering, 한 번 운 좋게 통과한 false green 방지.
+9. Misleading success output: non-zero exit, skipped test, hidden failure, truncated log인데 성공처럼 보이는 출력.
+
+## Dynamic harness 규칙
+
+- 기존 테스트가 동작을 덮지 못하면 temporary test, script, fixture, harness를 생성합니다.
+- project-native test tool과 작은 throwaway harness를 우선합니다.
+- 생성한 artifact는 모두 scenario matrix에 기록합니다.
+- hang 가능성이 있는 command에는 bounded timeout을 둡니다.
+- exit code와 output semantics를 함께 검증하며, 성공처럼 보이는 text만 믿지 않습니다.
+- unrelated user work를 삭제, 재작성, 은폐하지 않습니다.
+
+## Cycle flow
+
+1. Adversarial QA 계획: goal, success criteria, safety bounds, stop condition, runnable surface, scenario matrix를 정리합니다.
+2. Baseline verification 실행: tests, build, lint, typecheck, custom command.
+3. Matrix의 dynamic e2e scenario를 실행합니다.
+4. 실패를 architecture-level root cause와 safety impact로 진단합니다.
+5. 정확한 fix를 적용합니다.
+6. 의도적으로 남길 것이 아니라면 temporary harness, state, log, process를 정리합니다.
+7. 목표 달성, 5 cycle 소진, 동일 실패 3회 반복, safety boundary 차단 중 하나가 될 때까지 rerun합니다.
+
+## Completion report
+
+최종 `$ultraqa` report에는 다음이 포함되어야 합니다.
+
+- Goal and success criteria
+- Scenario matrix
+- Exit code와 핵심 evidence가 있는 command 목록
+- 발견한 failure와 root cause
+- 적용한 fix와 regression evidence
+- Cleanup and rollback status
+- Residual risk 또는 blocked scenario
+- 필요 시 evidence link, log, screenshot, transcript, artifact
 
 ## 관련 스킬
 
-- [`$ralph`](/ko/docs/skills/workflow/ralph) — ultraqa 사이클을 감싸는 지속 검증 루프
-- [`$autopilot`](/ko/docs/skills/workflow/autopilot) — QA 단계에 ultraqa를 사용하는 전체 파이프라인
-- [`$tdd`](/ko/docs/skills/workflow/tdd) — 실패 테스트를 먼저 작성하는 테스트 주도 개발
+- [`$ralph`](/ko/docs/skills/workflow/ralph) — `$ultraqa`를 감싸거나 뒤따를 수 있는 persistent verification loop
+- [`$autopilot`](/ko/docs/skills/workflow/autopilot) — QA를 validation phase로 사용하는 전체 pipeline
+- [`$tdd`](/ko/docs/skills/workflow/tdd) — 구현 전 test-first development

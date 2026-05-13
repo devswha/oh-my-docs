@@ -1,0 +1,66 @@
+---
+title: $design
+description: Canonical DESIGN.md workflow for product, UI/UX, frontend, and design-system decisions
+---
+
+`$design` is the canonical design workflow added in v0.17. It creates or refreshes repo-local `DESIGN.md` so product, UI/UX, frontend, and design-system decisions have a durable source of truth before implementation begins.
+
+## When to use it
+
+- You need design direction before UI/frontend implementation.
+- A repo lacks a durable design brief or design-system contract.
+- Existing screens, components, assets, or screenshots should be summarized into reusable guidance.
+- Product or design context is missing and should be interviewed, assumed explicitly, or listed as open questions.
+- A feature needs a design contract before `$ralph`, `$team`, or implementation work proceeds.
+
+## How to invoke
+
+```bash
+$design "create a design contract for the dashboard refresh"
+```
+
+## How it works
+
+1. Inspect existing evidence: `DESIGN.md`, docs, routes, layouts, components, theme files, tokens, assets, screenshots, mockups, Storybook, and visual-regression artifacts.
+2. Ask only for missing design-critical context such as users, jobs, product goals, brand constraints, primary flows, accessibility targets, device support, and implementation limits.
+3. Create or refresh repo-root `DESIGN.md` with the required sections.
+4. Use `DESIGN.md` as the contract for later UI/UX/frontend implementation and review.
+
+## Required `DESIGN.md` sections
+
+- Source of truth
+- Brand
+- Product goals
+- Personas and jobs
+- Information architecture
+- Design principles
+- Visual language
+- Components
+- Accessibility
+- Responsive behavior
+- Interaction states
+- Content voice
+- Implementation constraints
+- Open questions
+
+## `$design` vs `$frontend-ui-ux`
+
+`$design` is the canonical workflow. `$frontend-ui-ux` remains as a compatibility shortcut for older prompts, but new product, UI/UX, frontend, or design-system decisions should start from `$design` when the decision needs to persist in the repository.
+
+## `$design` vs `$visual-ralph`
+
+Use `$design` to establish the durable design source of truth. Use `$visual-ralph` only when an approved generated image, static mockup, screenshot, or live URL must be implemented and checked through visual iteration. If both are needed, run `$design` first, then hand the approved visual reference to `$visual-ralph`.
+
+## Completion checklist
+
+- Existing design docs, assets, components, screenshots, and theme files were inspected or recorded as absent.
+- Missing product/design context is answered, assumed, or listed under open questions.
+- `DESIGN.md` exists at the repo root and includes the required sections.
+- Later UI/UX/frontend work cites `DESIGN.md` instead of relying on unstated preferences.
+- Any `$visual-ralph` handoff is clearly separated from `DESIGN.md` governance.
+
+## Related skills
+
+- [`$ralph`](/docs/skills/workflow/ralph) — carry implementation through to verified completion after design is settled
+- [`$team`](/docs/skills/workflow/team) — split frontend/backend/test lanes once the design contract is stable
+- [`$ultraqa`](/docs/skills/workflow/ultraqa) — adversarial verification after implementation

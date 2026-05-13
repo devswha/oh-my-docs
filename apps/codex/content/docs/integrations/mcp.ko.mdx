@@ -1,28 +1,47 @@
 ---
 title: "MCP"
-description: "OMX가 Model Context Protocol 서버를 발견하고 호출하는 방식."
+description: "OMX가 Model Context Protocol 서버를 발견하고 호출하는 방식. v0.17의 bounded Hermes bridge 포함."
 ---
 
-Model Context Protocol(MCP)은 AI 클라이언트가 공통 인터페이스로 외부 도구를 호출하는 개방형 표준입니다. OMX는 MCP 클라이언트로 동작하며, skill · hook · agent workflow 안에서 등록된 MCP 서버를 호출해 파일 시스템, API, 전문 서비스에 접근합니다.
+Model Context Protocol(MCP)은 AI 클라이언트가 공통 인터페이스로 외부 도구를 호출하는 개방형 표준입니다. OMX는 MCP 클라이언트로 동작하며, skill · hook · agent workflow 안에서 등록된 MCP 서버를 호출해 파일 시스템, API, runtime state, coordination service에 접근합니다.
 
 ## 무엇인가
 
-MCP 클라이언트(OMX/Codex)가 구조화된 tool-call 요청을 보내면, MCP 서버가 구조화된 응답을 반환하는 client-server 프로토콜입니다. 각 MCP 서버는 이름이 붙은 도구 집합을 노출합니다. OMX는 시작 시 설정된 서버를 발견하고, 그 도구들을 skill과 hook 안에서 직접 호출합니다.
+MCP는 client-server protocol입니다. 클라이언트(OMX/Codex)가 구조화된 tool-call request를 보내면, 각 MCP 서버가 이름 있는 도구 집합에서 구조화된 response를 반환합니다. OMX는 시작 시 설정된 서버를 발견하고, workflow가 외부 state나 service를 필요로 할 때 skill과 hook 안에서 그 도구를 호출합니다.
 
 ## OMX가 어떻게 사용하는가
 
-- **skill-level tool call** — `$wiki`, `$trace`, `$team` 같은 skill이 실행 중 `wiki_add`, `state_read`, `TeamCreate` 같은 MCP tool을 호출합니다.
-- **hook-level integration** — hook script가 OMX 작업 전후에 상태를 읽거나 쓰기 위해 MCP tool을 호출합니다.
-- **지원 서버** — OMX는 아래 서버를 기본으로 인식합니다.
-  - `filesystem` — 로컬 파일 읽기/쓰기
-  - `github` — issue, PR, code search
-  - `context7` — 라이브러리 문서 조회
-  - `oh-my-claudecode_t` — OMX plugin 서버. state, notepad, wiki, LSP, AST, team 도구를 노출합니다.
-- **설정 위치** — Claude Code 설정 파일(`~/.claude/settings.json`)의 `mcpServers` 키 아래에 등록합니다. 각 항목은 `command`, 선택적 `args`, 선택적 `env` override를 가집니다.
+- **Skill-level tool call** — `$wiki`, `$trace`, `$team`, `$ultraqa` 같은 skill이 state, note, artifact, coordination을 위해 MCP tool을 호출할 수 있습니다.
+- **Hook-level integration** — hook script가 OMX 작업 전후에 workflow state를 읽고 쓰며 runtime view를 최신으로 유지합니다.
+- **Plugin-mode metadata** — v0.17 setup은 local Codex plugin marketplace/cache와 plugin-scoped MCP metadata를 등록·검증해서 plugin-installed OMX surface가 MCP capability를 노출할 수 있게 합니다.
+- **Configuration** — MCP server는 client settings의 `mcpServers` 아래에 등록합니다. 각 항목은 `command`, 선택적 `args`, 선택적 `env` override를 가집니다.
+
+## 지원 서버
+
+OMX는 다음 server category를 기본으로 인식합니다.
+
+- `filesystem` — 설정된 root 안의 local file read/write
+- `github` — issue, PR, code search
+- `context7` — library documentation lookup
+- `oh-my-claudecode_t` — state, notepad, wiki, LSP, AST, team tool을 노출하는 OMX plugin server
+- `omx-hermes` — v0.17에 추가된 bounded Hermes coordination bridge
+
+## v0.17 Hermes MCP bridge
+
+Hermes는 OMX session을 위한 opt-in coordination bridge입니다. 다음 bounded tool을 제공합니다.
+
+- session list와 status read
+- safe session start
+- audited follow-up dispatch
+- bounded log tail과 session-history tail
+- safe artifact listing/read
+- final coordination report
+
+Hermes는 의도적으로 tmux access보다 좁습니다. raw tmux scrollback이나 raw private state를 노출하지 않습니다. artifact/history read는 bounded 처리되고 OMX-owned path 안으로 제한되며, follow-up dispatch는 arbitrary pane injection이 아니라 audited coordination path를 거칩니다.
 
 ## 설정 예시
 
-filesystem과 GitHub MCP 서버 등록:
+filesystem, GitHub, Context7, Hermes-style server 등록 예시:
 
 ```json
 {
@@ -39,19 +58,30 @@ filesystem과 GitHub MCP 서버 등록:
     "context7": {
       "command": "npx",
       "args": ["-y", "@upstash/context7-mcp"]
+    },
+    "omx-hermes": {
+      "command": "omx",
+      "args": ["mcp", "hermes"]
     }
   }
 }
 ```
 
-등록 후에는 skill 안에서 해당 서버의 도구를 직접 호출합니다.
+등록 후에는 skill이 client runtime을 통해 해당 도구를 호출할 수 있습니다.
 
-```
+```text
 codex
 > $wiki add "the DB schema lives in src/db/schema.ts"
 ```
 
+## Safety boundary
+
+- runtime coordination만 필요하면 raw shell/tmux access보다 bounded MCP tool을 우선합니다.
+- Hermes를 secret-reading surface로 쓰지 마세요. coordination metadata, bounded artifact, audited follow-up을 위한 bridge입니다.
+- artifact root와 session-history path는 OMX-owned directory 안에 둡니다.
+- v0.17 업그레이드 뒤 plugin-mode discovery가 stale해 보이면 `omx setup`과 `omx doctor`로 marketplace/cache와 MCP metadata를 새로고침하세요.
+
 ## 관련 문서
 
-- [OpenClaw](/ko/docs/integrations/openclaw) — MCP 기반 action을 촉발할 수 있는 훅 이벤트 gateway
-- [CLI Bridges](/ko/docs/integrations/cli-bridges) — MCP와 shell bridge 위에서 동작하는 cross-CLI 단축 명령
+- [OpenClaw](/ko/docs/integrations/openclaw) — MCP 기반 action을 촉발할 수 있는 hook-event gateway
+- [CLI Bridges](/ko/docs/integrations/cli-bridges) — MCP와 shell bridge 위에서 동작하는 cross-CLI shortcut

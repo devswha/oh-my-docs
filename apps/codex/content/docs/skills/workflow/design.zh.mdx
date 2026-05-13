@@ -1,0 +1,66 @@
+---
+title: $design
+description: 面向产品、UI/UX、前端与设计系统决策的 canonical DESIGN.md 工作流
+---
+
+`$design` 是 v0.17 新增的官方设计工作流。它会创建或刷新仓库本地的 `DESIGN.md`，让产品、UI/UX、前端和设计系统决策在实现开始前就有可持久维护的 source of truth。
+
+## 何时使用
+
+- UI/前端实现前需要设计方向。
+- 仓库缺少可持续维护的 design brief 或 design-system contract。
+- 需要把现有页面、组件、素材或截图整理成可复用的指导。
+- 产品或设计上下文缺失，需要通过访谈、显式假设或 open question 记录下来。
+- 某个功能在进入 `$ralph`、`$team` 或实现前需要 design contract。
+
+## 调用方式
+
+```bash
+$design "create a design contract for the dashboard refresh"
+```
+
+## 工作方式
+
+1. 先检查 `DESIGN.md`、文档、route、layout、component、theme file、token、asset、screenshot、mockup、Storybook 和 visual-regression artifact。
+2. 只询问设计关键的缺失上下文，例如用户、jobs、产品目标、品牌约束、主要流程、无障碍目标、设备支持和实现限制。
+3. 创建或刷新仓库根目录的 `DESIGN.md`，并填入必需章节。
+4. 后续 UI/UX/前端实现与 review 都把 `DESIGN.md` 当作决策契约引用。
+
+## 必需的 `DESIGN.md` 章节
+
+- Source of truth
+- Brand
+- Product goals
+- Personas and jobs
+- Information architecture
+- Design principles
+- Visual language
+- Components
+- Accessibility
+- Responsive behavior
+- Interaction states
+- Content voice
+- Implementation constraints
+- Open questions
+
+## `$design` vs `$frontend-ui-ux`
+
+`$design` 是 canonical workflow。`$frontend-ui-ux` 仍作为旧提示的兼容 shortcut 保留，但新的产品、UI/UX、前端或设计系统决策如果需要沉淀在仓库中，应从 `$design` 开始。
+
+## `$design` vs `$visual-ralph`
+
+`$design` 负责建立持久的设计 source of truth。只有在已有批准的 generated image、static mockup、screenshot 或 live URL，并且需要通过视觉迭代实现匹配时，才使用 `$visual-ralph`。如果两者都需要，先运行 `$design`，再把批准的 visual reference 交给 `$visual-ralph`。
+
+## 完成检查清单
+
+- 已检查现有 design doc、asset、component、screenshot、theme file，或明确记录不存在。
+- 缺失的 product/design context 已回答、显式假设，或列入 open questions。
+- 仓库根目录存在 `DESIGN.md`，且包含必需章节。
+- 后续 UI/UX/前端工作引用 `DESIGN.md`，而不是依赖未说明的偏好。
+- 如有 `$visual-ralph` handoff，已与 `DESIGN.md` governance 明确区分。
+
+## 相关 skill
+
+- [`$ralph`](/zh/docs/skills/workflow/ralph) — 设计明确后推进实现直到验证完成
+- [`$team`](/zh/docs/skills/workflow/team) — design contract 稳定后拆分 frontend/backend/test lane
+- [`$ultraqa`](/zh/docs/skills/workflow/ultraqa) — 实现后的对抗式验证

@@ -1,28 +1,47 @@
 ---
 title: "MCP"
-description: "How OMX discovers and invokes Model Context Protocol servers from skills and hooks."
+description: "How OMX discovers and invokes Model Context Protocol servers, including the bounded Hermes bridge added in v0.17."
 ---
 
-Model Context Protocol (MCP) is an open standard that lets AI clients call external tools through a common interface. OMX acts as an MCP client, invoking registered MCP servers from within skills, hooks, and agent workflows to reach file systems, APIs, and specialized services.
+Model Context Protocol (MCP) is an open standard that lets AI clients call external tools through a common interface. OMX acts as an MCP client, invoking registered MCP servers from skills, hooks, and agent workflows to reach file systems, APIs, runtime state, and coordination services.
 
 ## What it is
 
-MCP is a client-server protocol where the MCP client (OMX/Codex) sends structured tool-call requests and receives structured responses. Each MCP server exposes a named set of tools. OMX discovers configured servers at startup and calls their tools directly from within skills and hooks.
+MCP is a client-server protocol: the client (OMX/Codex) sends structured tool-call requests, and each MCP server returns structured responses from a named set of tools. OMX discovers configured servers at startup and calls their tools from skills and hooks when the workflow needs external state or services.
 
 ## How OMX uses it
 
-- **Skill-level tool calls** — Skills like `$wiki`, `$trace`, and `$team` invoke MCP tools (`wiki_add`, `state_read`, `TeamCreate`, etc.) during normal execution.
-- **Hook-level integration** — Hook scripts call MCP tools to read or write state before and after OMX operations.
-- **Supported servers** — OMX recognizes the following servers out of the box:
-  - `filesystem` — read and write local files
-  - `github` — issues, PRs, code search
-  - `context7` — library documentation lookup
-  - `oh-my-claudecode_t` — the OMX plugin server, which exposes state, notepad, wiki, LSP, AST, and team tools
-- **Configuration** — MCP servers are registered under the `mcpServers` key in the Claude Code settings file (`~/.claude/settings.json`). Each entry specifies a `command`, optional `args`, and optional `env` overrides.
+- **Skill-level tool calls** — Skills like `$wiki`, `$trace`, `$team`, and `$ultraqa` can call MCP tools for state, notes, artifacts, and coordination.
+- **Hook-level integration** — Hook scripts call MCP tools before or after OMX operations to read/write workflow state and keep runtime views current.
+- **Plugin-mode metadata** — v0.17 setup registers and verifies the local Codex plugin marketplace/cache plus plugin-scoped MCP metadata so plugin-installed OMX surfaces can advertise their MCP capabilities.
+- **Configuration** — MCP servers are registered under `mcpServers` in the client settings. Each entry specifies a `command`, optional `args`, and optional `env` overrides.
 
-## Example
+## Supported servers
 
-Registering the filesystem and GitHub MCP servers:
+OMX recognizes these server categories out of the box:
+
+- `filesystem` — local file reads/writes inside the configured roots
+- `github` — issues, PRs, and code search
+- `context7` — library documentation lookup
+- `oh-my-claudecode_t` — the OMX plugin server, exposing state, notepad, wiki, LSP, AST, and team tools
+- `omx-hermes` — the bounded Hermes coordination bridge added in v0.17
+
+## Hermes MCP bridge in v0.17
+
+Hermes is an opt-in coordination bridge for OMX sessions. It exposes bounded tools for:
+
+- session listing and status reads
+- safe session starts
+- audited follow-up dispatch
+- bounded log tails and session-history tails
+- safe artifact listing and reads
+- final coordination reports
+
+Hermes is intentionally narrower than tmux access. It does **not** expose raw tmux scrollback or raw private state. Artifact and history reads are bounded and constrained to OMX-owned paths, and follow-up dispatch goes through audited coordination paths instead of arbitrary pane injection.
+
+## Example registration
+
+Registering filesystem, GitHub, Context7, and Hermes-style servers:
 
 ```json
 {
@@ -39,17 +58,28 @@ Registering the filesystem and GitHub MCP servers:
     "context7": {
       "command": "npx",
       "args": ["-y", "@upstash/context7-mcp"]
+    },
+    "omx-hermes": {
+      "command": "omx",
+      "args": ["mcp", "hermes"]
     }
   }
 }
 ```
 
-Once registered, tools from those servers are callable directly inside skills:
+After registration, skills can call those tools through the client runtime:
 
-```
+```text
 codex
 > $wiki add "the DB schema lives in src/db/schema.ts"
 ```
+
+## Safety boundaries
+
+- Prefer bounded MCP tools over raw shell or tmux access when runtime coordination is enough.
+- Do not use Hermes as a secret-reading surface; it is designed for coordination metadata, bounded artifacts, and audited follow-ups.
+- Keep artifact roots and session-history paths inside OMX-owned directories.
+- If plugin-mode discovery looks stale after upgrading to v0.17, run `omx setup` and `omx doctor` to refresh marketplace/cache and MCP metadata.
 
 ## Related
 

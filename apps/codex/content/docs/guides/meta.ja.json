@@ -1,11 +1,13 @@
 {
-  "title": "ガイド",
+  "title": "ユースケースとガイド",
   "pages": [
-    "[一目でわかる決定表](/ja/docs/guides#一目でわかる決定表)",
-    "[基本パス](/ja/docs/guides#基本パス)",
-    "[$autopilot はいつ使うか](/ja/docs/guides#autopilot-はいつ使うか)",
-    "[計画ベースのフローを先に通すべきとき](/ja/docs/guides#計画ベースのフローを先に通すべきとき)",
-    "[$ultragoal は durable goal が必要なとき](/ja/docs/guides#ultragoal-は-durable-goal-が必要なとき)",
-    "[$team は並列化に価値があるときだけ](/ja/docs/guides#team-は並列化に価値があるときだけ)"
+    "[判断表](/ja/docs/guides#判断表)",
+    "[標準 guided flow](/ja/docs/guides#標準-guided-flow)",
+    "[$autopilot ですばやくプロトタイプを作る](/ja/docs/guides#autopilot-ですばやくプロトタイプを作る)",
+    "[実装前に計画する](/ja/docs/guides#実装前に計画する)",
+    "[$design で UI 作業前に設計基準を作る](/ja/docs/guides#design-で-ui-作業前に設計基準を作る)",
+    "[$ultragoal で durable milestone を追跡する](/ja/docs/guides#ultragoal-で-durable-milestone-を追跡する)",
+    "[$team で並列作業を分ける](/ja/docs/guides#team-で並列作業を分ける)",
+    "[$ultraqa で検証と修正を繰り返す](/ja/docs/guides#ultraqa-で検証と修正を繰り返す)"
   ]
 }

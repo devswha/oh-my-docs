@@ -1,9 +1,8 @@
 {
-  "title": "Getting Started",
+  "title": "Quickstart",
   "pages": [
     "[Prerequisites](/docs/getting-started#prerequisites)",
-    "[Install](/docs/getting-started#install)",
-    "[A good first session](/docs/getting-started#a-good-first-session)",
-    "[Next steps](/docs/getting-started#next-steps)"
+    "[Setup](/docs/getting-started#setup)",
+    "[First session](/docs/getting-started#first-session)"
   ]
 }

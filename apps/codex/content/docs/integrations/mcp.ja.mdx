@@ -1,28 +1,47 @@
 ---
 title: "MCP"
-description: "OMX が Model Context Protocol サーバーを検出して呼び出す方法。"
+description: "OMX が Model Context Protocol サーバーを検出して呼び出す方法。v0.17 の bounded Hermes bridge を含む。"
 ---
 
-Model Context Protocol（MCP）は、AI クライアントが共通インターフェイスで外部ツールを呼び出すためのオープン標準です。OMX は MCP クライアントとして動作し、skill・hook・agent workflow の中で登録済みの MCP サーバーを呼び出して、ファイルシステム、API、専門サービスにアクセスします。
+Model Context Protocol（MCP）は、AI クライアントが共通インターフェイスで外部ツールを呼び出すためのオープン標準です。OMX は MCP クライアントとして動作し、skill・hook・agent workflow の中で登録済み MCP サーバーを呼び出して、ファイルシステム、API、runtime state、coordination service にアクセスします。
 
 ## 概要
 
-MCP クライアント（OMX/Codex）が構造化された tool-call リクエストを送ると、MCP サーバーが構造化されたレスポンスを返す client-server プロトコルです。各 MCP サーバーは名前付きのツール集合を公開します。OMX は起動時に設定済みのサーバーを検出し、そのツールを skill や hook の中で直接呼び出します。
+MCP は client-server protocol です。クライアント（OMX/Codex）が構造化された tool-call request を送り、各 MCP サーバーが名前付きツール集合から構造化 response を返します。OMX は起動時に設定済みサーバーを検出し、workflow が外部 state や service を必要とするとき、skill や hook からそのツールを呼び出します。
 
 ## OMX での使われ方
 
-- **skill レベルの tool call** — `$wiki`、`$trace`、`$team` などの skill が実行中に `wiki_add`、`state_read`、`TeamCreate` などの MCP tool を呼び出します。
-- **hook レベルの integration** — hook スクリプトが OMX の処理前後に状態を読み書きするために MCP tool を呼び出します。
-- **対応サーバー** — OMX は以下のサーバーをデフォルトで認識します。
-  - `filesystem` — ローカルファイルの読み書き
-  - `github` — issue、PR、code search
-  - `context7` — ライブラリドキュメントの照会
-  - `oh-my-claudecode_t` — OMX plugin サーバー。state、notepad、wiki、LSP、AST、team ツールを公開します。
-- **設定場所** — Claude Code の設定ファイル（`~/.claude/settings.json`）の `mcpServers` キー配下に登録します。各エントリは `command`、省略可能な `args`、省略可能な `env` override を持ちます。
+- **Skill-level tool call** — `$wiki`、`$trace`、`$team`、`$ultraqa` などの skill は state、note、artifact、coordination のために MCP tool を呼び出せます。
+- **Hook-level integration** — hook script は OMX 操作の前後に workflow state を読み書きし、runtime view を最新に保ちます。
+- **Plugin-mode metadata** — v0.17 setup は local Codex plugin marketplace/cache と plugin-scoped MCP metadata を登録・検証し、plugin-installed OMX surface が MCP capability を公開できるようにします。
+- **Configuration** — MCP server は client settings の `mcpServers` 配下に登録します。各エントリは `command`、省略可能な `args`、省略可能な `env` override を持ちます。
+
+## 対応サーバー
+
+OMX は次の server category をデフォルトで認識します。
+
+- `filesystem` — 設定された root 内の local file read/write
+- `github` — issue、PR、code search
+- `context7` — library documentation lookup
+- `oh-my-claudecode_t` — state、notepad、wiki、LSP、AST、team tool を公開する OMX plugin server
+- `omx-hermes` — v0.17 で追加された bounded Hermes coordination bridge
+
+## v0.17 Hermes MCP bridge
+
+Hermes は OMX session のための opt-in coordination bridge です。次の bounded tool を提供します。
+
+- session list と status read
+- safe session start
+- audited follow-up dispatch
+- bounded log tail と session-history tail
+- safe artifact listing/read
+- final coordination report
+
+Hermes は意図的に tmux access より狭く設計されています。raw tmux scrollback や raw private state は公開しません。artifact/history read は bounded で、OMX-owned path 内に制限されます。follow-up dispatch は arbitrary pane injection ではなく audited coordination path を通ります。
 
 ## 設定例
 
-filesystem と GitHub の MCP サーバーを登録する例:
+filesystem、GitHub、Context7、Hermes-style server を登録する例:
 
 ```json
 {
@@ -39,19 +58,30 @@ filesystem と GitHub の MCP サーバーを登録する例:
     "context7": {
       "command": "npx",
       "args": ["-y", "@upstash/context7-mcp"]
+    },
+    "omx-hermes": {
+      "command": "omx",
+      "args": ["mcp", "hermes"]
     }
   }
 }
 ```
 
-登録後は、skill の中からそのサーバーのツールを直接呼び出せます。
+登録後、skill は client runtime 経由でこれらのツールを呼び出せます。
 
-```
+```text
 codex
 > $wiki add "the DB schema lives in src/db/schema.ts"
 ```
 
+## Safety boundary
+
+- runtime coordination だけで足りる場合は、raw shell/tmux access より bounded MCP tool を優先します。
+- Hermes を secret-reading surface として使わないでください。coordination metadata、bounded artifact、audited follow-up のための bridge です。
+- artifact root と session-history path は OMX-owned directory 内に保ちます。
+- v0.17 への upgrade 後に plugin-mode discovery が stale に見える場合は、`omx setup` と `omx doctor` で marketplace/cache と MCP metadata を更新してください。
+
 ## 関連ドキュメント
 
-- [OpenClaw](/ja/docs/integrations/openclaw) — MCP ベースのアクションをトリガーできるフックイベント gateway
-- [CLI Bridges](/ja/docs/integrations/cli-bridges) — MCP と shell bridge の上で動作するクロス CLI ショートカットコマンド
+- [OpenClaw](/ja/docs/integrations/openclaw) — MCP ベースの action をトリガーできる hook-event gateway
+- [CLI Bridges](/ja/docs/integrations/cli-bridges) — MCP と shell bridge の上で動作する cross-CLI shortcut

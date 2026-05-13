@@ -5,6 +5,26 @@ description: "Detailed OMX release notes with user impact, compatibility, verifi
 
 The [changelog](/docs/reference/changelog) is the short version. Use this page when you need the practical details behind recent releases: what changed, whether you need to migrate, and what was verified before release.
 
+## v0.17.0 — Hermes MCP, `$design`, plugin discovery, and adversarial UltraQA
+
+[Upstream release notes](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/release-notes-0.17.0.md) · [CHANGELOG entry](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#0170---2026-05-12) · [Readiness evidence](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/qa/release-readiness-0.17.0.md)
+
+### User impact
+
+- Hermes MCP adds a bounded coordination bridge for session listing/status, audited follow-up dispatch, safe artifact reads, session starts, log tails, and final coordination reports without exposing tmux scrollback or raw private state.
+- `$design` becomes the canonical workflow for creating or refreshing repo-local `DESIGN.md`; the older `frontend-ui-ux` shortcut remains only for compatibility.
+- Plugin-mode setup now exposes OMX skills through local Codex plugin marketplace discovery, verifies the plugin cache, and publishes plugin-scoped MCP metadata including Hermes.
+- `$ultraqa` now requires adversarial dynamic e2e coverage: hostile scenario modeling, prompt-injection attempts, interrupt/cancel/resume cases, stale state checks, useful temporary harnesses, and explicit cleanup evidence.
+- Runtime hardening improves Windows native hooks, tmux continuation ownership, startup shell isolation, committed project-memory loading, and Ultragoal task-scoped goal reconciliation.
+
+### Compatibility
+
+No normal migration is required. Existing `$frontend-ui-ux` prompts still route as compatibility shortcuts, but new durable product/UI/frontend/design-system decisions should start with [`$design`](/docs/skills/workflow/design). If plugin-mode skill discovery or Hermes MCP metadata looks stale after upgrade, run `omx setup` and `omx doctor`.
+
+### Verification noted upstream
+
+The upstream readiness record marks local release preparation as passing while external publication was still pending at that snapshot. Local gates included previous-tag ancestry, version metadata sync, build/lint/no-unused, targeted MCP/Hermes state-path tests, Cargo tests, a final full release gate, `$code-review` approval, release body generation, and `npm pack --dry-run`. The targeted Node release suite passed 467 tests, Rust tests passed, the generated release body SHA-256 was `e1fdf5bd7961ee7d1370046114301f2939007828d91e9fd361fdb6a7515cae7e`, and the dry-run package shasum was `64b6cb807fab9ddb6213dde72472df137c8e81db`.
+
 ## v0.16.4 — Approved handoffs and runtime completion hardening
 
 [Upstream release notes](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/release-notes-0.16.4.md) · [CHANGELOG entry](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#0164---2026-05-11) · [Readiness evidence](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/qa/release-readiness-0.16.4.md)

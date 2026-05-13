@@ -5,6 +5,26 @@ description: "包含用户影响、兼容性、验证证据与上游链接的 OM
 
 [变更日志](/zh/docs/reference/changelog) 是简短摘要。需要了解最近版本的实际影响、是否需要迁移、以及发布前验证证据时，请阅读本页。
 
+## v0.17.0 — Hermes MCP、`$design`、plugin discovery 与 adversarial UltraQA
+
+[上游发布说明](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/release-notes-0.17.0.md) · [CHANGELOG 条目](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#0170---2026-05-12) · [发布准备证据](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/qa/release-readiness-0.17.0.md)
+
+### 用户影响
+
+- Hermes MCP 增加了 bounded coordination bridge，可进行 session list/status、audited follow-up dispatch、safe artifact read、session start、log tail 与 final coordination report，同时不暴露 tmux scrollback 或 raw private state。
+- `$design` 成为创建或刷新 repo-local `DESIGN.md` 的 canonical workflow；旧的 `frontend-ui-ux` shortcut 仅作为兼容保留。
+- Plugin-mode setup 现在通过 local Codex plugin marketplace discovery 暴露 OMX skill，验证 plugin cache，并发布包含 Hermes 的 plugin-scoped MCP metadata。
+- `$ultraqa` 现在要求 adversarial dynamic e2e coverage：hostile scenario modeling、prompt-injection attempt、interrupt/cancel/resume case、stale state check、有用的 temporary harness，以及 explicit cleanup evidence。
+- Runtime hardening 改进了 Windows native hook、tmux continuation ownership、startup shell isolation、committed project-memory loading 与 Ultragoal task-scoped goal reconciliation。
+
+### 兼容性
+
+普通用户不需要迁移。现有 `$frontend-ui-ux` prompt 仍作为 compatibility shortcut 路由，但新的 durable product/UI/frontend/design-system 决策应从 [`$design`](/zh/docs/skills/workflow/design) 开始。升级后如果 plugin-mode skill discovery 或 Hermes MCP metadata 看起来 stale，请运行 `omx setup` 和 `omx doctor`。
+
+### 上游验证证据
+
+上游 readiness record 在该 snapshot 中记录 local release preparation 为 PASS，external publication 仍为 PENDING。Local gate 包括 previous-tag ancestry、version metadata sync、build/lint/no-unused、targeted MCP/Hermes state-path test、Cargo test、final full release gate、`$code-review` approval、release body generation 与 `npm pack --dry-run`。Targeted Node release suite 通过 467 个测试，Rust tests 通过；generated release body SHA-256 为 `e1fdf5bd7961ee7d1370046114301f2939007828d91e9fd361fdb6a7515cae7e`，dry-run package shasum 为 `64b6cb807fab9ddb6213dde72472df137c8e81db`。
+
 ## v0.16.4 — Approved handoffs 与 runtime completion hardening
 
 [上游发布说明](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/release-notes-0.16.4.md) · [CHANGELOG 条目](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#0164---2026-05-11) · [Readiness evidence](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/qa/release-readiness-0.16.4.md)

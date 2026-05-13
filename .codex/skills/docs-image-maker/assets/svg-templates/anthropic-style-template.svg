@@ -1,6 +1,12 @@
+<!--
+  Anthropic-style technical workflow diagram template.
+  Recipe: ../../references/anthropic-style-diagram.md
+  Edit the text labels, file rows, and feedback loop endpoints for your workflow.
+  Keep the visual language (palette, fonts, stroke widths, geometry) intact.
+-->
 <svg width="2401" height="440" viewBox="0 0 2401 440" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
-  <title id="title">Ultragoal aggregate goal handoff workflow</title>
-  <desc id="desc">A brief becomes durable Ultragoal state, complete-goals prints a handoff prompt into active Codex goal mode, checkpoint evidence returns to the ledger, and a final gate leads to Done.</desc>
+  <title id="title">REPLACE WITH WORKFLOW TITLE</title>
+  <desc id="desc">REPLACE WITH ONE-SENTENCE DESCRIPTION of the workflow this diagram represents.</desc>
   <defs>
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap");
@@ -21,7 +27,6 @@
       .label { fill: #7a7872; font-weight: 450; font-size: 22px; }
       .file { font-size: 24px; fill: #6b62aa; font-weight: 500; }
       .main { font-size: 34px; }
-      .sub { font-size: 25px; }
       .left { text-anchor: end; }
       .right { text-anchor: start; }
     </style>
@@ -32,57 +37,56 @@
 
   <rect class="bg" width="2401" height="440"/>
 
-  <!-- Input -->
+  <!-- Input pill (boundary input) -->
   <rect class="orange-pill" x="265" y="222" width="160" height="76" rx="38"/>
-  <text class="txt orange main" x="345" y="262">Brief</text>
+  <text class="txt orange main" x="345" y="262">Input</text>
 
   <path class="line" d="M442 260 H538" marker-end="url(#arrow)"/>
 
-  <!-- Create plan -->
-  <text class="txt label" x="675" y="178">aggregate mode</text>
+  <!-- Action / command (green = LLM call or action) -->
+  <text class="txt label" x="675" y="166">subtitle line 1</text>
+  <text class="txt label" x="675" y="192">(subtitle line 2)</text>
   <rect class="green-box" x="555" y="210" width="240" height="100" rx="10"/>
-  <text class="txt green main mono" x="675" y="248">$ultragoal</text>
-  <text class="txt green sub mono" x="675" y="284">create-goals</text>
+  <text class="txt green main mono" x="675" y="262">$action</text>
 
   <path class="line" d="M812 260 H908" marker-end="url(#arrow)"/>
 
-  <!-- Durable files -->
-  <text class="txt label" x="1055" y="163">durable state</text>
+  <!-- Durable state with file rows (purple = repo state) -->
+  <text class="txt label" x="1055" y="163">state name</text>
   <rect class="purple-box" x="925" y="178" width="260" height="164" rx="10"/>
   <rect class="file-box" x="955" y="198" width="200" height="38" rx="6"/>
-  <text class="txt file mono" x="1055" y="218">brief.md</text>
+  <text class="txt file mono" x="1055" y="218">file-a.md</text>
   <rect class="file-box" x="955" y="244" width="200" height="38" rx="6"/>
-  <text class="txt file mono" x="1055" y="264">goals.json</text>
+  <text class="txt file mono" x="1055" y="264">file-b.json</text>
   <rect class="file-box" x="955" y="290" width="200" height="38" rx="6"/>
-  <text class="txt file mono" x="1055" y="310">ledger.jsonl</text>
+  <text class="txt file mono" x="1055" y="310">file-c.jsonl</text>
 
   <path class="line" d="M1202 260 H1298" marker-end="url(#arrow)"/>
 
-  <!-- Transient handoff -->
-  <text class="txt label" x="1425" y="178">complete-goals</text>
-  <rect class="purple-outline" x="1315" y="210" width="220" height="100" rx="10"/>
-  <text class="txt purple main" x="1425" y="262">handoff</text>
+  <!-- Transient bridge artifact (outline-only purple) -->
+  <rect class="purple-outline" x="1315" y="210" width="200" height="100" rx="10"/>
+  <text class="txt purple main" x="1415" y="262">bridge</text>
 
-  <path class="line" d="M1552 260 H1628" marker-end="url(#arrow)"/>
+  <path class="line" d="M1532 260 H1628" marker-end="url(#arrow)"/>
 
-  <!-- Active goal -->
-  <text class="txt label" x="1745" y="178">active thread</text>
+  <!-- LLM / runtime (green) -->
   <rect class="green-box" x="1645" y="210" width="200" height="100" rx="10"/>
-  <text class="txt green main" x="1745" y="248">Codex</text>
-  <text class="txt green sub" x="1745" y="284">goal</text>
+  <text class="txt green main" x="1745" y="262">LLM</text>
 
-  <text class="txt label" x="1910" y="240">final gate</text>
+  <!-- Arrow with inline label -->
+  <text class="txt label" x="1910" y="240">verify</text>
   <path class="line" d="M1862 260 H1958" marker-end="url(#arrow)"/>
 
+  <!-- Output pill (boundary output) -->
   <rect class="orange-pill" x="1975" y="222" width="160" height="76" rx="38"/>
-  <text class="txt orange main" x="2055" y="262">Done</text>
+  <text class="txt orange main" x="2055" y="262">Output</text>
 
-  <!-- Concept boundary -->
-  <text class="txt label left" x="1240" y="78">repo artifacts</text>
-  <text class="txt label right" x="1260" y="78">active thread</text>
+  <!-- Boundary: left side concept | right side concept -->
+  <text class="txt label left" x="1240" y="78">left side</text>
+  <text class="txt label right" x="1260" y="78">right side</text>
   <path class="boundary" d="M1250 102 V368"/>
 
-  <!-- Evidence loop -->
-  <path class="dash" d="M1745 315 C 1560 370, 1295 370, 1185 295" marker-end="url(#arrow)"/>
-  <text class="txt label" x="1415" y="386">checkpoint evidence</text>
+  <!-- Feedback loop: shallow arc from LLM back to state -->
+  <path class="dash" d="M1745 315 C 1560 380, 1290 380, 1185 295" marker-end="url(#arrow)"/>
+  <text class="txt label" x="1415" y="388">feedback</text>
 </svg>

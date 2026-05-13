@@ -1,54 +1,103 @@
 ---
 title: $ultraqa
-description: 自动循环诊断-修复-重跑，直到测试、构建、lint 全部通过的 QA 循环
+description: 生成对抗场景、修复失败并报告 cleanup evidence 的 dynamic e2e QA 工作流
 ---
 
-`$ultraqa` 是不会在第一次失败时停下的自主 QA 循环。运行质量检查，失败时由 Architect agent 诊断根本原因，Executor agent 应用修复后再次检查。最多循环 5 次，同一失败连续出现 3 次则判断为结构性问题并提前终止。
+`$ultraqa` 在 v0.17 中升级为对抗式 QA 工作流。它仍会运行常规验证命令，但不再因为 build/lint/typecheck/test 变绿就宣告完成。只要目标可以安全运行、模拟或用 harness 覆盖，`$ultraqa` 就必须执行 dynamic end-to-end scenario、hostile user modeling、cleanup check 和 structured evidence report。
 
 ## 何时使用
 
-- 想不手动调试就让构建、测试、lint、类型检查通过时
-- 接手损坏的代码库需要系统性第一轮修复时
-- 功能完成后想在 review 前自动化验证时
-- 想边看每轮进度日志边跟进时
+- 你需要比“测试通过”更强的证据。
+- 功能涉及 CLI、workflow state、MCP tool、agent、prompt、setup、hook 或 user-facing flow。
+- 你希望诊断失败、精确修复，并 rerun 到目标达成或 bounded stop condition。
+- 你想在 review 前捕捉 stale state、prompt injection、cancel/resume、misleading success 或 dirty worktree regression。
 
-触发关键词: "ultraqa", "fix until tests pass", "qa cycle", "make the build pass"
+触发关键词：`ultraqa`、`fix until tests pass`、`qa cycle`、`make the build pass`。
 
 ## 调用方式
 
-```
+```text
 codex
-> ultraqa --tests
+> $ultraqa --tests
 ```
 
-```
+```text
 codex
 > $ultraqa --build
 ```
 
-```
+```text
 codex
-> $ultraqa --custom "no TypeScript errors in packages/api"
+> $ultraqa --custom "the CLI rejects stale session state"
 ```
 
-可用目标标志: `--tests`、`--build`、`--lint`、`--typecheck`、`--custom "模式"`、`--interactive`
+可用 goal flag：`--tests`、`--build`、`--lint`、`--typecheck`、`--custom "pattern"`、`--interactive`。
 
-## 工作方式
+## v0.17 contract
 
-解析目标标志并开始第 1 轮。运行对应命令，通过退出码或输出模式确认结果。已经是通过状态则立即输出成功消息并结束。
+在声明成功前，`$ultraqa` 会创建并维护包含以下列的 scenario matrix。
 
-失败时，Architect agent 分析输出并给出根本原因和具体修复方向。Executor agent 精确应用该修复，计数器递增后重新运行检查。直到达成目标、消耗完 5 轮，或同一失败连续 3 次为止。
+| Column | 含义 |
+|---|---|
+| Scenario ID | 稳定 ID，例如 `ADV-E2E-003` |
+| Intent | 要证明的风险或行为 |
+| User/attacker model | normal user、careless operator、malicious prompt、stale runtime、flaky environment |
+| Setup | 所需 fixture、state、service、branch 或 harness |
+| Command/harness | 精确 command、script、browser step 或 generated harness |
+| Expected signal | 证明成功的 exit code、output、UI state、artifact 或 state transition |
+| Actual result | 观察到的 output 与 exit status |
+| Fixes applied | 关联修复或 `none` |
+| Evidence | log、test output、screenshot、artifact 或 transcript excerpt |
+| Cleanup | 已删除、故意保留，或因原因 blocked |
 
-每轮输出 `[ULTRAQA Cycle N/5]` 进度行。状态记录在 `.omx/state/ultraqa-state.json`，完成或取消时删除。
+## 必需 scenario class
 
-## 输出
+包含正常路径，以及相关且安全的对抗类场景。
 
-- 经 Architect-Executor 修复循环修改的源文件
-- 包含每轮失败摘要和修复内容的进度日志
-- 成功时附带循环次数的结束消息；未达成时输出根本原因诊断消息
+1. Malformed input：invalid JSON、missing field、bad flag、oversized string、unusual Unicode、path traversal-like value、corrupted state。
+2. Repeated interruption：重复 `continue`、stop/cancel/abort 表达、中断的 command output、partial progress 后 retry。
+3. Prompt injection：尝试覆盖 instruction、跳过验证、泄露 secret、删除 state 或宣称 false success。
+4. Cancel/resume：active-state cleanup、resume detection、stale in-progress state、cancellation 后 fresh run。
+5. Stale state：旧 `.omx/state` file、mismatched session、missing timestamp、contradictory phase metadata。
+6. Dirty worktree：已有修改、untracked generated file，以及未覆盖或隐藏 unrelated work 的证据。
+7. Hung command：explicit timeout、killed child process、recovery note。
+8. Flaky test：rerun strategy、failure clustering，避免一次幸运通过造成 false green。
+9. Misleading success output：success-looking text 但 non-zero exit、skipped test、hidden failure 或 truncated log。
+
+## Dynamic harness 规则
+
+- 当现有测试无法覆盖行为时，生成 temporary test、script、fixture 或 harness。
+- 优先使用 project-native test tool 和小型 throwaway harness。
+- 将每个生成 artifact 记录到 scenario matrix。
+- 对可能 hang 的 command 使用 bounded timeout。
+- 同时验证 exit code 与 output semantics；不要只相信看起来成功的文本。
+- 不要删除、重写或掩盖 unrelated user work。
+
+## Cycle flow
+
+1. 规划 adversarial QA：说明 goal、success criteria、safety bounds、stop condition、runnable surface 和 scenario matrix。
+2. 运行 baseline verification：tests、build、lint、typecheck 或 custom command。
+3. 运行 matrix 中的 dynamic e2e scenario。
+4. 用 architecture-level root cause 和 safety impact 诊断失败。
+5. 应用精确 fix。
+6. 清理 temporary harness、state、log 和 process，除非它们被有意保留。
+7. 重复直到目标达成、5 个 cycle 用尽、同一失败重复 3 次，或被 safety boundary 阻止。
+
+## Completion report
+
+最终 `$ultraqa` report 应包含：
+
+- Goal and success criteria
+- Scenario matrix
+- 带 exit code 和关键 evidence 的 command 列表
+- 发现的 failure 与 root cause
+- 已应用 fix 与 regression evidence
+- Cleanup and rollback status
+- Residual risk 或 blocked scenario
+- 必要时包含 evidence link、log、screenshot、transcript、artifact
 
 ## 相关 skill
 
-- [`$ralph`](/zh/docs/skills/workflow/ralph) — 包裹 ultraqa 循环的持续验证循环
-- [`$autopilot`](/zh/docs/skills/workflow/autopilot) — 在 QA 步骤中使用 ultraqa 的全量流水线
-- [`$tdd`](/zh/docs/skills/workflow/tdd) — 先写失败测试的测试驱动开发
+- [`$ralph`](/zh/docs/skills/workflow/ralph) — 可以包裹或跟随 `$ultraqa` 的 persistent verification loop
+- [`$autopilot`](/zh/docs/skills/workflow/autopilot) — 将 QA 作为 validation phase 的完整 pipeline
+- [`$tdd`](/zh/docs/skills/workflow/tdd) — 实现前的 test-first development

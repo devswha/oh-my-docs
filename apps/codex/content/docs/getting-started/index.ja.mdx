@@ -1,140 +1,136 @@
 ---
-title: はじめに
-description: oh-my-codex (OMX) のインストールから最初のセッションまで最短で進める
+title: クイックスタート
+description: OMX をインストールし、setup path を選び、ランタイムを検証して最初のタスクを送る
 ---
 
-## はじめに
+## クイックスタート
 
-oh-my-codex (OMX) を初めて使うなら、以下の順で進めてください。
+クリーンな環境から動作する OMX セッションまで、最短で確実に進みたいときはこのページに従います。
 
-1. [インストール](#install) — Codex CLI と OMX をインストールし、`omx setup` を実行
-2. [最初のセッション](#first-session) — 実行境界を確認し、推奨ワークフローを走らせる
+OMX は [OpenAI Codex CLI](https://github.com/openai/codex) の上で動作します。まず Codex をインストールし、その上に要件整理、計画、実行、チーム、検証のための orchestration layer として OMX を追加します。
 
-OMX は [OpenAI Codex CLI](https://github.com/openai/codex) の上で動くワークフローレイヤーです。Codex を実行エンジンとして残したまま、役割別のエージェントプロンプト、スキル、フックを重ねることで、曖昧なアイデアから動くコードまでを一貫したループで運べます。
-
-### 前提条件
+## 前提条件
 
 | 項目 | 要件 |
-|------|----------|
-| Node.js | 22+ 推奨 (最低 20+) |
-| [Codex CLI](https://github.com/openai/codex) | インストールと認証が必要 |
+|------|------|
+| Node.js | 22+ 推奨、20+ 最小 |
+| Codex CLI | インストール済み、認証済み |
 | OS | macOS または Linux 推奨 |
-| tmux | durable な team runtime を使う場合に必要 |
+| tmux | durable team session に必要 |
 
 <Callout type="info">
-ネイティブ Windows では動作が崩れたり一貫しなかったりする場合があります。可能なら macOS か Linux を使ってください。
+現在の OMX ランタイムは native Windows では一貫しない場合があります。可能であれば macOS、Linux、WSL、または remote Linux 開発ホストを推奨します。
 </Callout>
 
----
+## Setup
 
-## インストール
+最初にどの方法で OMX を使いたいかに合わせて setup path を選びます。
 
-### Codex CLI のインストール
+<Tabs items={["ローカル", "チーム", "検証"]}>
+  <Tab>
+    ### ローカルセッション推奨
 
-まず Codex CLI をインストールします。
+    リポジトリで最初の実作業を行う場合はこの経路を使います。
 
-```bash
-npm install -g @openai/codex
-```
+    <Steps>
+      <Step>
+        #### Codex CLI をインストール
 
-続けて認証します。
+        ```bash
+        npm install -g @openai/codex
+        codex login
+        ```
+      </Step>
+      <Step>
+        #### OMX をインストール
 
-```bash
-codex login
-```
+        ```bash
+        npm install -g oh-my-codex
+        omx setup
+        ```
+      </Step>
+      <Step>
+        #### インストールを確認
 
-### OMX のインストール
+        ```bash
+        omx doctor
+        codex login status
+        ```
+      </Step>
+      <Step>
+        #### リーダーセッションを起動
 
-次に OMX をインストールします。
+        ```bash
+        omx --madmax --high
+        ```
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab>
+    ### チームランタイム
 
-```bash
-npm install -g oh-my-codex
-```
+    計画に複数 lane が必要な場合、または tmux pane で作業を維持したい場合に使います。
 
-### setup 実行
+    ```bash
+    npm install -g @openai/codex oh-my-codex
+    codex login
+    omx setup
+    omx --tmux --madmax --high
+    ```
 
-両方入ったら setup を実行します。
+    タスクを分割できるほど明確になってから並列実行を始めます。
 
-```bash
-omx setup
-```
+    ```text
+    $team 3:executor "execute the approved plan in parallel"
+    ```
+  </Tab>
+  <Tab>
+    ### 検証用スモークテスト
 
-`omx setup` は次を自動で行います。
+    CLI、認証、モデル呼び出し経路が動作するかだけを確認する場合に使います。
 
-- `.codex/config.toml` を書き、`codex_hooks = true` を有効化
-- `.codex/hooks.json` に OMX のフックコマンドを登録
-- `.omx/` プロジェクト状態ディレクトリを作成
-- セッションプロンプトに OMX エージェントのコンテキストを接続
+    ```bash
+    omx doctor
+    codex login status
+    omx exec --skip-git-repo-check -C . "Reply with exactly OMX-EXEC-OK"
+    ```
 
-### インストール確認
-
-正常にインストールされたかを確認します。
-
-```bash
-omx doctor
-```
-
-`omx doctor` は欠けているファイル、フック、ローカルランタイムの前提条件を点検します。
-
----
-
-## 最初のセッション
-
-インストールが確認できたら、実行境界を確認して最初のセッションを始めます。
-
-### 実行境界の確認
-
-現在のシェルと設定で実際にモデル呼び出しが可能か確認します。
-
-```bash
-codex login status
-omx exec --skip-git-repo-check -C . "Reply with exactly OMX-EXEC-OK"
-```
-
-- `codex login status` は現在の認証状態を表示します。
-- `omx exec` のスモークテストは、アクティブな Codex プロファイルが実際にリクエストを投げ、応答を最後まで受け取れることを証明します。
-
-### 推奨の起動方法
-
-OMX は次の方法で起動することを推奨します。
-
-```bash
-omx --madmax --high
-```
-
-リーダーセッションを tmux 内で明示的に立ち上げたい場合は:
-
-```bash
-omx --tmux --madmax --high
-```
+    期待される応答は正確に `OMX-EXEC-OK` です。
+  </Tab>
+</Tabs>
 
 <Callout type="warn">
-`--madmax` は Codex の承認とサンドボックスをバイパスします。意識的に使ってください。
+`--madmax` は Codex の承認と sandboxing を迂回します。その実行境界が意図されているリポジトリと環境でのみ使ってください。
 </Callout>
 
-### 標準ワークフローの実行
+## 初回セッション
 
-最初のセッションでは以下の順番をおすすめします。
+最初の有用なセッションでは、小さくても現実的なタスクを送り、標準の guided flow を一度通るのがおすすめです。
 
-```bash
-$deep-interview "認証変更を明確にして"
-$ralplan "もっとも安全な実装パスを承認して"
-$ralph "承認済みの計画を完了まで進めて"
+```text
+$deep-interview "clarify the authentication change"
+$ralplan "approve the safest implementation path"
+$ultragoal "turn the approved plan into durable goals and complete them"
 ```
 
-各ステップの意味:
+各コマンドは別々の段階を担当します。
 
-| ステップ | 役割 |
-|------|------|
-| `$deep-interview` | 要件が曖昧なときに質問で整理 |
-| `$ralplan` | 実装前にもっとも安全な計画を合意 |
-| `$ralph` | 承認済みの計画を押し続け、完了まで実施 |
+| 段階 | 何をするか |
+|------|------------|
+| `$deep-interview` | コード変更前に曖昧な要件を整理 |
+| `$ralplan` | より安全な実装とテスト計画を作成 |
+| `$ultragoal` | 承認済み計画を durable goal、ledger evidence、completion checkpoint に変換 |
 
-承認済みの計画に並列実行が必要なら、最後のステップを次のように差し替えます。
+承認済み計画が自然に並列化できる場合は、最後のコマンドを次に置き換えます。
 
-```bash
-$team 3:executor "承認済みの計画を並列実行して"
+```text
+$team 3:executor "execute the approved plan in parallel"
 ```
 
-- 並列作業が必要なら `$team`
-- 一人のオーナーが最後まで押し切るフローなら `$ralph`
+### 最初のプロンプト例
+
+```text
+$deep-interview "help me scope a safer signup flow change"
+$ralplan "plan the least risky way to add this report export"
+$ultragoal "split the approved report export plan into durable goals and complete them"
+```

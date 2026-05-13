@@ -9,83 +9,109 @@ description: "Multi-agent orchestration for OpenAI Codex CLI. Zero learning curv
 
 _Don't learn Codex prompts. Just use OMX._
 
-Oh My CodeX (OMX) is a workflow layer that runs on top of OpenAI Codex CLI. With a single invocation it coordinates specialized agent prompts to automate complex development tasks end-to-end.
+Oh My CodeX (OMX) is a workflow layer for OpenAI Codex CLI. It keeps Codex as the coding engine and adds a docs-shaped path for turning a vague task into clarified requirements, an approved plan, implementation, and verification.
 
-## Quick Start
+## Quickstart
 
-### Step 1 — Install Codex CLI
+<Steps>
+  <Step>
+    ### Install Codex CLI
 
-```bash
-npm i -g @openai/codex
-```
+    ```bash
+    npm i -g @openai/codex
+    codex login
+    ```
+  </Step>
+  <Step>
+    ### Install and set up OMX
 
-### Step 2 — Install OMX
+    ```bash
+    npm i -g oh-my-codex
+    omx setup
+    ```
+  </Step>
+  <Step>
+    ### Verify the install
 
-```bash
-npm i -g oh-my-codex
-```
+    ```bash
+    omx doctor
+    codex login status
+    omx exec --skip-git-repo-check -C . "Reply with exactly OMX-EXEC-OK"
+    ```
+  </Step>
+  <Step>
+    ### Send your first task
 
-### Step 3 — Setup
+    ```bash
+    omx --madmax --high
+    ```
 
-```bash
-omx setup
-```
+    Then run the default guided flow inside the session:
 
-### Step 4 — Run the first-session smoke test
+    ```text
+    $deep-interview "clarify the authentication change"
+    $ralplan "approve the safest implementation path"
+    $ultragoal "turn the approved plan into durable goals and complete them"
+    ```
+  </Step>
+</Steps>
 
-```bash
-omx doctor
-codex login status
-omx exec --skip-git-repo-check -C . "Reply with exactly OMX-EXEC-OK"
-```
+## Docs map
 
-### Step 5 — Launch OMX the recommended way
-
-```bash
-omx --madmax --high
-```
-
-Then, in that session, try the canonical workflow:
-
-```
-$deep-interview "clarify the authentication change"
-$ralplan "approve the safest implementation path"
-$ralph "carry the approved plan to completion"
-```
-
-If the approved plan needs coordinated parallel execution, use `$team 3:executor "execute the approved plan in parallel"` instead of `$ralph`.
-
-## Documentation
+Start with the pages in this order if you are new to OMX.
 
 <Cards>
-  <Card title="Getting Started" href="/docs/getting-started">
-    Installation, setup verification, and a good first OMX session
+  <Card title="Quickstart" href="/docs/getting-started">
+    Install Codex CLI and OMX, choose a setup path, verify the runtime, and send the first task.
   </Card>
-  <Card title="Core Concepts" href="/docs/concepts">
-    Agents, skills, hooks, and `.omx/` runtime state
+  <Card title="Use cases" href="/docs/guides">
+    Pick the right flow for prototypes, plan-first work, durable goals, parallel execution, or QA loops.
   </Card>
-  <Card title="Guides" href="/docs/guides">
-    Recommended workflows for planning, execution, QA, and debugging
+  <Card title="Core concepts" href="/docs/concepts">
+    Understand agents, skills, hooks, state, and how the pieces fit together.
   </Card>
+  <Card title="Migrate" href="/docs/reference/migration">
+    Move from older OMX layouts or related agent setups into the current Codex-native structure.
+  </Card>
+</Cards>
+
+## Using OMX
+
+After the quickstart, these sections work like the product manual.
+
+<Cards>
   <Card title="Agents" href="/docs/agents">
-    Reference for the 33 role-specific prompt surfaces
+    Role-specific prompt surfaces for discovery, planning, implementation, review, and verification.
   </Card>
   <Card title="Skills" href="/docs/skills">
-    Workflow and utility skills, invocation rules, and usage guidance
+    Workflow and utility entrypoints such as `$deep-interview`, `$ralplan`, `$ultragoal`, and `$team`.
   </Card>
   <Card title="Hooks" href="/docs/hooks">
-    Codex lifecycle integrations, keyword routing, and hook behavior
+    Codex lifecycle integrations, keyword routing, stop gates, and runtime behavior.
   </Card>
   <Card title="Tools" href="/docs/tools">
-    Runtime capability surfaces such as State, HUD, Wiki, Visual, and provider bridges
+    State, HUD, Wiki, Visual, provider bridges, and other runtime capability surfaces.
   </Card>
   <Card title="Integrations" href="/docs/integrations">
-    OpenClaw, Clawhip, MCP, and cross-CLI interoperability
+    OpenClaw, Clawhip, MCP, and cross-CLI interoperability.
   </Card>
-  <Card title="Reference" href="/docs/reference">
-    Configuration, quick commands, environment variables, and contracts
+</Cards>
+
+## Configure, automate, and learn
+
+Use these pages when you need exact names, operational details, or release history.
+
+<Cards>
+  <Card title="Configuration reference" href="/docs/reference/configuration">
+    Config files, hooks, launch flags, and precedence rules.
+  </Card>
+  <Card title="Quick commands" href="/docs/reference/quick-commands">
+    The shortest path to the command you need right now.
+  </Card>
+  <Card title="Changelog" href="/docs/reference/changelog">
+    What changed, when it shipped, and what to check after upgrading.
   </Card>
   <Card title="Support" href="/docs/support">
-    FAQ, issue reporting, and support channels
+    FAQ, issue reporting, and support channels.
   </Card>
 </Cards>

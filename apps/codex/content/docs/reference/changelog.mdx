@@ -5,7 +5,27 @@ description: "OMX release history — latest release summary and link to the ups
 
 The full changelog is maintained upstream at [`CHANGELOG.md`](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md). This page summarizes the most recent releases.
 
-## Latest release — v0.16.4
+## Latest release — v0.17.0
+
+A minor release after `0.16.4` focused on new coordination and workflow surfaces: bounded Hermes MCP coordination, canonical `$design` workflow guidance, plugin-mode skill marketplace exposure, stronger UltraQA adversarial contracts, Windows native-hook reliability, tmux ownership safety, startup shell isolation, committed project-memory loading, and Ultragoal task-scoped goal reconciliation.
+
+**Added:**
+- Hermes MCP bridge: bounded tools for session/status reads, audited follow-up dispatch, safe artifact reads, log tails, session starts, and coordination reports without exposing tmux scrollback or raw private state.
+- Canonical design workflow: `DESIGN.md` and mirrored `$design` skill guidance now define the design workflow; `frontend-ui-ux` is deprecated.
+- Plugin-mode skill discovery: setup registers and verifies the local Codex plugin marketplace/cache and plugin-scoped MCP metadata, including Hermes.
+
+**Changed:**
+- `$ultraqa` is adversarial by contract, requiring hostile scenario modeling, prompt-injection attempts, interrupts/cancel/resume, stale state checks, temporary harnesses when useful, and cleanup evidence.
+- CLI-first runtime authority guidance is clearer about what the CLI runtime owns versus MCP/default setup paths.
+
+**Fixed:**
+- Windows native hook launch preserves stdio and exit status through a PowerShell `ProcessStartInfo` shim.
+- Tmux continuations verify mode/session/window ownership before injecting follow-up prompts.
+- Startup tmux launches avoid shell rc fan-out before Codex starts.
+- Ultragoal can reconcile completed task-scoped aggregate Codex goals back to the active OMX story with strict evidence gates.
+- Release-review MCP/Hermes tests isolate inherited runtime env and canonicalize macOS temp roots.
+
+## v0.16.4
 
 A post-`0.16.3` reliability patch for approved execution handoffs, context-pack metadata visibility, Codex hook feature-flag migration, setup/notify ownership, HUD/runtime state-root visibility, Ralph completion audit evidence, and Ultragoal completion proof requirements.
 

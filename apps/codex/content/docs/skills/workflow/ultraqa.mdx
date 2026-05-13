@@ -1,54 +1,103 @@
 ---
 title: $ultraqa
-description: Autonomous QA cycle that automatically repeats diagnose-fix-rerun until tests, build, and lint pass
+description: Adversarial dynamic e2e QA workflow that generates hostile scenarios, fixes failures, and reports cleanup evidence
 ---
 
-`$ultraqa` is an autonomous QA loop that doesn't stop at the first failure. It runs quality checks, and when they fail, an Architect agent diagnoses the root cause, an Executor agent applies the fix, and the check runs again. It repeats up to 5 cycles, and exits early if the same failure appears 3 times in a row, treating it as a structural problem.
+`$ultraqa` is the adversarial QA workflow updated in v0.17. It still runs normal verification commands, but it is no longer satisfied by a shallow build/lint/typecheck/test checklist. When the target can be run, simulated, or harnessed safely, `$ultraqa` must exercise behavior through dynamic end-to-end scenarios, hostile user modeling, cleanup checks, and a structured evidence report.
 
 ## When to use it
 
-- When you want to pass build, tests, lint, or typecheck without manually debugging each failure
-- When inheriting a broken codebase and need a systematic first-pass fix
-- When automating verification after completing a feature, before review
-- When you want to follow along with per-cycle progress logs
+- You need stronger proof than “tests are green.”
+- A feature touches CLI, workflow state, MCP tools, agents, prompts, setup, hooks, or user-facing flows.
+- You want failure diagnosis, precise fixes, and reruns until the goal is met or a bounded stop condition is reached.
+- You need to catch stale state, prompt-injection, cancel/resume, misleading-success, or dirty-worktree regressions before review.
 
-Trigger keywords: "ultraqa", "fix until tests pass", "qa cycle", "make the build pass"
+Trigger keywords: `ultraqa`, `fix until tests pass`, `qa cycle`, `make the build pass`.
 
 ## How to invoke
 
-```
+```text
 codex
-> ultraqa --tests
+> $ultraqa --tests
 ```
 
-```
+```text
 codex
 > $ultraqa --build
 ```
 
-```
+```text
 codex
-> $ultraqa --custom "no TypeScript errors in packages/api"
+> $ultraqa --custom "the CLI rejects stale session state"
 ```
 
-Available goal flags: `--tests`, `--build`, `--lint`, `--typecheck`, `--custom "pattern"`, `--interactive`
+Available goal flags: `--tests`, `--build`, `--lint`, `--typecheck`, `--custom "pattern"`, `--interactive`.
 
-## How it works
+## v0.17 contract
 
-Parses the goal flag and starts cycle 1. Runs the appropriate command and checks the exit code or output pattern. If already passing, exits immediately with a success message.
+Before declaring success, `$ultraqa` builds and maintains a scenario matrix with these columns:
 
-If it fails, the Architect agent analyzes the output and identifies the root cause with specific fix recommendations. The Executor agent applies the fix precisely, the counter increments, and the check runs again. Repeats until the goal is met, 5 cycles are exhausted, or the same failure appears 3 times in a row.
+| Column | Meaning |
+|---|---|
+| Scenario ID | Stable ID such as `ADV-E2E-003` |
+| Intent | What risk or behavior is being proved |
+| User/attacker model | Normal user, careless operator, malicious prompt, stale runtime, flaky environment |
+| Setup | Fixture, state, service, branch, or harness required |
+| Command/harness | Exact command, script, browser step, or generated harness |
+| Expected signal | Exit code, output, UI state, artifact, or state transition that proves success |
+| Actual result | Observed output and exit status |
+| Fixes applied | Linked fixes or “none” |
+| Evidence | Logs, test output, screenshots, artifacts, or transcript excerpts |
+| Cleanup | Removed, intentionally kept, or blocked with reason |
 
-Each cycle outputs a `[ULTRAQA Cycle N/5]` progress line. State is written to `.omx/state/ultraqa-state.json` and cleared on completion or cancellation.
+## Required scenario classes
 
-## Outputs
+Include the normal path plus adversarial classes that are relevant and safe:
 
-- Fixed source files from the Architect-Executor repair loop
-- Per-cycle progress log with failure summaries and fix descriptions
-- On success: exit message with cycle count; if goal not met: root-cause diagnosis message
+1. Malformed input: invalid JSON, missing fields, bad flags, oversized strings, unusual Unicode, path traversal-like values, corrupted state.
+2. Repeated interruptions: repeated `continue`, stop/cancel/abort wording, interrupted command output, retry after partial progress.
+3. Prompt injection: text that tries to override instructions, skip verification, exfiltrate secrets, delete state, or claim false success.
+4. Cancel/resume: active-state cleanup, resume detection, stale in-progress state, cancellation followed by a fresh run.
+5. Stale state: old `.omx/state` files, mismatched sessions, missing timestamps, contradictory phase metadata.
+6. Dirty worktree: pre-existing modifications, untracked generated files, and proof that unrelated work was not overwritten or hidden.
+7. Hung commands: explicit timeouts, killed child processes, and recovery notes.
+8. Flaky tests: rerun strategy, failure clustering, and avoiding false green from one lucky pass.
+9. Misleading success output: success-looking text with non-zero exits, skipped tests, hidden failures, or truncated logs.
+
+## Dynamic harness rules
+
+- Generate temporary tests, scripts, fixtures, or harnesses when existing tests do not cover the behavior.
+- Prefer project-native test tools and small throwaway harnesses.
+- Record every generated artifact in the scenario matrix.
+- Use bounded timeouts for commands that can hang.
+- Validate exit codes and output semantics; do not trust success-looking text alone.
+- Do not delete, rewrite, or mask unrelated user work.
+
+## Cycle flow
+
+1. Plan adversarial QA: restate the goal, success criteria, safety bounds, stop condition, runnable surfaces, and scenario matrix.
+2. Run baseline verification: tests, build, lint, typecheck, or custom command.
+3. Run dynamic e2e scenarios from the matrix.
+4. Diagnose failures with architecture-level root cause and safety impact.
+5. Apply precise fixes.
+6. Clean up temporary harnesses, state, logs, and processes unless intentionally kept.
+7. Rerun until the goal is met, 5 cycles are exhausted, the same failure repeats 3 times, or a safety boundary blocks progress.
+
+## Completion report
+
+A terminal `$ultraqa` report should include:
+
+- Goal and success criteria
+- Scenario matrix
+- Commands run with exit codes and key output evidence
+- Failures found and root causes
+- Fixes applied and regression evidence
+- Cleanup and rollback status
+- Residual risks or blocked scenarios
+- Evidence links, logs, screenshots, transcripts, or artifacts when relevant
 
 ## Related skills
 
-- [`$ralph`](/docs/skills/workflow/ralph) — persistent verification loop that can wrap ultraqa cycling
-- [`$autopilot`](/docs/skills/workflow/autopilot) — full pipeline that uses ultraqa as its QA phase
-- [`$tdd`](/docs/skills/workflow/tdd) — test-first development for writing failing tests before implementation
+- [`$ralph`](/docs/skills/workflow/ralph) — persistent verification loop that can wrap or follow `$ultraqa`
+- [`$autopilot`](/docs/skills/workflow/autopilot) — full pipeline that uses QA as its validation phase
+- [`$tdd`](/docs/skills/workflow/tdd) — test-first development before implementation

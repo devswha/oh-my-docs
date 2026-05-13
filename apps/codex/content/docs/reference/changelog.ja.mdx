@@ -5,7 +5,27 @@ description: "OMX リリース履歴 — 最新リリース要約とアップス
 
 完全な changelog はアップストリームの [`CHANGELOG.md`](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md) で管理されています。このページは最近のリリースを要約したものです。
 
-## 最新リリース — v0.16.4
+## 最新リリース — v0.17.0
+
+`0.16.4` 以降の minor release です。bounded Hermes MCP coordination、canonical `$design` workflow guidance、plugin-mode skill marketplace exposure、より強い UltraQA adversarial contract、Windows native-hook reliability、tmux ownership safety、startup shell isolation、committed project-memory loading、Ultragoal task-scoped goal reconciliation に焦点を当てています。
+
+**追加内容:**
+- Hermes MCP bridge: tmux scrollback や raw private state を公開せず、session/status read、audited follow-up dispatch、safe artifact read、log tail、session start、coordination report を bounded tool として提供します。
+- Canonical design workflow: `DESIGN.md` と mirror された `$design` skill guidance が design workflow を定義し、`frontend-ui-ux` は deprecated になりました。
+- Plugin-mode skill discovery: setup は local Codex plugin marketplace/cache と、Hermes を含む plugin-scoped MCP metadata を登録・検証します。
+
+**変更内容:**
+- `$ultraqa` は adversarial by contract となり、hostile scenario modeling、prompt-injection attempt、interrupt/cancel/resume、stale state check、必要に応じた temporary harness、cleanup evidence を要求します。
+- CLI-first runtime authority guidance が、CLI runtime の所有する動作と MCP/default setup path をより明確に区別します。
+
+**修正内容:**
+- Windows native hook launch は PowerShell `ProcessStartInfo` shim により stdio と exit status を保持します。
+- Tmux continuation は follow-up prompt を注入する前に mode/session/window ownership を検証します。
+- Startup tmux launch は Codex 起動前の shell rc fan-out を避けます。
+- Ultragoal は strict evidence gate のもと、完了済み task-scoped aggregate Codex goal を active OMX story に reconcile できます。
+- Release-review MCP/Hermes test は inherited runtime env を isolate し、macOS temp root を canonicalize します。
+
+## v0.16.4
 
 `0.16.3` 以降の approved execution handoff、context-pack metadata visibility、Codex hook feature-flag migration、setup/notify ownership、HUD/runtime state-root visibility、Ralph completion audit evidence、Ultragoal completion proof requirements を強化する信頼性パッチです。
 

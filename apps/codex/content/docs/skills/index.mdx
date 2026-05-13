@@ -21,6 +21,7 @@ These are execution modes that move real work forward.
 |------|------|
 | [`$deep-interview`](/docs/skills/workflow/deep-interview) | Clarify fuzzy requirements through guided questioning |
 | [`$ralplan`](/docs/skills/workflow/ralplan) | Build a planner / architect / critic consensus plan |
+| [`$design`](/docs/skills/workflow/design) | Create or refresh repo-local `DESIGN.md` before durable product/UI/frontend decisions |
 | [`$ralph`](/docs/skills/workflow/ralph) | Keep working until completion is verified |
 | [`$team`](/docs/skills/workflow/team) | Coordinate work that benefits from parallel execution |
 | [`$autopilot`](/docs/skills/workflow/autopilot) | Run the full path from idea through implementation, QA, and validation |
@@ -53,7 +54,7 @@ At the beginning, it is better to learn the representative flow than to memorize
 ```bash
 $deep-interview "clarify the authentication change"
 $ralplan "approve the safest implementation path"
-$ralph "carry the approved plan to completion"
+$ultragoal "turn the approved plan into durable goals and complete them"
 ```
 
 This baseline makes the role of each skill much easier to understand.
@@ -62,7 +63,7 @@ This baseline makes the role of each skill much easier to understand.
 |------|----------------|
 | `$deep-interview` | The task is still fuzzy |
 | `$ralplan` | You need agreement on the plan before implementation |
-| `$ralph` | One persistent owner should carry the work all the way through |
+| `$ultragoal` | The approved plan should become durable goals with ledger evidence |
 | `$team` | There is real value in splitting work across parallel lanes |
 | `$autopilot` | You want the full path handled in one go |
 
@@ -80,19 +81,19 @@ $autopilot "build me a todo app in next.js"
 - Good when you do not want to manually manage planning, execution, and QA
 - Good for prototypes and smaller features
 
-### `$deep-interview → $ralplan → $ralph`
+### `$deep-interview → $ralplan → $ultragoal`
 
 ```bash
 $deep-interview "clarify what we need to build"
 $ralplan "produce the safest implementation plan"
-$ralph "carry out that plan to completion"
+$ultragoal "turn that plan into durable goals and complete them"
 ```
 
 - Better when requirements are not fully shaped yet
 - Better when the plan needs explicit agreement first
 - Better when you want more control over the flow
 
-So `$autopilot` is the **fast full-path workflow**, while the plan-driven path is the **more controllable default route**.
+So `$autopilot` is the **fast full-path workflow**, while the plan-driven path is the **more controllable durable-goal route**.
 
 ## When should you use `$team`?
 
@@ -109,4 +110,4 @@ Good fit when:
 - sequential execution would be unnecessarily slow
 - you already have a plan that can be distributed across workers
 
-If the requirements are still fuzzy, or parallelism would create more collisions than speed, `$ralph` is often the better choice.
+If the requirements are still fuzzy, clarify and plan first; if parallelism would create more collisions than speed, keep the approved plan in `$ultragoal` or use `$ralph` only for tightly coupled single-owner loops.

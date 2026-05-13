@@ -42,30 +42,30 @@ export default async function Page(props: {
   const navNames: Record<string, Record<string, string>> = {
     en: {
       docs: 'Docs',
-      gettingStarted: 'Getting Started',
+      gettingStarted: 'Quickstart',
       concepts: 'Core Concepts',
-      guides: 'Guides',
+      guides: 'Use cases',
       agents: 'Agents',
     },
     ko: {
       docs: '문서',
-      gettingStarted: '시작하기',
+      gettingStarted: '빠른 시작',
       concepts: '주요 개념',
-      guides: '가이드',
+      guides: '사용 사례',
       agents: '에이전트',
     },
     zh: {
       docs: '文档',
       gettingStarted: '快速开始',
       concepts: '核心概念',
-      guides: '指南',
+      guides: '使用场景',
       agents: '智能体',
     },
     ja: {
       docs: 'ドキュメント',
       gettingStarted: 'クイックスタート',
       concepts: 'コアコンセプト',
-      guides: 'ガイド',
+      guides: 'ユースケース',
       agents: 'エージェント',
     },
   };
@@ -80,17 +80,17 @@ export default async function Page(props: {
   > = {
     'getting-started': {
       previous: { name: n.docs, url: `${langPrefix}/docs` },
-      next: { name: n.concepts, url: `${langPrefix}/docs/concepts` },
+      next: { name: n.guides, url: `${langPrefix}/docs/guides` },
     },
-    concepts: {
+    guides: {
       previous: {
         name: n.gettingStarted,
         url: `${langPrefix}/docs/getting-started`,
       },
-      next: { name: n.guides, url: `${langPrefix}/docs/guides` },
+      next: { name: n.concepts, url: `${langPrefix}/docs/concepts` },
     },
-    guides: {
-      previous: { name: n.concepts, url: `${langPrefix}/docs/concepts` },
+    concepts: {
+      previous: { name: n.guides, url: `${langPrefix}/docs/guides` },
       next: { name: n.agents, url: `${langPrefix}/docs/agents` },
     },
   };
