@@ -15,7 +15,7 @@ JSON Parse error: Unexpected EOF
 
 Ollama returns **NDJSON** when `stream: true`, with each line being a separate JSON object:
 
-```ndjson
+```json
 {"message":{"tool_calls":[{"function":{"name":"read","arguments":{"filePath":"README.md"}}}]}, "done":false}
 {"message":{"content":""}, "done":true}
 ```
@@ -71,7 +71,7 @@ Limit the affected session to **non-tool agents** — simple text generation, pr
 ## Tracking
 
 - Upstream issue: [code-yeongyu/oh-my-openagent#1124](https://github.com/code-yeongyu/oh-my-openagent/issues/1124) (closed — workaround documented).
-- Ollama API docs: <https://github.com/ollama/ollama/blob/main/docs/api.md>.
+- Ollama API docs: [github.com/ollama/ollama/docs/api.md](https://github.com/ollama/ollama/blob/main/docs/api.md).
 
 ## Source Notes
 

@@ -15,7 +15,7 @@ JSON Parse error: Unexpected EOF
 
 Ollama는 `stream: true`일 때 **NDJSON**을 돌려줍니다. 줄마다 별도 JSON 객체죠.
 
-```ndjson
+```json
 {"message":{"tool_calls":[{"function":{"name":"read","arguments":{"filePath":"README.md"}}}]}, "done":false}
 {"message":{"content":""}, "done":true}
 ```
@@ -71,7 +71,7 @@ NDJSON이 아니라 단일 JSON이 떨어져야 정상입니다.
 ## 추적
 
 - Upstream 이슈: [code-yeongyu/oh-my-openagent#1124](https://github.com/code-yeongyu/oh-my-openagent/issues/1124) (close — 우회 방법 문서화됨).
-- Ollama API 문서: <https://github.com/ollama/ollama/blob/main/docs/api.md>.
+- Ollama API 문서: [github.com/ollama/ollama/docs/api.md](https://github.com/ollama/ollama/blob/main/docs/api.md).
 
 ## 출처
 
