@@ -3,8 +3,8 @@
   "pages": [
     "index",
     "getting-started",
-    "concepts",
     "guides",
+    "concepts",
     "agents",
     "skills",
     "hooks",
