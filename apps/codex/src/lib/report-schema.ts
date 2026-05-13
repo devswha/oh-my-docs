@@ -16,6 +16,7 @@ export const reportSchema = z.discriminatedUnion('kind', [
     path: pathShape,
     locale: z.string().min(2).max(5),
     value: z.enum(['up', 'down']),
+    turnstileToken: z.string().min(1),
   }),
   z.object({
     kind: z.literal('report'),

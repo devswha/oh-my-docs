@@ -22,13 +22,14 @@ Options:
   --image <path>                       Input image. Repeatable.
   --dry-run                            Validate and call gti with --dry-run. Default unless --live is set.
   --live                               Generate the image.
+  --use-npx                            If gti is not installed, explicitly run npx -y god-tibo-imagen.
   --allow-outside-public               Allow output outside the app public/images directory.
   --help                               Show this help.
 `);
 }
 
 function parseArgs(argv) {
-  const out = { app: 'codex', provider: 'auto', images: [], dryRun: true, allowOutsidePublic: false };
+  const out = { app: 'codex', provider: 'auto', images: [], dryRun: true, useNpx: false, allowOutsidePublic: false };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === '--help' || arg === '-h') out.help = true;
@@ -41,6 +42,7 @@ function parseArgs(argv) {
     else if (arg === '--image') out.images.push(argv[++i]);
     else if (arg === '--dry-run') out.dryRun = true;
     else if (arg === '--live') out.dryRun = false;
+    else if (arg === '--use-npx') out.useNpx = true;
     else if (arg === '--allow-outside-public') out.allowOutsidePublic = true;
     else throw new Error(`Unknown option: ${arg}`);
   }
@@ -49,13 +51,16 @@ function parseArgs(argv) {
 }
 
 function commandExists(name) {
-  const result = spawnSync('sh', ['-lc', `command -v ${name}`], { encoding: 'utf8' });
+  // Use shell:false and `command -v` directly to avoid shell-injection risk
+  // if a caller ever passes a non-literal name.
+  if (!/^[A-Za-z0-9_.-]+$/.test(name)) return false;
+  const result = spawnSync('command', ['-v', name], { encoding: 'utf8', shell: false });
   return result.status === 0;
 }
 
-function resolveGtiCommand() {
+function resolveGtiCommand(args) {
   if (commandExists('gti')) return { command: 'gti', prefix: [] };
-  if (commandExists('npm') || commandExists('npx')) {
+  if (args.useNpx && commandExists('npx')) {
     return { command: 'npx', prefix: ['-y', 'god-tibo-imagen'] };
   }
   return null;
@@ -86,9 +91,9 @@ try {
   for (const image of args.images) {
     if (!existsSync(image)) throw new Error(`Input image not found: ${image}`);
   }
-  const gti = resolveGtiCommand();
+  const gti = resolveGtiCommand(args);
   if (!gti) {
-    console.error('[generate-with-gti] gti command not found and npx is unavailable. Install with one of: npm install -g god-tibo-imagen; pip install god-tibo-imagen.');
+    console.error('[generate-with-gti] gti command not found. Install/authenticate gti, or pass --use-npx to explicitly run npx -y god-tibo-imagen.');
     process.exit(2);
   }
   const gtiArgs = ['--provider', args.provider, '--prompt', prompt, '--output', output];

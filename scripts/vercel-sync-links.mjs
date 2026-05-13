@@ -21,12 +21,15 @@ for (const name of names) {
     continue;
   }
 
-  for (const key of ['path', 'projectId', 'orgId', 'projectName']) {
-    if (!project[key]) {
+  const missingKeys = ['path', 'projectId', 'orgId', 'projectName'].filter(
+    (key) => !project[key],
+  );
+  if (missingKeys.length) {
+    for (const key of missingKeys) {
       console.error(`[vercel-sync-links] ${name} is missing ${key} in ${manifestPath}`);
-      process.exitCode = 1;
-      continue;
     }
+    process.exitCode = 1;
+    continue;
   }
 
   const vercelDir = join(root, project.path, '.vercel');

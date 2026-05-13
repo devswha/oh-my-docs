@@ -46,7 +46,8 @@ async function verifyTurnstile(
   token: string,
   ip: string | null,
 ): Promise<{ ok: boolean; replay: boolean }> {
-  const secret = process.env.TURNSTILE_SECRET_KEY as string;
+  const secret = process.env.TURNSTILE_SECRET_KEY;
+  if (!secret) return { ok: false, replay: false };
   const form = new URLSearchParams();
   form.set('secret', secret);
   form.set('response', token);

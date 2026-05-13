@@ -88,7 +88,7 @@ function ReportFormInner() {
   const params = useParams<{ lang?: string }>();
   const search = useSearchParams();
   const locale: Lang =
-    (params?.lang as Lang) in COPY ? (params?.lang as Lang) : 'en';
+    params?.lang && params.lang in COPY ? (params.lang as Lang) : 'en';
   const copy = COPY[locale];
 
   const prefilledPath = useMemo(
@@ -163,7 +163,7 @@ function ReportFormInner() {
         setState({ kind: 'error', message: copy.errValidation });
       } else if (res.status === 403) {
         setState({ kind: 'error', message: copy.errVerify });
-      } else if (res.status === 503) {
+      } else if (res.status === 429 || res.status === 503) {
         setState({ kind: 'error', message: copy.errRate });
       } else {
         setState({ kind: 'error', message: copy.errGeneric });

@@ -8,7 +8,14 @@ const manifestPath = join(root, 'deploy', 'vercel', 'projects.json');
 const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
 const args = process.argv.slice(2);
 const apply = args.includes('--apply');
-const dryRun = !apply || args.includes('--dry-run');
+const explicitDryRun = args.includes('--dry-run');
+
+if (apply && explicitDryRun) {
+  console.error('[vercel-configure-projects] --apply and --dry-run are mutually exclusive.');
+  process.exit(1);
+}
+
+const dryRun = !apply;
 const selected = args.filter((arg) => !arg.startsWith('-'));
 const allProjects = manifest.projects ?? {};
 const names = selected.length ? selected : Object.keys(allProjects);
@@ -17,6 +24,9 @@ if (apply && !process.env.VERCEL_TOKEN) {
   console.error('[vercel-configure-projects] VERCEL_TOKEN is required when using --apply.');
   process.exit(1);
 }
+
+const failed = [];
+const succeeded = [];
 
 function assertProject(name, project) {
   if (!project) {
@@ -46,13 +56,14 @@ async function configure(name, project) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(body),
+    signal: AbortSignal.timeout(30_000),
   });
 
   const text = await res.text();
   if (!res.ok) {
     console.error(`[vercel-configure-projects] ${name} failed: HTTP ${res.status}`);
     console.error(text);
-    process.exitCode = 1;
+    failed.push({ name, status: res.status });
     return;
   }
 
@@ -65,6 +76,7 @@ async function configure(name, project) {
   console.log(
     `[vercel-configure-projects] ${name}: rootDirectory=${parsed.rootDirectory ?? project.rootDirectory}`,
   );
+  succeeded.push(name);
 }
 
 for (const name of names) {
@@ -73,4 +85,10 @@ for (const name of names) {
 
 if (dryRun) {
   console.log('[vercel-configure-projects] Dry run only. Re-run with --apply and VERCEL_TOKEN to change Vercel project settings.');
+} else {
+  console.log(`[vercel-configure-projects] Summary: ${succeeded.length} succeeded, ${failed.length} failed.`);
+  if (failed.length) {
+    for (const f of failed) console.error(`  - ${f.name} (HTTP ${f.status})`);
+    process.exit(1);
+  }
 }

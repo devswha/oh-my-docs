@@ -88,19 +88,20 @@ export function ReportForm() {
   );
 }
 
+// Hoisted: process.env is read once at module load, not on every render.
+const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+
 function ReportFormInner() {
   const params = useParams<{ lang?: string }>();
   const search = useSearchParams();
   const locale: Lang =
-    (params?.lang as Lang) in COPY ? (params?.lang as Lang) : 'en';
+    params?.lang && params.lang in COPY ? (params.lang as Lang) : 'en';
   const copy = COPY[locale];
 
   const prefilledPath = useMemo(
     () => search?.get('path') ?? '',
     [search],
   );
-
-  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
   const [category, setCategory] = useState<Category>('bug');
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');

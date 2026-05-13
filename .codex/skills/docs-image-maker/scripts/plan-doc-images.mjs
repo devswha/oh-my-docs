@@ -2,12 +2,18 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 
 const APPS = {
   codex: 'apps/codex',
   claudecode: 'apps/claudecode',
   openagent: 'apps/openagent',
 };
+
+const LOCALES = ['en', 'ko', 'ja', 'zh'];
+const LOCALE_RE = /\.(ko|ja|zh)\.mdx?$/;
 
 function usage() {
   console.log(`Usage: node plan-doc-images.mjs [--app codex|claudecode|openagent] [--from-git] [--purpose hero|concept|flow|comparison] [--json] [mdx files...]
@@ -32,13 +38,73 @@ function parseArgs(argv) {
   return out;
 }
 
-function gitFiles(appRoot) {
-  const status = execFileSync('git', ['status', '--short', '--porcelain'], { encoding: 'utf8' });
-  return status
-    .split('\n')
-    .map((line) => line.slice(3).trim())
+function findRepoRoot() {
+  // Always resolve relative to the script's location so cwd doesn't matter.
+  return execFileSync('git', ['rev-parse', '--show-toplevel'], {
+    cwd: SCRIPT_DIR,
+    encoding: 'utf8',
+  }).trim();
+}
+
+function gitFiles(absAppRoot, repoRoot) {
+  // NUL-separated so renames (R old<NUL>new) and quoted/non-ASCII paths
+  // are preserved verbatim. Combine tracked-modified + untracked.
+  const tracked = execFileSync('git', ['diff', '--name-only', '-z', 'HEAD'], {
+    cwd: repoRoot,
+    encoding: 'utf8',
+  });
+  const untracked = execFileSync('git', ['ls-files', '--others', '--exclude-standard', '-z'], {
+    cwd: repoRoot,
+    encoding: 'utf8',
+  });
+  const docsPrefix =
+    path.relative(repoRoot, path.join(absAppRoot, 'content/docs')).replace(/\\/g, '/') + '/';
+  return [...tracked.split('\0'), ...untracked.split('\0')]
     .filter(Boolean)
-    .filter((file) => file.startsWith(`${appRoot}/content/docs/`) && /\.mdx?$/.test(file));
+    .filter((file) => file.startsWith(docsPrefix) && /\.mdx?$/.test(file))
+    .map((file) => path.resolve(repoRoot, file));
+}
+
+function docsRoot(absAppRoot) {
+  return path.resolve(absAppRoot, 'content/docs');
+}
+
+function localeFor(file) {
+  const match = path.basename(file).match(LOCALE_RE);
+  return match ? match[1] : 'en';
+}
+
+function docsRelative(file, absAppRoot) {
+  const absolute = path.resolve(file);
+  const root = docsRoot(absAppRoot);
+  if (!(absolute === root || absolute.startsWith(`${root}${path.sep}`))) {
+    throw new Error(`File must live under ${path.relative(process.cwd(), root).replace(/\\/g, '/')}: ${file}`);
+  }
+  return path.relative(root, absolute).replace(/\\/g, '/');
+}
+
+function pageKey(file, absAppRoot) {
+  return docsRelative(file, absAppRoot)
+    .replace(/\.mdx?$/, '')
+    .replace(/\.(ko|ja|zh)$/, '');
+}
+
+function groupLocaleSiblings(files, absAppRoot) {
+  const groups = new Map();
+  for (const file of files) {
+    if (!/\.mdx?$/.test(file)) throw new Error(`Expected an MDX file: ${file}`);
+    const key = pageKey(file, absAppRoot);
+    const group = groups.get(key) ?? [];
+    group.push(file);
+    groups.set(key, group);
+  }
+  return [...groups.values()].map((groupFiles) => {
+    const siblings = groupFiles
+      .map((file) => ({ file, locale: localeFor(file), route: routeFor(file, absAppRoot) }))
+      .sort((a, b) => LOCALES.indexOf(a.locale) - LOCALES.indexOf(b.locale) || a.file.localeCompare(b.file));
+    const primary = siblings.find((item) => item.locale === 'en') ?? siblings[0];
+    return { primary: primary.file, siblings };
+  });
 }
 
 function stripFrontmatter(text) {
@@ -54,8 +120,8 @@ function stripFrontmatter(text) {
   return { attrs, body: text.slice(end + 4) };
 }
 
-function routeFor(file, appRoot) {
-  let rel = path.relative(path.join(appRoot, 'content/docs'), file).replace(/\\/g, '/');
+function routeFor(file, absAppRoot) {
+  let rel = path.relative(path.join(absAppRoot, 'content/docs'), file).replace(/\\/g, '/');
   rel = rel.replace(/\.mdx?$/, '');
   const localeMatch = rel.match(/^(.*)\.(ko|ja|zh)$/);
   const locale = localeMatch ? localeMatch[2] : 'en';
@@ -65,8 +131,8 @@ function routeFor(file, appRoot) {
   return locale === 'en' ? route : `/${locale}${route}`;
 }
 
-function slugFor(file, appRoot) {
-  let rel = path.relative(path.join(appRoot, 'content/docs'), file).replace(/\\/g, '/');
+function slugFor(file, absAppRoot) {
+  let rel = path.relative(path.join(absAppRoot, 'content/docs'), file).replace(/\\/g, '/');
   rel = rel.replace(/\.mdx?$/, '').replace(/\.(ko|ja|zh)$/, '').replace(/\/index$/, '').replace(/^index$/, 'home');
   return rel.replace(/\//g, '-').replace(/[^a-zA-Z0-9-]/g, '-').replace(/-+/g, '-').toLowerCase();
 }
@@ -79,20 +145,27 @@ function firstHeadings(body) {
     .slice(0, 5);
 }
 
-function suggestion(file, app, appRoot, purpose) {
+function suggestion(group, app, absAppRoot, purpose, repoRoot) {
+  const { primary: file, siblings } = group;
   const text = readFileSync(file, 'utf8');
   const { attrs, body } = stripFrontmatter(text);
   const title = attrs.title || firstHeadings(body)[0] || path.basename(file).replace(/\.mdx?$/, '');
   const headings = firstHeadings(body);
-  const slug = slugFor(file, appRoot);
+  const slug = slugFor(file, absAppRoot);
   const imageRel = `images/docs/${slug}-${purpose}.png`;
-  const outputPath = `${appRoot}/public/${imageRel}`;
+  const outputPath = `${path.relative(repoRoot, absAppRoot).replace(/\\/g, '/')}/public/${imageRel}`;
   const imageUrl = `/${imageRel}`;
-  const route = routeFor(file, appRoot);
+  const route = routeFor(file, absAppRoot);
   const prompt = `Create a docs-ready illustration for ${app} explaining '${title}'. Use a clean technical editorial style with simple shapes, high contrast, generous whitespace, and no embedded text, labels, logos, screenshots, or watermark. Suggested concepts from headings: ${headings.join(' / ') || title}.`;
   return {
-    file,
+    file: path.relative(repoRoot, file).replace(/\\/g, '/'),
     route,
+    routes: siblings.map((item) => item.route),
+    siblings: siblings.map((item) => ({
+      file: path.relative(repoRoot, item.file).replace(/\\/g, '/'),
+      locale: item.locale,
+      route: item.route,
+    })),
     title,
     purpose,
     outputPath,
@@ -108,21 +181,24 @@ try {
     usage();
     process.exit(0);
   }
-  const appRoot = APPS[args.app];
-  let files = [...args.files];
-  if (args.fromGit) files.push(...gitFiles(appRoot));
+  const repoRoot = findRepoRoot();
+  const absAppRoot = path.resolve(repoRoot, APPS[args.app]);
+  let files = args.files.map((file) => path.resolve(file));
+  if (args.fromGit) files.push(...gitFiles(absAppRoot, repoRoot));
   files = [...new Set(files)].filter((file) => existsSync(file));
   if (files.length === 0) {
     console.error('No MDX files found. Pass files or use --from-git.');
     process.exit(2);
   }
-  const suggestions = files.map((file) => suggestion(file, args.app, appRoot, args.purpose));
+  const groups = groupLocaleSiblings(files, absAppRoot);
+  const suggestions = groups.map((group) => suggestion(group, args.app, absAppRoot, args.purpose, repoRoot));
   if (args.json) {
     console.log(JSON.stringify({ app: args.app, suggestions }, null, 2));
   } else {
     for (const item of suggestions) {
       console.log(`## ${item.file}`);
-      console.log(`Route: ${item.route}`);
+      console.log(`Routes: ${item.routes.join(', ')}`);
+      console.log(`Locale siblings: ${item.siblings.map((sibling) => `${sibling.locale}:${sibling.file}`).join(', ')}`);
       console.log(`Title: ${item.title}`);
       console.log(`Output: ${item.outputPath}`);
       console.log(`MDX: ${item.markdown}`);

@@ -4,8 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev",
+    "dev": "node scripts/inject-omc-version.mjs && next dev",
     "build": "next build",
+    "prebuild": "node scripts/inject-omc-version.mjs",
     "start": "next start",
     "lint": "eslint"
   },

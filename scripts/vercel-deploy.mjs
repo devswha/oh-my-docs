@@ -23,10 +23,11 @@ const prod = flags.has('--prod');
 const prebuilt = flags.has('--prebuilt');
 const yes = flags.has('--yes');
 
-function shellQuote(value) {
+function quoteForDisplay(value) {
   return /[^A-Za-z0-9_/:=.,@%+-]/.test(value) ? JSON.stringify(value) : value;
 }
 
+const results = [];
 for (const name of names) {
   const project = allProjects[name];
   if (!project) {
@@ -43,15 +44,16 @@ for (const name of names) {
     process.exit(1);
   }
 
+  // Token is forwarded via env (process.env), never as argv — avoid leaking
+  // VERCEL_TOKEN into ps/audit logs.
   const command = ['vercel', '--cwd', project.path, 'deploy'];
   if (prod) command.push('--prod');
   if (prebuilt) command.push('--prebuilt');
   if (yes) command.push('--yes');
-  if (process.env.VERCEL_TOKEN) command.push('--token', process.env.VERCEL_TOKEN);
 
   if (dryRun) {
-    const printable = command.map((part) => (part === process.env.VERCEL_TOKEN ? '$VERCEL_TOKEN' : shellQuote(part))).join(' ');
-    console.log(`[dry-run] ${name}: ${printable}`);
+    console.log(`[dry-run] ${name}: ${command.map(quoteForDisplay).join(' ')}`);
+    results.push({ name, status: 'dry-run' });
     continue;
   }
 
@@ -62,7 +64,25 @@ for (const name of names) {
     env: process.env,
   });
 
-  if (result.status !== 0) {
-    process.exit(result.status ?? 1);
+  if (result.status === 0) {
+    results.push({ name, status: 'ok' });
+  } else {
+    results.push({ name, status: 'failed', exitCode: result.status ?? 1 });
+    console.error(`[vercel-deploy] ${name} failed with exit code ${result.status ?? 1}.`);
   }
+}
+
+if (names.length > 1) {
+  const ok = results.filter((r) => r.status === 'ok').length;
+  const failed = results.filter((r) => r.status === 'failed');
+  const skipped = results.filter((r) => r.status === 'dry-run').length;
+  console.log(`[vercel-deploy] Summary: ${ok} ok, ${failed.length} failed, ${skipped} dry-run`);
+  if (failed.length) {
+    for (const f of failed) console.error(`  - ${f.name} (exit ${f.exitCode})`);
+  }
+}
+
+const anyFailure = results.find((r) => r.status === 'failed');
+if (anyFailure) {
+  process.exit(anyFailure.exitCode ?? 1);
 }

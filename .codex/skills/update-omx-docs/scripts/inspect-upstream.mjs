@@ -147,6 +147,19 @@ const branch = argValue('--branch', 'main');
 const cachePath = argValue('--cache', '.omx/cache/upstream/oh-my-codex');
 const upstreamRoot = resolve(root, cachePath);
 
+// Containment guard: refuse to perform destructive git ops outside the
+// .omx/cache/ tree, since this script does `git reset --hard` + `clean -fd`.
+const cacheRootAllowed = resolve(root, '.omx/cache');
+if (
+  upstreamRoot !== cacheRootAllowed &&
+  !upstreamRoot.startsWith(`${cacheRootAllowed}/`)
+) {
+  console.error(
+    `[inspect-upstream] Refusing to operate on --cache outside .omx/cache/: ${upstreamRoot}`,
+  );
+  process.exit(1);
+}
+
 if (!existsSync(appRoot)) {
   console.error(`[inspect-upstream] Missing app root: ${appRoot}`);
   process.exit(1);

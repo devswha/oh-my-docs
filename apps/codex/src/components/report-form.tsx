@@ -92,7 +92,7 @@ function ReportFormInner() {
   const params = useParams<{ lang?: string }>();
   const search = useSearchParams();
   const locale: Lang =
-    (params?.lang as Lang) in COPY ? (params?.lang as Lang) : 'en';
+    params?.lang && params.lang in COPY ? (params.lang as Lang) : 'en';
   const copy = COPY[locale];
 
   const prefilledPath = useMemo(
