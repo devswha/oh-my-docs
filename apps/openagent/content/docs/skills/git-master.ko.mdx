@@ -1,0 +1,33 @@
+---
+title: git-master
+description: 변경을 atomic commit으로 쪼개고, rebase를 운전하고, 어떤 동작이 언제 들어왔는지 찾는 Git 전문가.
+---
+
+`git-master`는 빌트인 git 스킬입니다. 트리거 하나에 페르소나 셋.
+
+| 페르소나 | 역할 |
+|---|---|
+| **Commit Architect** | 변경을 atomic commit으로 분리, 의존성 순서 정렬, 직전 30개 커밋에서 레포 스타일 자동 감지. |
+| **Rebase Surgeon** | 히스토리 재작성, 충돌 해소, 브랜치 정리. |
+| **History Archaeologist** | "누가 썼는지", "X가 언제 추가됐는지", 행동 회귀 추적. |
+
+## 트리거
+
+`commit`, `rebase`, `squash`, `"who wrote"`, `"when was X added"`. keyword-detector hook이 현재 프롬프트에 스킬을 끌어올림. 명시 호출: `/git-master <명령>`.
+
+## 기본 동작
+
+- 다중 커밋 기본 — `3+ 파일 → 2+ 커밋`, `5+ → 3+`, `10+ → 5+`.
+- 직전 30개 커밋에서 스타일 자동 감지 (언어 + 메시지 스타일).
+
+## 예시
+
+```text
+/git-master commit these changes
+/git-master rebase onto main
+/git-master who wrote this authentication code?
+```
+
+## 출처
+
+upstream `docs/reference/features.md#built-in-skills` 기준. 비활성화: `disabled_skills: ["git-master"]`.

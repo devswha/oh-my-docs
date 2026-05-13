@@ -1,0 +1,37 @@
+---
+title: Lifecycle Events
+description: The six event types OmO hooks intercept and what each can change.
+---
+
+OmO hooks intercept agent behavior at six distinct event types. Each event has a different power and a different cost.
+
+| Event | When | What hooks can do |
+|---|---|---|
+| `PreToolUse` | Before tool execution | Block the call, modify input, inject context. |
+| `PostToolUse` | After tool execution | Add warnings, modify output, inject follow-up messages. |
+| `Message` | During message processing | Transform content, detect keywords, activate modes (ultrawork, search, analyze, team). |
+| `Event` | On session lifecycle changes | Recovery, fallback, notifications, ralph-loop continuation. |
+| `Transform` | During context transformation | Inject context, validate blocks (thinking, tool-use). |
+| `Params` | When setting API parameters | Adjust model settings, effort level, sampling. |
+
+## Composition counts
+
+OmO ships 52 base hooks across five tiers:
+
+| Tier | Count |
+|---|---|
+| Session | 24 |
+| Tool Guard | 14 |
+| Transform | 5 |
+| Continuation | 7 |
+| Skill | 2 |
+
+With `team_mode.enabled` the total becomes 59: +1 Tool Guard, +2 Transform, +4 direct team session event handlers in `src/plugin/event.ts`.
+
+## Why this matters
+
+Most "OmO does X automatically" features are a hook. Keyword detection (`ultrawork`/`ulw`/`search`/`analyze`/`team`) is a Message hook. Continuation enforcement is an Event hook. Comment-checker is PostToolUse. Disable a hook, lose the behavior — call out the right hook in [Configuration → disabled_hooks](/docs/reference/configuration) instead of turning off a parent feature.
+
+## Source Notes
+
+Aligned with upstream `docs/reference/features.md#hooks` and `docs/reference/features.md#hook-events`.

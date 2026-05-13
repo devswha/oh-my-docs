@@ -1,0 +1,47 @@
+---
+title: Context Injection
+description: Hooks that auto-inject AGENTS.md, README context, conditional rules, and compaction-preserved state.
+---
+
+When an agent reads a file, the context-injection hooks walk the filesystem upward and inject what the rest of the project says about that file. The agent gets project conventions for free — no prompting required.
+
+| Hook | When it runs | What it injects |
+|---|---|---|
+| `directory-agents-injector` | `PreToolUse` + `PostToolUse` on reads | Every `AGENTS.md` from the file's directory up to the project root. Auto-disabled on OpenCode 1.1.37+ which has native support. |
+| `directory-readme-injector` | `PreToolUse` + `PostToolUse` on reads | The neighboring `README.md` for directory context. |
+| `rules-injector` | `PreToolUse` + `PostToolUse` | Files under `.claude/rules/*.{md,mdc}` whose `globs` match — and any file with `alwaysApply: true`. Walks up from the file plus `~/.claude/rules/`. |
+| `compaction-context-injector` | `Event` | Re-injects load-bearing context (todo state, plan markers, recent decisions) after a context-window compaction so the agent doesn't lose where it was. |
+| `context-window-monitor` | `Event` | Tracks token consumption and surfaces warnings before the limit. |
+| `preemptive-compaction` | `Event` | Proactively compacts before hitting hard limits — chosen over reactive recovery. |
+
+## Hierarchical AGENTS.md
+
+```text
+project/
+├── AGENTS.md              # injected first
+├── src/
+│   ├── AGENTS.md          # injected second
+│   └── components/
+│       ├── AGENTS.md      # injected third
+│       └── Button.tsx     # reading this injects all 3
+```
+
+The walk is cheap — the harness caches per session.
+
+## Conditional rules
+
+```markdown
+---
+globs: ["*.ts", "src/**/*.js"]
+description: TypeScript/JavaScript coding rules
+---
+
+- Use PascalCase for interface names.
+- Use camelCase for function names.
+```
+
+`.md` and `.mdc` files are supported. `alwaysApply: true` skips the glob check.
+
+## Source Notes
+
+Aligned with upstream `docs/reference/features.md#context--injection` and `#context-injection`.

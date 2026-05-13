@@ -1,0 +1,28 @@
+---
+title: Continuation
+description: The hooks that refuse to let agents stop while work is unfinished — todo-continuation, ralph-loop, boulder state.
+---
+
+Continuation is OmO's core philosophy made operational. When work is unfinished, hooks push the agent back into motion. The Sisyphus metaphor is literal — the boulder never stops.
+
+| Hook | Event | What it does |
+|---|---|---|
+| `todo-continuation-enforcer` | `Event` | Yanks idle agents back to work when todos remain. Prevents "I'm done" lies. |
+| `compaction-todo-preserver` | `Event` | Preserves todo state across context-window compactions so continuation has something to resume on. |
+| `ralph-loop` | `Event` + `Message` | Manages the self-referential loop. Detects `<promise>DONE</promise>`, auto-continues on early stops. |
+| `start-work` | `Message` | Handles `/start-work` — activates Atlas on the latest Prometheus plan. |
+| `auto-slash-command` | `Message` | Detects slash-command intent in plain prompts and routes accordingly. |
+| `stop-continuation-guard` | `Event` + `Message` | Guards the `/stop-continuation` mechanism — when explicitly stopped, continuation does not silently re-engage. |
+| `agent-usage-reminder` | `PostToolUse` + `Event` | Periodically reminds the agent that specialized lanes (Oracle, Librarian, Explore) exist when the current path looks generic. |
+
+## When to disable
+
+Almost never. Continuation is load-bearing for `ultrawork`, ralph loops, and `/start-work` flows. If a specific loop is misbehaving, disable that hook individually via `disabled_hooks` rather than turning off the whole continuation tier.
+
+```json
+{ "disabled_hooks": ["ralph-loop"] }
+```
+
+## Source Notes
+
+Aligned with upstream `docs/reference/features.md#continuation` and `#productivity--control`. The continuation principle itself lives in [Manifesto](/docs/concepts/manifesto).

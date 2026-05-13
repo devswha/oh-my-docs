@@ -1,0 +1,12 @@
+---
+title: Recovery
+description: Recovery hooks that turn API failures into "agent kept working." Stub for zh.
+---
+
+`session-recovery`, `anthropic-context-window-limit-recovery`, `runtime-fallback`, `model-fallback`, `json-error-recovery`, `edit-error-recovery`, `write-existing-file-guard`, `unstable-agent-babysitter`.
+
+Defaults: retry on `[400, 429, 503, 529]` + provider key errors + timeouts. `experimental.auto_resume: true` retries automatically after recovery.
+
+## Source Notes
+
+Aligned with upstream `docs/reference/features.md`.

@@ -1,0 +1,35 @@
+---
+title: 해시라인 편집
+description: 해시 앵커 edit 도구. `LINE#ID` 참조로 다른 에이전트 edit 도구가 조용히 망가뜨리는 stale-line 편집을 방지.
+---
+
+`edit`은 표준 에이전트 edit 도구의 OmO 교체본입니다. 해시 앵커 라인 참조(`LINE#ID`)로 적용 전 모든 변경을 현재 파일 상태와 검증 — 라인 번호를 환각하는 에이전트는 거부되고 커밋되지 않음.
+
+## 왜 중요한가
+
+평범한 에이전트 `edit`은 모델이 주변 컨텍스트를 정확히 재현 못 하면 조용히 실패. 해시라인 edit은 벤치마크에서 Grok Code Fast 1 성공률을 6.7% → 68.3%로 끌어올렸습니다 — 잘못된 edit을 머지하지 않고 거부하는 데서 온 이득.
+
+해시라인 ID는 `ZPMQVRWSNKTXJBYH` 문자 (monospace 시각 구별성 위해 선택).
+
+## 동반 hook
+
+| Hook | 역할 |
+|---|---|
+| `hashline-read-enhancer` | `read` 출력에 해시 ID 주석 — edit 도구가 참조할 앵커 제공. |
+| `hashline-edit-diff-enhancer` | diff를 해시 ID와 함께 렌더 — 리뷰어가 어떤 라인이 움직였는지 정확히 봄. |
+
+`hashline_edit: true` 시 자동 활성. 필요 시 `disabled_hooks`로 개별 비활성화.
+
+## 설정
+
+opt-in:
+
+```json
+{ "hashline_edit": true }
+```
+
+기본 OFF — 평범한 edit 도구를 이미 신뢰하는 프로젝트용 기본값.
+
+## 출처
+
+upstream `docs/reference/features.md#edit-tools` 기준.

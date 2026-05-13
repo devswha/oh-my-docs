@@ -1,0 +1,41 @@
+---
+title: Recovery
+description: Session recovery, runtime fallback, and the hooks that turn API failures into "the agent kept working" instead of "the agent crashed."
+---
+
+OmO recovery hooks intercept session-level errors and provider-level failures so the agent keeps working. Most are off until a real failure surfaces, then they're already wired in.
+
+| Hook | Event | Recovery |
+|---|---|---|
+| `session-recovery` | `Event` | Missing tool results, thinking-block violations, empty messages — reconstructs recoverable state and skips invalid tool-part IDs instead of failing the whole pass. |
+| `anthropic-context-window-limit-recovery` | `Event` | Handles Claude context window exceeded errors with intelligent compaction instead of a hard fail. |
+| `runtime-fallback` | `Event` + `Message` | Auto-switches to backup models on retryable codes (`400`, `429`, `503`, `529` by default) plus provider key errors and timeout signals. Per-model cooldown is configurable. |
+| `model-fallback` | `Event` + `Message` | Manages the proactive fallback chain when the primary model is unreachable from the start. |
+| `json-error-recovery` | `PostToolUse` | Recovers from JSON parse errors in tool outputs (common with proxy providers that occasionally return truncated bodies). |
+| `edit-error-recovery` | `PostToolUse` + `Event` | Recovers from edit-tool failures — typically a stale hash or a moved line. |
+| `write-existing-file-guard` | `PreToolUse` | Blocks accidental overwrites of existing files that haven't been read in the current session. |
+| `unstable-agent-babysitter` | `Event` | Manages unstable agent behavior with recovery strategies — used when `is_unstable_agent: true` is set on a category. |
+
+## Auto-resume
+
+`experimental.auto_resume: true` lets the session retry automatically after recovery instead of asking the user. Off by default — opt in when you're confident the recovery is reliable for your provider setup.
+
+## Configuration knob
+
+Speeding up fallback for proxy APIs:
+
+```jsonc
+{
+  "runtime_fallback": {
+    "enabled": true,
+    "retry_on_errors": [400, 401, 403, 404, 429, 500, 502, 503, 504],
+    "max_fallback_attempts": 3,
+    "cooldown_seconds": 15,
+    "timeout_seconds": 10
+  }
+}
+```
+
+## Source Notes
+
+Aligned with upstream `docs/reference/features.md#recovery--stability` and `#session-recovery`. The full config surface is in [Configuration → Runtime fallback](/docs/reference/configuration#runtime-fallback).

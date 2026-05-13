@@ -1,0 +1,37 @@
+---
+title: Interactive Bash
+description: Tmux-based terminal tool for vim, htop, pudb, and other TUI apps that need a persistent session.
+---
+
+`interactive_bash` runs commands inside a persistent tmux session. Use it for TUI applications that need a real terminal — debuggers, editors, dashboards. One-shot commands should still use the regular `Bash` tool.
+
+## Usage
+
+Commands are tmux subcommands — no `tmux` prefix needed.
+
+```bash
+# Create a new session
+interactive_bash(tmux_command="new-session -d -s dev-app")
+
+# Send keystrokes to a session
+interactive_bash(tmux_command="send-keys -t dev-app 'vim main.py' Enter")
+
+# Capture pane output
+interactive_bash(tmux_command="capture-pane -p -t dev-app")
+```
+
+## When to use
+
+- Interactive debuggers (`pudb`, `pdb`, `lldb`).
+- TUI editors (`vim`, `nvim`) for inspection.
+- Live dashboards (`htop`, `k9s`).
+- Anything that needs a persistent terminal across multiple agent turns.
+
+## When not to use
+
+- One-shot commands — use plain `Bash` with `&` for backgrounding instead.
+- Commands that just need stdout — `Bash` is faster.
+
+## Source Notes
+
+Aligned with upstream `docs/reference/features.md#interactive-terminal-tools`.

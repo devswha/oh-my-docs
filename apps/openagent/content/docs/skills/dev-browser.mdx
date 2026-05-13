@@ -1,0 +1,20 @@
+---
+title: dev-browser
+description: Stateful browser skill — keeps page state between turns for iterative workflows and authenticated sessions.
+---
+
+`dev-browser` is the persistent-state browser. Unlike `playwright` and `agent-browser`, the page survives across turns: cookies, scroll position, modal state, authenticated session — all preserved.
+
+## When to use
+
+- Authenticated debugging: log in once, keep poking.
+- Iterative UI exploration: tweak, reload, observe, repeat.
+- Long form filling that spans multiple turns.
+
+## Triggers
+
+Stateful browser scripting, "keep the page open", iterative QA workflows.
+
+## Source Notes
+
+Aligned with upstream `docs/reference/features.md#built-in-skills`.

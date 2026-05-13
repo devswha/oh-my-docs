@@ -1,0 +1,75 @@
+---
+title: Claude Code Integration
+description: How OmO honors Claude Code's settings.json hooks and the per-surface compatibility toggles.
+---
+
+OmO is Claude Code compatible — hooks, commands, skills, agents, MCPs, and marketplace plugins all load from the Claude Code paths automatically. This page covers the integration layer.
+
+## settings.json hooks
+
+The `claude-code-hooks` hook executes scripts declared in Claude Code's settings.json:
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [{ "type": "command", "command": "eslint --fix $FILE" }]
+      }
+    ]
+  }
+}
+```
+
+Locations the hook walks:
+
+- `~/.claude/settings.json` (user)
+- `./.claude/settings.json` (project)
+- `./.claude/settings.local.json` (local, git-ignored)
+
+## Per-surface toggles
+
+Disable specific Claude Code surfaces wholesale via plugin config:
+
+```json
+{
+  "claude_code": {
+    "mcp": false,
+    "commands": false,
+    "skills": false,
+    "agents": false,
+    "hooks": false,
+    "plugins": false
+  }
+}
+```
+
+| Toggle | Disables |
+|---|---|
+| `mcp` | `.mcp.json` files (built-in MCPs stay enabled). |
+| `commands` | Command loading from Claude Code paths. |
+| `skills` | Skill loading from Claude Code paths. |
+| `agents` | Agent loading from Claude Code paths (built-in agents stay enabled). |
+| `hooks` | settings.json hooks via `claude-code-hooks`. |
+| `plugins` | Claude Code marketplace plugins. |
+
+Disable specific marketplace plugins individually:
+
+```json
+{
+  "claude_code": {
+    "plugins_override": {
+      "claude-mem@thedotmack": false
+    }
+  }
+}
+```
+
+## Why the integration exists
+
+OmO is built on OpenCode but lives next to Claude Code in many setups. The compatibility layer means a team that's been investing in Claude Code skills, commands, and rules keeps that investment when they install OmO — the harness sees both.
+
+## Source Notes
+
+Aligned with upstream `docs/reference/features.md#claude-code-hooks-integration` and `#claude-code-compatibility`.

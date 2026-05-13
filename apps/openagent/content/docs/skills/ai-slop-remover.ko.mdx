@@ -1,0 +1,28 @@
+---
+title: ai-slop-remover
+description: 기능은 보존하면서 AI 코드 냄새 제거. 장황한 주석, 잉여 에러 처리, 과잉 추상화, 평이한 표현 제거.
+---
+
+`ai-slop-remover`는 에이전트가 남기는 잔재를 정리합니다 — 방어적 `try/except: pass`, 뻔한 걸 재진술하는 세 단락 주석, 30줄 스크립트용 `IUserServiceFactoryBuilder` 추상화, "let's dive into" 같은 평이한 AI 표현.
+
+## 트리거
+
+`"remove AI slop"`, `"de-AI"`, `"humanize"`.
+
+## 제거하는 것
+
+- 코드를 그냥 묘사하는 장황한 주석.
+- 불가능한 실패에 대한 잉여 에러 처리.
+- 일회성 코드용 과잉 추상화.
+- 평이한 AI 표현.
+- 아무것도 말하지 않는 "도움 되는" docstring.
+
+## 보존하는 것
+
+- 기능 — strict equivalence.
+- *왜*, 숨은 제약, workaround를 설명하는 주석.
+- 신뢰 경계(사용자 입력, 외부 API)에서의 검증.
+
+## 출처
+
+upstream `docs/reference/features.md#built-in-skills` 기준. 관련: [Configuration → comment-checker hook](/ko/docs/reference/configuration) — PostToolUse에서 같은 류 체크 실행.

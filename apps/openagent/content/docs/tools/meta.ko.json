@@ -5,6 +5,12 @@
     "[LSP와 AST-Grep](/ko/docs/tools#lsp와-ast-grep)",
     "[수동 QA](/ko/docs/tools#수동-qa-표면)",
     "[MCP와 검색](/ko/docs/tools#mcp와-검색)",
-    "[Hook과 Continuation](/ko/docs/tools#hook과-continuation)"
+    "[Hook과 Continuation](/ko/docs/tools#hook과-continuation)",
+    "lsp",
+    "ast-grep",
+    "delegation",
+    "task-system",
+    "hashline-edit",
+    "interactive-bash"
   ]
 }

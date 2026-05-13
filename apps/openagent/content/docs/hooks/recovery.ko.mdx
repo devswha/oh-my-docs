@@ -1,0 +1,41 @@
+---
+title: 복구
+description: 세션 복구, runtime fallback, 그리고 API 실패를 "에이전트가 계속 작동"으로 바꾸는 hook들.
+---
+
+OmO 복구 hook은 세션 수준 에러와 provider 수준 실패를 가로채 에이전트가 계속 동작하게 합니다. 대부분 실제 실패가 나기 전까지 OFF, 실패 시 이미 연결되어 있음.
+
+| Hook | 이벤트 | 복구 |
+|---|---|---|
+| `session-recovery` | `Event` | 누락된 tool result, thinking block 위반, 빈 메시지 — 복구 가능한 상태 재구성, 잘못된 tool-part ID는 스킵해 전체 패스 실패 방지. |
+| `anthropic-context-window-limit-recovery` | `Event` | Claude 컨텍스트 윈도우 초과 에러를 intelligent 컴팩션으로 처리. |
+| `runtime-fallback` | `Event`+`Message` | 재시도 가능 코드(기본 `400`, `429`, `503`, `529`) + provider key 에러 + timeout 신호에 대해 backup 모델로 자동 전환. per-model cooldown 설정 가능. |
+| `model-fallback` | `Event`+`Message` | 시작부터 primary 모델 도달 불가 시 사전 fallback chain 관리. |
+| `json-error-recovery` | `PostToolUse` | tool 출력의 JSON parse 에러 복구 (가끔 truncated body 돌려주는 proxy provider 흔함). |
+| `edit-error-recovery` | `PostToolUse`+`Event` | edit 도구 실패 복구 — 보통 stale hash나 이동된 라인. |
+| `write-existing-file-guard` | `PreToolUse` | 현재 세션에서 읽지 않은 기존 파일의 우연한 덮어쓰기 차단. |
+| `unstable-agent-babysitter` | `Event` | 불안정 에이전트 동작 관리 — category에 `is_unstable_agent: true` 시 사용. |
+
+## auto-resume
+
+`experimental.auto_resume: true`는 복구 후 사용자에게 묻지 않고 자동 재시도. 기본 OFF — provider 셋업에서 복구가 신뢰 가능할 때 opt-in.
+
+## 설정 노브
+
+proxy API용 fallback 가속:
+
+```jsonc
+{
+  "runtime_fallback": {
+    "enabled": true,
+    "retry_on_errors": [400, 401, 403, 404, 429, 500, 502, 503, 504],
+    "max_fallback_attempts": 3,
+    "cooldown_seconds": 15,
+    "timeout_seconds": 10
+  }
+}
+```
+
+## 출처
+
+upstream `docs/reference/features.md#recovery--stability`와 `#session-recovery` 기준. 풀 설정 표면은 [Configuration → Runtime fallback](/ko/docs/reference/configuration#runtime-fallback).

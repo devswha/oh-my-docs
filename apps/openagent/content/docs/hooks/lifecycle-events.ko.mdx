@@ -1,0 +1,37 @@
+---
+title: 라이프사이클 이벤트
+description: OmO hook이 가로채는 6개 이벤트 타입과 각각이 바꿀 수 있는 것.
+---
+
+OmO hook은 에이전트 동작을 6개 이벤트에서 가로챕니다. 각 이벤트는 다른 권한과 다른 비용을 갖습니다.
+
+| 이벤트 | 시점 | hook이 할 수 있는 것 |
+|---|---|---|
+| `PreToolUse` | 도구 실행 전 | 호출 차단, 입력 수정, 컨텍스트 주입. |
+| `PostToolUse` | 도구 실행 후 | 경고 추가, 출력 수정, 후속 메시지 주입. |
+| `Message` | 메시지 처리 중 | 콘텐츠 변환, 키워드 감지, 모드 활성화 (ultrawork, search, analyze, team). |
+| `Event` | 세션 수명 주기 변경 시 | 복구, fallback, 알림, ralph-loop continuation. |
+| `Transform` | 컨텍스트 변환 중 | 컨텍스트 주입, 블록 검증 (thinking, tool-use). |
+| `Params` | API 파라미터 설정 시 | 모델 설정, effort level, sampling 조정. |
+
+## 구성 수
+
+OmO는 5 tier에 52 base hook 출하.
+
+| Tier | 수 |
+|---|---|
+| Session | 24 |
+| Tool Guard | 14 |
+| Transform | 5 |
+| Continuation | 7 |
+| Skill | 2 |
+
+`team_mode.enabled` 시 59 — Tool Guard +1, Transform +2, 그리고 `src/plugin/event.ts`의 직접 team session 핸들러 4개.
+
+## 왜 중요한가
+
+"OmO가 X를 자동으로 합니다"의 대부분이 hook입니다. 키워드 감지(`ultrawork`/`ulw`/`search`/`analyze`/`team`)는 Message hook. continuation 강제는 Event hook. comment-checker는 PostToolUse. hook을 끄면 동작이 사라집니다 — 부모 기능을 끄지 말고 [Configuration → disabled_hooks](/ko/docs/reference/configuration)에서 적절한 hook을 지정하세요.
+
+## 출처
+
+upstream `docs/reference/features.md#hooks`와 `#hook-events` 기준.

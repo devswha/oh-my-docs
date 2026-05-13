@@ -1,0 +1,59 @@
+---
+title: 태스크 시스템
+description: 의존성과 병렬 실행을 갖춘 파일 기반 task 영속성. 세션 재시작에도 살아남음.
+---
+
+`experimental.task_system: true` (v3.14부터 기본) 시 OmO는 `TodoWrite`/`TodoRead`를 실제 task system으로 교체합니다. task는 `.sisyphus/tasks/`에 JSON으로 저장, 의존성 지원, 세션 재시작 후에도 보존.
+
+## 도구
+
+| 도구 | 용도 |
+|---|---|
+| `task_create` | 자동 생성 ID `T-{uuid}`로 task 생성. |
+| `task_get` | ID로 task 조회. |
+| `task_list` | 모든 활성 task 목록 (status 필터 가능). |
+| `task_update` | status, owner, 의존성, metadata 갱신. |
+
+## 스키마
+
+```ts
+interface Task {
+  id: string;                                          // T-{uuid}
+  subject: string;                                     // imperative: "Run tests"
+  description: string;
+  status: "pending" | "in_progress" | "completed" | "deleted";
+  activeForm?: string;                                  // present continuous: "Running tests"
+  blocks: string[];
+  blockedBy: string[];
+  owner?: string;
+  metadata?: Record<string, unknown>;
+  threadID: string;
+}
+```
+
+## 의존성 + 병렬
+
+```text
+[Build Frontend]    ──┐
+                      ├──→ [Integration Tests] ──→ [Deploy]
+[Build Backend]     ──┘
+```
+
+`blockedBy`가 비면 병렬 실행. 의존 task는 blocker 완료까지 대기.
+
+## TodoWrite와의 차이
+
+| 기능 | TodoWrite | Task System |
+|---|---|---|
+| 저장 | 세션 메모리 | `.sisyphus/tasks/` (JSON) |
+| 영속성 | 닫으면 사라짐 | 재시작 후 보존 |
+| 의존성 | 없음 | `blocks` / `blockedBy` |
+| 병렬 | 수동 | 자동 |
+
+## 언제 쓰는가
+
+의존성 있는 다단계 작업, 다중 에이전트 협업, 세션 재시작을 견뎌야 하는 모든 것. 사소한 단일 단계는 `TodoWrite`로 두기.
+
+## 출처
+
+upstream `docs/reference/features.md#task-management-tools` 기준. `TodoWrite`/`TodoRead`를 `task_*`로 바꾸는 hook은 `tasks-todowrite-disabler`. 저장 경로는 [Configuration](/ko/docs/reference/configuration)의 `sisyphus.tasks.storage_path`로 변경.

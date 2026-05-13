@@ -5,6 +5,12 @@
     "[LSP and AST-Grep](/docs/tools#lsp-and-ast-grep)",
     "[Manual QA](/docs/tools#manual-qa-surfaces)",
     "[MCP and Retrieval](/docs/tools#mcp-and-retrieval)",
-    "[Hooks and Continuation](/docs/tools#hooks-and-continuation)"
+    "[Hooks and Continuation](/docs/tools#hooks-and-continuation)",
+    "lsp",
+    "ast-grep",
+    "delegation",
+    "task-system",
+    "hashline-edit",
+    "interactive-bash"
   ]
 }

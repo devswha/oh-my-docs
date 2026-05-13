@@ -1,6 +1,11 @@
 {
   "title": "Hooks",
   "pages": [
-    "[Overview](/ja/docs/hooks#overview)"
+    "[Overview](/ja/docs/hooks#overview)",
+    "lifecycle-events",
+    "context-injection",
+    "recovery",
+    "continuation",
+    "claude-code-integration"
   ]
 }

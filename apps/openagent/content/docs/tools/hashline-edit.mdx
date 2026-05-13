@@ -1,0 +1,35 @@
+---
+title: Hashline Edit
+description: Hash-anchored edit tool. `LINE#ID` references prevent stale-line edits that other agent edit tools silently corrupt.
+---
+
+`edit` is OmO's replacement for the standard agent edit tool. It uses hash-anchored line references (`LINE#ID`) to validate every change against the current file state before applying — agents that hallucinate a line number get rejected, not committed.
+
+## Why it matters
+
+The plain agent `edit` tool fails silently when the model can't reproduce surrounding context exactly. Hashline edit caught the Grok Code Fast 1 success rate going from 6.7% to 68.3% on a benchmark — the gain comes entirely from rejecting bad edits instead of merging them.
+
+Hashline IDs use characters from `ZPMQVRWSNKTXJBYH` (chosen for visual distinctness in monospace).
+
+## Companion hooks
+
+| Hook | Role |
+|---|---|
+| `hashline-read-enhancer` | Annotates `read` output with the hash IDs so the edit tool has anchors to reference. |
+| `hashline-edit-diff-enhancer` | Renders diffs with the hash IDs so reviewers see exactly which lines moved. |
+
+Both auto-enable when `hashline_edit: true`. Disable individually via `disabled_hooks` if needed.
+
+## Configuration
+
+Opt-in:
+
+```json
+{ "hashline_edit": true }
+```
+
+Off by default — OmO ships with stricter defaults for projects that already trust the plain edit tool.
+
+## Source Notes
+
+Aligned with upstream `docs/reference/features.md#edit-tools`.

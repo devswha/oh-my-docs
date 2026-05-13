@@ -1,0 +1,37 @@
+---
+title: agent-browser
+description: CLI 기반 브라우저 자동화 (Vercel의 agent-browser). shell-friendly 도구를 선호할 때 playwright의 대안.
+---
+
+`agent-browser`는 Playwright의 CLI 대안. 자동 설치는 아닙니다.
+
+## 설치
+
+```bash
+bun add -g agent-browser
+agent-browser install
+```
+
+## Provider 전환
+
+```json
+{ "browser_automation_engine": { "provider": "agent-browser" } }
+```
+
+## 트리거
+
+`agent-browser`, CLI 엔진으로 라우팅되는 브라우저 작업.
+
+## 기능
+
+네비게이션, 스냅샷, 스크린샷, 네트워크 검사, 스크립트 인터랙션. playwright와 같은 모양, 다른 드라이버.
+
+## 사용 예
+
+```text
+Use agent-browser to navigate to example.com and extract the main heading.
+```
+
+## 출처
+
+upstream `docs/reference/features.md#browser-automation-options` 기준.

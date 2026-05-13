@@ -1,0 +1,12 @@
+---
+title: Task System
+description: File-based task persistence with dependencies and parallel execution. Stub for ja.
+---
+
+Default since v3.14 (`experimental.task_system: true`). Tools: `task_create`, `task_get`, `task_list`, `task_update`. Tasks live in `.sisyphus/tasks/` (JSON), with `blocks`/`blockedBy` and auto parallel execution.
+
+Replaces `TodoWrite`/`TodoRead` via the `tasks-todowrite-disabler` hook.
+
+## Source Notes
+
+Aligned with upstream `docs/reference/features.md`.

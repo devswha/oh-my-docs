@@ -1,0 +1,42 @@
+---
+title: LSP
+description: 워크스페이스 단위 rename, go-to-definition, find-references, 사전 빌드 진단. 에이전트용 IDE 정밀도.
+---
+
+OmO는 Language Server Protocol 기능을 도구로 노출합니다. 에이전트가 IDE가 사람에게 주는 것과 같은 정밀도를 갖습니다 — 워크스페이스 rename, 정의 점프, 참조 찾기, 빌드 전 진단.
+
+| 도구 | 용도 |
+|---|---|
+| `lsp_diagnostics` | 빌드 없이 에러·경고 노출. |
+| `lsp_prepare_rename` | rename 실행 전 안전성 검증. |
+| `lsp_rename` | 워크스페이스 전반에서 symbol rename. |
+| `lsp_goto_definition` | symbol 정의로 점프. |
+| `lsp_find_references` | 워크스페이스 전반의 모든 사용처 찾기. |
+| `lsp_symbols` | 파일 아웃라인 또는 워크스페이스 symbol 검색. |
+
+## 왜 에이전트에 필요한가
+
+Grep은 문자열을 찾고, LSP는 의미를 압니다. TypeScript 코드베이스에서 Sisyphus가 `User`를 `Account`로 rename할 때 grep 기반 replace는 문서/주석/문자열 리터럴도 건드립니다 — LSP는 실제 참조만 다시 씁니다. diagnostics 도구는 `next build`가 잡을 type error를 미리 잡아 에이전트가 write 시점에 고치게 합니다.
+
+## 설정
+
+언어별 LSP 서버 설정은 plugin config의 `lsp` 아래.
+
+```json
+{
+  "lsp": {
+    "typescript-language-server": {
+      "command": ["typescript-language-server", "--stdio"],
+      "extensions": [".ts", ".tsx"],
+      "priority": 10
+    },
+    "pylsp": { "disabled": true }
+  }
+}
+```
+
+필드: `command`, `extensions`, `priority`, `env`, `initialization`, `disabled`. 풀 스키마는 [Configuration](/ko/docs/reference/configuration).
+
+## 출처
+
+upstream `docs/reference/features.md#lsp-tools-ide-features-for-agents` 기준.

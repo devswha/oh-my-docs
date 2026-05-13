@@ -1,0 +1,30 @@
+---
+title: review-work
+description: 구현 후 리뷰 오케스트레이터. 5개 병렬 백그라운드 sub-agent를 띄우고 전부 통과를 요구.
+---
+
+`review-work`는 작업을 5개 렌즈로 병렬 통과시킨 뒤 집계합니다. 전체 통과는 모든 레인 통과가 필요 — vibe check가 아니라 품질 게이트.
+
+## 트리거
+
+`"review work"`, `"review my work"`, `"QA my work"`.
+
+## 5개 레인
+
+| 레인 | 묻는 것 |
+|---|---|
+| Goal verification | 결과가 요청과 실제로 맞는가? |
+| Code quality | 유지보수 가능하고 관용적이며 슬롭 없는가? |
+| Security | 변경이 새 취약점 클래스를 들이는가? |
+| Hands-on QA | 실제로 실행했을 때 end-to-end 동작하는가? |
+| Context mining | 코드베이스가 이미 인코딩한 걸 에이전트가 놓쳤나? |
+
+5개 백그라운드 sub-agent가 병렬로 발화 — ultrawork와 같은 모양. 집계자가 레인별 pass/fail을 모아 최종 판단.
+
+## 언제 부르는가
+
+`ultrawork` 세션 후, 긴 Atlas 실행 후, 커밋 직전 한 번 더 보고 싶을 때. 트리거 문구만 던지면 스킬이 인수.
+
+## 출처
+
+upstream `docs/reference/features.md#built-in-skills` 기준.

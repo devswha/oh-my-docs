@@ -1,0 +1,37 @@
+---
+title: 인터랙티브 Bash
+description: vim, htop, pudb 등 영속 세션이 필요한 TUI 앱용 tmux 기반 터미널 도구.
+---
+
+`interactive_bash`는 영속 tmux 세션 안에서 명령을 실행합니다. 실제 터미널이 필요한 TUI 애플리케이션 — 디버거, 에디터, 대시보드 — 에 사용. 일회성 명령은 평범한 `Bash` 도구를 그대로 쓰세요.
+
+## 사용
+
+명령은 tmux 서브커맨드 — `tmux` 접두 불필요.
+
+```bash
+# 새 세션 생성
+interactive_bash(tmux_command="new-session -d -s dev-app")
+
+# 세션에 키 입력
+interactive_bash(tmux_command="send-keys -t dev-app 'vim main.py' Enter")
+
+# pane 출력 캡처
+interactive_bash(tmux_command="capture-pane -p -t dev-app")
+```
+
+## 언제 쓰는가
+
+- 인터랙티브 디버거 (`pudb`, `pdb`, `lldb`).
+- TUI 에디터 (`vim`, `nvim`) 검사용.
+- 라이브 대시보드 (`htop`, `k9s`).
+- 여러 에이전트 턴에 걸쳐 영속 터미널이 필요한 모든 것.
+
+## 언제 쓰지 않는가
+
+- 일회성 명령 — 평범한 `Bash`에 `&` 백그라운드.
+- stdout만 필요한 명령 — `Bash`가 더 빠름.
+
+## 출처
+
+upstream `docs/reference/features.md#interactive-terminal-tools` 기준.

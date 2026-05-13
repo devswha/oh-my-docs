@@ -1,0 +1,37 @@
+---
+title: AST-Grep
+description: 25개 언어를 가로지르는 AST 인지 코드 검색·치환. regex 대신 패턴.
+---
+
+`ast_grep_search`와 `ast_grep_replace`는 에이전트에 구조적 코드 편집을 제공합니다. regex가 공백과 괄호 매칭에 비틀거리는 곳에서 AST-grep은 파스 트리 위에서 동작합니다.
+
+| 도구 | 용도 |
+|---|---|
+| `ast_grep_search` | AST 모양으로 패턴 찾기 — 25개 언어. |
+| `ast_grep_replace` | 매칭된 패턴을 구조적 템플릿으로 다시 쓰기. |
+
+## 왜 regex가 아닌가
+
+```text
+# 깨지기 쉬운 regex
+console.log\(([^)]+)\)
+```
+
+vs
+
+```text
+# AST-grep 패턴
+console.log($MSG)
+```
+
+이 패턴은 multi-line 호출, 중첩 괄호, 인자 중간 주석, 템플릿 문자열을 처리합니다 — regex는 못합니다. 코드의 *모양*이 중요한 대규모 리팩토링에서 AST-grep이 적절한 망치.
+
+## 조합
+
+- LSP rename — 식별자 수준 다시 쓰기. LSP는 scope를 앎, AST-grep은 모름.
+- AST-grep — *구조적* 다시 쓰기. `if (X) { return Y; }` → `return X ? Y : null;` 같은 패턴.
+- `/refactor` 워크플로우 안에서 둘 다.
+
+## 출처
+
+upstream `docs/reference/features.md#ast-grep-tools` 기준.

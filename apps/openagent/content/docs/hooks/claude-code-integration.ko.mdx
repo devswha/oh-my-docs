@@ -1,0 +1,75 @@
+---
+title: Claude Code 통합
+description: OmO가 Claude Code settings.json hook을 따르는 방식과 표면별 호환 토글.
+---
+
+OmO는 Claude Code 호환입니다 — hook, command, skill, agent, MCP, marketplace plugin이 Claude Code 경로에서 자동 로드. 이 페이지는 통합 레이어를 다룹니다.
+
+## settings.json hook
+
+`claude-code-hooks` hook이 Claude Code settings.json에 선언된 스크립트를 실행:
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [{ "type": "command", "command": "eslint --fix $FILE" }]
+      }
+    ]
+  }
+}
+```
+
+walk하는 위치:
+
+- `~/.claude/settings.json` (user)
+- `./.claude/settings.json` (project)
+- `./.claude/settings.local.json` (local, git-ignored)
+
+## 표면별 토글
+
+plugin config에서 특정 Claude Code 표면 통째로 비활성화:
+
+```json
+{
+  "claude_code": {
+    "mcp": false,
+    "commands": false,
+    "skills": false,
+    "agents": false,
+    "hooks": false,
+    "plugins": false
+  }
+}
+```
+
+| 토글 | 비활성화 대상 |
+|---|---|
+| `mcp` | `.mcp.json` 파일 (빌트인 MCP 유지). |
+| `commands` | Claude Code 경로의 command 로드. |
+| `skills` | Claude Code 경로의 skill 로드. |
+| `agents` | Claude Code 경로의 agent 로드 (빌트인 agent 유지). |
+| `hooks` | settings.json hook (`claude-code-hooks` 경유). |
+| `plugins` | Claude Code marketplace plugin. |
+
+특정 marketplace plugin 개별 비활성화:
+
+```json
+{
+  "claude_code": {
+    "plugins_override": {
+      "claude-mem@thedotmack": false
+    }
+  }
+}
+```
+
+## 통합이 존재하는 이유
+
+OmO는 OpenCode 기반이지만 많은 셋업에서 Claude Code 옆에 있습니다. 호환 레이어 덕분에 Claude Code skill/command/rule에 투자한 팀이 OmO 설치 후에도 그 투자를 유지 — 하네스가 양쪽 모두를 봅니다.
+
+## 출처
+
+upstream `docs/reference/features.md#claude-code-hooks-integration`과 `#claude-code-compatibility` 기준.

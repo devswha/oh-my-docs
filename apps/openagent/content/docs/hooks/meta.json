@@ -4,6 +4,11 @@
     "[What Hooks Control](/docs/hooks#what-hooks-control)",
     "[Practical Model](/docs/hooks#practical-model)",
     "[Safe Customization](/docs/hooks#safe-customization)",
-    "[Related Config](/docs/hooks#related-config)"
+    "[Related Config](/docs/hooks#related-config)",
+    "lifecycle-events",
+    "context-injection",
+    "recovery",
+    "continuation",
+    "claude-code-integration"
   ]
 }

@@ -1,0 +1,10 @@
+---
+title: Context Injection
+description: Hooks that auto-inject AGENTS.md, README, rules, and compaction-preserved state. Stub for ja.
+---
+
+`directory-agents-injector` walks AGENTS.md from the file up to project root. `directory-readme-injector` injects neighboring README. `rules-injector` injects `.claude/rules/*.{md,mdc}` by glob. `compaction-context-injector` re-injects load-bearing context after compaction. `context-window-monitor` + `preemptive-compaction` manage the window.
+
+## Source Notes
+
+Aligned with upstream `docs/reference/features.md`.

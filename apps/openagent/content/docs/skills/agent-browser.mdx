@@ -1,0 +1,37 @@
+---
+title: agent-browser
+description: CLI-based browser automation (Vercel's agent-browser). Alternative to playwright when you prefer a shell-friendly tool.
+---
+
+`agent-browser` is the CLI alternative to Playwright. It is not auto-installed.
+
+## Install
+
+```bash
+bun add -g agent-browser
+agent-browser install
+```
+
+## Switch the provider
+
+```json
+{ "browser_automation_engine": { "provider": "agent-browser" } }
+```
+
+## Triggers
+
+`agent-browser`, browser tasks routed through the CLI engine.
+
+## Capabilities
+
+Navigation, snapshots, screenshots, network inspection, scripted interactions. Same shape as playwright, different driver.
+
+## Usage
+
+```text
+Use agent-browser to navigate to example.com and extract the main heading.
+```
+
+## Source Notes
+
+Aligned with upstream `docs/reference/features.md#browser-automation-options`.

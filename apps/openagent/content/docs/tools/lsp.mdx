@@ -1,0 +1,42 @@
+---
+title: LSP
+description: Workspace-level rename, go-to-definition, find-references, and pre-build diagnostics. IDE precision for agents.
+---
+
+OmO exposes Language Server Protocol features as tools. Agents get the same precision an IDE gives a human — rename across the workspace, jump to definitions, find references, surface diagnostics before a build.
+
+| Tool | Purpose |
+|---|---|
+| `lsp_diagnostics` | Errors and warnings, surfaced without running the build. |
+| `lsp_prepare_rename` | Validate that a rename is safe before triggering it. |
+| `lsp_rename` | Rename a symbol across the workspace. |
+| `lsp_goto_definition` | Jump to a symbol's definition. |
+| `lsp_find_references` | Find every usage of a symbol across the workspace. |
+| `lsp_symbols` | File outline or workspace-wide symbol search. |
+
+## Why agents need this
+
+Grep finds strings; LSP knows the semantics. When Sisyphus needs to rename `User` to `Account` in a TypeScript codebase, grep-based replace hits docs, comments, and string literals — LSP rewrites only the actual references. The diagnostics tool catches type errors before `next build` would, so agents fix at write-time, not at CI-fail-time.
+
+## Configuration
+
+Per-language LSP server config is in plugin config under `lsp`:
+
+```json
+{
+  "lsp": {
+    "typescript-language-server": {
+      "command": ["typescript-language-server", "--stdio"],
+      "extensions": [".ts", ".tsx"],
+      "priority": 10
+    },
+    "pylsp": { "disabled": true }
+  }
+}
+```
+
+Fields: `command`, `extensions`, `priority`, `env`, `initialization`, `disabled`. Full schema in [Configuration](/docs/reference/configuration).
+
+## Source Notes
+
+Aligned with upstream `docs/reference/features.md#lsp-tools-ide-features-for-agents`.

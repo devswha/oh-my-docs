@@ -1,0 +1,28 @@
+---
+title: ai-slop-remover
+description: Strips AI-generated code smells while preserving functionality. Removes verbose comments, redundant error handling, over-engineered patterns, generic phrasing.
+---
+
+`ai-slop-remover` cleans up the artifacts agents leave behind: defensive `try/except: pass`, three-paragraph comments restating the obvious, `IUserServiceFactoryBuilder` abstractions for a 30-line script, generic AI phrasing like "let's dive into" or "in this comprehensive guide."
+
+## Triggers
+
+`"remove AI slop"`, `"de-AI"`, `"humanize"`.
+
+## What it removes
+
+- Verbose comments that just narrate code.
+- Redundant error handling for impossible failures.
+- Over-engineered abstractions for one-off code.
+- Generic AI phrasing.
+- "Helpful" docstrings that say nothing.
+
+## What it preserves
+
+- Functionality — strict equivalence.
+- Comments that explain a *why*, hidden constraint, or workaround.
+- Validation at trust boundaries (user input, external APIs).
+
+## Source Notes
+
+Aligned with upstream `docs/reference/features.md#built-in-skills`. Related: [Configuration → comment-checker hook](/docs/reference/configuration) which runs the same kind of check at PostToolUse time.

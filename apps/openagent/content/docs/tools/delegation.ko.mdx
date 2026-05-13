@@ -1,0 +1,38 @@
+---
+title: 위임
+description: 오케스트레이터가 다른 에이전트를 spawn하는 방법 — task, call_omo_agent, 그리고 백그라운드 도구.
+---
+
+위임은 Sisyphus와 Atlas가 작업을 펼치는 방식. 4개 도구가 수명 주기를 담당.
+
+| 도구 | 용도 |
+|---|---|
+| `task` | category 기반 위임 — Sisyphus-Junior가 category 기본 모델로 실행. 빌트인: `visual-engineering`, `ultrabrain`, `deep`, `artistry`, `quick`, `unspecified-low`, `unspecified-high`, `writing`. |
+| `call_omo_agent` | `explore` 또는 `librarian`을 명시 spawn. `run_in_background: true` 지원. |
+| `background_output` | `task_id`로 백그라운드 task 결과 회수. |
+| `background_cancel` | 진행 중 백그라운드 task 취소. |
+
+## 백그라운드 패턴
+
+```text
+task(subagent_type="explore", load_skills=[], prompt="Find auth implementations", run_in_background=true)
+# ... 다른 작업 진행 ...
+# 시스템이 완료 시 알림.
+background_output(task_id="bg_abc123")
+```
+
+한 에이전트가 백그라운드로 도는 동안 오케스트레이터는 다른 일을 합니다. `ultrawork` 세션에서 5개 동시 실행이 흔합니다.
+
+## 언제 무엇을 쓰는가
+
+- **`task`** — 작업의 *종류*는 알지만 어느 에이전트가 할지 모를 때.
+- **`call_omo_agent`** — Explore나 Librarian이 특히 필요할 때. retrieval 전용이라 Sisyphus-Junior가 부적절.
+- **`background_*`** — blocking이 오케스트레이터 시간을 낭비할 만큼 긴 작업일 때.
+
+## 도구 제한
+
+여러 에이전트가 위임 표면이 **전혀 없음** — oracle, librarian, explore, multimodal-looker, momus, atlas. 차단됨. 에이전트별 표는 [Agents](/ko/docs/agents).
+
+## 출처
+
+upstream `docs/reference/features.md#delegation-tools` 기준.

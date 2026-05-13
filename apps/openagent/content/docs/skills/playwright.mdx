@@ -1,0 +1,31 @@
+---
+title: playwright
+description: Browser automation skill backed by the Playwright MCP. Default provider for browser tasks, testing, and screenshots.
+---
+
+`playwright` is the default browser-automation provider. It auto-installs the Playwright MCP via npx and exposes the browser via MCP tools. Use it whenever the agent needs to click, fill, navigate, screenshot, or scrape a page.
+
+## Triggers
+
+Browser tasks, testing, screenshots, "navigate to", "verify in browser".
+
+## Capabilities
+
+- Navigate, interact, fill forms, click elements.
+- Take screenshots and PDFs.
+- Wait for network requests.
+- Scrape content.
+
+## Switching to agent-browser
+
+If you'd rather drive a CLI-based provider, swap the engine:
+
+```json
+{ "browser_automation_engine": { "provider": "agent-browser" } }
+```
+
+`agent-browser` is documented separately under its own skill.
+
+## Source Notes
+
+Aligned with upstream `docs/reference/features.md#browser-automation-options`. Disable via `disabled_skills: ["playwright"]`.

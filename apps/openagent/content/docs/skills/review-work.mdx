@@ -1,0 +1,30 @@
+---
+title: review-work
+description: Post-implementation review orchestrator. Spawns 5 parallel background sub-agents and demands all pass.
+---
+
+`review-work` runs the work back through five lenses in parallel, then aggregates. Every lane must pass for the overall review to pass — it's a quality gate, not a vibe check.
+
+## Triggers
+
+`"review work"`, `"review my work"`, `"QA my work"`.
+
+## The five lanes
+
+| Lane | Asks |
+|---|---|
+| Goal verification | Does the result actually match the request? |
+| Code quality | Is the code maintainable, idiomatic, and free of slop? |
+| Security | Are there vulnerability classes the change introduces? |
+| Hands-on QA | Does it work end-to-end when actually run? |
+| Context mining | What did the agents miss that the codebase already encodes? |
+
+Five background sub-agents fire in parallel — same shape as ultrawork. The aggregator collects pass/fail per lane and decides the overall verdict.
+
+## When to invoke
+
+After an `ultrawork` session, after a long Atlas execution, after any change you're about to commit but want a second pass on. Drop the trigger phrase and the skill takes over.
+
+## Source Notes
+
+Aligned with upstream `docs/reference/features.md#built-in-skills`.

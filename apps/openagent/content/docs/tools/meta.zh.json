@@ -5,6 +5,12 @@
     "[LSP and AST-Grep](/zh/docs/tools#lsp-and-ast-grep)",
     "[tmux](/zh/docs/tools#tmux)",
     "[MCPs](/zh/docs/tools#mcps)",
-    "[Hashline Edits](/zh/docs/tools#hashline-edits)"
+    "[Hashline Edits](/zh/docs/tools#hashline-edits)",
+    "lsp",
+    "ast-grep",
+    "delegation",
+    "task-system",
+    "hashline-edit",
+    "interactive-bash"
   ]
 }

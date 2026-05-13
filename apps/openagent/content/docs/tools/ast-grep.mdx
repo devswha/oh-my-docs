@@ -1,0 +1,37 @@
+---
+title: AST-Grep
+description: AST-aware code search and replace across 25 languages. Patterns instead of regex.
+---
+
+`ast_grep_search` and `ast_grep_replace` give agents structural code edits. Where regex stumbles on whitespace and matching brackets, AST-grep operates on the parse tree.
+
+| Tool | Purpose |
+|---|---|
+| `ast_grep_search` | Find code patterns by AST shape — works across 25 languages. |
+| `ast_grep_replace` | Rewrite matched patterns with a structural template. |
+
+## Why not regex
+
+```text
+# Brittle regex
+console.log\(([^)]+)\)
+```
+
+vs
+
+```text
+# AST-grep pattern
+console.log($MSG)
+```
+
+The pattern handles multi-line calls, nested parens, comments mid-arg, and template strings — regex doesn't. For large refactors where the *shape* of the code matters, AST-grep is the right hammer.
+
+## Pair with
+
+- LSP rename when the rewrite is identifier-level — LSP knows scope, AST-grep doesn't.
+- AST-grep when the rewrite is *structural* — `if (X) { return Y; }` → `return X ? Y : null;` style.
+- Both inside `/refactor` workflows.
+
+## Source Notes
+
+Aligned with upstream `docs/reference/features.md#ast-grep-tools`.

@@ -1,0 +1,47 @@
+---
+title: 컨텍스트 주입
+description: AGENTS.md, README, 조건부 규칙, 컴팩션 보존 상태를 자동 주입하는 hook들.
+---
+
+에이전트가 파일을 읽을 때, 컨텍스트 주입 hook은 파일시스템을 위로 걸어 올라가며 프로젝트 다른 부분이 그 파일에 대해 말하는 것을 주입합니다. 에이전트가 프롬프트 없이도 프로젝트 컨벤션을 얻습니다.
+
+| Hook | 시점 | 주입하는 것 |
+|---|---|---|
+| `directory-agents-injector` | read의 `PreToolUse`+`PostToolUse` | 파일 디렉토리부터 프로젝트 루트까지의 모든 `AGENTS.md`. OpenCode 1.1.37+는 네이티브 지원이 있어 자동 비활성화. |
+| `directory-readme-injector` | read의 `PreToolUse`+`PostToolUse` | 인접 `README.md`를 디렉토리 컨텍스트로. |
+| `rules-injector` | `PreToolUse`+`PostToolUse` | `.claude/rules/*.{md,mdc}` 중 `globs`가 매치되는 것 — 그리고 `alwaysApply: true`인 모든 파일. 파일에서 위로, 그리고 `~/.claude/rules/`. |
+| `compaction-context-injector` | `Event` | 컨텍스트 윈도우 컴팩션 후 load-bearing 컨텍스트(todo, plan marker, 최근 결정) 재주입 — 에이전트가 위치 잃지 않게. |
+| `context-window-monitor` | `Event` | 토큰 소비 추적, 한계 전 경고. |
+| `preemptive-compaction` | `Event` | hard limit 도달 전 선제적 컴팩션 — 반응적 복구보다 선호. |
+
+## 계층적 AGENTS.md
+
+```text
+project/
+├── AGENTS.md              # 첫 번째 주입
+├── src/
+│   ├── AGENTS.md          # 두 번째
+│   └── components/
+│       ├── AGENTS.md      # 세 번째
+│       └── Button.tsx     # 이걸 읽으면 3개 모두 주입
+```
+
+walk는 저렴 — 하네스가 세션별 캐시.
+
+## 조건부 규칙
+
+```markdown
+---
+globs: ["*.ts", "src/**/*.js"]
+description: TypeScript/JavaScript coding rules
+---
+
+- interface는 PascalCase.
+- function은 camelCase.
+```
+
+`.md`와 `.mdc` 지원. `alwaysApply: true`는 glob 체크 건너뜀.
+
+## 출처
+
+upstream `docs/reference/features.md#context--injection`과 `#context-injection` 기준.

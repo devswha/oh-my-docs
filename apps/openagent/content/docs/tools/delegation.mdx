@@ -1,0 +1,38 @@
+---
+title: Delegation
+description: How orchestrators spawn other agents — task, call_omo_agent, and the background tools that go with them.
+---
+
+Delegation is how Sisyphus and Atlas fan work out. Four tools handle the lifecycle.
+
+| Tool | Purpose |
+|---|---|
+| `task` | Category-based delegation — Sisyphus-Junior runs with the category's default model. Built-in categories: `visual-engineering`, `ultrabrain`, `deep`, `artistry`, `quick`, `unspecified-low`, `unspecified-high`, `writing`. |
+| `call_omo_agent` | Spawn `explore` or `librarian` specifically. Supports `run_in_background: true`. |
+| `background_output` | Retrieve results from a background task by `task_id`. |
+| `background_cancel` | Cancel a running background task. |
+
+## Background pattern
+
+```text
+task(subagent_type="explore", load_skills=[], prompt="Find auth implementations", run_in_background=true)
+# ... continue working ...
+# System notifies on completion.
+background_output(task_id="bg_abc123")
+```
+
+While one agent runs in the background, the orchestrator keeps working on something else. Five concurrent background agents is common in an `ultrawork` session.
+
+## When to use what
+
+- **`task`** — you know what *kind* of work this is but not which agent should do it.
+- **`call_omo_agent`** — you specifically need Explore or Librarian; they're retrieval-only and Sisyphus-Junior isn't right.
+- **`background_*`** — when the work is long enough that blocking on it wastes the orchestrator's time.
+
+## Tool restrictions
+
+Several agents have **no delegation surface at all** — oracle, librarian, explore, multimodal-looker, momus, atlas. `task` and `call_omo_agent` are blocked for them. See [Agents](/docs/agents) for the per-agent table.
+
+## Source Notes
+
+Aligned with upstream `docs/reference/features.md#delegation-tools`.

@@ -1,0 +1,33 @@
+---
+title: git-master
+description: Git expert that splits work into atomic commits, runs rebases, and finds when a behavior was introduced.
+---
+
+`git-master` is the built-in git skill. Three personas under one trigger.
+
+| Persona | Role |
+|---|---|
+| **Commit Architect** | Splits changes into atomic commits, orders them by dependency, detects the repo's commit style from the last 30 commits. |
+| **Rebase Surgeon** | History rewriting, conflict resolution, branch cleanup. |
+| **History Archaeologist** | "Who wrote", "when was X added", behavioral regression hunts. |
+
+## Triggers
+
+`commit`, `rebase`, `squash`, `"who wrote"`, `"when was X added"`. The keyword-detector hook lifts the skill into the active prompt; explicit invocation: `/git-master <command>`.
+
+## Defaults
+
+- Multiple commits by default — `3+ files → 2+ commits`, `5+ files → 3+ commits`, `10+ files → 5+ commits`.
+- Automatic style detection from the last 30 commits (language + commit-message style).
+
+## Examples
+
+```text
+/git-master commit these changes
+/git-master rebase onto main
+/git-master who wrote this authentication code?
+```
+
+## Source Notes
+
+Aligned with upstream `docs/reference/features.md#built-in-skills`. Disable via `disabled_skills: ["git-master"]`.

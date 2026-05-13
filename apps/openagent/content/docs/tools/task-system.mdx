@@ -1,0 +1,59 @@
+---
+title: Task System
+description: File-based task persistence with dependencies and parallel execution. Survives session restarts.
+---
+
+OmO replaces `TodoWrite`/`TodoRead` with a real task system when `experimental.task_system: true` (default since v3.14). Tasks live in `.sisyphus/tasks/` as JSON files, support dependencies, and survive session restarts.
+
+## Tools
+
+| Tool | Purpose |
+|---|---|
+| `task_create` | Create a task with auto-generated ID `T-{uuid}`. |
+| `task_get` | Retrieve a task by ID. |
+| `task_list` | List all active tasks (or filter by status). |
+| `task_update` | Update status, owner, dependencies, metadata. |
+
+## Schema
+
+```ts
+interface Task {
+  id: string;                                          // T-{uuid}
+  subject: string;                                     // Imperative: "Run tests"
+  description: string;
+  status: "pending" | "in_progress" | "completed" | "deleted";
+  activeForm?: string;                                  // Present continuous: "Running tests"
+  blocks: string[];                                    // Tasks this blocks
+  blockedBy: string[];                                 // Tasks blocking this
+  owner?: string;                                      // Agent name
+  metadata?: Record<string, unknown>;
+  threadID: string;                                    // Session ID (auto-set)
+}
+```
+
+## Dependencies + parallel execution
+
+```text
+[Build Frontend]    ──┐
+                      ├──→ [Integration Tests] ──→ [Deploy]
+[Build Backend]     ──┘
+```
+
+Tasks with empty `blockedBy` run in parallel. Dependent tasks wait until blockers complete.
+
+## Vs TodoWrite
+
+| Feature | TodoWrite | Task System |
+|---|---|---|
+| Storage | Session memory | `.sisyphus/tasks/` (JSON files) |
+| Persistence | Lost on close | Survives restart |
+| Dependencies | None | `blocks` / `blockedBy` |
+| Parallel execution | Manual | Automatic |
+
+## When to use
+
+Multi-step work with dependencies, multi-agent collaboration, or anything that should survive a session restart. Trivial single-step tasks stay on `TodoWrite`.
+
+## Source Notes
+
+Aligned with upstream `docs/reference/features.md#task-management-tools`. The hook that swaps `TodoWrite`/`TodoRead` for `task_*` is `tasks-todowrite-disabler`. Storage path is configurable via `sisyphus.tasks.storage_path` in [Configuration](/docs/reference/configuration).

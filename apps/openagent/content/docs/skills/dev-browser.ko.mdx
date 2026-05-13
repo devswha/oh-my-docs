@@ -1,0 +1,20 @@
+---
+title: dev-browser
+description: 턴 간 페이지 상태가 유지되는 stateful 브라우저 스킬. 반복 워크플로우와 인증 세션용.
+---
+
+`dev-browser`는 상태 보존 브라우저입니다. `playwright`와 `agent-browser`와 달리 페이지가 턴 간에 살아남습니다 — 쿠키, 스크롤 위치, 모달 상태, 인증 세션이 모두 유지.
+
+## 언제 쓰는가
+
+- 인증 디버깅: 한 번 로그인하고 계속 찔러보기.
+- 반복 UI 탐색: 수정, 새로고침, 관찰, 반복.
+- 여러 턴에 걸친 긴 폼 작성.
+
+## 트리거
+
+stateful 브라우저 스크립팅, "페이지 열어둬", iterative QA 워크플로우.
+
+## 출처
+
+upstream `docs/reference/features.md#built-in-skills` 기준.

@@ -1,0 +1,31 @@
+---
+title: playwright
+description: Playwright MCP 기반 브라우저 자동화 스킬. 브라우저 작업·테스트·스크린샷 기본 provider.
+---
+
+`playwright`는 기본 브라우저 자동화 provider입니다. npx 경유로 Playwright MCP 자동 설치, 브라우저를 MCP 도구로 노출. 에이전트가 클릭/입력/네비게이션/스크린샷/스크레이프 해야 할 때 사용.
+
+## 트리거
+
+브라우저 작업, 테스트, 스크린샷, "navigate to", "verify in browser".
+
+## 기능
+
+- 네비게이션, 인터랙션, 폼 채우기, 클릭.
+- 스크린샷, PDF.
+- 네트워크 요청 대기.
+- 콘텐츠 스크레이프.
+
+## agent-browser로 전환
+
+CLI 기반 provider가 더 좋다면 엔진 교체:
+
+```json
+{ "browser_automation_engine": { "provider": "agent-browser" } }
+```
+
+`agent-browser`는 별도 스킬 문서가 있습니다.
+
+## 출처
+
+upstream `docs/reference/features.md#browser-automation-options` 기준. 비활성화: `disabled_skills: ["playwright"]`.

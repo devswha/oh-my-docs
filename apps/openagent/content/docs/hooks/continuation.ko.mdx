@@ -1,0 +1,28 @@
+---
+title: 연속성
+description: 작업이 안 끝나면 에이전트가 멈추는 걸 거부하는 hook들 — todo-continuation, ralph-loop, boulder state.
+---
+
+Continuation은 OmO의 핵심 철학을 운영화한 것입니다. 작업이 안 끝나면 hook이 에이전트를 다시 움직이게 합니다. Sisyphus 메타포는 글자 그대로 — 바위는 멈추지 않습니다.
+
+| Hook | 이벤트 | 동작 |
+|---|---|---|
+| `todo-continuation-enforcer` | `Event` | todo가 남으면 idle 에이전트를 다시 일로. "끝났다" 거짓말 차단. |
+| `compaction-todo-preserver` | `Event` | 컨텍스트 윈도우 컴팩션 시 todo 상태 보존 — continuation이 재개할 거리 마련. |
+| `ralph-loop` | `Event`+`Message` | self-referential 루프 관리. `<promise>DONE</promise>` 감지, 조기 중단 시 자동 재개. |
+| `start-work` | `Message` | `/start-work` 처리 — 최신 Prometheus 계획에 Atlas 활성화. |
+| `auto-slash-command` | `Message` | 일반 프롬프트에서 슬래시 명령 의도 감지하고 라우팅. |
+| `stop-continuation-guard` | `Event`+`Message` | `/stop-continuation` 가드 — 명시 중단 후 continuation이 조용히 재진입하지 않게. |
+| `agent-usage-reminder` | `PostToolUse`+`Event` | 현재 경로가 일반적으로 보일 때 특화 레인(Oracle, Librarian, Explore)이 있다고 주기적으로 상기. |
+
+## 언제 비활성화
+
+거의 없음. Continuation은 `ultrawork`, ralph loop, `/start-work` 흐름에 load-bearing. 특정 루프가 오작동하면 전체 tier를 끄지 말고 `disabled_hooks`로 그 hook만 끄세요.
+
+```json
+{ "disabled_hooks": ["ralph-loop"] }
+```
+
+## 출처
+
+upstream `docs/reference/features.md#continuation`과 `#productivity--control` 기준. continuation 원칙 자체는 [매니페스토](/ko/docs/concepts/manifesto).

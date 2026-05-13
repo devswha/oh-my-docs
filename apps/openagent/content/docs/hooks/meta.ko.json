@@ -4,6 +4,11 @@
     "[Hook이 통제하는 것](/ko/docs/hooks#hook이-통제하는-것)",
     "[실전에서 보는 법](/ko/docs/hooks#실전에서-보는-법)",
     "[안전한 커스터마이징](/ko/docs/hooks#안전한-커스터마이징)",
-    "[관련 Config](/ko/docs/hooks#관련-config)"
+    "[관련 Config](/ko/docs/hooks#관련-config)",
+    "lifecycle-events",
+    "context-injection",
+    "recovery",
+    "continuation",
+    "claude-code-integration"
   ]
 }
