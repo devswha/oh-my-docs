@@ -7,25 +7,27 @@ A flat reference for the things you look up mid-session: command names, config p
 
 ## Package Names
 
-The upstream rename is transitional. Prefer the upstream-published command when installing; treat OpenAgent names as the public product identity.
+The upstream rename is transitional and both packages are still published. Prefer `oh-my-openagent` and leave `oh-my-opencode` as a compatibility alias.
 
 | Name | Purpose |
 |---|---|
-| `oh-my-opencode` | Current upstream npm package and primary installer command. |
-| `oh-my-openagent` | Compatibility binary and product name during the rename transition. |
+| `oh-my-openagent` | Preferred upstream npm package and primary installer command. |
+| `oh-my-opencode` | Compatibility package, still published during the rename transition. |
 | `oh-my-openagent` plugin entry | Preferred OpenCode plugin entry when the installer can register it. |
-| `oh-my-opencode` plugin entry | Legacy entry still recognized during transition. |
+| `oh-my-opencode` plugin entry | Legacy entry still recognized during transition; `doctor` warns when it's still in `opencode.json`. |
 
 ## CLI
 
 | Command | Purpose |
 |---|---|
-| `bunx oh-my-opencode install` | Interactive installer. |
-| `bunx oh-my-opencode install --no-tui ...` | Non-interactive setup for agent-driven installs. |
-| `bunx oh-my-opencode doctor` | System, config, tool, and model-resolution diagnostics. |
-| `bunx oh-my-opencode run <message>` | OpenCode session runner with completion enforcement. |
-| `bunx oh-my-opencode version` | Version information. |
-| `bunx oh-my-opencode mcp oauth ...` | OAuth helper for remote MCP servers. |
+| `bunx oh-my-openagent install` | Interactive installer. |
+| `bunx oh-my-openagent install --no-tui ...` | Non-interactive setup for agent-driven installs. |
+| `bunx oh-my-openagent doctor` | System, config, tool, and model-resolution diagnostics. |
+| `bunx oh-my-openagent run <message>` | OpenCode session runner with completion enforcement. |
+| `bunx oh-my-openagent get-local-version` | Show installed plugin version and update status. |
+| `bunx oh-my-openagent refresh-model-capabilities` | Refresh the cached model capabilities snapshot from models.dev. |
+| `bunx oh-my-openagent version` | Version information. |
+| `bunx oh-my-openagent mcp oauth login\|logout\|status ...` | OAuth helper for remote MCP servers (PKCE + dynamic client registration). |
 
 ## Config Files
 

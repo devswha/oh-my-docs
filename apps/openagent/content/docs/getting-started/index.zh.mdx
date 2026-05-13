@@ -14,13 +14,13 @@ description: Install Oh My OpenAgent and verify your first OpenCode session.
 For humans, the easiest path is to ask your coding agent to follow the upstream installation guide. For manual setup, run the installer:
 
 ```bash
-bunx oh-my-opencode install
+bunx oh-my-openagent install
 ```
 
 For non-interactive setup, pass your subscriptions explicitly:
 
 ```bash
-bunx oh-my-opencode install --no-tui --claude=yes --openai=yes --gemini=no --copilot=no
+bunx oh-my-openagent install --no-tui --claude=yes --openai=yes --gemini=no --copilot=no
 ```
 
 Useful flags include `--claude=yes|no|max20`, `--openai=yes|no`, `--gemini=yes|no`, `--copilot=yes|no`, `--opencode-go=yes|no`, `--opencode-zen=yes|no`, `--zai-coding-plan=yes|no`, `--kimi-for-coding=yes|no`, and `--vercel-ai-gateway=yes|no`.
@@ -29,7 +29,7 @@ Useful flags include `--claude=yes|no|max20`, `--openai=yes|no`, `--gemini=yes|n
 
 ```bash
 opencode --version
-bunx oh-my-opencode doctor
+bunx oh-my-openagent doctor
 ```
 
 `doctor` checks system setup, plugin registration, tools, and model resolution. If you see a legacy package warning, update your OpenCode plugin entry from `oh-my-opencode` to `oh-my-openagent`.
