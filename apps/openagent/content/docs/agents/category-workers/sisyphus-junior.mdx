@@ -1,6 +1,6 @@
 ---
 title: Sisyphus-Junior
-description: Category-spawned executor. The agent that actually runs a `task(category: ...)` delegation.
+description: "Category-spawned executor. The agent that actually runs a `task(category: ...)` delegation."
 ---
 
 Sisyphus-Junior is the agent that materializes a category delegation. When Sisyphus or Atlas calls `task(category: "deep", prompt: "...")`, the harness spawns a Sisyphus-Junior session with that category's default model. The junior runs the task with one focused goal and returns. Cannot re-delegate — that's the contract.
