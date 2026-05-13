@@ -4,10 +4,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev",
+    "prebuild": "node scripts/inject-omo-version.mjs && npm run check:localized-links",
+    "dev": "node scripts/inject-omo-version.mjs && next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "check:localized-links": "node scripts/check-localized-doc-links.mjs"
   },
   "dependencies": {
     "@marsidev/react-turnstile": "^1.5.0",
