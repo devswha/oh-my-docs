@@ -1,0 +1,4 @@
+interface:
+  display_name: "Update OMC Docs"
+  short_description: "Refresh Claude Code (OMC) docs from latest upstream"
+  default_prompt: "Use $update-omc-docs to refresh the Claude Code/OMC docs from the latest oh-my-claudecode upstream repository."
