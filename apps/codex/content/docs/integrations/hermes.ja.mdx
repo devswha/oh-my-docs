@@ -1,0 +1,65 @@
+---
+title: "Hermes"
+description: "OMX v0.17 Hermes MCP bridge と adapter boundary。"
+---
+
+OMX v0.17 の Hermes support は、外部 Hermes-style coordinator のための bounded coordination surface です。terminal scraping でも広い control plane でもありません。
+
+## Hermes と OMX の責任境界
+
+| Owner | Responsibility |
+|---|---|
+| Hermes または external coordinator | intake、operator Q&A、package shaping、external approval policy |
+| OMX | bounded worktree/session 内の local planning、execution、review、artifact production |
+| Hermes MCP bridge | 明示的な tools と JSON responses で両者を接続 |
+
+## Optional MCP server
+
+```bash
+omx mcp-serve hermes
+```
+
+v0.17 plugin manifest はこの server を `omx_hermes` として登録し、plugin-mode MCP metadata を Hermes target に scope します。
+
+外部 client に提供する場合は `OMX_MCP_WORKDIR_ROOTS` を設定して `workingDirectory` を安全な roots に制限してください。
+
+## MCP tools
+
+Read tools:
+
+- `hermes_list_sessions` — known OMX session-state directories と active mode names を一覧します。
+- `hermes_read_status` — 選択した session または mode JSON status を読みます。
+- `hermes_read_tail` — tmux scrollback ではなく bounded `.omx/logs/session-history.jsonl` tail を読みます。
+- `hermes_list_artifacts` — `.omx/plans`, `.omx/specs`, `.omx/goals`, `.omx/context`, `.omx/reports` 以下の safe result artifacts を一覧します。
+- `hermes_read_artifact` — safe relative `.omx/...` artifact を byte truncation 付きで読みます。
+
+Mutating tools は `allow_mutation: true` が必要です。
+
+- `hermes_start_session` — bounded working directory から `omx --tmux --worktree[=<name>] <prompt>` を開始します。
+- `hermes_send_prompt` — 選択した exec session に audited follow-up queue 経由で explicit prompt を queue します。
+- `hermes_report_status` — final、blocker、PR summary data を `.omx/state[/sessions/<session_id>]/hermes-coordination.json` に書きます。
+
+## 意図的に公開しないもの
+
+- direct interactive deep-interview turn routing
+- tmux scrollback scraping や terminal UI control
+- broad team/control-room internals
+- OMX launch/follow-up/report files 外の GitHub merge policy や repository mutation
+
+## Adapter commands
+
+Adapter surface は local evidence discovery 用です。
+
+```bash
+omx adapt hermes probe
+omx adapt hermes status --json
+omx adapt hermes envelope --json
+omx adapt hermes init --write
+```
+
+Hermes adapter は `HERMES_HOME` と `OMX_ADAPT_HERMES_ROOT` evidence を読みますが、書き込みは `.omx/adapters/hermes/...` の下だけです。Hermes runtime files は read-only input です。
+
+## 関連
+
+- [MCP](/ja/docs/integrations/mcp)
+- [Release notes](/ja/docs/reference/release-notes)

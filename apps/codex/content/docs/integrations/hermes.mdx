@@ -1,0 +1,65 @@
+---
+title: "Hermes"
+description: "OMX v0.17 Hermes MCP bridge and adapter boundaries."
+---
+
+Hermes support in OMX v0.17 is a bounded coordination surface for external Hermes-style coordinators. It is not terminal scraping and not a broad control plane.
+
+## What Hermes owns vs OMX owns
+
+| Owner | Responsibility |
+|---|---|
+| Hermes or external coordinator | intake, operator Q&A, package shaping, external approval policy |
+| OMX | local planning, execution, review, and artifact production inside a bounded worktree/session |
+| Hermes MCP bridge | connects those sides through explicit tools and JSON responses |
+
+## Launching the optional MCP server
+
+```bash
+omx mcp-serve hermes
+```
+
+The v0.17 plugin manifest registers this server as `omx_hermes` and keeps plugin-mode MCP metadata scoped to the Hermes target.
+
+When serving an external client, set `OMX_MCP_WORKDIR_ROOTS` so `workingDirectory` inputs are restricted to known safe roots.
+
+## MCP tools
+
+Read tools:
+
+- `hermes_list_sessions` — list known OMX session-state directories and active mode names.
+- `hermes_read_status` — read selected session or mode JSON status.
+- `hermes_read_tail` — read the bounded `.omx/logs/session-history.jsonl` tail, not tmux scrollback.
+- `hermes_list_artifacts` — list safe result artifacts under `.omx/plans`, `.omx/specs`, `.omx/goals`, `.omx/context`, and `.omx/reports`.
+- `hermes_read_artifact` — read one safe relative `.omx/...` artifact with byte truncation.
+
+Mutating tools require `allow_mutation: true`:
+
+- `hermes_start_session` — starts `omx --tmux --worktree[=<name>] <prompt>` from the bounded working directory.
+- `hermes_send_prompt` — queues one explicit prompt through the audited follow-up queue for a selected exec session.
+- `hermes_report_status` — writes `.omx/state[/sessions/<session_id>]/hermes-coordination.json` with final, blocker, or PR summary data.
+
+## What it intentionally does not expose
+
+- direct interactive deep-interview turn routing
+- tmux scrollback scraping or terminal UI control
+- broad team/control-room internals
+- GitHub merge policy or repository mutation outside OMX launch, follow-up, and report files
+
+## Adapter commands
+
+The adapter surface is for local evidence discovery:
+
+```bash
+omx adapt hermes probe
+omx adapt hermes status --json
+omx adapt hermes envelope --json
+omx adapt hermes init --write
+```
+
+Hermes adapter reads `HERMES_HOME` and `OMX_ADAPT_HERMES_ROOT` evidence, but writes only under `.omx/adapters/hermes/...`; Hermes runtime files remain read-only inputs.
+
+## Related
+
+- [MCP](/docs/integrations/mcp)
+- [Release notes](/docs/reference/release-notes)

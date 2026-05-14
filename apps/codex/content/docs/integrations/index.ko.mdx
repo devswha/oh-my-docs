@@ -36,6 +36,16 @@ description: OMX와 외부 시스템 · MCP · 다른 CLI 연결 지점
 - 스킬 · 도구 아래에서 어떤 MCP 호출이 일어나는지 추적
 - 로컬 도구를 구조적으로 OMX와 엮음
 
+### Hermes
+
+[Hermes](/ko/docs/integrations/hermes) — v0.17에서 추가된 Hermes-style external coordinator용 bounded MCP bridge.
+
+필요한 경우:
+
+- 외부 coordinator가 OMX 작업을 시작하거나 이어가야 할 때
+- terminal scraping 없이 session status와 result artifact를 읽어야 할 때
+- `omx mcp-serve hermes`와 `omx adapt hermes ...` 경계를 확인해야 할 때
+
 ### CLI Bridges
 
 [CLI Bridges](/ko/docs/integrations/cli-bridges) — `$ask-claude`, `$ask-gemini` 같은 cross-CLI consultation 흐름.

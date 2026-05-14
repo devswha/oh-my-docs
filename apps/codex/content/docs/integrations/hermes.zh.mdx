@@ -1,0 +1,65 @@
+---
+title: "Hermes"
+description: "OMX v0.17 Hermes MCP bridge 与 adapter boundary。"
+---
+
+OMX v0.17 的 Hermes support 是面向外部 Hermes-style coordinators 的 bounded coordination surface。它不是 terminal scraping，也不是宽泛 control plane。
+
+## Hermes 与 OMX 的职责边界
+
+| Owner | Responsibility |
+|---|---|
+| Hermes 或 external coordinator | intake、operator Q&A、package shaping、external approval policy |
+| OMX | bounded worktree/session 中的 local planning、execution、review、artifact production |
+| Hermes MCP bridge | 通过明确 tools 与 JSON responses 连接两侧 |
+
+## Optional MCP server
+
+```bash
+omx mcp-serve hermes
+```
+
+v0.17 plugin manifest 将此 server 注册为 `omx_hermes`，并把 plugin-mode MCP metadata scope 到 Hermes target。
+
+为外部 client 提供服务时，请设置 `OMX_MCP_WORKDIR_ROOTS`，把 `workingDirectory` 输入限制在安全 roots 内。
+
+## MCP tools
+
+Read tools:
+
+- `hermes_list_sessions` — 列出 known OMX session-state directories 与 active mode names。
+- `hermes_read_status` — 读取选定 session 或 mode JSON status。
+- `hermes_read_tail` — 读取 bounded `.omx/logs/session-history.jsonl` tail，而不是 tmux scrollback。
+- `hermes_list_artifacts` — 列出 `.omx/plans`、`.omx/specs`、`.omx/goals`、`.omx/context`、`.omx/reports` 下的 safe result artifacts。
+- `hermes_read_artifact` — 读取一个 safe relative `.omx/...` artifact，并进行 byte truncation。
+
+Mutating tools 需要 `allow_mutation: true`。
+
+- `hermes_start_session` — 从 bounded working directory 启动 `omx --tmux --worktree[=<name>] <prompt>`。
+- `hermes_send_prompt` — 通过 audited follow-up queue 为选定 exec session queue 一个 explicit prompt。
+- `hermes_report_status` — 将 final、blocker、PR summary data 写入 `.omx/state[/sessions/<session_id>]/hermes-coordination.json`。
+
+## 有意不暴露的内容
+
+- direct interactive deep-interview turn routing
+- tmux scrollback scraping 或 terminal UI control
+- broad team/control-room internals
+- OMX launch/follow-up/report files 之外的 GitHub merge policy 或 repository mutation
+
+## Adapter commands
+
+Adapter surface 用于 local evidence discovery。
+
+```bash
+omx adapt hermes probe
+omx adapt hermes status --json
+omx adapt hermes envelope --json
+omx adapt hermes init --write
+```
+
+Hermes adapter 读取 `HERMES_HOME` 与 `OMX_ADAPT_HERMES_ROOT` evidence，但只写入 `.omx/adapters/hermes/...`。Hermes runtime files 仍是 read-only inputs。
+
+## 相关
+
+- [MCP](/zh/docs/integrations/mcp)
+- [Release notes](/zh/docs/reference/release-notes)

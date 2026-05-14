@@ -1,0 +1,65 @@
+---
+title: "Hermes"
+description: "OMX v0.17 Hermes MCP bridge와 adapter boundary입니다."
+---
+
+OMX v0.17의 Hermes support는 외부 Hermes-style coordinator를 위한 bounded coordination surface입니다. terminal scraping도 아니고 넓은 control plane도 아닙니다.
+
+## Hermes와 OMX의 책임 경계
+
+| Owner | 책임 |
+|---|---|
+| Hermes 또는 외부 coordinator | intake, operator Q&A, package shaping, external approval policy |
+| OMX | bounded worktree/session 안의 local planning, execution, review, artifact production |
+| Hermes MCP bridge | 명시적 tool과 JSON response로 양쪽을 연결 |
+
+## Optional MCP server 실행
+
+```bash
+omx mcp-serve hermes
+```
+
+v0.17 plugin manifest는 이 server를 `omx_hermes`로 등록하고, plugin-mode MCP metadata를 Hermes target에 맞게 scope합니다.
+
+외부 client에 제공할 때는 `OMX_MCP_WORKDIR_ROOTS`를 설정해 `workingDirectory` 입력을 안전한 root로 제한하세요.
+
+## MCP tools
+
+Read tools:
+
+- `hermes_list_sessions` — 알려진 OMX session-state directory와 active mode name을 나열합니다.
+- `hermes_read_status` — 선택한 session 또는 mode JSON status를 읽습니다.
+- `hermes_read_tail` — tmux scrollback이 아니라 bounded `.omx/logs/session-history.jsonl` tail을 읽습니다.
+- `hermes_list_artifacts` — `.omx/plans`, `.omx/specs`, `.omx/goals`, `.omx/context`, `.omx/reports` 아래 safe result artifact를 나열합니다.
+- `hermes_read_artifact` — safe relative `.omx/...` artifact 하나를 byte truncation과 함께 읽습니다.
+
+Mutating tools는 `allow_mutation: true`가 필요합니다.
+
+- `hermes_start_session` — bounded working directory에서 `omx --tmux --worktree[=<name>] <prompt>`를 시작합니다.
+- `hermes_send_prompt` — 선택한 exec session에 audited follow-up queue를 통해 explicit prompt 하나를 queue합니다.
+- `hermes_report_status` — final, blocker, PR summary data를 `.omx/state[/sessions/<session_id>]/hermes-coordination.json`에 씁니다.
+
+## 의도적으로 노출하지 않는 것
+
+- direct interactive deep-interview turn routing
+- tmux scrollback scraping 또는 terminal UI control
+- broad team/control-room internals
+- OMX launch/follow-up/report file 밖의 GitHub merge policy나 repository mutation
+
+## Adapter commands
+
+Adapter surface는 local evidence discovery 용도입니다.
+
+```bash
+omx adapt hermes probe
+omx adapt hermes status --json
+omx adapt hermes envelope --json
+omx adapt hermes init --write
+```
+
+Hermes adapter는 `HERMES_HOME`, `OMX_ADAPT_HERMES_ROOT` evidence를 읽지만, 쓰기는 `.omx/adapters/hermes/...` 아래로만 합니다. Hermes runtime file은 read-only input입니다.
+
+## 관련 문서
+
+- [MCP](/ko/docs/integrations/mcp)
+- [릴리스 노트](/ko/docs/reference/release-notes)
