@@ -1,0 +1,95 @@
+---
+title: Autoresearch
+description: 평가자 계약과 markdown 결정 로그, max-runtime 종료 정책을 갖춘 단일 미션 반복 개선 루프
+---
+
+## 개요
+
+`autoresearch`는 **상태를 보존하는 평가자 기반 반복 개선 루프**입니다. 명시된 미션 하나에 대해 시작되면, 평가자가 통과하지 못한 결과를 계속 반복하면서 각 평가와 결정을 영속 아티팩트로 기록하고, `max-runtime` 또는 다른 명시적 종료 조건이 도달했을 때만 멈춥니다.
+
+이 스킬은 **레벨 4 스킬**입니다. 한 번에 미션 하나만 소유하며, 반복 사이에서 사용자 확인을 받지 않습니다.
+
+## 사용 시기
+
+- `/oh-my-claudecode:deep-interview --autoresearch` 로 미션과 평가자를 이미 준비한 경우
+- 엄격한 평가 기준으로 단일 미션을 지속적으로 개선하고 싶을 때
+- `.omc/autoresearch/` 아래의 영속 실험 로그가 필요할 때
+- Claude Code 네이티브 cron 으로 주기 재실행 경로를 두고 싶을 때
+
+## 사용하지 않을 때
+
+- 평가자를 아직 생성하지 않은 경우 → 먼저 `/oh-my-claudecode:deep-interview --autoresearch` 실행
+- 여러 미션을 동시에 다뤄야 할 때 — v1 은 허용하지 않습니다
+- 폐기된 `omc autoresearch` CLI 흐름을 원하는 경우 — 더 이상 정식 경로가 아닙니다
+
+## 사용법
+
+```bash
+/oh-my-claudecode:autoresearch
+```
+
+선택 인자:
+
+```bash
+/oh-my-claudecode:autoresearch --mission-dir <path> --max-runtime <duration>
+/oh-my-claudecode:autoresearch --resume <run-id>
+/oh-my-claudecode:autoresearch --cron <spec>
+```
+
+## 계약
+
+- v1 은 **단일 미션 전용**
+- 미션 설정과 평가자 생성은 `deep-interview --autoresearch` 가 담당
+- 평가자 출력은 **구조화된 JSON** — 필수 `pass` 불리언, 선택 `score` 숫자 포함
+- 평가가 통과하지 못해도 루프는 멈추지 않음
+- 종료 조건은 명시적이고 경계가 분명함 — `max-runtime` 이 1차 엄격 종료 훅
+
+## 상태 레이아웃
+
+영속 저장소는 `.omc/autoresearch/<mission-slug>/` 아래에 정착합니다.
+
+```
+.omc/autoresearch/<mission-slug>/
+├── mission.md
+├── evaluator.json
+└── runs/<run-id>/
+    ├── evaluations/
+    │   ├── iteration-0001.json
+    │   └── iteration-0002.json
+    └── decision-log.md
+```
+
+기존 런타임 아티팩트가 있으면 중복 생성하지 말고 재사용하세요.
+
+## 필수 아티팩트
+
+스킬은 최소한 다음을 기록합니다.
+
+- 미션 스펙
+- 평가자 스크립트 또는 명령 레퍼런스
+- 각 iteration 의 평가 JSON (필수 `pass` 불리언 포함)
+- markdown 결정 로그
+
+## 워크플로우
+
+1. 단일 미션 존재와 평가자 준비 상태 확인
+2. `autoresearch` 모드 상태 활성화 — 미션 슬러그/디렉터리, 평가자 레퍼런스, run-id 기록
+3. 루프 진입: 후보 변경 실행 → 평가 → iteration JSON + decision-log 항목 기록
+4. `pass !== true` 동안 계속, `max-runtime` 또는 다른 명시적 종료 조건이 발화할 때까지
+5. 최종 상태 영속화 + 실행 요약 — 최신 평가자 JSON 과 decision-log 경로 노출
+
+## 관련 스킬
+
+- [deep-interview](/ko/docs/skills/workflow/deep-interview) — 미션과 평가자 생성
+- [self-improve](/ko/docs/skills/workflow/self-improve) — 토너먼트 선택 진화 루프
+- [ralph](/ko/docs/skills/workflow/ralph) — 검증자가 붙은 범용 자기 참조 루프
+
+## 레퍼런스
+
+| 항목 | 값 |
+|------|-----|
+| 호출 | `/oh-my-claudecode:autoresearch` |
+| 매직 키워드 | `autoresearch`, `auto-research` |
+| 카테고리 | Workflow |
+| 파이프라인 | `deep-interview --autoresearch` → `autoresearch` |
+| 상태 루트 | `.omc/autoresearch/<mission-slug>/` |

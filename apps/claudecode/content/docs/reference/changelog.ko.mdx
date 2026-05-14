@@ -7,7 +7,26 @@ description: Oh My ClaudeCode의 버전별 변경 사항
 
 Oh My ClaudeCode의 주요 변경 사항을 버전별로 정리합니다.
 
-### v4.12.0 (현재)
+### v4.13.7 (현재)
+
+**신규 기능**
+- Deep-dive: 다중 엔티티 premise audit 추가 — Lane 3 가 zero-row/불일치 결과를 시스템 결함으로 단정하기 전에 엔티티 차원(cohort ID, 테넌트 ID, 파티션 키)을 먼저 열거 (#2950)
+- Deep-dive: Lane 3 MOVE 권장에 `ownership_scope` 도입 — `personal-config`, `shared-config`, `external`, `project-scoped` 분류, 경계를 넘는 MOVE 후보는 경고 표시되며 기본 권장이 되지 않음 (#2930)
+- Deep-dive: pre-flight 워크플로우 셋업 — 실행 전 `.claude/settings.json` 을 로드하고 `omc.deepInterview.ambiguityThreshold` 를 해석 (#2928)
+- Skills: 신규 [autoresearch](/ko/docs/skills/workflow/autoresearch) — 엄격한 평가자 계약과 decision-log, `max-runtime` 종료 정책을 갖춘 단일 미션 반복 개선 루프
+
+**버그 수정 (선별)**
+- Persistent stop hook 와 에이전트 출력 계약 정렬
+- autopilot / ralplan startup contract 정렬
+- HUD: MiniMax 라우팅이 자격 증명 유무와 무관하게 동작, `minimaxi.com` / `minimax.com` 도메인 모두 지원
+- Ask: 파이프 환경에서 provider spawn 시 hang 을 막기 위해 stdin close
+- Trace/interview 임시 아티팩트를 `.omc/state/` 아래에 두도록 정리 — repo root scratch 파일 제거
+
+**통계:** 25 PR 병합 · 신규 기능 3개 · 버그 수정 9개 · 기타 변경 13개
+
+---
+
+### v4.12.0
 
 **신규 기능**
 - Team: canonical 역할별 provider/model 라우팅과 resolved-routing 스냅샷 — `.claude/omc.jsonc`의 `roleRouting`에서 역할별(예: `codex critic`, `gemini reviewer`)로 구성 가능 (#2614)

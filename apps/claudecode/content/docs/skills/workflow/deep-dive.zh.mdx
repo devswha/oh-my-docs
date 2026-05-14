@@ -58,7 +58,14 @@ investigate deeply why the DAG fails intermittently
 
 1. **代码路径 / 实现原因**
 2. **配置 / 环境 / 编排原因**
-3. **测量 / 工件 / 假设不匹配原因**
+3. **测量 / 工件 / 假设不匹配原因** — 不仅覆盖系统缺陷，也覆盖验证方法缺陷。当问题表述为 "X 为空但 Y 不为空"、"N 条流不同" 或 "实体之间值不一致" 时，该通道会先执行 **premise audit**：通过元数据表或 schema 内省枚举实体维度（cohort ID、租户 ID、分区键、各流的维度键），然后才把零行 / 不一致结果当作系统缺陷的证据。
+
+### 阶段 1.5：Pre-flight 工作流准备
+
+执行前先加载运行时设置：
+
+- 读取 `[$CLAUDE_CONFIG_DIR|~/.claude]/settings.json` 与 `./.claude/settings.json`（项目覆盖用户）
+- 解析 `omc.deepInterview.ambiguityThreshold`（默认 `0.2`），让后续访谈门控使用项目配置值而非硬编码阈值
 
 ### 阶段 2：通道确认
 
@@ -72,6 +79,17 @@ investigate deeply why the DAG fails intermittently
 - 收集赞成和反对的证据
 - 命名关键未知数
 - 推荐最佳的辨别探针
+
+对于通道 3（Misplacement / SoT 违规）的发现，每个候选 MOVE 目的地都按 `ownership_scope` 分类：
+
+| ownership_scope | 示例 |
+|---|---|
+| `personal-config` | 用户级 dotfile、`~/.claude/`、个人仓库、用户专属 agent 规则 |
+| `shared-config` | 公司/组织仓库、团队维护配置、多租户共享规则 |
+| `external` | 第三方、供应商或 OSS upstream 仓库（用户所属之外） |
+| `project-scoped` | 当前项目边界拥有的项目级存储 |
+
+跨边界 MOVE 候选（例如 `personal-config` → `shared-config`）必须附带显式警告，**不得作为默认推荐**；优先选择同 scope MOVE、COMPRESS 或 KEEP。
 
 在领先假设和最强替代方案之间运行一轮证伪。
 
@@ -121,4 +139,4 @@ investigate deeply why the DAG fails intermittently
 | 调用 | `/oh-my-claudecode:deep-dive` |
 | 魔法关键词 | `deep dive`, `deep-dive`, `investigate deeply` |
 | 类别 | 工作流 |
-| 流水线 | deep-dive → omc-plan → autopilot |
+| 流水线 | deep-dive → plan → autopilot |

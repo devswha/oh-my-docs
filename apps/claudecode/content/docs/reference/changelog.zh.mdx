@@ -7,7 +7,26 @@ description: Oh My ClaudeCode 的版本变更日志
 
 Oh My ClaudeCode 各个版本的主要变更摘要。
 
-### v4.12.0（当前版本）
+### v4.13.7（当前版本）
+
+**新功能**
+- Deep-dive：新增多实体 premise audit — Lane 3 在把零行 / 不一致结果当作系统缺陷之前先枚举实体维度（cohort ID、租户 ID、分区键）(#2950)
+- Deep-dive：在 Lane 3 的 MOVE 推荐中加入 `ownership_scope` — 划分为 `personal-config`、`shared-config`、`external`、`project-scoped`，跨边界 MOVE 候选会被标记警告且不再作为默认推荐 (#2930)
+- Deep-dive：执行前的 workflow 准备 — 加载 `.claude/settings.json` 并解析 `omc.deepInterview.ambiguityThreshold` (#2928)
+- Skills：新增 [autoresearch](/zh/docs/skills/workflow/autoresearch) — 具备严格评估器契约、决策日志、`max-runtime` 终止行为的单任务改进循环
+
+**修复（精选）**
+- Persistent stop hook 与 agent 输出契约对齐
+- autopilot / ralplan 的 startup contract 对齐
+- HUD：MiniMax 路由独立于凭据存在与否，`minimaxi.com` 与 `minimax.com` 域名同时支持
+- Ask：在 piped 环境中关闭 provider spawn 的 stdin，防止 hang
+- Trace / interview 临时产物保留在 `.omc/state/` 下 — 不再写入 repo root
+
+**统计：** 合并 25 个 PR · 3 个新功能 · 9 个缺陷修复 · 13 个其他变更
+
+---
+
+### v4.12.0
 
 **新特性**
 - Team：按角色的供应商和模型路由，支持已解析的路由快照 — 在 `.claude/omc.jsonc` 中按规范角色配置 `roleRouting`（如 `codex critic`、`gemini reviewer`）(#2614)

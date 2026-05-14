@@ -58,7 +58,14 @@ Parses the user's input, detects brownfield vs greenfield, and generates 3 trace
 
 1. **Code-path / implementation cause**
 2. **Config / environment / orchestration cause**
-3. **Measurement / artifact / assumption mismatch cause**
+3. **Measurement / artifact / assumption mismatch cause** — covers verification-method defects, not just system defects. If the problem says "X is empty but Y is not", "N streams differ", or "values mismatch across entities", this lane runs a **premise audit** first: enumerate entity dimensions (cohort IDs, tenant IDs, partition keys, dimensional keys per stream) via metadata table or schema introspection before treating zero-row or mismatch results as evidence of a system defect.
+
+### Phase 1.5: Pre-flight Workflow Setup
+
+Loads runtime settings before execution:
+
+- Reads `[$CLAUDE_CONFIG_DIR|~/.claude]/settings.json` and `./.claude/settings.json` (project overrides user)
+- Resolves `omc.deepInterview.ambiguityThreshold` (default `0.2`) so the later interview gate uses the project-configured value instead of a hard-coded threshold
 
 ### Phase 2: Lane Confirmation
 
@@ -72,6 +79,17 @@ Runs 3 parallel tracer lanes using Claude built-in team mode. Each lane:
 - Gathers evidence **for** and **against**
 - Names the **critical unknown**
 - Recommends the best **discriminating probe**
+
+For Lane 3 (Misplacement / SoT violation) findings, every candidate MOVE destination is classified with an `ownership_scope`:
+
+| ownership_scope | Examples |
+|---|---|
+| `personal-config` | user-level dotfiles, `~/.claude/`, personal repos, user-only agent rules |
+| `shared-config` | company/org repos, team-maintained config, multi-tenant shared rules |
+| `external` | third-party, vendor, or OSS upstream repositories outside the user's ownership |
+| `project-scoped` | per-project storage owned by the current project boundary |
+
+Cross-boundary MOVE candidates (for example `personal-config` → `shared-config`) are flagged with an explicit warning and **must not** be surfaced as the default recommendation; same-scope MOVE, COMPRESS, or KEEP is preferred.
 
 A falsification round runs between the leading hypothesis and the strongest alternative.
 
@@ -121,4 +139,4 @@ Trace results are saved to `.omc/specs/deep-dive-trace-{slug}.md` with:
 | Invocation | `/oh-my-claudecode:deep-dive` |
 | Magic Keywords | `deep dive`, `deep-dive`, `investigate deeply` |
 | Category | Workflow |
-| Pipeline | deep-dive → omc-plan → autopilot |
+| Pipeline | deep-dive → plan → autopilot |

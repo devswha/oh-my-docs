@@ -1,0 +1,95 @@
+---
+title: Autoresearch
+description: 厳格な評価者契約と markdown 決定ログ、max-runtime 終了挙動を備えた単一ミッションの改善ループ
+---
+
+## 概要
+
+`autoresearch` は **状態を保持する評価者駆動の反復改善ループ** です。明示したミッション 1 件に対して開始されると、評価者が pass を返さない結果を反復し続け、各評価と決定を永続アーティファクトとして記録し、`max-runtime` などの明示的な終了条件に達したときだけ停止します。
+
+これは **レベル 4 スキル** です。一度に保持できるミッションは 1 件で、反復間にユーザー確認を入れません。
+
+## 使うとき
+
+- `/oh-my-claudecode:deep-interview --autoresearch` でミッションと評価者をすでに準備した
+- 単一ミッションを厳格な評価のもと継続的に改善したい
+- `.omc/autoresearch/` 配下に永続的な実験ログが必要
+- Claude Code ネイティブ cron による定期再実行のサポート経路を確保したい
+
+## 使わないとき
+
+- 評価者をまだ生成していない → まず `/oh-my-claudecode:deep-interview --autoresearch`
+- 複数ミッションを一緒に動かしたい — v1 は許可しません
+- 廃止された `omc autoresearch` CLI フローを期待している — 正式経路ではなくなりました
+
+## 使い方
+
+```bash
+/oh-my-claudecode:autoresearch
+```
+
+任意の引数:
+
+```bash
+/oh-my-claudecode:autoresearch --mission-dir <path> --max-runtime <duration>
+/oh-my-claudecode:autoresearch --resume <run-id>
+/oh-my-claudecode:autoresearch --cron <spec>
+```
+
+## 契約
+
+- v1 は **単一ミッションのみ**
+- ミッション設定と評価者生成は `deep-interview --autoresearch` の担当
+- 評価者出力は **構造化 JSON** — 必須 `pass` ブール値、任意 `score` 数値
+- pass しない反復はループを止めない
+- 終了条件は明示的かつ境界を持つ — `max-runtime` が一次の厳密ストップフック
+
+## 状態レイアウト
+
+永続ストレージは `.omc/autoresearch/<mission-slug>/` 配下に置きます。
+
+```
+.omc/autoresearch/<mission-slug>/
+├── mission.md
+├── evaluator.json
+└── runs/<run-id>/
+    ├── evaluations/
+    │   ├── iteration-0001.json
+    │   └── iteration-0002.json
+    └── decision-log.md
+```
+
+既存のランタイムアーティファクトがあるなら、重複生成せずに再利用してください。
+
+## 必須アーティファクト
+
+スキルが最低限書き出すもの:
+
+- ミッション仕様
+- 評価者スクリプトまたはコマンドリファレンス
+- 各イテレーションの評価 JSON (必須の `pass` ブール値)
+- markdown 決定ログ
+
+## ワークフロー
+
+1. 単一ミッションが存在し評価者の準備ができていることを確認
+2. `autoresearch` モード状態を有効化 — ミッションスラッグ/ディレクトリ、評価者参照、run-id を記録
+3. ループに入る: 候補変更を実行 → 評価 → イテレーション JSON と decision-log を記録
+4. `pass !== true` の間続け、`max-runtime` または別の明示的な終了条件に達するまで継続
+5. 最終状態を永続化し実行サマリを書き出す — 最新の評価者 JSON と decision-log のパスを返す
+
+## 関連スキル
+
+- [deep-interview](/ja/docs/skills/workflow/deep-interview) — ミッションと評価者を生成
+- [self-improve](/ja/docs/skills/workflow/self-improve) — トーナメント選択ベースの進化ループ
+- [ralph](/ja/docs/skills/workflow/ralph) — 検証者付きの汎用自己参照ループ
+
+## リファレンス
+
+| 項目 | 値 |
+|------|-----|
+| 呼び出し | `/oh-my-claudecode:autoresearch` |
+| マジックキーワード | `autoresearch`, `auto-research` |
+| カテゴリー | Workflow |
+| パイプライン | `deep-interview --autoresearch` → `autoresearch` |
+| 状態ルート | `.omc/autoresearch/<mission-slug>/` |

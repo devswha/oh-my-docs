@@ -1,0 +1,95 @@
+---
+title: Autoresearch
+description: 具备严格评估器契约、markdown 决策日志和 max-runtime 终止行为的单任务改进循环
+---
+
+## 概述
+
+`autoresearch` 是一个 **保持状态、由评估器驱动的迭代改进循环**。针对显式的单一任务启动后，它会持续迭代未通过的评估器结果，把每一次评估与决策记录为持久产物，仅当 `max-runtime` 或其他明确终止条件触发时才停止。
+
+这是一个 **Level 4 技能**：一次只持有一个 mission，迭代之间不再向用户确认。
+
+## 何时使用
+
+- 你已经通过 `/oh-my-claudecode:deep-interview --autoresearch` 准备好 mission 与评估器
+- 需要在严格评估下持续改进单一任务
+- 需要 `.omc/autoresearch/` 下的持久实验日志
+- 希望使用 Claude Code 原生 cron 进行周期重跑
+
+## 何时不使用
+
+- 评估器还未生成 → 先运行 `/oh-my-claudecode:deep-interview --autoresearch`
+- 需要同时编排多个 mission — v1 不允许
+- 期望使用已废弃的 `omc autoresearch` CLI 流程 — 不再是正式入口
+
+## 用法
+
+```bash
+/oh-my-claudecode:autoresearch
+```
+
+可选参数：
+
+```bash
+/oh-my-claudecode:autoresearch --mission-dir <path> --max-runtime <duration>
+/oh-my-claudecode:autoresearch --resume <run-id>
+/oh-my-claudecode:autoresearch --cron <spec>
+```
+
+## 契约
+
+- v1 **仅支持单一任务**
+- Mission 设置与评估器生成由 `deep-interview --autoresearch` 负责
+- 评估器输出必须是 **结构化 JSON**，包含必填的 `pass` 布尔值与可选的 `score` 数值
+- 未通过的迭代 **不** 触发停止
+- 停止条件是显式且有界的；`max-runtime` 是首要的严格停止钩子
+
+## 状态布局
+
+持久化存储位于 `.omc/autoresearch/<mission-slug>/`：
+
+```
+.omc/autoresearch/<mission-slug>/
+├── mission.md
+├── evaluator.json
+└── runs/<run-id>/
+    ├── evaluations/
+    │   ├── iteration-0001.json
+    │   └── iteration-0002.json
+    └── decision-log.md
+```
+
+如已有可复用的运行时产物，请直接复用，避免重复创建。
+
+## 必需产物
+
+技能至少会写出：
+
+- Mission 规格
+- 评估器脚本或命令引用
+- 每次迭代的评估 JSON（必须包含 `pass` 布尔值）
+- markdown 决策日志
+
+## 工作流
+
+1. 确认存在单一 mission，并且评估器已经就绪
+2. 激活 `autoresearch` 模式状态，记录 mission slug/目录、评估器引用与 run-id
+3. 进入循环：执行候选变更 → 评估 → 记录迭代 JSON 与 decision-log 条目
+4. 在 `pass !== true` 期间持续迭代，直至 `max-runtime` 或其他明确终止条件触发
+5. 持久化最终状态并写出运行摘要，公开最新评估器 JSON 与 decision-log 路径
+
+## 相关技能
+
+- [deep-interview](/zh/docs/skills/workflow/deep-interview) — 生成 mission 与评估器
+- [self-improve](/zh/docs/skills/workflow/self-improve) — 基于锦标赛选择的演化循环
+- [ralph](/zh/docs/skills/workflow/ralph) — 通用自引用循环（带 verifier）
+
+## 参考
+
+| 项目 | 值 |
+|------|-----|
+| 调用 | `/oh-my-claudecode:autoresearch` |
+| 关键词 | `autoresearch`, `auto-research` |
+| 分类 | Workflow |
+| 流水线 | `deep-interview --autoresearch` → `autoresearch` |
+| 状态根目录 | `.omc/autoresearch/<mission-slug>/` |

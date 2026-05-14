@@ -1,0 +1,95 @@
+---
+title: Autoresearch
+description: Stateful single-mission improvement loop with strict evaluator contract, markdown decision logs, and max-runtime stop behavior
+---
+
+## Overview
+
+`autoresearch` is a **stateful, evaluator-driven iterative improvement loop**. Once started against an explicit mission, it keeps iterating through non-passing evaluator results, records each evaluation and decision as durable artifacts, and stops only when an explicit max-runtime ceiling — or another explicit terminal condition — is reached.
+
+This is a **Level 4 skill**: it owns one mission at a time and does not pause for confirmation between iterations.
+
+## When to Use
+
+- You already have a mission and evaluator from `/oh-my-claudecode:deep-interview --autoresearch`
+- You want persistent single-mission improvement with strict evaluation
+- You need durable experiment logs under `.omc/autoresearch/`
+- You want a supported path for periodic reruns via Claude Code native cron
+
+## When NOT to Use
+
+- You still need to generate the evaluator → use `/oh-my-claudecode:deep-interview --autoresearch` first
+- You need multiple missions orchestrated together — v1 forbids that
+- You wanted the deprecated `omc autoresearch` CLI flow — it is no longer authoritative
+
+## Usage
+
+```bash
+/oh-my-claudecode:autoresearch
+```
+
+Optional arguments:
+
+```bash
+/oh-my-claudecode:autoresearch --mission-dir <path> --max-runtime <duration>
+/oh-my-claudecode:autoresearch --resume <run-id>
+/oh-my-claudecode:autoresearch --cron <spec>
+```
+
+## Contract
+
+- **Single mission only** in v1
+- Mission setup and evaluator generation belong to `deep-interview --autoresearch`
+- Evaluator output must be **structured JSON** with a required boolean `pass` and optional numeric `score`
+- Non-passing iterations do **not** stop the run
+- Stop conditions are explicit and bounded — `max-runtime` is the primary strict stop hook
+
+## State Layout
+
+Canonical persistent storage lives under `.omc/autoresearch/<mission-slug>/`:
+
+```
+.omc/autoresearch/<mission-slug>/
+├── mission.md
+├── evaluator.json
+└── runs/<run-id>/
+    ├── evaluations/
+    │   ├── iteration-0001.json
+    │   └── iteration-0002.json
+    └── decision-log.md
+```
+
+Reuse existing runtime artifacts when available rather than duplicating them.
+
+## Required Artifacts
+
+The skill writes, at minimum:
+
+- Mission spec
+- Evaluator script or command reference
+- Per-iteration evaluation JSON (with required `pass` boolean)
+- Markdown decision log
+
+## Workflow
+
+1. Confirm a single mission exists and evaluator setup is already available
+2. Activate `autoresearch` mode state, recording mission slug/dir, evaluator reference, and run-id
+3. Enter the loop: run candidate change → evaluate → record iteration JSON + decision-log entry
+4. Continue while `pass !== true` until `max-runtime` (or another explicit terminal condition) hits
+5. Persist final state and write a run summary; surface the latest evaluator JSON and decision-log path
+
+## Related Skills
+
+- [deep-interview](/docs/skills/workflow/deep-interview) — generates the mission and evaluator
+- [self-improve](/docs/skills/workflow/self-improve) — tournament-selection evolutionary loop
+- [ralph](/docs/skills/workflow/ralph) — generic self-referential loop with verifier
+
+## Reference
+
+| Item | Value |
+|------|-------|
+| Invocation | `/oh-my-claudecode:autoresearch` |
+| Magic Keywords | `autoresearch`, `auto-research` |
+| Category | Workflow |
+| Pipeline | `deep-interview --autoresearch` → `autoresearch` |
+| State root | `.omc/autoresearch/<mission-slug>/` |
