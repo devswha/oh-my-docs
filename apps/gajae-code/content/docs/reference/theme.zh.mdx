@@ -1,0 +1,76 @@
+---
+title: 主题
+description: 默认 GJC red-claw 深色主题、主题设置的持久化位置、自定义主题的加载方式，以及终端图像协议控制（GJC_FORCE_IMAGE_PROTOCOL、GJC_ALLOW_SIXEL_PASSTHROUGH）。
+---
+
+Gajae-Code（`gjc`）提供由 JSON 颜色 token 驱动的主题化 TUI。显式的用户设置始终优先，默认外观为 GJC **red-claw** 深色主题。
+
+## 默认主题
+
+默认深色主题是 `red-claw` —— GJC 甲壳类外观，带红/橙品牌 token、独立的语义 error/warning/diff-removal token，以及螃蟹风格的符号覆盖。
+
+设置 schema 的默认值：
+
+| 设置 | 默认 |
+| --- | --- |
+| `theme.dark` | `red-claw` |
+| `theme.light` | `light` |
+| `symbolPreset` | `unicode` |
+| `colorBlindMode` | `false` |
+
+它们持久化到全局配置 YAML `<agentDir>/config.yml`（默认 `~/.gjc/agent/config.yml`）。旧式扁平 `theme: "name"` 会按亮度检测迁移为嵌套的 `theme.dark` / `theme.light`。
+
+### 自动槽位选择
+
+自动模式下按以下顺序从终端外观挑选深色/浅色槽位：
+
+<Steps>
+  <Step>终端上报的 OSC 11 背景亮度（除非启用 macOS/Zellij 回退路径）。</Step>
+  <Step>`COLORFGBG` 背景索引（`< 8` 为深色，`>= 8` 为浅色）。</Step>
+  <Step>macOS 外观回退，仅用于已知有缺陷的 macOS/Zellij OSC 11 路径。</Step>
+  <Step>回退到深色槽位。</Step>
+</Steps>
+
+## 主题控制的内容
+
+主题系统驱动 TUI 颜色 token：前景/背景、Markdown 样式、选择器/编辑器/设置列表适配器、符号预设（`unicode | nerd | ascii`）及覆盖、原生语法高亮颜色、状态行分段颜色。自定义主题需要全部 `colors` token；`export` 与 `symbols` 可选。
+
+## 内置 vs 自定义主题
+
+查找顺序：
+
+1. 内置嵌入主题（`dark.json`、`light.json` 及所有打包的 `defaults/*.json`，含 `red-claw`）。
+2. 自定义主题文件：`<customThemesDir>/<name>.json`。
+
+自定义主题目录默认为 `~/.gjc/agent/themes`，可由 `GJC_CODING_AGENT_DIR`（`$GJC_CODING_AGENT_DIR/themes`）覆盖。名称冲突时内置优先。
+
+### 创建自定义主题
+
+<Steps>
+  <Step>在自定义主题目录中创建文件，如 `~/.gjc/agent/themes/my-theme.json`。</Step>
+  <Step>包含 `name`、可选 `vars` 及**全部必需**的 `colors` token；可选 `symbols` 和 `export`。</Step>
+  <Step>在 **设置 -> Display -> Dark theme**（或 **Light theme**）中选择对应自动槽位。要使用打包的甲壳类外观，选择 `red-claw`。</Step>
+</Steps>
+
+主题选择器仅确认生效：方向键浏览不会改变渲染主题，因此在按 Enter 前显示名与持久化名保持一致。交互运行时，自定义主题文件保存即自动重载；内置不被监视，重载出错时保留上次成功加载的主题。显式切换失败会回退到内置 `dark`。
+
+## 终端图像协议
+
+Gajae-Code 使用终端图像协议渲染内联图像。检测是自动的，但可用环境变量强制：
+
+| 变量 | 行为 |
+| --- | --- |
+| `GJC_FORCE_IMAGE_PROTOCOL` | 强制图像协议 —— `kitty`、`iterm2`/`iterm`、`sixel` 或 `none`。 |
+| `GJC_ALLOW_SIXEL_PASSTHROUGH` | 当 `GJC_FORCE_IMAGE_PROTOCOL=sixel` 时允许 SIXEL 透传。 |
+
+设 `GJC_FORCE_IMAGE_PROTOCOL=none` 可完全关闭内联图像。`GJC_ALLOW_SIXEL_PASSTHROUGH` 仅在强制协议为 `sixel` 时生效。
+
+相关检测信号（通常由终端/OS 设置）：`COLORTERM`、`TERM`、`WT_SESSION`（颜色能力）与 `COLORFGBG`（背景明暗自动检测）。
+
+## 相关页面
+
+<Cards>
+  <Card title="配置" href="/zh/docs/reference/configuration" />
+  <Card title="环境变量" href="/zh/docs/reference/environment-variables" />
+  <Card title="快捷键" href="/zh/docs/reference/keybindings" />
+</Cards>

@@ -1,13 +1,13 @@
 ---
 title: 核心概念
-description: 定义 Gajae-Code 行为方式的工作循环、会话与 worktree 隔离、模型路由和持久验证。
+description: 定义 Gajae-Code 行为方式的工作循环、精简表面理念、会话与 worktree 隔离、模型路由和持久验证。
 ---
 
-Gajae-Code 让公开的智能体表面保持精简，而周边运行时保持可靠。几个概念解释了它的行为方式。
+Gajae-Code（`gjc`）有意让公开的智能体表面保持精简，同时让周边运行时保持可靠。几个核心概念解释了它的行为方式——这套 harness 靠把一个方法做得更好来进步，而不是堆砌 skill。
 
 ## 工作循环
 
-Gajae-Code 专注于一个方法，而非庞杂的 skill 堆：
+Gajae-Code 专注于一个有用的循环，而非庞杂的默认表面：
 
 ```text
 deep-interview -> ralplan -> ultragoal
@@ -21,27 +21,76 @@ deep-interview -> ralplan -> ultragoal
 
 该顺序描述操作流程，而非隐藏的自动化：智能体仍会报告改了什么、发现问题后修订了什么、运行了哪些检查、有哪些证据支撑结果。
 
+一次具体的修复流程大致如下：
+
+```text
+/skill:deep-interview 厘清缺陷、受影响行为、非目标和验收检查
+/skill:ralplan 把厘清后的缺陷报告变为经评审的修复计划
+gjc ultragoal create-goals --brief-file <approved-plan>
+# 仅在需要并行时：
+gjc team 2:executor "split implementation and verification for this bug fix"
+gjc ultragoal complete-goals
+```
+
+### 工作流路由
+
+使用能满足请求的最小工作流：
+
+1. 清晰、低风险的编辑直接实现。
+2. 意图、范围或验收标准不清时用 `deep-interview`。
+3. 需求足够清晰可规划，但架构、排序或验证需要共识时用 `ralplan`。
+4. 工作应拆成带可审计账本的持久 goal 时用 `ultragoal`。
+5. 已批准的工作能从并行 worker 受益时用 `team`。
+
+在你明确批准执行前，计划产物保持 `pending approval`；`deep-interview` 和 `ralplan` 不会自行开始实现。
+
+## 精简表面理念
+
+Gajae-Code 恰好提供四个默认工作流 skill 和四个内置角色智能体，没有庞杂的默认 skill 堆。harness 靠把这个小方法做得更好来改进。
+
+| 工作流 skill     | 作用                                          |
+| ---------------- | --------------------------------------------- |
+| `deep-interview` | 在规划或改动代码前消除歧义。                  |
+| `ralplan`        | 在变更前构建并评审计划。                      |
+| `team`           | 多 worker 有帮助时可选地协调 tmux 并行执行。  |
+| `ultragoal`      | 贯穿实现、修订、验证、证据汇总跟踪持久 goal。 |
+
+| 角色智能体  | 作用                          |
+| ----------- | ----------------------------- |
+| `executor`  | 范围受限的实现、修复、重构。  |
+| `architect` | 只读架构与代码评审。          |
+| `planner`   | 只读排序与验收标准。          |
+| `critic`    | 只读计划评审与可执行性审查。  |
+
+结果是一个易于推理的精简 CLI，但在需要时仍提供会话状态、worktree 隔离、tmux 编排、模型路由、工具执行和持久证据。
+
 ## 会话与 worktree 隔离
 
-每次运行都是带持久状态的会话——历史、模型变更、证据都会记录。会话可切换、fork、resume、导出和共享。
-
-需要更安全的分支级工作时，在隔离的 Git worktree 中运行：
+每次运行都是带持久状态的会话——历史、模型变更、证据都会记录。需要更安全的分支级工作时，在隔离的 Git worktree 中运行：
 
 ```bash
 gjc --tmux --worktree <path>
 ```
 
+完整生命周期见[会话与 worktree](/zh/docs/concepts/sessions)。
+
 ## 模型路由
 
-Gajae-Code 保留每个具体 provider 模型，并在其上构建 canonical 层。你可固定精确的 `provider/model`，或选择跨 provider 合并的 canonical id。
+Gajae-Code 保留每个具体 provider 模型，并在其上构建 canonical 层。你可固定精确的 `provider/model`，或选择跨 provider 合并的 canonical id。**上下文提升**在上下文溢出时，会在回退到 compaction 之前把小上下文模型切换到更大上下文的同族模型。
 
-- **模型角色**将任务映射到模型：`default`、`smol`、`slow`、`vision`、`plan`、`designer`、`commit`、`task`，可附加 thinking 级别（`:low`、`:medium`、`:high`、`:xhigh`）。
-- 运行时用 TUI 的 `/model`，或 CLI `--model` / `--models`（精确、canonical、模糊或 `openai/*` 之类 glob）选择。
-- 本地运行时（Ollama、llama.cpp、LM Studio）在可达时自动发现。
-- **上下文提升**：上下文溢出时，在回退到 compaction 之前，把小上下文模型切换到同 provider 的更大模型。
+见[模型路由与 provider](/zh/docs/concepts/models-and-providers)和[上下文提升与压缩](/zh/docs/concepts/context-and-compaction)。
 
-`models.yml` 结构、provider 预设和认证见[配置](/zh/docs/reference)。
+## 持久验证与证据
 
-## 持久验证
+循环不止于"写了点代码"。`ultragoal` 跟踪目标，贯穿实现、修订、验证和最终证据汇总，所以完成的任务会附带运行过的检查及其结果。工作流账本、计划和规格持久存于 `.gjc/`，便于日后审计。
 
-循环不止于"写了点代码"。`ultragoal` 跟踪目标，贯穿实现、修订、验证和最终证据汇总，所以完成的任务会附带运行过的检查及其结果。
+持久知识如何跨会话延续，见[内存：recall 与 retain](/zh/docs/concepts/memory)。
+
+## 浏览概念
+
+<Cards>
+  <Card title="会话与 worktree" href="/zh/docs/concepts/sessions" />
+  <Card title="模型路由与 provider" href="/zh/docs/concepts/models-and-providers" />
+  <Card title="上下文提升与压缩" href="/zh/docs/concepts/context-and-compaction" />
+  <Card title="内存：recall 与 retain" href="/zh/docs/concepts/memory" />
+</Cards>

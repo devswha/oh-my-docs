@@ -1,0 +1,108 @@
+---
+title: team
+description: 可选的 tmux 并行执行模式，协调真实的 GJC worker 会话 —— 不是必需的交接步骤。
+---
+
+`team` 是 Gajae-Code 基于 tmux 的多 worker 执行模式。它通过分割当前 tmux leader 窗口启动真实的 `gjc` worker CLI 会话，并通过 `.gjc/state/team/` 下的状态文件和 `gjc team api` interop 接口协调它们。
+
+它是**可选的执行模式，而非必需的交接步骤**。只在任务确实受益于协调的并行 worker 时使用。对于会话内有界的并行工作，原生子智能体通常就够了。
+
+## team vs 原生子智能体
+
+| 用途 | 时机 |
+| --- | --- |
+| **原生子智能体** | 会话内有界并行：一个 leader 线程展开几个独立子任务并直接等待。 |
+| **`gjc team`** | 需要持久可见的 tmux worker、共享任务状态、worker 邮箱、worktree、显式生命周期控制，或须跨越一次本地推理的长时间执行。 |
+
+原生子智能体可补充 team 执行，但不能替代 tmux team 运行时的有状态协调契约。
+
+## 调用
+
+```bash
+gjc team [N:agent-type] "<task description>"
+```
+
+`N:agent-type` 选择 worker 数量和共享角色提示。纯 `gjc team "task"` 默认 **3 个 executor worker**；`gjc team 1:executor "task"` 是显式单 worker 形式。worker 数量上限为 20。
+
+```bash
+gjc team 2:executor "split implementation and verification for this bug fix"
+gjc team 3:executor "analyze feature X and report flaws"
+gjc team "debug flaky integration tests"
+```
+
+`team` 必须在已附加的 tmux leader pane 内启动。在 GJC App 或 tmux 外的普通会话中，先从 shell 启动 `gjc` CLI。
+
+### 前置条件
+
+- 已安装 `tmux`（`tmux -V`）。
+- 当前 leader 会话在 tmux 内（已设置 `$TMUX`）。
+- `gjc` 解析到预期的安装/构建。
+
+在 tmux 外，非 dry-run 启动会在创建 team 状态或 worktree 之前失败。
+
+## 启动行为
+
+非 dry-run 启动时，`gjc team` 会：
+
+- 解析参数（`N`、`agent-type`、task）并检测当前 tmux leader 上下文。
+- 在 `.gjc/state/team/<team>/` 下初始化 team 状态（`config.json`、`manifest.v2.json`、`tasks/task-1.json`、`mailbox/worker-1.json`）。
+- 分割当前窗口——worker 1 在 leader 右侧，其余 worker 堆叠在右列，保持约 50/50 的左 leader/右 worker 布局。
+- 将每个 worker 作为设置了 `GJC_TEAM_NAME`、`GJC_TEAM_WORKER_ID`、`GJC_TEAM_STATE_ROOT` 的完整 `gjc` worker CLI 会话启动。
+- 把控制权交回 leader。leader 留在原有左侧 pane。
+
+worker 可在共享 team 状态根的专用 git worktree 中运行。leader 监控期间，clean-ahead 历史会合并进 leader，分叉历史会 cherry-pick，冲突则中止、记录并报告给 leader 邮箱。
+
+## 生命周期
+
+1. 启动 team 并确认启动证据（team 行、tmux target、worker pane id、状态目录）。
+2. 用 `gjc team status <team>` 或 `gjc team resume <team>` 监控，例如 `sleep 30 && gjc team status <team>`。
+3. 关闭前等待终态任务状态（`pending=0`、`in_progress=0`、`failed=0`）。
+4. 运行 `gjc team shutdown <team>`，然后确认 `phase=complete` 和 worker 状态 `stopped`。
+
+```bash
+gjc team status <team-name>
+gjc team resume <team-name>
+gjc team shutdown <team-name>
+```
+
+- `status` 和 `resume` 是会变更的监控路径：读取快照并应用待处理的 worker-worktree 集成，再返回任务计数、worker 状态、tmux target/pane 证据和 `integration_by_worker`。
+- `shutdown` 只关闭记录在案的 worker pane（先确认它仍属于存储的 tmux target 且不是 leader pane），将 worker 标记为 stopped，并从任务状态设定 `phase` —— 全部任务完成才为 `complete`，失败/受阻为 `failed`，仍有 pending/进行中为 `cancelled`。它从不杀死 tmux 会话，并保留 `.gjc/state/team/<team>` 作为证据。
+
+## 机器可读 interop
+
+任务生命周期操作用 `gjc team api`：
+
+```bash
+gjc team api claim-task --input '{"team_name":"my-team","worker_id":"worker-1"}' --json
+gjc team api transition-task-status --input '{"team_name":"my-team","task_id":"task-1","to":"completed","worker_id":"worker-1","claim_token":"<claim-token>","evidence":"summary of completed work"}' --json
+```
+
+标准 worker 生命周期为 `worker-startup-ack` → `claim-task` → `transition-task-status`（含 claim token、worker id、完成证据）→ `release-task-claim`。完整操作列表见 `gjc team api --help`。
+
+## dry-run 状态
+
+`gjc team ... --dry-run --json` 在不启动任何 tmux pane 的情况下创建与真实启动相同的机器可读状态树。将生成的状态视为临时冒烟测试/评审状态——不要提交 `.gjc/state/team` 内容，不再需要时删除生成的 team 目录。
+
+## 环境变量
+
+| 变量 | 行为 |
+| --- | --- |
+| `GJC_TEAM_STATE_ROOT` | 覆盖 team 状态根（默认 `<cwd>/.gjc/state/team`）。 |
+| `GJC_TEAM_TMUX_COMMAND` | team 启动的 tmux 二进制/命令覆盖（默认 `tmux`）。 |
+| `GJC_TEAM_WORKER_COMMAND` | worker GJC 命令覆盖（默认解析到活动的 `gjc` 入口）。 |
+| `GJC_TEAM_WORKER_CLI` | team worker CLI 选择器；允许值为 `auto` 或 `gjc`。 |
+| `GJC_TEAM_WORKER_CLI_MAP` | 逗号分隔的 worker CLI 选择器映射；条目须为 `auto` 或 `gjc`。 |
+
+worker CLI 选择仅限队友：只接受 `auto` 或 `gjc`；`codex`、`claude`、`gemini` 等遗留/provider 值在启动前会被拒绝。
+
+完整列表见[环境变量](/zh/docs/reference/environment-variables)。
+
+## team 与 ultragoal 配合
+
+`team` 与 [`ultragoal`](/zh/docs/workflows/ultragoal) 组合得很好：`ultragoal` 保持 leader 所有且持久，`team` 提供可见的并行执行通道。worker 只返回任务和验证证据——不拥有目标状态，不写 worker 账本，也不得运行 `gjc ultragoal checkpoint`。worker 任务终结后，checkpoint 权限仍归 leader，`ultragoal` 不会自动启动 team。
+
+<Cards>
+<Card title="ultragoal" href="/zh/docs/workflows/ultragoal" />
+<Card title="executor 智能体" href="/zh/docs/agents/executor" />
+<Card title="会话与 worktree" href="/zh/docs/concepts/sessions" />
+</Cards>

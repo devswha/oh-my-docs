@@ -1,0 +1,107 @@
+---
+title: 検索とナビゲーションツール
+description: find、search、search_tool_bm25、ast-grep、lsp、resolve — ファイル特定、内容一致、AST クエリ、コードナビゲーション。
+---
+
+このファミリーは「どこにある?」と「これは何?」に答えます — ファイル名 glob から正規表現の内容一致、AST パターン、言語サーバーナビゲーションまで。
+
+## `find`
+
+glob でファイルシステムパスを探します。選択基準がファイル名/パスなら `find`、ファイル内容なら [`search`](#search) を使います。
+
+| 入力 | 型 | 必須 | 説明 |
+| --- | --- | --- | --- |
+| `paths` | `string[]` | はい | glob、ファイル、ディレクトリ。複数項目は 1 回の brace-union 検索に統合され得る。 |
+| `hidden` | `boolean` | いいえ | 隠しファイルを含む。デフォルト `true`。 |
+| `limit` | `number` | いいえ | 返すパスの上限。デフォルト `1000`。 |
+
+- glob 文字のないパスは暗黙の `**/*` で検索。トップレベル単独 glob `*.ts` は `**/*.ts` になり、`src/*.ts` は `src` 下の非再帰セグメントのまま。
+- 結果は更新が新しい順にソート。
+- `.gitignore` は常に尊重され、無効化フラグはなし。
+- ルート `/` からの検索は拒否。一致なしは `No files found matching pattern`。
+
+## `search`
+
+ファイル、ディレクトリ、glob、内部 URL にまたがり正規表現で内容を検索します。
+
+| 入力 | 型 | 必須 | 説明 |
+| --- | --- | --- | --- |
+| `pattern` | `string` | はい | 正規表現。改行か `\n` を含むときのみ複数行有効。リテラル波括弧はエスケープ（例：``interface\{\}``）。 |
+| `paths` | `string[]` | はい | ファイル、ディレクトリ、glob、内部 URL（内部 URL に glob 不可）。 |
+| `i` | `boolean` | いいえ | 大文字小文字を無視。デフォルト `false`。 |
+| `gitignore` | `boolean` | いいえ | ディレクトリスキャンで `.gitignore` を尊重。デフォルト `true`。 |
+| `skip` | `number` | いいえ | ページング用のグローバル一致オフセット。デフォルト `0`。 |
+
+一致行は `*anchor|line`、コンテキスト行は ` anchor|line`（ハッシュライン：`*5th|content`、プレーン：`*5|content`）。ディレクトリ結果は `# <path>` 見出し下にファイル別にグループ化。デフォルトは前 1 行・後 3 行。表示ページは先頭 `100` 件、長い行は `1024` 文字で切り詰め。`skip` でページング。アンカーは [`edit`](/ja/docs/tools/files) が消費します。
+
+## `search_tool_bm25`
+
+隠れたツール発見インデックスを検索し、上位一致を現在のセッションに有効化します。ファイル内容ではなく*他のツール*を探します。
+
+| 入力 | 型 | 必須 | 説明 |
+| --- | --- | --- | --- |
+| `query` | `string` | はい | 自然言語またはキーワードクエリ。トリム後に空なら拒否。 |
+| `limit` | `integer` | いいえ | 返して有効化する最大一致数。デフォルト `8`。 |
+
+BM25 で発見可能ツールをランク付けし、`activateDiscoveredTools()` で一致を有効化して簡潔な JSON 要約を返します：
+
+```json
+{"query":"...","activated_tools":["..."],"match_count":2,"total_tools":17}
+```
+
+有効化されたツールは同一ターンの次のモデル呼び出し前に利用可能になります。このツールは `tools.discoveryMode !== "off"` のときのみ出現し、`"all"` モードでは隠れた発見可能ビルトインを浮上できます（デフォルトの `read`、`bash`、`edit` は有効のまま）。
+
+## `ast-grep`
+
+ネイティブ ast-grep でサポート対象ソースファイルに構造的コード検索を行います。
+
+| 入力 | 型 | 必須 | 説明 |
+| --- | --- | --- | --- |
+| `pat` | `string` | はい | 単一の AST パターン。推論言語で 1 つの有効な AST ノードに解析される必要あり。 |
+| `paths` | `string[]` | はい | ファイル、ディレクトリ、glob、バッキングファイルのある内部 URL（内部 URL に glob 不可）。 |
+| `skip` | `number` | いいえ | 一致オフセット。デフォルト `0`。 |
+
+パターン文法：`$NAME` はノード 1 つを捕捉、`$_` は束縛なしで 1 つ一致、`$$$NAME` は 0 個以上捕捉、`$$$` は束縛なしで 0 個以上一致。メタ変数名は大文字でノード全体を表す必要があり、同名の再利用は各出現で同一コードを要求します。言語は広範なカタログからファイル別に推論されます（`javascript`、`typescript`、`tsx`、`python`、`go`、`rust`、`java`、`c`、`cpp`、`ruby`、`php`、`json`、`yaml`、`html`、`css` など）。一致は `*LINE+HASH|text`（ハッシュライン）または `*LINE|text` で描画され、`meta: NAME=value` 行が付くことがあります。表示結果はデフォルト `50` 件。
+
+## `lsp`
+
+言語サーバーに診断、ナビゲーション、シンボル、リネーム、コードアクション、機能、生リクエストを問い合わせます。
+
+| 入力 | 型 | 必須 | 説明 |
+| --- | --- | --- | --- |
+| `action` | enum | はい | `diagnostics`、`definition`、`references`、`hover`、`symbols`、`rename`、`rename_file`、`code_actions`、`type_definition`、`implementation`、`status`、`reload`、`capabilities`、`request`。 |
+| `file` | `string` | いいえ | ファイルパス；`diagnostics` では glob も；ワークスペース形式は `"*"`。 |
+| `line` | `number` | いいえ | 位置系アクションの 1 始まり行。デフォルト `1`。 |
+| `symbol` | `string` | いいえ | 列を解決する部分文字列；`name#N` 出現セレクタ対応。 |
+| `query` | `string` | いいえ | ワークスペースシンボルクエリ、コードアクションセレクタ、`action=request` の LSP メソッド。 |
+| `new_name` | `string` | いいえ | `rename`、`rename_file` に必須。 |
+| `apply` | `boolean` | いいえ | `rename`/`rename_file` はデフォルト適用；`code_actions` は `true` でなければ一覧のみ。 |
+| `timeout` | `number` | いいえ | 秒、`5..60` にクランプ、デフォルト `20`。 |
+
+主なアクション：`diagnostics`（ファイル別/glob；`file: "*"` はワークスペース検査 `cargo check`、`npx tsc --noEmit`、`go build ./...`、`pyright`）、`definition`/`type_definition`/`implementation`/`references`（ジャンプと参照検索、コンテキスト付き）、`hover`（型/シグネチャ）、`symbols`（ドキュメントまたは `query` 一致のワークスペースシンボル）、`rename`/`rename_file`（`apply: false` でプレビュー）、`code_actions`（クイックフィックスの一覧・適用）、`status`/`reload`/`capabilities`/`request`（サーバー検査と生 JSON-RPC）。
+
+<Callout type="info">
+`lsp` は `lsp.enabled` とセッションでゲートされます。サーバーはルートマーカーと `defaults.json` から自動検出されるか、プロジェクトごとに設定されます。`GJC_DISABLE_LSPMUX=1` で `lspmux` ラッピングを無効化。
+</Callout>
+
+## `resolve`
+
+予約されたプレビューアクションを適用または破棄して確定します。隠しツールで、別のツール（例：[`ast-edit`](/ja/docs/tools/files)）がプレビューを予約し一度限りの `resolve` 選択を強制した後にのみ動作します。
+
+| 入力 | 型 | 必須 | 説明 |
+| --- | --- | --- | --- |
+| `action` | `"apply" \| "discard"` | はい | 予約されたプレビューをコミットまたは拒否。 |
+| `reason` | `string` | はい | 予約コールバックに渡す説明。 |
+
+`apply` は生産者の apply コールバックを実行、`discard` は reject コールバックを実行するか `Discarded: <label>. Reason: <reason>` を返します。保留中のプレビューがなければ `No pending action to resolve.` でエラー。
+
+## どれをいつ使うか
+
+| 目的 | ツール |
+| --- | --- |
+| 名前/パスでファイルを探す | `find` |
+| ファイル内容のテキスト/正規表現一致 | `search` |
+| さらにツールを発見・有効化 | `search_tool_bm25` |
+| 構文コードパターンの一致 | `ast-grep` |
+| 診断、定義ジャンプ、リネーム | `lsp` |
+| 予約済みプレビューの適用・破棄 | `resolve` |

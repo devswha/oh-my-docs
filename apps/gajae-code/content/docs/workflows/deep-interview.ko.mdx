@@ -1,0 +1,44 @@
+---
+title: deep-interview
+description: 계획이나 코드 변경 전에 모호함을 제거하는 명확화 스킬 — 진짜 버그·기능, 영향 범위, 비목표, 수용 기준.
+---
+
+`deep-interview`는 [작동 루프](/ko/docs/workflows)의 첫 단계입니다. 계획이나 코드 변경 전에 모호함을 제거해서, 나머지 루프가 추측이 아니라 명확하고 합의된 이해 위에서 쌓이도록 합니다.
+
+## 무엇을 명확히 하나요
+
+계획을 그리거나 파일을 건드리기 전에 `deep-interview`는 다음을 확정합니다:
+
+- **진짜 버그·기능** — 처음 표현된 방식과 분리해서, 실제로 요청하는 게 무엇인지.
+- **영향 범위** — 어떤 사용자 가시 동작이나 시스템 동작이 범위에 들어가는지.
+- **비목표** — 명시적으로 범위 밖인 것. 작업이 번지지 않게 합니다.
+- **수용 기준** — 작업이 끝나고 올바른지 어떻게 알 수 있는지.
+
+## 사용법
+
+GJC 세션 안에서 `/skill:<name>`으로 실행합니다:
+
+```text
+/skill:deep-interview clarify the bug, affected behavior, non-goals, and acceptance checks
+```
+
+문제를 자기 말로 설명하세요. 스킬이 모호한 요청을 계획할 수 있을 만큼 구체적으로 바꾸는 데 필요한 질문을 던집니다.
+
+## 언제 쓰나요
+
+<Cards>
+  <Card title="쓸 때">
+    요청이 모호하거나, 영향 범위가 불분명하거나, 버그 리포트가 불완전하거나, 기능에 한 번도 언급되지 않은 암묵적 제약이 있을 때.
+  </Card>
+  <Card title="건너뛸 때">
+    작업이 이미 완전히 명세되어 있고 작아서, 더 명확히 할 게 없을 때.
+  </Card>
+</Cards>
+
+## 루프에서의 위치
+
+```text
+deep-interview -> ralplan -> ultragoal
+```
+
+`deep-interview`는 명확해진 문제 정의를 [`ralplan`](/ko/docs/workflows/ralplan)에 넘기고, ralplan은 변경 전에 그것을 검토된 계획으로 바꿉니다. 명확화를 건너뛰면, 확인하지 않은 가정이 발견과 충돌하는 순간 [`ultragoal`](/ko/docs/workflows/ultragoal) 단계에서 재작업으로 드러나곤 합니다.

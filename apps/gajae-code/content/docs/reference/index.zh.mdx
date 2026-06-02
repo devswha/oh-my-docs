@@ -1,85 +1,46 @@
 ---
 title: 参考
-description: 配置文件、模型与 provider 设置、重试预算，以及在运行时控制 Gajae-Code 的环境变量。
+description: ~/.gjc 下的配置文件、.env 解析顺序，以及 Gajae-Code 的配置、模型、凭据、环境变量、键位与主题控制。
 ---
+
+本节是 Gajae-Code（`gjc`）的运行时参考，涵盖 `~/.gjc` 下的文件、环境变量的解析方式，以及通往各详细页面的链接。
 
 ## 配置文件
 
 Gajae-Code 从 `~/.gjc` 读取配置（用 `GJC_CONFIG_DIR` 覆盖根目录）：
 
-| 路径                       | 用途                                |
-| -------------------------- | ----------------------------------- |
-| `~/.gjc/config.yml`        | 通用运行时设置。                    |
-| `~/.gjc/agent/models.yml`  | provider、模型、角色与路由。        |
-| `~/.gjc/agent/.env`        | agent 范围环境变量。                |
-| `~/.gjc/.env`、`~/.env`    | 配置根与 home 环境回退。            |
+| 路径                       | 用途                              |
+| -------------------------- | --------------------------------- |
+| `~/.gjc/config.yml`        | 通用运行时设置（如重试预算）。    |
+| `~/.gjc/agent/models.yml`  | provider、模型、角色与路由。      |
+| `~/.gjc/agent/.env`        | agent 范围环境变量。              |
+| `~/.gjc/.env`              | config 根目录环境变量回退。       |
+| `~/.env`                   | 主目录环境变量回退。              |
 
-`.env` 解析顺序：进程 env → 项目 `$PWD/.env` → `~/.gjc/agent/.env` → `~/.gjc/.env` → `~/.env`（每步只填未设置的键）。
+`GJC_CODING_AGENT_DIR` 可独立于 `GJC_CONFIG_DIR` 完整覆盖 agent 目录（默认 `~/.gjc/agent`）。
 
-## 重试预算
+## .env 解析顺序
 
-在 `config.yml` 中配置两层重试：
+多数运行时查找使用 `$env`，按以下顺序加载 `.env` 文件——每一步只填充尚未设置的键：
 
-```yaml
-retry:
-  requestMaxRetries: 4
-  streamMaxRetries: 100
-  maxRetries: 3
-  maxDelayMs: 300000
-```
+<Steps>
+  <Step>已有进程环境（`Bun.env`）。</Step>
+  <Step>项目 `.env`（`$PWD/.env`）。</Step>
+  <Step>agent `.env`（`~/.gjc/agent/.env`，遵循 `GJC_CONFIG_DIR` / `GJC_CODING_AGENT_DIR`）。</Step>
+  <Step>config 根 `.env`（`~/.gjc/.env`，遵循 `GJC_CONFIG_DIR`）。</Step>
+  <Step>主目录 `.env`（`~/.env`）。</Step>
+</Steps>
 
-无效认证、不支持的模型、错误请求、上下文溢出、用户中止和永久配额失败保持快速失败，不被重试掩盖。
+在每个解析的 `.env` 文件内部，`GJC_*` 键会镜像为该文件中的 `GJC_*` 键。
 
-## 模型与 provider
+## 本节内容
 
-默认模型配置是 `~/.gjc/agent/models.yml`。添加常见 provider 最快的方式是预设：
+<Cards>
+  <Card title="配置" href="/zh/docs/reference/configuration" />
+  <Card title="模型与凭据" href="/zh/docs/reference/models-and-credentials" />
+  <Card title="环境变量" href="/zh/docs/reference/environment-variables" />
+  <Card title="键位" href="/zh/docs/reference/keybindings" />
+  <Card title="主题" href="/zh/docs/reference/theme" />
+</Cards>
 
-```bash
-gjc setup provider --preset minimax
-gjc setup provider --preset glm
-```
-
-TUI 中同样可用：`/provider add --preset glm`。预设只写入引用文档化 env 变量名的 `models.yml` 条目，不存储凭据。
-
-**模型角色**在 `modelRoles` 中把任务映射到模型：`default`、`smol`、`slow`、`vision`、`plan`、`designer`、`commit`、`task`。角色值可以是精确的 `provider/modelId` 或 canonical id，并可附加 thinking 后缀（`:low`、`:high`、`:xhigh`）。运行时用 `/model`（TUI）或 `--model` / `--models`（CLI，支持 `openai/*` 之类 glob）选择。
-
-本地运行时在可达时自动发现：Ollama（`OLLAMA_BASE_URL`，默认 `http://127.0.0.1:11434`）、llama.cpp（`LLAMA_CPP_BASE_URL`，`:8080`）、LM Studio（`LM_STUDIO_BASE_URL`，`:1234/v1`）。
-
-## 环境变量
-
-每个 provider 的认证顺序：CLI `--api-key` → 已存凭据 → 已存 OAuth → 环境变量 → `models.yml` 的 `apiKey`。
-
-### provider 凭据（常见）
-
-| 变量                                       | provider             |
-| ------------------------------------------ | -------------------- |
-| `ANTHROPIC_API_KEY` / `ANTHROPIC_OAUTH_TOKEN` | Anthropic         |
-| `OPENAI_API_KEY`                           | OpenAI               |
-| `GEMINI_API_KEY`                           | Google Gemini        |
-| `OPENROUTER_API_KEY`                       | OpenRouter           |
-| `ZAI_API_KEY`                              | z.ai (GLM)           |
-| `MINIMAX_CODE_API_KEY` / `MINIMAX_API_KEY` | MiniMax              |
-| `DEEPSEEK_API_KEY`、`XAI_API_KEY`、`GROQ_API_KEY`、`MISTRAL_API_KEY` | DeepSeek / xAI / Groq / Mistral |
-
-还支持更多 provider（Cerebras、Fireworks、Together、Hugging Face、Bedrock、Azure OpenAI、Vertex、Kimi、Qwen 等）。base URL 可用 `<PROVIDER>_BASE_URL` 按 provider 覆盖（如 `OPENAI_BASE_URL`、`ANTHROPIC_BASE_URL`）。
-
-### 网络搜索
-
-`EXA_API_KEY`、`BRAVE_API_KEY`、`PERPLEXITY_API_KEY`、`TAVILY_API_KEY`、`KAGI_API_KEY`、`JINA_API_KEY` 等启用相应 `web_search` provider。
-
-### 存储与行为
-
-| 变量                   | 效果                                          |
-| ---------------------- | --------------------------------------------- |
-| `GJC_CONFIG_DIR`       | home 下配置根目录名（默认 `.gjc`）。          |
-| `GJC_CODING_AGENT_DIR` | agent 目录完整覆盖。                          |
-| `GJC_NO_PTY`           | 禁用 bash 工具的交互 PTY 路径。               |
-| `GJC_NOTIFICATIONS`    | `off`/`0`/`false` 抑制桌面通知。              |
-| `GJC_NO_TITLE`         | 禁用自动会话标题生成。                        |
-| `GJC_EDIT_VARIANT`     | 强制 edit 工具 variant（`patch`、`replace`、`hashline` 等）。|
-
-所有 `*_API_KEY`、`*_TOKEN` 和云凭据变量都按机密处理——切勿记录或提交。
-
-## 主题与按键绑定
-
-默认深色 TUI 是 GJC red-claw 主题；用户显式主题设置优先。按键绑定可配置，当前绑定见上游 `docs/keybindings.md`。
+请将所有 `*_API_KEY`、`*_TOKEN`、OAuth/bearer 凭据以及云凭据（`AWS_*`、`GOOGLE_APPLICATION_CREDENTIALS`）视为机密——切勿记录或提交。

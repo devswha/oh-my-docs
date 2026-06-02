@@ -1,0 +1,94 @@
+---
+title: 网络与外部
+description: 让 Gajae-Code 智能体触达网络与外部服务的 web_search、browser、github 工具。
+---
+
+网络工具将 Gajae-Code 智能体连接到网络与外部服务：搜索引擎、真实浏览器、GitHub。这些工具大多依赖凭据 —— 启用各 provider 的密钥见[环境变量](/zh/docs/reference/environment-variables)。
+
+## web_search
+
+`web_search` 用首个可用搜索 provider 跑一次查询，返回 LLM 格式化的答案、来源 URL 与可选引用。
+
+| 字段                 | 类型                                  | 说明                                              |
+| -------------------- | ------------------------------------- | ------------------------------------------------- |
+| `query`              | `string`                              | 查询。派发前 `2020`-`2029` 子串改写为当前年份。   |
+| `recency`            | `"day" \| "week" \| "month" \| "year"`| 时间过滤；仅实现它的 provider 使用（Brave、Perplexity、Tavily、SearXNG）。 |
+| `limit`              | `number`                              | 返回结果上限。                                    |
+| `max_tokens`         | `number`                              | 仅 Anthropic、Gemini、Perplexity API 密钥模式透传。 |
+| `temperature`        | `number`                              | 同上三者透传。                                    |
+| `num_search_results` | `number`                              | 上游搜索广度。                                    |
+
+**无扇出** —— provider 按**顺序**尝试直到一个成功。无强制 provider 时自动链顺序：
+
+```text
+tavily → perplexity → brave → jina → kimi → anthropic → gemini
+→ openai-code → zai → exa → parallel → kagi → synthetic → searxng
+```
+
+provider 仅在其凭据解析成功时“可用”，各需自己的密钥或认证：
+
+| Provider     | 可用来源                                                                  |
+| ------------ | ------------------------------------------------------------------------- |
+| Tavily       | API 密钥（env 或已存凭据）。                                              |
+| Perplexity   | `PERPLEXITY_COOKIES` → OAuth → `PERPLEXITY_API_KEY` / `PPLX_API_KEY`。    |
+| Brave        | `BRAVE_API_KEY`。                                                         |
+| Jina         | `JINA_API_KEY`。                                                          |
+| Kimi         | `MOONSHOT_SEARCH_API_KEY` / `KIMI_SEARCH_API_KEY` / `MOONSHOT_API_KEY` 或已存。 |
+| Anthropic    | Anthropic 认证（模型网络搜索工具）。                                     |
+| Gemini       | Google OAuth（`google-gemini-cli` / `google-antigravity`）。              |
+| OpenAI code  | OpenAI code OAuth 凭据。                                                  |
+| Z.AI         | `zai` 凭据。                                                              |
+| Exa          | `EXA_API_KEY`，且 `exa.enabled` / `exa.enableSearch` 未禁用。              |
+| Parallel     | `parallel` 凭据。                                                         |
+| Kagi         | `kagi` 凭据。                                                             |
+| Synthetic    | `synthetic` 凭据。                                                        |
+| SearXNG      | `searxng.endpoint` 设置或 `SEARXNG_ENDPOINT`（自托管）。                   |
+
+无任何 provider 配置时，返回 `Error: No web search provider configured.` 而非抛错。可在设置中指定首选 provider，先尝试它再走其余链。
+
+文本结果以 `response.answer`（如有）开头，随后 `## Sources`（每来源含标题、时长/日期、URL、截断至 240 字符的可选摘要），再 `## Citations`、`## Related` 与 `Search queries` 摘要。
+
+## browser
+
+`browser` 针对无头 Chromium 或 CDP 连接的应用，打开、复用、关闭并脚本化 Puppeteer 标签页。标签页存于进程全局映射，同一 `name` 在关闭前跨调用复用。
+
+`action` 为 `open`、`close` 或 `run` 之一：
+
+| 动作    | 关键字段                                                              |
+| ------- | --------------------------------------------------------------------- |
+| `open`  | `url`、`viewport`、`wait_until`、`dialogs`、`app` —— 获取/复用标签页。 |
+| `close` | `all`、`kill` —— 释放单个或全部标签页。                               |
+| `run`   | `code`（必填）—— 在标签页内 VM 上下文执行的异步 JS 体。               |
+
+共享字段：`name`（标签 id，默认 `"main"`）、`timeout`（秒，默认 `30`，钳制上限 `30`）。
+
+浏览器种类：**无头**（Puppeteer 启动本地 Chromium，首次按需下载，应用 stealth 补丁，默认视口 `1365x768` 缩放 `1.25`）；**spawn 应用**（`app.path`，以远程调试复用/spawn 后附加，无 stealth）；**连接浏览器**（`app.cdp_url`，附加到已运行 CDP，`close` 仅断开）。
+
+`run` 中代码获得原始 Puppeteer `page`/`browser` 与 `tab` 辅助：`tab.goto()`、`tab.observe()`、`tab.screenshot()`、`tab.extract()`、`tab.click()`、`tab.type()`、`tab.fill()`、`tab.press()`、`tab.scroll()`、`tab.waitFor()`、`tab.evaluate()`、`tab.select()`、`tab.uploadFile()`、`tab.waitForUrl()`、`tab.waitForResponse()`、`tab.id(n)`。用 `display(value)` 发出文本、JSON 或 `{ type: "image", data, mimeType }` 图像。代理环境变量仅影响无头启动：`PUPPETEER_PROXY`、`PUPPETEER_PROXY_BYPASS_LOOPBACK`、`PUPPETEER_PROXY_IGNORE_CERT_ERRORS`。
+
+## github
+
+`github` 派发 GitHub CLI（`gh`）操作。仅当 `gh` 在 `PATH` 时暴露，且需 `gh auth login` 已认证。
+
+`op` 选择操作：
+
+| `op`             | 作用                                                            |
+| ---------------- | --------------------------------------------------------------- |
+| `repo_view`      | 查看仓库元数据（`repo`、可选 `branch`）。                       |
+| `pr_create`      | 创建 PR（`title` 或 `fill`，及 `body`/`base`/`head`/`draft` 等）。 |
+| `pr_checkout`    | 将一个或多个 PR 检出到专用 worktree（`pr`、`force`）。          |
+| `pr_push`        | 推送当前/指定分支 PR head（`branch`、`forceWithLease`）。       |
+| `search_issues`  | 搜索 issue（`query`、`repo`、`limit`）。                        |
+| `search_prs`     | 搜索 PR。                                                       |
+| `search_code`    | 搜索代码。                                                      |
+| `search_commits` | 搜索提交。                                                      |
+| `search_repos`   | 搜索仓库（仅按查询限定，无 `repo`）。                          |
+| `run_watch`      | 监视 GitHub Actions run 或某提交的所有 run（`run`、`branch`、`tail`）。 |
+
+要点：搜索 `limit` 默认 `10`、钳制 `50`；除非查询已带 `repo:`/`org:`/`user:`/`owner:` 限定符，搜索 op 默认 `repo` 为当前检出的 `owner/repo`。`pr_checkout` 在 `~/.gjc/wt/<编码仓库根>/pr-<编号>` 下创建 worktree，本地分支恒为 `pr-<编号>`；`pr_push` 读取 `pr_checkout` 写入 git 分支配置的推送元数据，须先运行。`run_watch` 是唯一流式 op：每 `3s` 轮询，发实时快照，失败时追加 `Full failed-job logs: artifact://<id>`，内联报告显示每失败 job 末 `tail` 行（默认 `15`、最大 `200`）。
+
+单个 issue/PR 读取与 PR diff 不是此处的 `op` —— 通过 `issue://` / `pr://` 内部 URL 方案解析，背后是共享 SQLite 缓存（`~/.gjc/cache/github-cache.db`，可用 `GJC_GITHUB_CACHE_DB` 覆盖）。
+
+---
+
+多数网络工具在无凭据时失败关闭。所有搜索 provider 密钥、浏览器代理/可执行变量、GitHub 缓存设置见[环境变量](/zh/docs/reference/environment-variables)。

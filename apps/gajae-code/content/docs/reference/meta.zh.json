@@ -1,6 +1,11 @@
 {
   "title": "参考",
   "pages": [
-    "index"
+    "index",
+    "configuration",
+    "models-and-credentials",
+    "environment-variables",
+    "keybindings",
+    "theme"
   ]
 }

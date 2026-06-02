@@ -1,6 +1,10 @@
 {
   "title": "コアコンセプト",
   "pages": [
-    "index"
+    "index",
+    "sessions",
+    "models-and-providers",
+    "context-and-compaction",
+    "memory"
   ]
 }

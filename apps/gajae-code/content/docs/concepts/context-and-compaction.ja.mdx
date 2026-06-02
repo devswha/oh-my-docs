@@ -1,0 +1,101 @@
+---
+title: コンテキストと Compaction
+description: Gajae-Code が長いセッションを使い続けられるようにする仕組み — オーバーフロー回復のためのコンテキストプロモーション、続いて自動・手動の compaction。
+---
+
+長いセッションはやがてモデルのコンテキストウィンドウを超えます。Gajae-Code はこれを 2 段階で扱います。まず**コンテキストプロモーション**（より大きいコンテキストのモデルへ移動）を試み、それが使えないときだけ **compaction**（古い履歴の要約）にフォールバックします。どちらも以前の作業コンテキストを失わずに保ちます。
+
+## コンテキストプロモーション
+
+Compaction は不可逆です — 詳細を要約に置き換えます。そこで Gajae-Code はコンテキスト超過エラーに遭遇すると、まずより大きいコンテキストの同系列モデルへ切り替えて、compaction **せずに**回復を試みます。
+
+現在のモデルでアシスタントターンがコンテキスト超過エラーで失敗した場合：
+
+1. 再試行の前に、失敗したアシスタントのエラーメッセージをアクティブなエージェント状態から削除します。
+2. **まずコンテキストプロモーションを試みます** — 設定されたより大きいモデルが利用可能なら、モデルを切り替えて compaction せずに再試行します。
+3. プロモーションが使えないとき（かつ compaction が有効なとき）だけ context-full compaction が走ります。
+
+しきい値メンテナンスも同じ優先順位に従います。しきい値を超えた成功ターンでは、compaction の前にプロモーションを試みます。
+
+<Callout type="info">
+プロモーションは履歴全体を保ち、compaction は詳細と引き換えに空き容量を得ます。より大きいコンテキストの同系列モデルを設定しておくと、Gajae-Code は compaction をできるだけ先送りできます。
+</Callout>
+
+## Compaction の動作
+
+Compaction は古い履歴を現在のブランチ上の要約に書き換え、通常のメッセージではなく `compaction` セッションエントリとして記録します。このエントリには `summary`（および任意の `shortSummary`）、`firstKeptEntryId` 境界、`tokensBefore` が保存されます。
+
+```text
+Compaction 前：
+
+  entry:  0     1     2     3      4     5     6      7      8     9
+        ┌─────┬─────┬─────┬──────┬─────┬─────┬──────┬──────┬─────┬──────┐
+        │ hdr │ usr │ ass │ tool │ usr │ ass │ tool │ tool │ ass │ tool │
+        └─────┴─────┴─────┴──────┴─────┴─────┴──────┴──────┴─────┴──────┘
+                                   ↑
+                          firstKeptEntryId (entry 4)
+
+Compaction 後に LLM が見るもの：
+
+  ┌────────┬─────────┬─────┬─────┬──────┬──────┬─────┬──────┐
+  │ system │ summary │ usr │ ass │ tool │ tool │ ass │ tool │
+  └────────┴─────────┴─────┴─────┴──────┴──────┴─────┴──────┘
+```
+
+コンテキスト再構築時、アクティブパス上の最新の compaction が 1 つの要約メッセージになり、続いて `firstKeptEntryId` 以降の保持エントリが再生されます。ディスク上では何も削除されません — 元のエントリは追記のみのログに残ります。
+
+## Compaction が走るタイミング
+
+トリガーは 4 つです：
+
+| トリガー | 開始方法 | 挙動 |
+| --- | --- | --- |
+| **手動** | `/compact [instructions]` | 要求に応じて現在のブランチを要約 |
+| **オーバーフロー回復** | 同一モデルのコンテキスト超過エラー | まずプロモーション、なければ `reason: "overflow"` で compaction 後に自動継続 |
+| **しきい値メンテナンス** | 解決済みしきい値を超えた成功ターン | まずプロモーション、なければ `reason: "threshold"` で compaction |
+| **アイドルメンテナンス** | 非ストリーミング時の `runIdleCompaction()` | `reason: "idle"` で compaction、自動継続なし |
+
+オーバーフローとしきい値の経路は意図的に異なります。オーバーフロー回復は失敗ターンを再試行して自動継続し、しきい値メンテナンスは `compaction.autoContinue` が `false` でない限りエージェントが書いた自動継続プロンプトをスケジュールします。
+
+### Compaction 前のプルーニング
+
+Compaction の前に、まずトークンを回収するためツール結果プルーニングが走ることがあります。デフォルトポリシー：最新の **40,000** ツール出力トークンを保護し、最低 **20,000** の推定総削減がないと動かず、`skill` や `read` のツール結果は決してプルーニングしません。プルーニングされた結果は `[Output truncated - N tokens]` に置き換えられます。プルーニングでトークン数がしきい値を下回れば、完全な compaction を回避できます。
+
+### カットポイントのルール
+
+Compaction は前回の compaction 以降のエントリのみを対象とし、1 つのハードルールに従います：**`toolResult` では決してカットしない**。有効なカットポイントはメッセージエントリ（`user`、`assistant`、`bashExecution`、`hookMessage`、`branchSummary`、`compactionSummary`）、`custom_message`、`branch_summary` です。カットポイントがターンの途中になる場合、履歴要約とターン前置き要約の 2 つを生成し、1 つの保存要約に統合します。
+
+## ストラテジー
+
+`compaction.strategy` がメンテナンスの挙動を選びます：
+
+- **`context-full`**（デフォルト）— 要約して現在のセッションに `compaction` エントリを追記。
+- **`handoff`** — しきい値メンテナンス時、compaction エントリを書かず**新しい**セッションを開始し、生成された handoff ドキュメントを可視メッセージとして注入。handoff が中断せず文書を返さない場合は context-full にフォールバック。（オーバーフロー回復は handoff を使いません。）
+- **`off`** — compaction を無効化。
+
+## ブランチ要約
+
+ブランチ要約はトークン超過ではなく `/tree` ナビゲーション向けの同系の仕組みです。要約を要求してブランチから離れると、放棄されたエントリ（旧リーフから共通祖先まで）が要約され、**新しい**ナビゲーション位置に `branch_summary` エントリとして付与されます。デフォルトは無効です（`branchSummary.enabled: false`）。
+
+## 設定とデフォルト
+
+| 設定 | デフォルト |
+| --- | --- |
+| `compaction.enabled` | `true` |
+| `compaction.strategy` | `"context-full"` |
+| `compaction.reserveTokens` | `16384` |
+| `compaction.keepRecentTokens` | `20000` |
+| `compaction.autoContinue` | `true` |
+| `compaction.remoteEnabled` | `true` |
+| `compaction.idleEnabled` | `true` |
+| `branchSummary.enabled` | `false` |
+
+正のしきい値オーバーライドがない場合、しきい値は `contextWindow - max(contextWindow の 15%, reserveTokens)` です。
+
+## 関連
+
+<Cards>
+<Card title="セッションと Worktree" href="/ja/docs/concepts/sessions" />
+<Card title="モデルと Provider" href="/ja/docs/concepts/models-and-providers" />
+<Card title="設定" href="/ja/docs/reference/configuration" />
+</Cards>

@@ -1,0 +1,114 @@
+---
+title: Environment variables
+description: Categorized reference for Gajae-Code environment variables — provider credentials, base-URL overrides, web-search keys, and storage and behavior toggles.
+---
+
+This is a categorized reference for the environment variables Gajae-Code reads at runtime. All `*_API_KEY`, `*_TOKEN`, OAuth/bearer credentials, and cloud credentials are **secrets** — never log or commit them.
+
+For the `.env` resolution order, see [Reference](/docs/reference). For retry budgets and behavior toggles in context, see [Configuration](/docs/reference/configuration).
+
+## Provider credentials
+
+Provider keys are consumed via `getEnvApiKey()`. Auth resolution per provider runs CLI `--api-key` → stored credential → stored OAuth → environment variable → `models.yml` `apiKey`. The full provider list is long (70+ entries); these are the common ones — set the key for whichever providers you use.
+
+| Variable                                      | Provider                          |
+| --------------------------------------------- | --------------------------------- |
+| `ANTHROPIC_OAUTH_TOKEN` / `ANTHROPIC_API_KEY` | Anthropic (OAuth token wins)      |
+| `OPENAI_API_KEY`                              | OpenAI-family providers           |
+| `GEMINI_API_KEY`                              | Google Gemini                     |
+| `OPENROUTER_API_KEY`                          | OpenRouter                        |
+| `ZAI_API_KEY`                                 | z.ai (GLM); also z.ai web search  |
+| `MINIMAX_API_KEY` / `MINIMAX_CODE_API_KEY`    | MiniMax / MiniMax Code            |
+| `DEEPSEEK_API_KEY`                            | DeepSeek                          |
+| `XAI_API_KEY`                                 | xAI                               |
+| `GROQ_API_KEY`                                | Groq                              |
+| `MISTRAL_API_KEY`                             | Mistral                           |
+| `CEREBRAS_API_KEY`                            | Cerebras                          |
+| `FIREWORKS_API_KEY`                           | Fireworks                         |
+| `TOGETHER_API_KEY`                            | Together                          |
+| `HUGGINGFACE_HUB_TOKEN` / `HF_TOKEN`          | Hugging Face                      |
+| `MOONSHOT_API_KEY`                            | Moonshot                          |
+| `QWEN_OAUTH_TOKEN` / `QWEN_PORTAL_API_KEY`    | Qwen Portal (OAuth token wins)    |
+
+Many more are supported, including Synthetic, NVIDIA, NanoGPT, Venice, LiteLLM, LM Studio, Ollama, llama.cpp, Xiaomi, Azure OpenAI, OpenCode, Qianfan, ZenMux, vLLM, Cursor, Vercel AI Gateway, Cloudflare AI Gateway, Alibaba Coding Plan, Kilo, Ollama Cloud, and GitLab Duo. Local runtimes (LM Studio, Ollama, llama.cpp, vLLM) usually need no auth; any non-empty token works when a host requires one.
+
+### GitHub / Copilot token chain
+
+| Variable               | Used for                              | Chain                                                |
+| ---------------------- | ------------------------------------- | ---------------------------------------------------- |
+| `COPILOT_GITHUB_TOKEN` | GitHub Copilot provider auth          | `COPILOT_GITHUB_TOKEN` → `GH_TOKEN` → `GITHUB_TOKEN` |
+| `GH_TOKEN` / `GITHUB_TOKEN` | Copilot fallback; web-scraper GitHub API auth | scraper checks `GITHUB_TOKEN` before `GH_TOKEN` |
+
+### Cloud / enterprise credentials
+
+| Variable                                      | Provider                                            |
+| --------------------------------------------- | --------------------------------------------------- |
+| `AZURE_OPENAI_API_KEY`                        | Azure OpenAI / Azure OpenAI Responses               |
+| `AWS_ACCESS_KEY_ID` + `AWS_SECRET_ACCESS_KEY` | Amazon Bedrock (IAM key path; also profile/SSO/IMDS) |
+| `AWS_BEARER_TOKEN_BEDROCK`                    | Amazon Bedrock bearer-token path                    |
+| `GOOGLE_APPLICATION_CREDENTIALS`              | Google Vertex AI (ADC service-account file)         |
+| `GOOGLE_CLOUD_API_KEY`                        | Google Vertex AI (direct API-key auth)              |
+| `ANTHROPIC_FOUNDRY_API_KEY`                   | Anthropic via Azure Foundry (when Foundry mode on)  |
+| `GITLAB_TOKEN`                                | GitLab Duo                                          |
+
+## Provider base-URL overrides
+
+Built-in provider base URLs resolve as: `models.yml` `baseUrl` → provider-specific base-URL env var → bundled default.
+
+| Provider          | Variables                                                                      |
+| ----------------- | ------------------------------------------------------------------------------ |
+| OpenAI            | `OPENAI_BASE_URL`                                                              |
+| Anthropic         | `ANTHROPIC_BASE_URL`                                                           |
+| Google Gemini     | `GOOGLE_BASE_URL`, `GEMINI_BASE_URL`                                           |
+| Any provider id   | derived `<PROVIDER_ID>_BASE_URL` (uppercased, non-alphanumerics → `_`; e.g. `my-proxy` → `MY_PROXY_BASE_URL`) |
+
+The built-in `openai` provider keeps its bundled Responses transport: `OPENAI_BASE_URL` changes the host but still calls `<baseUrl>/responses`. If your proxy only supports Chat Completions, configure a custom `models.yml` provider with `api: openai-completions` instead.
+
+Local-runtime discovery base URLs can also be overridden:
+
+| Variable             | Default                       |
+| -------------------- | ----------------------------- |
+| `OLLAMA_BASE_URL`    | `http://127.0.0.1:11434`      |
+| `LM_STUDIO_BASE_URL` | `http://127.0.0.1:1234/v1`    |
+| `LLAMA_CPP_BASE_URL` | `http://127.0.0.1:8080`       |
+
+## Web-search keys
+
+Each key enables the corresponding `web_search` provider:
+
+| Variable                                            | Provider                                    |
+| --------------------------------------------------- | ------------------------------------------- |
+| `EXA_API_KEY`                                       | Exa                                         |
+| `BRAVE_API_KEY`                                     | Brave                                       |
+| `PERPLEXITY_API_KEY` / `PERPLEXITY_COOKIES`         | Perplexity (API key or cookie auth)         |
+| `TAVILY_API_KEY`                                    | Tavily                                      |
+| `KAGI_API_KEY`                                      | Kagi                                        |
+| `JINA_API_KEY`                                      | Jina                                        |
+| `PARALLEL_API_KEY`                                  | Parallel                                    |
+| `ZAI_API_KEY`                                       | z.ai (also checks stored OAuth)             |
+| `SEARXNG_ENDPOINT` (+ `SEARXNG_TOKEN`)              | SearXNG endpoint and optional bearer token  |
+
+`SEARXNG_BASIC_USERNAME` / `SEARXNG_BASIC_PASSWORD` provide HTTP Basic auth. SearXNG also reads the equivalent `searxng.*` settings from `~/.gjc/agent/config.yml`; env vars are fallbacks. The Anthropic web-search auth chain starts with `ANTHROPIC_SEARCH_API_KEY` (+ optional `ANTHROPIC_SEARCH_BASE_URL`).
+
+## Storage and behavior toggles
+
+| Variable               | Effect                                                                                                 |
+| ---------------------- | ------------------------------------------------------------------------------------------------------ |
+| `GJC_CONFIG_DIR`       | Config-root dirname under home (default `.gjc`).                                                        |
+| `GJC_CODING_AGENT_DIR` | Full override for the agent directory (default `~/<GJC_CONFIG_DIR or .gjc>/agent`).                     |
+| `GJC_NO_PTY`           | If `1`, disables the interactive PTY path for the bash tool.                                            |
+| `GJC_NOTIFICATIONS`    | `off` / `0` / `false` suppress desktop notifications.                                                  |
+| `GJC_NO_TITLE`         | If set, disables auto session-title generation.                                                        |
+| `GJC_EDIT_VARIANT`     | Forces the edit-tool variant: `patch`, `replace`, `hashline`, `atom`, `vim`, `apply_patch`.            |
+| `GJC_TIMING`           | Prints a hierarchical timing-span tree to stderr (`x` = exit after print, `full` = list all module loads). |
+
+See [Configuration](/docs/reference/configuration) for the full retry-budget and behavior details.
+
+## Security-sensitive variables
+
+Treat these as secrets — do not log or commit them:
+
+- Provider/API keys and OAuth/bearer credentials (all `*_API_KEY`, `*_TOKEN`, OAuth access/refresh tokens).
+- Cloud credentials (`AWS_*`; `GOOGLE_APPLICATION_CREDENTIALS` may point at service-account material).
+- Search/provider auth vars (`EXA_API_KEY`, `BRAVE_API_KEY`, `PERPLEXITY_API_KEY`, Anthropic search keys).
+- Foundry mTLS material (`ANTHROPIC_MODEL_CODE_CLIENT_CERT`, `ANTHROPIC_MODEL_CODE_CLIENT_KEY`, `NODE_EXTRA_CA_CERTS` when it points at a private CA bundle).

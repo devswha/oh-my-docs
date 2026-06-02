@@ -1,0 +1,83 @@
+---
+title: 環境変数
+description: Gajae-Code の環境変数の分類リファレンス — provider 資格情報、base URL 上書き、Web 検索キー、ストレージ・挙動トグル。
+---
+
+Gajae-Code がランタイムで読む環境変数の分類リファレンスです。すべての `*_API_KEY`、`*_TOKEN`、OAuth/bearer 資格情報、クラウド資格情報は**秘密**です — ログや commit に残さないこと。
+
+`.env` の解決順は[リファレンス](/ja/docs/reference)を、リトライ予算・挙動トグルの文脈は[設定](/ja/docs/reference/configuration)を参照してください。
+
+## provider 資格情報
+
+provider キーは `getEnvApiKey()` 経由で使われます。provider ごとの認証順：CLI `--api-key` → 保存済み資格情報 → 保存済み OAuth → 環境変数 → `models.yml` の `apiKey`。provider の全リストは長い（70 件以上）ですが、以下は主要なものです — 使う provider のキーだけ設定してください。
+
+| 変数                                          | provider                          |
+| --------------------------------------------- | --------------------------------- |
+| `ANTHROPIC_OAUTH_TOKEN` / `ANTHROPIC_API_KEY` | Anthropic（OAuth トークン優先）   |
+| `OPENAI_API_KEY`                              | OpenAI 系 provider                |
+| `GEMINI_API_KEY`                              | Google Gemini                     |
+| `OPENROUTER_API_KEY`                          | OpenRouter                        |
+| `ZAI_API_KEY`                                 | z.ai (GLM)；z.ai Web 検索でも使用 |
+| `MINIMAX_API_KEY` / `MINIMAX_CODE_API_KEY`    | MiniMax / MiniMax Code            |
+| `DEEPSEEK_API_KEY`                            | DeepSeek                          |
+| `XAI_API_KEY`                                 | xAI                               |
+| `GROQ_API_KEY` / `MISTRAL_API_KEY`            | Groq / Mistral                    |
+| `CEREBRAS_API_KEY` / `FIREWORKS_API_KEY` / `TOGETHER_API_KEY` | Cerebras / Fireworks / Together |
+| `HUGGINGFACE_HUB_TOKEN` / `HF_TOKEN`          | Hugging Face                      |
+| `MOONSHOT_API_KEY`                            | Moonshot                          |
+| `QWEN_OAUTH_TOKEN` / `QWEN_PORTAL_API_KEY`    | Qwen Portal（OAuth トークン優先） |
+
+ほかにも Synthetic、NVIDIA、NanoGPT、Venice、LiteLLM、LM Studio、Ollama、llama.cpp、Xiaomi、Azure OpenAI、OpenCode、Qianfan、ZenMux、vLLM、Cursor、Vercel/Cloudflare AI Gateway、Alibaba Coding Plan、Kilo、Ollama Cloud、GitLab Duo など多数に対応します。ローカルランタイム（LM Studio、Ollama、llama.cpp、vLLM）は通常認証不要で、ホストが要求する場合は空でないトークンで動作します。
+
+### クラウド / エンタープライズ資格情報
+
+| 変数                                          | provider                                            |
+| --------------------------------------------- | --------------------------------------------------- |
+| `AZURE_OPENAI_API_KEY`                        | Azure OpenAI / Responses                            |
+| `AWS_ACCESS_KEY_ID` + `AWS_SECRET_ACCESS_KEY` | Amazon Bedrock（IAM キー；profile/SSO/IMDS も可）   |
+| `AWS_BEARER_TOKEN_BEDROCK`                    | Amazon Bedrock bearer トークン経路                  |
+| `GOOGLE_APPLICATION_CREDENTIALS`              | Google Vertex AI（ADC サービスアカウントファイル）  |
+| `ANTHROPIC_FOUNDRY_API_KEY`                   | Azure Foundry 経由 Anthropic（Foundry モード時）    |
+| `GITLAB_TOKEN`                                | GitLab Duo                                          |
+
+Copilot トークンチェーン：`COPILOT_GITHUB_TOKEN` → `GH_TOKEN` → `GITHUB_TOKEN`。
+
+## provider base URL 上書き
+
+内蔵 provider の base URL 解決順：`models.yml` の `baseUrl` → provider 固有の base URL env → バンドル既定値。
+
+| provider          | 変数                                                                            |
+| ----------------- | ------------------------------------------------------------------------------- |
+| OpenAI            | `OPENAI_BASE_URL`                                                              |
+| Anthropic         | `ANTHROPIC_BASE_URL`                                                           |
+| Google Gemini     | `GOOGLE_BASE_URL`、`GEMINI_BASE_URL`                                           |
+| 任意 provider id  | 派生 `<PROVIDER_ID>_BASE_URL`（大文字化、英数字以外 → `_`；例 `my-proxy` → `MY_PROXY_BASE_URL`）|
+
+内蔵 `openai` provider はバンドルの Responses トランスポートを維持します：`OPENAI_BASE_URL` はホストを変えますが、なお `<baseUrl>/responses` を呼びます。プロキシが Chat Completions のみ対応なら、代わりに `api: openai-completions` のカスタム `models.yml` provider を構成してください。ローカルランタイム検出の base URL も上書き可能：`OLLAMA_BASE_URL`（`http://127.0.0.1:11434`）、`LM_STUDIO_BASE_URL`（`http://127.0.0.1:1234/v1`）、`LLAMA_CPP_BASE_URL`（`http://127.0.0.1:8080`）。
+
+## Web 検索キー
+
+各キーが対応する `web_search` provider を有効化します：`EXA_API_KEY`（Exa）、`BRAVE_API_KEY`（Brave）、`PERPLEXITY_API_KEY` / `PERPLEXITY_COOKIES`（Perplexity）、`TAVILY_API_KEY`（Tavily）、`KAGI_API_KEY`（Kagi）、`JINA_API_KEY`（Jina）、`PARALLEL_API_KEY`（Parallel）、`ZAI_API_KEY`（z.ai）、`SEARXNG_ENDPOINT`（+ `SEARXNG_TOKEN`、SearXNG）。
+
+`SEARXNG_BASIC_USERNAME` / `SEARXNG_BASIC_PASSWORD` は HTTP Basic 認証を提供します。SearXNG は `~/.gjc/agent/config.yml` の同等な `searxng.*` 設定も読み、env 変数はフォールバックです。Anthropic Web 検索の認証チェーンは `ANTHROPIC_SEARCH_API_KEY`（+ 任意の `ANTHROPIC_SEARCH_BASE_URL`）から始まります。
+
+## ストレージと挙動トグル
+
+| 変数                   | 効果                                                                       |
+| ---------------------- | -------------------------------------------------------------------------- |
+| `GJC_CONFIG_DIR`       | home 下の config ルートディレクトリ名（既定 `.gjc`）。                     |
+| `GJC_CODING_AGENT_DIR` | agent ディレクトリの完全上書き（既定 `~/<GJC_CONFIG_DIR または .gjc>/agent`）。|
+| `GJC_NO_PTY`           | `1` で bash ツールの対話 PTY パスを無効化。                                |
+| `GJC_NOTIFICATIONS`    | `off` / `0` / `false` でデスクトップ通知を抑制。                           |
+| `GJC_NO_TITLE`         | 設定時に自動セッションタイトル生成を無効化。                              |
+| `GJC_EDIT_VARIANT`     | edit ツール variant を強制：`patch`、`replace`、`hashline`、`atom`、`vim`、`apply_patch`。|
+| `GJC_TIMING`           | 階層的なタイミングスパンツリーを stderr へ出力（`x` = 出力後に終了、`full` = 全モジュールロードを列挙）。|
+
+## 秘密として扱う変数
+
+次は秘密として扱ってください — ログや commit に残さないこと：
+
+- provider/API キーと OAuth/bearer 資格情報（すべての `*_API_KEY`、`*_TOKEN`、OAuth access/refresh トークン）。
+- クラウド資格情報（`AWS_*`；`GOOGLE_APPLICATION_CREDENTIALS` はサービスアカウント材料を指す場合あり）。
+- 検索/provider 認証変数（`EXA_API_KEY`、`BRAVE_API_KEY`、`PERPLEXITY_API_KEY`、Anthropic 検索キー）。
+- Foundry mTLS 材料（`ANTHROPIC_MODEL_CODE_CLIENT_CERT`、`ANTHROPIC_MODEL_CODE_CLIENT_KEY`、プライベート CA バンドルを指す `NODE_EXTRA_CA_CERTS`）。

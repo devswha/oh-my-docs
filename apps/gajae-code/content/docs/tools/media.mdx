@@ -1,0 +1,116 @@
+---
+title: Media & Misc Tools
+description: Diagrams, image analysis, arithmetic, project task runners, and interactive prompts — render_mermaid, inspect_image, calc, recipe, and ask.
+---
+
+A handful of tools cover diagrams, vision, math, task runners, and asking the user a question. Names match the upstream `docs/tools/` reference.
+
+## `render_mermaid`
+
+Converts Mermaid source into terminal-friendly ASCII/Unicode text. Despite the name, it produces text — no PNG, SVG, browser, or Mermaid CLI is involved; rendering stays in-process via `beautiful-mermaid`.
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `mermaid` | `string` | Yes | Mermaid source text (e.g. `graph TD; A-->B`). |
+| `config` | `object` | No | Optional renderer options, sanitized before use. |
+
+`config` fields:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `useAscii` | `boolean` | `true` for plain ASCII, otherwise Unicode box-drawing output. |
+| `paddingX` | `number` | Horizontal spacing. Floored and clamped to `>= 0`. |
+| `paddingY` | `number` | Vertical spacing. Floored and clamped to `>= 0`. |
+| `boxBorderPadding` | `number` | Inner box padding. Floored and clamped to `>= 0`. |
+
+The rendered text is returned inline. In a persistent session, the full text is also saved as a `<id>.render_mermaid.log` artifact, and the result appends a `Saved artifact: artifact://<id>` line. Invalid Mermaid syntax fails the tool call rather than returning partial output. Gated by `renderMermaid.enabled`.
+
+## `inspect_image`
+
+Sends a local image file to a vision-capable model and returns text analysis.
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `path` | `string` | Yes | Image path, resolved relative to the session cwd. |
+| `question` | `string` | Yes | Prompt sent alongside the image. |
+
+Model selection tries `pi/vision`, then `pi/default`, then the active model, then the first available model; the chosen model must advertise image input. Supported formats are detected from file **content**, not the extension: PNG, JPEG, GIF, and WEBP. Files over `20 MiB` (`MAX_IMAGE_INPUT_BYTES`) are rejected before any model call.
+
+When `images.autoResize` is enabled, oversized images are downscaled and re-encoded toward a 500 KiB target (default max `1568x1568`); a resize failure quietly keeps the original bytes. The tool is blocked entirely when `images.blockImages` is set.
+
+The result is the model's text analysis plus `details` with the chosen `model`, resolved `imagePath`, and the `mimeType` actually sent.
+
+## `calc`
+
+Evaluates one or more arithmetic expressions and returns formatted numeric results.
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `calculations` | `Calculation[]` | Yes | Batch of expressions, evaluated in order. |
+
+Each `Calculation`:
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `expression` | `string` | Yes | Arithmetic expression string. |
+| `prefix` | `string` | Yes | Prepended verbatim to the rendered value. |
+| `suffix` | `string` | Yes | Appended verbatim to the rendered value. |
+
+Supported operators are `+`, `-`, `*`, `/`, `%`, and `**` (right-associative). Numeric literals include decimals (and leading-dot forms like `.5`), scientific notation (`1e10`), hex (`0x...`), binary (`0b...`), and octal (`0o...`). There are **no** functions, identifiers, units, or constants — `sqrt(16)` will not parse despite the schema example. Results must be finite; any evaluation error aborts the whole batch.
+
+## `recipe`
+
+Runs a task exposed by a detected project task runner. The tool only appears when at least one runner is detected with tasks.
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `op` | `string` | Yes | The task selector plus trailing arguments. The first token selects the task; the rest is appended to the command verbatim. |
+
+Examples: `test`, `build --release`, `pkg-a/test`, `crate/bin/server`, `pkg:test --watch`.
+
+### Supported runners
+
+| Runner id | Detected from |
+| --- | --- |
+| `just` | `just` on `PATH` + a justfile. |
+| `pkg` | A root `package.json` (root and workspace scripts). |
+| `cargo` | `cargo` on `PATH` + `Cargo.toml`. |
+| `make` | `make` on `PATH` + a makefile. |
+| `task` | `task` on `PATH` + a Taskfile. |
+
+### Resolution rules
+
+- An unqualified task name (`test`) succeeds only when exactly one runner owns it; ambiguity is rejected with a hint to use `<runner-id>:<task>`.
+- An explicit prefix (`pkg:test`) targets one runner; the suffix must match a task there.
+- Namespaced task names use `/` (e.g. `pkg-a/test`); `/` is part of the name, not a separator.
+
+Execution delegates to `bash`, so output, truncation, and cwd handling match the `bash` tool. Recipe sets no timeout of its own, so bash's default `300`-second timeout applies. Gated by `recipe.enabled`. The tool description lists up to 20 tasks per runner.
+
+## `ask`
+
+Prompts the interactive user for one or more choices or free-form answers. It only registers when the session has a UI; headless sessions never see it.
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `questions` | `Question[]` | Yes | One or more questions (non-empty). |
+
+Each `Question`:
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `id` | `string` | Yes | Stable identifier for multi-question results. |
+| `question` | `string` | Yes | Prompt text shown to the user. |
+| `options` | `{ label: string }[]` | Yes | Explicit options. The UI always appends `Other (type your own)` — do not include it. |
+| `multi` | `boolean` | No | Enables multi-select. Default `false`. |
+| `recommended` | `number` | No | Zero-based recommended option index (UI hint; invalid indexes ignored). |
+
+If `ask.notify` is not `off`, a terminal notification (`Waiting for input`) is sent. If the timeout fires before any input, the tool auto-selects the recommended option (or the first option). `ask.timeout` defaults to `30` seconds; `0` disables it, and plan mode disables it too. The timeout applies only to the option picker — once the user chooses `Other`, the editor has no timeout. Cancellation or headless use throws rather than returning a result.
+
+## Related
+
+<Cards>
+  <Card title="Tools overview" href="/docs/tools" />
+  <Card title="Runtime tools" href="/docs/tools/runtime" />
+  <Card title="File tools" href="/docs/tools/files" />
+  <Card title="Configuration" href="/docs/reference/configuration" />
+</Cards>

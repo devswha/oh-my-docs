@@ -3,49 +3,44 @@ title: Workflows
 description: The four default workflow skills — deep-interview, ralplan, team, and ultragoal — and the operator sequence that ties them together.
 ---
 
-Gajae-Code ships four default workflow skills. Invoke them inside a GJC session with `/skill:<name>`.
+Gajae-Code keeps the public agent surface intentionally small. Instead of a sprawling skill zoo, it ships four default workflow skills and improves by making this one method better. Invoke a skill inside a GJC session with `/skill:<name>`.
 
-| Skill            | What it does                                                          |
-| ---------------- | -------------------------------------------------------------------- |
-| `deep-interview` | Removes ambiguity before planning or code changes.                   |
-| `ralplan`        | Builds and critiques a plan before mutation.                         |
-| `team`           | Optionally coordinates tmux-backed parallel execution.               |
-| `ultragoal`      | Tracks durable goals through implementation, revision, and evidence. |
+## The four workflow skills
 
-## deep-interview
+| Skill                                              | What it does                                                                                        |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| [`deep-interview`](/docs/workflows/deep-interview) | Removes ambiguity before planning or code changes.                                                  |
+| [`ralplan`](/docs/workflows/ralplan)               | Builds and critiques a plan before mutation.                                                        |
+| [`team`](/docs/workflows/team)                     | Optionally coordinates tmux-backed parallel execution when the work benefits from multiple workers. |
+| [`ultragoal`](/docs/workflows/ultragoal)           | Tracks durable goals through implementation, revisions, verification, and evidence summaries.       |
 
-Clarifies intent before any plan or change: the real bug or feature, affected behavior, non-goals, and acceptance checks. Start here when the request is vague or the blast radius is unclear.
+## The working loop
 
-```text
-/skill:deep-interview clarify the bug, affected behavior, non-goals, and acceptance checks
-```
-
-## ralplan
-
-Turns a clarified request into a reviewed plan, and critiques that plan before any mutation. It is the gate between "we understand the problem" and "we start changing files."
+The skills compose into one useful loop:
 
 ```text
-/skill:ralplan turn the clarified bug report into a reviewed fix plan
+deep-interview -> ralplan -> ultragoal
+                         └─ optional team execution when parallel tmux workers help
 ```
 
-## ultragoal
+Use `deep-interview` to clarify intent, `ralplan` to critique the approach, and `ultragoal` to carry the work through implementation, revision, verification, and an evidence summary. Add `team` only when the task benefits from coordinated parallel workers — `team` is an optional execution mode, not a required handoff step.
 
-Carries an approved plan through implementation, revision after findings, verification, and a final evidence summary. Drive it from the CLI:
+<Cards>
+  <Card title="deep-interview" href="/docs/workflows/deep-interview">
+    Clarify the real bug or feature, affected behavior, non-goals, and acceptance checks.
+  </Card>
+  <Card title="ralplan" href="/docs/workflows/ralplan">
+    Build and critique a plan — the gate before any file mutation.
+  </Card>
+  <Card title="team" href="/docs/workflows/team">
+    Coordinate tmux-backed parallel workers when splitting work pays off.
+  </Card>
+  <Card title="ultragoal" href="/docs/workflows/ultragoal">
+    Drive durable goals through implementation, verification, and evidence.
+  </Card>
+</Cards>
 
-```bash
-gjc ultragoal create-goals --brief-file <approved-plan>
-gjc ultragoal complete-goals
-```
-
-## team (optional)
-
-Coordinates tmux-backed parallel workers — use it only when the task genuinely benefits from splitting work across panes. It is an execution mode, not a required handoff step.
-
-```bash
-gjc team 2:executor "split implementation and verification for this bug fix"
-```
-
-## A full pass
+## A full operator pass
 
 A concrete bug-fix pass ties the loop together:
 
@@ -59,3 +54,12 @@ gjc ultragoal complete-goals
 ```
 
 This describes the operator sequence, not hidden automation: the agent still reports what it changed, what it revised after findings, what checks ran, and what evidence supports the fix.
+
+## The agents behind the skills
+
+The workflow skills lean on four bundled role [agents](/docs/agents):
+
+- [`executor`](/docs/agents/executor) — bounded implementation, fixes, and refactors.
+- [`architect`](/docs/agents/architect) — read-only architecture and code-review assessment.
+- [`planner`](/docs/agents/planner) — read-only sequencing and acceptance criteria.
+- [`critic`](/docs/agents/critic) — read-only plan critique and actionability review.

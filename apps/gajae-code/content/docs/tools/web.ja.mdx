@@ -1,0 +1,94 @@
+---
+title: Web と外部
+description: Gajae-Code エージェントがネットワークと外部サービスへ到達するための web_search、browser、github ツール。
+---
+
+Web ツールは Gajae-Code エージェントをネットワークと外部サービス（検索エンジン、実ブラウザ、GitHub）につなぎます。これらはほとんどが資格情報に依存します —— 各 provider を有効化するキーは[環境変数](/ja/docs/reference/environment-variables)を参照してください。
+
+## web_search
+
+`web_search` は利用可能な最初の検索 provider で一つのクエリを実行し、LLM 形式の回答、ソース URL、任意の引用を返します。
+
+| フィールド            | 型                                    | 説明                                              |
+| --------------------- | ------------------------------------- | ------------------------------------------------- |
+| `query`               | `string`                              | 検索クエリ。ディスパッチ前に `2020`-`2029` の部分文字列は現在の年に書き換え。 |
+| `recency`             | `"day" \| "week" \| "month" \| "year"`| 時間フィルタ。実装する provider のみ使用（Brave、Perplexity、Tavily、SearXNG）。 |
+| `limit`               | `number`                              | 返す結果の上限。                                  |
+| `max_tokens`          | `number`                              | Anthropic、Gemini、Perplexity API キーモードのみ透過。 |
+| `temperature`         | `number`                              | 上記三つのみ透過。                                |
+| `num_search_results`  | `number`                              | 上流の検索幅。                                    |
+
+**ファンアウトなし** —— provider は**逐次**試行され、一つ成功すれば停止します。強制 provider がなければ自動チェーン順は：
+
+```text
+tavily → perplexity → brave → jina → kimi → anthropic → gemini
+→ openai-code → zai → exa → parallel → kagi → synthetic → searxng
+```
+
+provider は資格情報が解決できるときのみ「利用可能」で、各々キーや認証が必要です：
+
+| Provider     | 利用可能ソース                                                            |
+| ------------ | ------------------------------------------------------------------------- |
+| Tavily       | API キー（env または保存済み資格情報）。                                  |
+| Perplexity   | `PERPLEXITY_COOKIES` → OAuth → `PERPLEXITY_API_KEY` / `PPLX_API_KEY`。    |
+| Brave        | `BRAVE_API_KEY`。                                                         |
+| Jina         | `JINA_API_KEY`。                                                          |
+| Kimi         | `MOONSHOT_SEARCH_API_KEY` / `KIMI_SEARCH_API_KEY` / `MOONSHOT_API_KEY` または保存済み。 |
+| Anthropic    | Anthropic 認証（モデル Web 検索ツール）。                                 |
+| Gemini       | Google OAuth（`google-gemini-cli` / `google-antigravity`）。              |
+| OpenAI code  | OpenAI code OAuth 資格情報。                                              |
+| Z.AI         | `zai` 資格情報。                                                          |
+| Exa          | `EXA_API_KEY`、かつ `exa.enabled` / `exa.enableSearch` が無効でないこと。  |
+| Parallel     | `parallel` 資格情報。                                                     |
+| Kagi         | `kagi` 資格情報。                                                         |
+| Synthetic    | `synthetic` 資格情報。                                                    |
+| SearXNG      | `searxng.endpoint` 設定または `SEARXNG_ENDPOINT`（セルフホスト）。         |
+
+provider が一つも構成されていなければ、ツールは投げずに `Error: No web search provider configured.` を返します。設定で優先 provider を指定でき、まずそれを試してから残りのチェーンに進みます。
+
+テキスト結果は `response.answer`（あれば）で始まり、続いて `## Sources`（ソースごとにタイトル、経過/日付、URL、240 文字に切り詰めた任意スニペット）、その後 `## Citations`、`## Related`、該当時に `Search queries` の要約が続きます。
+
+## browser
+
+`browser` はヘッドレス Chromium または CDP 接続アプリに対し、Puppeteer タブを開く・再利用・閉じる・スクリプトします。タブはプロセスグローバルマップに存在し、同じ `name` は閉じるまで呼び出し間で再利用されます。
+
+`action` は `open`、`close`、`run` のいずれか：
+
+| アクション | 主なフィールド                                                          |
+| ---------- | ----------------------------------------------------------------------- |
+| `open`     | `url`、`viewport`、`wait_until`、`dialogs`、`app` —— タブの取得/再利用。 |
+| `close`    | `all`、`kill` —— 単一または全タブを解放。                              |
+| `run`      | `code`（必須）—— タブ内 VM コンテキストで実行する非同期 JS 本体。       |
+
+共有フィールド：`name`（タブ id、既定 `"main"`）、`timeout`（秒、既定 `30`、上限 `30` にクランプ）。
+
+ブラウザ種別：**ヘッドレス**（Puppeteer でローカル Chromium を起動、初回は必要に応じてダウンロード、stealth パッチ適用、既定ビューポート `1365x768`・倍率 `1.25`）；**spawn アプリ**（`app.path`、リモートデバッグで再利用/spawn して接続、stealth なし）；**接続ブラウザ**（`app.cdp_url`、稼働中の CDP に接続、`close` は切断のみ）。
+
+`run` 内のコードは生の Puppeteer `page`/`browser` と `tab` ヘルパーを得ます：`tab.goto()`、`tab.observe()`、`tab.screenshot()`、`tab.extract()`、`tab.click()`、`tab.type()`、`tab.fill()`、`tab.press()`、`tab.scroll()`、`tab.waitFor()`、`tab.evaluate()`、`tab.select()`、`tab.uploadFile()`、`tab.waitForUrl()`、`tab.waitForResponse()`、`tab.id(n)`。`display(value)` でテキスト、JSON、`{ type: "image", data, mimeType }` 画像を出力します。プロキシ環境変数はヘッドレス起動のみに影響：`PUPPETEER_PROXY`、`PUPPETEER_PROXY_BYPASS_LOOPBACK`、`PUPPETEER_PROXY_IGNORE_CERT_ERRORS`。
+
+## github
+
+`github` は GitHub CLI（`gh`）操作をディスパッチします。`gh` が `PATH` にあるときのみ公開され、`gh auth login` での認証が必要です。
+
+`op` が操作を選択：
+
+| `op`             | 役割                                                            |
+| ---------------- | --------------------------------------------------------------- |
+| `repo_view`      | リポジトリのメタデータ表示（`repo`、任意 `branch`）。           |
+| `pr_create`      | PR 作成（`title` または `fill`、および `body`/`base`/`head`/`draft` など）。 |
+| `pr_checkout`    | 一つ以上の PR を専用 worktree にチェックアウト（`pr`、`force`）。 |
+| `pr_push`        | 現在/指定ブランチの PR head をプッシュ（`branch`、`forceWithLease`）。 |
+| `search_issues`  | issue 検索（`query`、`repo`、`limit`）。                        |
+| `search_prs`     | PR 検索。                                                       |
+| `search_code`    | コード検索。                                                    |
+| `search_commits` | コミット検索。                                                  |
+| `search_repos`   | リポジトリ検索（クエリ範囲のみ、`repo` なし）。                |
+| `run_watch`      | GitHub Actions run または一コミットの全 run を監視（`run`、`branch`、`tail`）。 |
+
+要点：検索 `limit` は既定 `10`、`50` にクランプ。クエリが既に `repo:`/`org:`/`user:`/`owner:` 修飾子を含まない限り、検索 op は `repo` を現在のチェックアウトの `owner/repo` に既定設定します。`pr_checkout` は `~/.gjc/wt/<エンコード済みリポルート>/pr-<番号>` 配下に worktree を作り、ローカルブランチは常に `pr-<番号>` です。`pr_push` は `pr_checkout` が git ブランチ設定に書いたプッシュメタデータを読むため、先に実行が必要です。`run_watch` のみストリーミング op で、`3s` ごとにポーリングしライブスナップショットを出し、失敗時に `Full failed-job logs: artifact://<id>` を追記、インラインレポートは失敗 job ごとの末尾 `tail` 行（既定 `15`、最大 `200`）を表示します。
+
+単一 issue/PR の読み取りと PR diff はここの `op` ではありません —— 共有 SQLite キャッシュ（`~/.gjc/cache/github-cache.db`、`GJC_GITHUB_CACHE_DB` で上書き）に支えられた `issue://` / `pr://` 内部 URL スキームで解決されます。
+
+---
+
+ほとんどの Web ツールは資格情報がないと失敗します。すべての検索 provider キー、ブラウザのプロキシ/実行ファイル変数、GitHub キャッシュ設定は[環境変数](/ja/docs/reference/environment-variables)を参照してください。

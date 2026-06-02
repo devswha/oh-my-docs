@@ -1,0 +1,45 @@
+---
+title: ralplan
+description: 在任何变更前构建并评审计划的 skill —— 理解问题与改动文件之间的关口。
+---
+
+`ralplan` 是[工作循环](/zh/docs/workflows)的中间步骤。它从厘清后的请求构建计划，并在任何文件被改动前评审该计划。它是"我们理解了问题"与"我们开始改动文件"之间的关口。
+
+## 它做什么
+
+`ralplan` 在一个 skill 中完成两件事：
+
+1. **构建计划** —— 把厘清后的请求（理想情况下是 [`deep-interview`](/zh/docs/workflows/deep-interview) 的产出）转为具体、可评审的计划：排序、要做的改动、用于对照的验收标准。
+2. **评审计划** —— 在变更开始前审查该计划的缺口、有风险的假设和可执行性。
+
+评审才是重点：在这里发现薄弱的计划，远比实现到一半才发现便宜。
+
+## 用法
+
+在 GJC 会话中用 `/skill:<name>` 调用：
+
+```text
+/skill:ralplan turn the clarified bug report into a reviewed fix plan
+```
+
+交给它一份厘清后的问题陈述，它返回一份你可批准并送入执行的评审计划。
+
+## 变更前的关口
+
+```text
+deep-interview -> ralplan -> ultragoal
+```
+
+在 `ralplan` 产出你接受的计划之前，下游不应改动任何文件。批准后的计划成为 [`ultragoal`](/zh/docs/workflows/ultragoal) 在实现、修订与验证中推进的 brief：
+
+```bash
+gjc ultragoal create-goals --brief-file <approved-plan>
+```
+
+## 涉及的 agent
+
+`ralplan` 借助只读角色 [agent](/zh/docs/agents)，使规划与评审独立于执行：
+
+- [`planner`](/zh/docs/agents/planner) —— 只读的排序与验收标准。
+- [`critic`](/zh/docs/agents/critic) —— 只读的计划评审与可执行性审查。
+- [`architect`](/zh/docs/agents/architect) —— 当计划涉及结构时的只读架构与代码评审。

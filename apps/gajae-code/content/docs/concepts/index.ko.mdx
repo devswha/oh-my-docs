@@ -1,49 +1,98 @@
 ---
-title: 주요 개념
-description: Gajae-Code의 동작을 규정하는 작동 루프, 세션·worktree 격리, 모델 라우팅, 지속 가능한 검증.
+title: 핵심 개념
+description: Gajae-Code의 동작 방식을 정의하는 작업 루프, 작은 표면 철학, 세션과 worktree 격리, 모델 라우팅, 그리고 지속 가능한 검증.
 ---
 
-Gajae-Code는 공개 에이전트 표면을 작게, 그 주변 런타임을 단단하게 유지합니다. 몇 가지 개념이 동작 방식을 설명합니다.
+Gajae-Code(`gjc`)는 공개 에이전트 표면을 의도적으로 작게 유지하면서도 그 주변의 런타임은 든든하게 만듭니다. 몇 가지 핵심 아이디어가 동작 방식을 설명합니다. 그리고 이 하니스는 스킬을 잔뜩 늘리는 대신 하나의 방법을 더 잘 다듬는 방향으로 발전합니다.
 
-## 작동 루프
+## 작업 루프
 
-Gajae-Code는 거대한 스킬 더미가 아니라 하나의 방법에 집중합니다:
+Gajae-Code는 방대한 기본 표면 대신 하나의 유용한 루프에 집중합니다.
 
 ```text
 deep-interview -> ralplan -> ultragoal
-                         └─ 병렬 tmux 워커가 도움이 될 때만 team 실행
+                         └─ 병렬 tmux 워커가 도움이 될 때 선택적 team 실행
 ```
 
-- **`deep-interview`** — 계획이나 코드 변경 전에 모호함을 제거합니다.
-- **`ralplan`** — 변경 전에 계획을 세우고 비평합니다.
-- **`ultragoal`** — 구현·수정·검증·증거 요약까지 작업을 끌고 갑니다.
-- **`team`** — tmux 기반 병렬 워커를 조율하는 선택적 실행 모드입니다. 필수 단계가 아닙니다.
+- **`deep-interview`** 는 계획이나 코드 변경 전에 모호함을 제거합니다.
+- **`ralplan`** 은 변경 전에 계획을 세우고 비평합니다.
+- **`ultragoal`** 은 구현, 수정, 검증, 증거 요약까지 작업을 끌고 갑니다.
+- **`team`** 은 tmux 기반 병렬 워커를 조율하는 선택적 실행 모드이며, 반드시 거쳐야 하는 단계는 아닙니다.
 
-이 순서는 숨은 자동화가 아니라 운영자 흐름을 설명합니다. 에이전트는 무엇을 바꿨고, 발견 후 무엇을 수정했고, 어떤 검사를 돌렸고, 어떤 증거가 결과를 뒷받침하는지 보고합니다.
+이 순서는 운영자의 흐름을 설명할 뿐, 숨겨진 자동화가 아닙니다. 에이전트는 무엇을 바꿨는지, 발견 후 무엇을 수정했는지, 어떤 검사를 돌렸는지, 결과를 뒷받침하는 증거가 무엇인지 계속 보고합니다.
+
+구체적인 버그 수정 흐름은 다음과 같을 수 있습니다.
+
+```text
+/skill:deep-interview 버그, 영향받는 동작, 비목표, 수용 기준을 명확히 합니다
+/skill:ralplan 정리된 버그 리포트를 검토된 수정 계획으로 바꿉니다
+gjc ultragoal create-goals --brief-file <approved-plan>
+# 병렬 작업이 필요할 때만:
+gjc team 2:executor "split implementation and verification for this bug fix"
+gjc ultragoal complete-goals
+```
+
+### 워크플로 라우팅
+
+요청을 만족하는 가장 작은 워크플로를 사용합니다.
+
+1. 명확하고 위험이 낮은 편집은 직접 구현합니다.
+2. 의도, 범위, 수용 기준이 모호하면 `deep-interview`.
+3. 계획을 세울 만큼 요구사항이 명확하지만 아키텍처, 순서, 검증에 합의가 필요하면 `ralplan`.
+4. 작업을 감사 가능한 원장과 함께 지속 가능한 goal로 나눠야 하면 `ultragoal`.
+5. 승인된 작업이 병렬 워커로 이득을 보면 `team`.
+
+계획 산출물은 실행을 명시적으로 승인하기 전까지 `pending approval` 상태로 남습니다. `deep-interview`와 `ralplan`은 스스로 구현을 시작하지 않습니다.
+
+## 작은 표면 철학
+
+Gajae-Code는 정확히 네 개의 기본 워크플로 스킬과 네 개의 번들 역할 에이전트를 제공합니다. 방대한 기본 스킬 동물원은 없습니다. 하니스는 이 작은 방법을 더 잘 만드는 방향으로 발전합니다.
+
+| 워크플로 스킬     | 하는 일                                                                       |
+| ---------------- | ---------------------------------------------------------------------------- |
+| `deep-interview` | 계획이나 코드 변경 전에 모호함을 제거합니다.                                  |
+| `ralplan`        | 변경 전에 계획을 세우고 비평합니다.                                          |
+| `team`           | 여러 워커가 도움이 될 때 tmux 기반 병렬 실행을 선택적으로 조율합니다.        |
+| `ultragoal`      | 구현, 수정, 검증, 증거 요약을 거치며 지속 가능한 goal을 추적합니다.          |
+
+| 역할 에이전트 | 하는 일                                       |
+| ----------- | --------------------------------------------- |
+| `executor`  | 범위가 한정된 구현, 수정, 리팩터링.            |
+| `architect` | 읽기 전용 아키텍처 및 코드 리뷰 평가.          |
+| `planner`   | 읽기 전용 순서 정리와 수용 기준.               |
+| `critic`    | 읽기 전용 계획 비평과 실행 가능성 검토.         |
+
+그 결과는 추론하기 쉬운 작은 CLI이지만, 필요할 때는 세션 상태, worktree 격리, tmux 오케스트레이션, 모델 라우팅, 도구 실행, 지속 증거까지 모두 제공합니다.
 
 ## 세션과 worktree 격리
 
-각 실행은 지속 상태를 가진 세션입니다 — 히스토리, 모델 변경, 증거가 기록됩니다. 세션은 전환·fork·resume·export·공유할 수 있습니다.
-
-브랜치 단위로 더 안전하게 작업하려면 격리된 Git worktree에서 실행합니다:
+각 실행은 지속 상태를 가진 세션입니다. 히스토리, 모델 변경, 증거가 기록됩니다. 더 안전한 브랜치 로컬 작업을 위해서는 격리된 Git worktree 안에서 실행하세요.
 
 ```bash
 gjc --tmux --worktree <path>
 ```
 
-일회성·브랜치 전용 작업엔 별도 경로를 써서 메인 체크아웃을 깨끗이 유지하세요.
+일회성이거나 브랜치별 작업에는 전용 경로를 써서 메인 체크아웃을 깨끗하게 유지하세요.
+
+전체 수명 주기는 [세션과 worktree](/ko/docs/concepts/sessions)를 참고하세요.
 
 ## 모델 라우팅
 
-Gajae-Code는 모든 구체 provider 모델을 유지하고 그 위에 canonical 레이어를 만듭니다. 정확한 `provider/model`을 고정하거나, provider를 넘나들며 합쳐지는 canonical id를 선택할 수 있습니다.
+Gajae-Code는 모든 구체적인 프로바이더 모델을 그대로 유지하면서 그 위에 정규(canonical) 레이어를 만듭니다. 그래서 정확한 `provider/model`을 고정하거나, 여러 프로바이더에 걸쳐 합쳐지는 정규 id를 선택할 수 있습니다. **컨텍스트 승격(context promotion)** 은 컨텍스트 오버플로 오류에서 작은 컨텍스트 모델을 더 큰 컨텍스트의 형제 모델로 전환해, 컴팩션으로 떨어지기 전에 복구합니다.
 
-- **모델 역할(role)** 이 작업을 모델에 매핑합니다: `default`, `smol`, `slow`, `vision`, `plan`, `designer`, `commit`, `task`. 각 역할에 thinking 레벨(`:low`, `:medium`, `:high`, `:xhigh`)을 붙일 수 있습니다.
-- 런타임에서 TUI의 `/model`, 또는 CLI `--model` / `--models`(정확/canonical/퍼지/`openai/*` 같은 glob)로 고릅니다.
-- 로컬 런타임(Ollama, llama.cpp, LM Studio)은 접근 가능하면 자동 탐색됩니다.
-- **컨텍스트 승격(context promotion)** — 컨텍스트 초과 오류 시, compaction으로 넘어가기 전에 작은 컨텍스트 모델을 같은 provider의 더 큰 모델로 전환해 복구합니다.
+[모델 라우팅과 프로바이더](/ko/docs/concepts/models-and-providers)와 [컨텍스트 승격과 컴팩션](/ko/docs/concepts/context-and-compaction)을 참고하세요.
 
-`models.yml` 형식, provider 프리셋, 인증은 [설정](/ko/docs/reference)을 보세요.
+## 지속 가능한 검증과 증거
 
-## 지속 가능한 검증
+루프는 "코드를 좀 썼다"에서 멈추지 않습니다. `ultragoal`은 구현, 수정, 검증, 최종 증거 요약을 거치며 goal을 추적하므로, 완료된 작업에는 어떤 검사가 돌았고 무엇을 보여줬는지가 함께 따라옵니다. 워크플로 원장, 계획, 스펙은 `.gjc/` 아래에 남아 나중에도 감사할 수 있습니다.
 
-루프는 "코드 좀 짰음"에서 멈추지 않습니다. `ultragoal`이 구현·수정·검증·최종 증거 요약까지 목표를 추적하므로, 끝난 작업엔 돌린 검사와 그 결과가 함께 따라옵니다.
+지속 지식이 세션을 넘어 이어지는 방식은 [메모리: recall과 retain](/ko/docs/concepts/memory)을 참고하세요.
+
+## 개념 둘러보기
+
+<Cards>
+  <Card title="세션과 worktree" href="/ko/docs/concepts/sessions" />
+  <Card title="모델 라우팅과 프로바이더" href="/ko/docs/concepts/models-and-providers" />
+  <Card title="컨텍스트 승격과 컴팩션" href="/ko/docs/concepts/context-and-compaction" />
+  <Card title="메모리: recall과 retain" href="/ko/docs/concepts/memory" />
+</Cards>

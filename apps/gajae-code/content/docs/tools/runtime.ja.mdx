@@ -1,0 +1,69 @@
+---
+title: ランタイムと実行
+description: Gajae-Code エージェントがコマンドとコードを実行するための bash、eval、python-repl、debug、ssh、job ツール。
+---
+
+ランタイムツールは Gajae-Code エージェントが実際に何かを実行する手段です —— シェルコマンド、即席コード、デバッグセッション、リモートコマンド、バックグラウンドジョブ。以下の各ツールは上流 `docs/tools/` リファレンスに対応し、フラグ・環境変数・上限はソースのままです。
+
+## bash
+
+`bash` はセッションワークスペースでシェルコマンドを実行します。出力（stdout と stderr を統合）はテキストで返り、ゼロ以外の終了コードは成功ではなくエラーとして表面化します。
+
+| フィールド | 型                       | 説明                                                              |
+| ---------- | ------------------------ | ----------------------------------------------------------------- |
+| `command`  | `string`                 | シェルコマンド文字列。`cwd` 未指定時、先頭の `cd <path> && ...` は `cwd` に書き換えられます。 |
+| `env`      | `Record<string, string>` | 追加環境変数。キーは `^[A-Za-z_][A-Za-z0-9_]*$` に一致が必要。     |
+| `timeout`  | `number`                 | タイムアウト（秒）。既定 `300`、`1..3600` にクランプ。            |
+| `cwd`      | `string`                 | 作業ディレクトリ。セッション cwd 基準で解決され、存在するディレクトリが必要。 |
+| `pty`      | `boolean`                | PTY モード要求。既定 `false`。                                    |
+| `async`    | `boolean`                | バックグラウンド実行。async ジョブ有効時のみ利用可。即座に job id を返す。 |
+
+**PTY モードと `GJC_NO_PTY`**：`pty: true`、ツールコンテキストに UI、`GJC_NO_PTY !== "1"` の三つがすべて成立するときのみ対話型 PTY コンソールオーバーレイを使います。`GJC_NO_PTY=1` を設定すると至る所で非 PTY 実行を強制し、ツールは静かに非対話実行器へフォールバックします。
+
+```bash
+GJC_NO_PTY=1 gjc --tmux
+```
+
+モード：フォアグラウンド非 PTY（既定）；フォアグラウンド PTY（対話、`Esc` で終了）；明示的バックグラウンドジョブ（`async: true`）；自動バックグラウンド（`bash.autoBackground.enabled`、既定しきい値 `60s`）。
+
+**インターセプター**（`bashInterceptor.enabled`）はよくあるシェル誤用をより適切なツールへ誘導します：`cat`/`head`/`tail` → `read`、`grep`/`rg` → `search`、`find`/`fd` → `find`、`sed -i` 等 → `edit`、リダイレクト付き `echo`/`cat <<` → `write`。提案ツールがセッションに実在する場合のみ発火します。
+
+上限：既定タイムアウト `300s`、クランプ `1..3600s`；インメモリ出力 tail 上限 `50KB`、超過後は完全出力が `artifact://<id>` へ溢れます。
+
+## eval
+
+`eval` は Python または JavaScript コードを永続的なセルベースランタイムで実行します。状態は言語ごとにセル間・ツール呼び出し間で保持されます。`python -c`、`bun -e`、`node -e` でシェルアウトするより優先してください。永続状態、構造化 `display()` 出力、画像/JSON キャプチャ、適切なキャンセル処理が得られます。
+
+唯一のパラメータ `cells` は順序付き配列です。各セル：`language`（`"py"` → Python カーネル、`"js"` → 永続 JavaScript VM）、`code`、任意 `title`、`timeout`（`1..600` にクランプ、既定 `30`）、`reset`（言語ごとにカーネルをリセット）。
+
+**バックエンド選択はセルごとに明示的**で、自動検出やフォールバックはありません。両バックエンドは既定で有効（`eval.py` / `eval.js`）。`GJC_PY` が公開バックエンドを上書きします：
+
+| `GJC_PY`       | 効果                 |
+| -------------- | -------------------- |
+| `0` / `bash`   | JavaScript のみ。    |
+| `1` / `py`     | Python のみ。        |
+| `mix` / `both` | 両方。               |
+
+JavaScript は永続 `vm.Context` で動き、トップレベル `await` と単独 `return` をサポート、ローカル import はセル間でキャッシュ無効化されます。グローバルに `display`、`read`、`write`、`tool.<name>(args)` プロキシ。Python は NDJSON で通信する長命 `python3` サブプロセス内で動き（Jupyter 不要、Python 3.8+ で十分）、pandas/matplotlib/PIL などのリッチ `display()` 出力を保持します。
+
+上限：セルタイムアウト既定 `30s`・クランプ `1..600s`；出力切り詰め窓 `50KB`・行上限 `3000`；Python 保持カーネルのアイドルタイムアウト `5分`・最大 `4` セッション。
+
+## python-repl
+
+`eval` の背後の Python バックエンド。**マジック**（通常の Python に書き換え）：`%pip`、`%cd`、`%pwd`、`%ls`、`%env`、`%time`/`%timeit`、`%reset`、`%load`、`%run`、`%%bash`、`%%capture`、`%%writefile`、`!cmd`。**カーネルモード**：`python.kernelMode = "session"`（既定、セッションファイル+cwd でキーされたカーネルを再利用）または `"per-call"`（リクエストごとに新サブプロセス）。ランタイム解決はアクティブ/検出された venv、次に `~/.gjc/python-env` の管理 venv、次に `PATH` の `python`/`python3` の順。**stdin は非対応**。`MPLBACKEND=Agg` で図はオフスクリーン描画。環境変数：`GJC_PY`、`GJC_PYTHON_SKIP_CHECK=1`、`GJC_PYTHON_INTEGRATION=1`、`GJC_PYTHON_IPC_TRACE=1`。`gjc setup python --check` で解決済みインタプリタを確認。
+
+## debug
+
+`debug` は単一の DAP セッションを駆動し、`debug.enabled` が true のときのみ公開、同時にアクティブなセッションは一つだけです。`action` が操作を選択：`launch`（`program` 必須）、`attach`（`pid` または `port` 必須）、`terminate`、`sessions`；ブレークポイント `set_breakpoint`/`remove_breakpoint` と命令/データブレークポイント；ステップ `continue`/`step_over`/`step_in`/`step_out`/`pause`；検査 `stack_trace`/`threads`/`scopes`/`variables`/`evaluate`/`modules`/`disassemble`/`read_memory` など。アダプタは拡張子/ルートマーカーで自動選択（`gdb`、`lldb-dap`、`debugpy`、`dlv` などを内蔵）、または `adapter` で強制。リクエストごとの `timeout` は既定 `30s`、`5..300` にクランプ。
+
+## ssh
+
+`ssh` は発見済み SSH ホストで**一つの**リモートコマンドを実行します。フィールド：`host`（発見済み設定の**名前キー**、任意のホスト/IP ではない）、`command`、任意 `cwd`、`timeout`（既定 `60`、`1..3600` にクランプ）。ホスト発見は JSON ベースのみ —— `~/.ssh/config` は**読みません**。`.gjc/ssh.json`（プロジェクト）、`~/.gjc/agent/ssh.json`（ユーザー）、次にリポルートの `ssh.json`/`.ssh.json` からロードします。コマンドは PTY なしで実行。常に `StrictHostKeyChecking=accept-new` と `BatchMode=yes` を設定し、マスター接続を再利用（`ControlPersist=3600`）。
+
+## job
+
+`job` は `bash`（`async: true` または自動バックグラウンド）と async タスクが生むバックグラウンドジョブを待機・キャンセルします。バックグラウンドジョブ有効時のみ公開。フィールド：`poll`（監視する job id、省略かつ `cancel` なしなら実行中すべてを監視）、`cancel`、`list`（読み取り専用スナップショット）。`job` は監視中の実行ジョブの**最初の一つ**が決着するまで待ち、残りは `## Still Running` に報告されるため再度呼び出します。ポーリング待機は `async.pollWaitDuration`（`5s`/`10s`/`30s`/`1m`/`5m`、既定 `30s`）から。ジョブレコードは完了後 `5分`保持されてから退避されます。
+
+---
+
+いくつかのランタイムツールは設定に依存します：`debug` は `debug.enabled` が必要、`eval` は `GJC_PY` で形が決まり、バックグラウンドジョブは async サポートが必要です。トグルの全リストは[環境変数](/ja/docs/reference/environment-variables)を参照してください。

@@ -1,0 +1,186 @@
+---
+title: Session & Memory Tools
+description: Subagents, todos, checkpoints, and the Hindsight memory layer — task, todo_write, checkpoint, rewind, recall, retain, and reflect.
+---
+
+These tools let an agent fan work out to subagents, track its own plan, prune exploratory context, and read or write durable memory. Names match the upstream `docs/tools/` reference.
+
+## `task`
+
+Launches subagents for parallel, optionally isolated work. The parent picks an agent by name and hands it a batch of small, self-contained items.
+
+### Inputs
+
+The exact field set depends on the `task.simple` mode.
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `agent` | `string` | Yes | Exact agent name for the batch. Resolved at execution time. |
+| `tasks` | `Array<{ id; description; assignment }>` | Yes | Small, self-contained items. `id` max length 48; duplicate ids are rejected case-insensitively. `description` is UI-only; `assignment` is the real per-task instruction. |
+| `context` | `string` | No | Shared background prepended to every subagent prompt. Rejected in `independent` mode. |
+| `schema` | `string` | No | JSON-encoded JTD output schema. Rejected in `schema-free` and `independent` modes. |
+| `isolated` | `boolean` | No | Present only when isolation is enabled. Runs the batch in an isolated workspace. |
+
+### Simple modes
+
+| Mode | `context` | `schema` |
+| --- | --- | --- |
+| `default` | Allowed | Allowed |
+| `schema-free` | Allowed | Rejected |
+| `independent` | Rejected — each `assignment` must be self-contained | Rejected |
+
+### Bundled agents
+
+Gajae-Code ships a small set of subagent types:
+
+| Agent | Role |
+| --- | --- |
+| `explore` | Read-only scout with structured handoff output. |
+| `plan` | Architecture/planning agent; may spawn `explore`. |
+| `designer` | UI/UX specialist. |
+| `reviewer` | Review agent with `report_finding` extraction. |
+| `task` | General-purpose worker with full capabilities. |
+| `quick_task` | Low-reasoning mechanical worker. |
+| `librarian` | Source-grounded external API/library researcher. |
+
+Custom agent frontmatter (from a project `agents/` dir) can override a bundled agent by name.
+
+### Execution model
+
+- **Sync** runs inline. This is the default, and is forced when the chosen agent is marked `blocking` or when there are no tasks.
+- **Async** schedules one background job per task when `async.enabled` is on and the agent is not `blocking`; progress snapshots stream back as the jobs run.
+
+Each subagent finishes through the hidden `yield` tool. If it does not, the runtime sends up to 3 reminder prompts. Every subagent with an artifacts dir writes `<id>.md`, and `agent://<id>` resolves to that file (JSON outputs also support `agent://<id>/<path>` and `agent://<id>?q=<query>` extraction).
+
+### Isolation
+
+When `isolated` is requested, the batch runs against a captured baseline inside one of:
+
+| Backend | Platform |
+| --- | --- |
+| `worktree` | Detached git worktree plus baseline replay. |
+| `fuse-overlay` | Unix FUSE overlay mount. |
+| `fuse-projfs` | Windows ProjFS overlay. |
+
+Results merge back in one of two strategies: **patch mode** (combine and apply per-task patches) or **branch mode** (commit each task onto a `gjc/task/<id>` branch and cherry-pick into the parent). Isolated execution requires a git repository.
+
+### Limits and caps
+
+- Per-subagent output truncation: `MAX_OUTPUT_BYTES = 500_000`, `MAX_OUTPUT_LINES = 5000`. Full raw output is still written to `<id>.md`. These caps can be overridden with `GJC_TASK_MAX_OUTPUT_BYTES` and `GJC_TASK_MAX_OUTPUT_LINES`.
+- Concurrency uses `task.maxConcurrency` (a semaphore in async mode, a concurrency-limited map in sync mode).
+- The `task` tool is hidden at or beyond `task.maxRecursionDepth`, and child `task` access is stripped at max depth.
+- Task id schema cap is 48 characters (the prompt advises `≤32`).
+- `GJC_BLOCKED_AGENT` blocks a specific subagent type and is part of the self-recursion prevention check.
+
+### Notes
+
+- Child sessions do not inherit conversation history. The only carry-over is shared `context`, an optional `context.md`, the workspace tree, and a shared `local://` root.
+- Subagents do not get `todo_write`; the parent owns it.
+- Await timeouts are observation windows only — they do not stop, fail, or stale a subagent. Cancel only when a subagent has actually failed or gone off-track.
+
+## `todo_write`
+
+Applies ordered mutations to the session todo list and returns a summary plus the full phase/task state. The model passes a non-empty `ops` array; each op mutates the working list.
+
+### Operations
+
+| Op | Required | Effect |
+| --- | --- | --- |
+| `init` | `list` | Replaces the entire list; every new task starts `pending`. |
+| `start` | `task` | Marks one task `in_progress`; demotes any other active task to `pending`. |
+| `done` | `task` / `phase` / neither | Marks the target task, phase, or all tasks `completed`. |
+| `drop` | `task` / `phase` / neither | Marks the target `abandoned`. |
+| `rm` | `task` / `phase` / neither | Removes the target task or clears a phase / all phases. |
+| `append` | `phase`, `items` | Appends new `pending` tasks; creates the phase if missing. |
+| `note` | `task`, `text` | Appends one note to the task. Empty-after-trim is rejected. |
+
+Tasks live in phases. Each item carries a `status` of `pending`, `in_progress`, `completed`, or `abandoned`, plus optional `notes`.
+
+### Single-active-task rule
+
+After the full op batch, normalization enforces one active task: if multiple are `in_progress`, only the first stays active; if none are, the first `pending` task is auto-promoted. A single call can intentionally build an intermediate state and rely on this final pass.
+
+### Notes
+
+- Task lookup is exact string equality. Keep task content and phase names unique. `append` rejects duplicate task content globally.
+- Ordinary bad payloads do not throw — errors accumulate in an `Errors:` prefix while the mutated state is still returned.
+- Auto-clear removes `completed`/`abandoned` tasks after `tasks.todoClearDelay` (default 60s; `< 0` disables).
+- On resume, completed and abandoned tasks are stripped from the cached list; the `/todo` command reconstructs them from the transcript.
+
+## `checkpoint`
+
+Marks the current top-level conversation state so a later `rewind` can collapse exploratory context into a concise report. Disabled by default (`checkpoint.enabled`), and never available to subagents.
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `goal` | `string` | Yes | Investigation goal, echoed back in the result. |
+
+The tool returns `Checkpoint created.`, the goal, and a reminder to run the investigation then call `rewind`. It captures only conversation metadata — a message count, a session entry id, and a timestamp. It does **not** call git or snapshot the working tree, staged changes, artifacts, or history.
+
+While a checkpoint is active, an attempt to `yield` first is blocked with a system warning telling the agent to call `rewind` with its findings. Only one active checkpoint per session is allowed (`Checkpoint already active.` otherwise).
+
+## `rewind`
+
+Ends an active checkpoint by pruning the exploratory messages and retaining a concise report in their place.
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `report` | `string` | Yes | Investigation findings. Trimmed; empty results are rejected. |
+
+The tool returns immediately (`Rewind requested.`), but the side effects apply at turn end: in-memory history is replaced with the prefix up to the checkpoint, the persisted session leaf branches back to the checkpoint entry with a `branch_summary`, and a hidden `rewind-report` message carries the report into rebuilt context.
+
+Rewind restores transcript/session state only — never files, git state, artifacts, or blob payloads. It is not destructive to persisted history: the abandoned path stays in the session log; only the active context is rewired. There is no checkpoint list or id — `rewind` always targets the single active checkpoint.
+
+## Memory: `recall`, `retain`, `reflect`
+
+These three tools front the Hindsight memory backend and are only available when `memory.backend == "hindsight"`. Storage is server-side and cross-session; subagents alias the parent's Hindsight state and write into the same bank.
+
+Bank scope is set per session:
+
+| Scope | Behavior |
+| --- | --- |
+| `global` | One shared bank, no tag filter. |
+| `per-project` | Separate bank id per cwd basename. |
+| `per-project-tagged` | Shared bank plus a `project:<cwd basename>` tag filter (matches project-tagged and untagged memories). |
+
+### `recall`
+
+Searches the active bank and returns raw matching memories.
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `query` | `string` | Yes | Natural-language search query, passed through unchanged. |
+
+On a hit it returns a bulleted list (`- <text> [<type>] (<mentioned_at>)`) with a `Found <n> relevant memories` header; otherwise `No relevant memories found.` It returns raw hits and does not synthesize across them — use `reflect` for that. Defaults: `hindsight.recallBudget = "mid"`, `hindsight.recallMaxTokens = 1024`, `hindsight.recallTypes = ["world", "experience"]`.
+
+### `retain`
+
+Queues durable facts for asynchronous write into the active bank.
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `items` | `Array<{ content; context? }>` | Yes | One or more self-contained memories (`minItems: 1`). `context` is optional per-item provenance. |
+
+The write is **not** confirmed before the tool returns — it returns `<count> memory queued.` immediately. The queue flushes later when it reaches `RETAIN_FLUSH_BATCH_SIZE = 16`, on a `RETAIN_FLUSH_INTERVAL_MS = 5_000` debounce, or at agent end. Flush failures surface as a session warning, not a tool error. No local file is written; storage is server-side.
+
+Mental models (`user-preferences`, `project-conventions`, `project-decisions`) are seeded and refreshed by the shared backend, separately from this tool.
+
+### `reflect`
+
+Asks the Hindsight server to synthesize an answer over the bank.
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `query` | `string` | Yes | Question to answer from long-term memory. |
+| `context` | `string` | No | Extra guidance sent to the reflect endpoint. |
+
+Unlike `recall`, it returns the server's synthesized text (`No relevant information found to reflect on.` when blank) rather than raw hits.
+
+## Related
+
+<Cards>
+  <Card title="Memory: recall & retain" href="/docs/concepts/memory" />
+  <Card title="Sessions & worktrees" href="/docs/concepts/sessions" />
+  <Card title="Agents overview" href="/docs/agents" />
+  <Card title="Environment variables" href="/docs/reference/environment-variables" />
+</Cards>

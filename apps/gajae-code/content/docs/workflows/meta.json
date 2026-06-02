@@ -1,6 +1,10 @@
 {
   "title": "Workflows",
   "pages": [
-    "index"
+    "index",
+    "deep-interview",
+    "ralplan",
+    "team",
+    "ultragoal"
   ]
 }

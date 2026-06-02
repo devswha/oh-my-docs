@@ -3,67 +3,55 @@ title: ツール
 description: Gajae-Code エージェントが使うツール表面 — ファイル、検索、ランタイム、Web、セッション、メディア — をファミリー別に整理。
 ---
 
-Gajae-Code エージェントは絞り込まれたツール表面を通じて動作します。以下はファミリー別の整理で、名称は上流 `docs/tools/` リファレンスと一致します。
+Gajae-Code エージェントは絞り込まれた名前付きツール表面を通じて動作します。各ツールは上流 `docs/tools/` 項目と対応し、名称・フラグ・挙動はそのまま保たれます。以下のファミリーは各ツールの詳細ページにリンクします。
 
-## ファイル
+## ツールファミリー
 
-| ツール     | 役割                                  |
-| ---------- | ------------------------------------- |
-| `read`     | ファイル内容の読み取り。              |
-| `write`    | ファイルの作成・上書き。              |
-| `edit`     | 範囲指定の編集（複数の variant）。    |
-| `ast-edit` | 構造的・AST 認識の編集。              |
+<Cards>
+  <Card title="ファイル" href="/ja/docs/tools/files">
+    `read`、`write`、`edit`（複数の編集 variant）、構造的書き換えの `ast-edit`。
+  </Card>
+  <Card title="検索とナビゲーション" href="/ja/docs/tools/search">
+    `find`、`search`、`search_tool_bm25`、`ast-grep`、`lsp`、`resolve`。
+  </Card>
+  <Card title="ランタイムと実行" href="/ja/docs/tools/runtime">
+    `bash`、`eval`、`python-repl`、`debug`、`ssh`、バックグラウンド `job` 制御。
+  </Card>
+  <Card title="Web と外部" href="/ja/docs/tools/web">
+    `web_search`、`browser`、`github`。
+  </Card>
+  <Card title="セッションとメモリ" href="/ja/docs/tools/session-and-memory">
+    `task`、`todo_write`、`checkpoint`、`rewind`、`recall`、`retain`、`reflect`。
+  </Card>
+  <Card title="メディアとその他" href="/ja/docs/tools/media">
+    `render_mermaid`、`inspect_image`、`calc`、`recipe`、`ask`。
+  </Card>
+</Cards>
 
-## 検索とナビゲーション
+## 一覧
 
-| ツール            | 役割                          |
-| ----------------- | ----------------------------- |
-| `find`            | 名前/パスでファイルを特定。   |
-| `search`          | ファイル内容を検索。          |
-| `search_tool_bm25`| ランキング付き内容検索。      |
-| `ast-grep`        | AST パターンで構造的検索。    |
-| `lsp`             | 言語サーバーの診断・ナビ。    |
-| `resolve`         | シンボル/ツールランタイム解決。|
+| ファミリー | ツール | ページ |
+| --- | --- | --- |
+| ファイル | `read` · `write` · `edit` · `ast-edit` | [ファイル](/ja/docs/tools/files) |
+| 検索とナビ | `find` · `search` · `search_tool_bm25` · `ast-grep` · `lsp` · `resolve` | [検索](/ja/docs/tools/search) |
+| ランタイムと実行 | `bash` · `eval` · `python-repl` · `debug` · `ssh` · `job` | [ランタイム](/ja/docs/tools/runtime) |
+| Web と外部 | `web_search` · `browser` · `github` | [Web](/ja/docs/tools/web) |
+| セッションとメモリ | `task` · `todo_write` · `checkpoint` · `rewind` · `recall` · `retain` · `reflect` | [セッションとメモリ](/ja/docs/tools/session-and-memory) |
+| メディアとその他 | `render_mermaid` · `inspect_image` · `calc` · `recipe` · `ask` | [メディア](/ja/docs/tools/media) |
 
-## ランタイムと実行
+## 共通の取り決め
 
-| ツール        | 役割                                   |
-| ------------- | -------------------------------------- |
-| `bash`        | シェルコマンド実行（可能なら対話 PTY）。|
-| `eval`        | コード評価（JavaScript/Python バックエンド）。|
-| `python-repl` | 永続 Python REPL / カーネル。          |
-| `debug`       | デバッグ支援。                         |
-| `ssh`         | SSH 経由でコマンド実行。               |
-| `job`         | バックグラウンドジョブ管理。           |
+- **内部 URL。** 内容ツール（`read`、`search`、`ast-grep`）はルーターがバッキングリソースに解決できる場合 `agent://`、`artifact://`、`memory://`、`gjc://`、`rule://`、`issue://`、`pr://` を受け付けます。内部 URL に glob は不可。
+- **ハッシュラインアンカー。** `read`、`search`、`ast-grep` は `LINEhh|text` アンカー（例：`41th|def alpha():`）を出力し、`edit` は `|` 左側の `LINEhh` トークンのみ消費します。`:raw` 読み取りと不変リソースではアンカーが抑制されます。
+- **プレビューしてから resolve。** 一部のツール（特に `ast-edit`）は先にプレビューし強制 `resolve` アクションを予約します。`resolve(action: "apply", ...)` を呼ぶまで書き込みません。
+- **上限と切り詰め。** 出力はバイト/行で上限が掛かり（`search` は先頭 `100` 件、`ast-grep` はデフォルト `50` 件）、結果に上限・切り詰めの到達が報告されます。
 
-## Web と外部
+## 設定・資格情報が必要なツール
 
-| ツール       | 役割                           |
-| ------------ | ------------------------------ |
-| `web_search` | Web 検索（複数の provider）。  |
-| `browser`    | 実ブラウザの操作。             |
-| `github`     | GitHub との連携。              |
+一部のツールはバックエンド設定後に動作します。有効化するキー・環境変数・資格情報は[リファレンス](/ja/docs/reference)を参照。
 
-## セッションとメモリ
-
-| ツール       | 役割                           |
-| ------------ | ------------------------------ |
-| `task`       | サブエージェントの生成・調整。 |
-| `todo_write` | TODO リストの追跡・更新。      |
-| `checkpoint` | セッション状態のスナップショット。|
-| `rewind`     | 以前の地点へロールバック。     |
-| `recall`     | 保存されたメモリの取得。       |
-| `retain`     | 後で取得するためメモリを保持。 |
-| `reflect`    | 内省的な推論ステップ。         |
-
-## メディアとその他
-
-| ツール           | 役割                     |
-| ---------------- | ------------------------ |
-| `render_mermaid` | Mermaid 図のレンダリング。|
-| `inspect_image`  | 画像の検査。             |
-| `calc`           | 電卓。                   |
-| `recipe`         | 再利用可能なタスクレシピ。|
-| `ask`            | ユーザーへの質問。       |
-
-一部のツールは設定や資格情報に依存します（例：`web_search` provider と `browser` はそれぞれの設定が必要）。それらを有効化する環境変数は[リファレンス](/ja/docs/reference)を参照してください。
+- `web_search` と `browser` は provider 設定に依存。
+- `github` は `gh` CLI とそのキャッシュを使用。
+- `lsp` は `lsp.enabled` でゲートされ、プロジェクトごとに言語サーバーを探索/設定。
+- `search_tool_bm25` は `tools.discoveryMode !== "off"` のときのみ出現。
+- アクティブな `edit` variant は `GJC_EDIT_VARIANT`、`ast-edit` のファイル範囲は `GJC_MAX_AST_FILES` で決まる。

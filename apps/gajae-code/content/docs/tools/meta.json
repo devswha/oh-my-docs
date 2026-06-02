@@ -1,6 +1,12 @@
 {
   "title": "Tools",
   "pages": [
-    "index"
+    "index",
+    "files",
+    "search",
+    "runtime",
+    "web",
+    "session-and-memory",
+    "media"
   ]
 }

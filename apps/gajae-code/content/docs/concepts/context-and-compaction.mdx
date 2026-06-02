@@ -1,0 +1,114 @@
+---
+title: Context & Compaction
+description: How Gajae-Code keeps long sessions usable — context promotion for overflow recovery, then automatic and manual compaction.
+---
+
+Long sessions eventually outgrow a model's context window. Gajae-Code handles this in two stages: it first tries **context promotion** (move to a larger-context model), and only when that is unavailable does it fall back to **compaction** (summarize old history). Both keep prior work context without losing it.
+
+## Context promotion
+
+Compaction is lossy — it replaces detail with a summary. So when Gajae-Code hits a context-overflow error, it first tries to recover **without** compacting by switching to a larger-context sibling model.
+
+When an assistant turn fails with a context-overflow error on the current model:
+
+1. The failing assistant error message is removed from active agent state before retrying.
+2. **Context promotion is tried first** — if a configured larger model is available, the agent switches model and retries without compacting.
+3. Only if promotion is unavailable (and compaction is enabled) does context-full compaction run.
+
+Threshold maintenance follows the same priority: promotion is attempted before compaction on a successful turn that exceeds the threshold.
+
+<Callout type="info">
+Promotion preserves your full history; compaction trades detail for room. Configuring a larger-context sibling lets Gajae-Code defer compaction as long as possible.
+</Callout>
+
+## What compaction does
+
+Compaction rewrites old history into a summary on the current branch, recorded as a `compaction` session entry — not a plain message. The entry stores the `summary` (and an optional `shortSummary`), the `firstKeptEntryId` boundary, and `tokensBefore`.
+
+```text
+Before compaction:
+
+  entry:  0     1     2     3      4     5     6      7      8     9
+        ┌─────┬─────┬─────┬──────┬─────┬─────┬──────┬──────┬─────┬──────┐
+        │ hdr │ usr │ ass │ tool │ usr │ ass │ tool │ tool │ ass │ tool │
+        └─────┴─────┴─────┴──────┴─────┴─────┴──────┴──────┴─────┴──────┘
+                └────────┬───────┘ └──────────────┬──────────────┘
+               messagesToSummarize            kept messages
+                                   ↑
+                          firstKeptEntryId (entry 4)
+
+What the LLM sees after compaction:
+
+  ┌────────┬─────────┬─────┬─────┬──────┬──────┬─────┬──────┐
+  │ system │ summary │ usr │ ass │ tool │ tool │ ass │ tool │
+  └────────┴─────────┴─────┴─────┴──────┴──────┴─────┴──────┘
+       ↑         ↑      └─────────────────┬────────────────┘
+    prompt   from cmp          messages from firstKeptEntryId
+```
+
+When context is rebuilt, the latest compaction on the active path becomes one summary message, then the kept entries from `firstKeptEntryId` onward are replayed. Nothing is deleted on disk — the original entries remain in the append-only log.
+
+## When compaction runs
+
+There are four triggers:
+
+| Trigger | How it starts | Behavior |
+| --- | --- | --- |
+| **Manual** | `/compact [instructions]` | Summarizes the current branch on demand |
+| **Overflow recovery** | A same-model context-overflow error | Promotion first; else compact with `reason: "overflow"`, then auto-continue |
+| **Threshold maintenance** | A successful turn exceeding the resolved threshold | Promotion first; else compact with `reason: "threshold"` |
+| **Idle maintenance** | `runIdleCompaction()` when not streaming | Compacts with `reason: "idle"`, no auto-continue |
+
+Overflow and threshold paths differ deliberately: overflow recovery retries the failing turn and auto-continues; threshold maintenance schedules an agent-authored auto-continue prompt unless `compaction.autoContinue` is `false`.
+
+### Pre-compaction pruning
+
+Before compacting, tool-result pruning may run to reclaim tokens first. The default policy:
+
+- Protects the newest **40,000** tool-output tokens.
+- Requires at least **20,000** estimated total savings to act.
+- Never prunes tool results from `skill` or `read`.
+
+Pruned results are replaced with `[Output truncated - N tokens]`. If pruning reduces the token count below the threshold, full compaction can be avoided.
+
+### Cut-point rules
+
+Compaction only considers entries since the last compaction. It then finds a cut point, with one hard rule: **never cut at a `toolResult`**. Valid cut points are message entries (`user`, `assistant`, `bashExecution`, `hookMessage`, `branchSummary`, `compactionSummary`), `custom_message`, and `branch_summary`. If the cut point lands mid-turn, compaction produces two summaries — a history summary and a turn-prefix summary — merged into one stored summary.
+
+## Strategies
+
+`compaction.strategy` selects how maintenance behaves:
+
+- **`context-full`** (default) — summarize and append a `compaction` entry on the current session.
+- **`handoff`** — on threshold maintenance, start a **new** session and inject the generated handoff document as a visible message instead of writing a compaction entry. If handoff returns no document without aborting, it falls back to context-full compaction. (Overflow recovery never uses handoff.)
+- **`off`** — disable compaction.
+
+## Branch summaries
+
+Branch summarization is the sibling mechanism for `/tree` navigation rather than token overflow. When you navigate away from a branch with summarization requested, the abandoned entries (from the old leaf to the common ancestor) are summarized and attached at the **new** navigation position as a `branch_summary` entry. This is off by default (`branchSummary.enabled: false`).
+
+## Settings & defaults
+
+| Setting | Default |
+| --- | --- |
+| `compaction.enabled` | `true` |
+| `compaction.strategy` | `"context-full"` |
+| `compaction.reserveTokens` | `16384` |
+| `compaction.keepRecentTokens` | `20000` |
+| `compaction.autoContinue` | `true` |
+| `compaction.remoteEnabled` | `true` |
+| `compaction.remoteEndpoint` | `undefined` |
+| `compaction.thresholdPercent` / `thresholdTokens` | `-1` |
+| `compaction.idleEnabled` | `true` |
+| `branchSummary.enabled` | `false` |
+| `branchSummary.reserveTokens` | `16384` |
+
+When no positive threshold override is set, the threshold is `contextWindow - max(15% of contextWindow, reserveTokens)`.
+
+## Related
+
+<Cards>
+<Card title="Sessions & Worktrees" href="/docs/concepts/sessions" />
+<Card title="Models & Providers" href="/docs/concepts/models-and-providers" />
+<Card title="Configuration" href="/docs/reference/configuration" />
+</Cards>

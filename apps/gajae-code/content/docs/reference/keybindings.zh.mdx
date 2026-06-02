@@ -1,0 +1,70 @@
+---
+title: 快捷键
+description: 用 /hotkeys 查看当前生效的组合键，在 ~/.gjc/agent/keybindings.json 中自定义重映射，并参考常见的命名空间动作 ID 及其默认值。
+---
+
+Gajae-Code（`gjc`）内置一套交互式快捷键。具体的组合键取决于你的构建、已加载的重映射以及扩展添加的绑定。
+
+## 查看生效绑定
+
+在 `gjc` 会话中运行 `/hotkeys`，查看当前构建生效的组合键。该列表会反映从磁盘加载的重映射和扩展贡献的绑定，因此始终是你环境中最权威的视图。
+
+## 自定义快捷键
+
+用户重映射位于：
+
+```text
+~/.gjc/agent/keybindings.json
+```
+
+该文件是一个 JSON 对象，键为快捷键**动作 ID**，值为单个组合键字符串或字符串数组。它**不会**从 `~/.gjc/agent/config.yml` 读取，也没有嵌套的 `keybindings` 对象。
+
+```json
+{
+  "app.model.cycleForward": "Ctrl+P",
+  "app.model.selectTemporary": "Alt+P",
+  "app.plan.toggle": "Alt+Shift+P"
+}
+```
+
+组合键名称不区分大小写，使用 UI 中显示的同款写法，如 `Ctrl+P`、`Alt+Shift+P`、`Shift+Enter`、`Ctrl+Backspace`。
+
+将动作设为空数组即可**禁用**：
+
+```json
+{
+  "app.stt.toggle": []
+}
+```
+
+加载 `keybindings.json` 时会迁移旧的非限定动作名，但新配置应使用下面的命名空间动作 ID。
+
+## 常见动作 ID
+
+| 动作 ID | 默认 | 含义 |
+| --- | --- | --- |
+| `app.model.cycleForward` | `Ctrl+P` | 向前循环角色模型 |
+| `app.model.cycleBackward` | `Shift+Ctrl+P` | 向后循环角色模型 |
+| `app.model.selectTemporary` | `Alt+P` | 为本会话临时选择模型 |
+| `app.model.select` | `Ctrl+L` | 打开模型选择器并设置角色 |
+| `app.plan.toggle` | `Alt+Shift+P` | 切换 plan 模式 |
+| `app.history.search` | `Ctrl+R` | 搜索提示历史 |
+| `app.tools.expand` | `Ctrl+O` | 切换工具输出展开 |
+| `app.thinking.toggle` | `Ctrl+T` | 切换思考块可见性 |
+| `app.thinking.cycle` | `Shift+Tab` | 循环思考级别 |
+| `app.editor.external` | `Ctrl+G` | 在 `$VISUAL` / `$EDITOR` 中编辑草稿 |
+| `app.message.followUp` | `Ctrl+Enter` | 排队后续消息 |
+| `app.message.dequeue` | `Alt+Up` | 将排队消息退回编辑器 |
+| `app.clipboard.copyLine` | `Alt+Shift+L` | 复制当前行 |
+| `app.clipboard.copyPrompt` | `Alt+Shift+C` | 复制整个提示 |
+| `app.stt.toggle` | `Alt+H` | 切换语音转文字录制 |
+
+以上为常见绑定；包含扩展贡献动作的完整、与构建一致的列表，请运行 `/hotkeys`。
+
+## 相关页面
+
+<Cards>
+  <Card title="配置" href="/zh/docs/reference/configuration" />
+  <Card title="环境变量" href="/zh/docs/reference/environment-variables" />
+  <Card title="主题" href="/zh/docs/reference/theme" />
+</Cards>

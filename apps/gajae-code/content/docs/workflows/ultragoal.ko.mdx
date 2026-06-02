@@ -1,0 +1,129 @@
+---
+title: ultragoal
+description: 승인된 계획을 지속 가능한 repo-native 목표 아티팩트 위에서 구현·수정·검증·최종 증거 요약까지 끌고 갑니다.
+---
+
+`ultragoal`은 승인된 brief를 repo-native 아티팩트로 바꾼 뒤, 목표를 구현·수정·검증·최종 증거 요약까지 안전하게 끌고 갑니다. [작동 루프](/ko/docs/concepts)에서 증거 기반 실행 단계에 해당합니다. [`ralplan`](/ko/docs/workflows/ralplan)이 검토된 계획을 만들고 나면, `ultragoal`이 그것을 완료되고 체크포인트된 결과까지 가져갑니다.
+
+## 무엇을 추적하나
+
+계획은 지속 가능한 repo-native 아티팩트 몇 개가 됩니다:
+
+| 아티팩트 | 목적 |
+| --- | --- |
+| `.gjc/ultragoal/brief.md` | 계획의 토대가 된 brief. |
+| `.gjc/ultragoal/goals.json` | 집계 계획과 스토리별 상태. |
+| `.gjc/ultragoal/ledger.jsonl` | 지속 감사 추적: 체크포인트와 steering 이벤트. |
+
+새 계획은 기본적으로 전체 지속 계획에 대한 안정적인 포인터 형태의 집계 목표를 두고, 스토리 진행은 ledger에서 추적합니다. ledger는 지속 감사 추적이므로 성공이든 실패든 매번 체크포인트하세요.
+
+## 목표 만들기
+
+승인된 계획에서 시작합니다. brief 문자열, brief 파일, 또는 stdin을 씁니다:
+
+```bash
+gjc ultragoal create-goals --brief "<brief>"
+gjc ultragoal create-goals --brief-file <approved-plan>
+cat <approved-plan> | gjc ultragoal create-goals --from-stdin
+```
+
+그 다음 `.gjc/ultragoal/goals.json`을 확인하고 필요하면 다듬습니다. 스토리당 하나의 목표 컨텍스트가 명시적으로 선호될 때만 `--gjc-goal-mode per-story`를 씁니다.
+
+승인된 계획이나 합의 아티팩트가 없는 요청이라면 먼저 [`ralplan`](/ko/docs/workflows/ralplan)을 돌리고, 그 PRD·테스트 사양·역할 명단·검증 가이드를 ledger에 보존하세요. 계획이 빠진 채 임시 실행으로 조용히 대체하지 마세요.
+
+## 목표 완료하기
+
+실행을 완료까지 끌고 갑니다. `gjc ultragoal status`가 모든 목표 완료를 보고할 때까지 반복합니다:
+
+<Steps>
+<Step>`gjc ultragoal complete-goals`를 실행하고 출력된 핸드오프를 읽습니다.</Step>
+<Step>현재 스토리만 구현합니다.</Step>
+<Step>아래의 필수 완료 정리·리뷰 게이트를 실행합니다.</Step>
+<Step>최신 active 목표 스냅샷으로 지속 ledger를 체크포인트합니다.</Step>
+<Step>다음 스토리로 반복하고, 실패는 `gjc ultragoal complete-goals --retry-failed`로 재개합니다.</Step>
+</Steps>
+
+```bash
+gjc ultragoal status
+gjc ultragoal status --json
+gjc ultragoal complete-goals
+gjc ultragoal complete-goals --retry-failed
+```
+
+## 체크포인트
+
+각 스토리는 체크포인트로 기록됩니다. complete 체크포인트는 깨끗한 품질 게이트가 필요하며, 런타임 훅은 그것 없이 종료를 거부합니다:
+
+```bash
+gjc ultragoal checkpoint --goal-id <id> --status complete \
+  --evidence "<evidence>" \
+  --gjc-goal-json <goal-get-json-or-path> \
+  --quality-gate-json <quality-gate-json-or-path>
+```
+
+스토리가 차단되거나 실패하면 종결 상태를 대신 기록합니다:
+
+```bash
+gjc ultragoal checkpoint --goal-id <id> --status failed --evidence "<blocker/evidence>"
+```
+
+ledger를 증거로 다루세요. 체크포인트가 영수증을 만들며, `goals.json.status`만으로는 완료 증거가 아닙니다.
+
+## 완료 정리·리뷰 게이트
+
+품질 게이트가 돌기 전에는 스토리를 `complete`로 체크포인트할 수 없습니다:
+
+<Steps>
+<Step>스토리에 대한 타깃 검증을 돌립니다.</Step>
+<Step>변경된 파일만 대상으로 정리/리팩터 리뷰 패스를 돌리고(관련 편집이 없어도 cleaner는 돌면서 no-op 리포트를 기록), 검증을 다시 돌립니다.</Step>
+<Step>아키텍처·제품·코드 레인을 다루는 `architect` 리뷰와, 변경을 깨뜨리려 시도하는 `executor` QA/red-team 레인을 위임합니다.</Step>
+<Step>어느 레인이든 문제를 찾으면 완료 대신 <code>gjc ultragoal record-review-blockers</code>로 지속 blocker 작업을 기록합니다.</Step>
+<Step>루프가 깨끗할 때만 구조화된 품질 게이트와 최신 active 목표 스냅샷으로 `complete` 체크포인트합니다.</Step>
+</Steps>
+
+"깨끗함"은 모든 `architectReview` 상태가 `"CLEAR"`, recommendation이 `"APPROVE"`, executor QA 상태가 `"passed"`, iteration이 `fullRerun: true`로 `"passed"`, 모든 evidence 필드가 비어있지 않고, 모든 blockers 배열이 비어있음을 뜻합니다. `COMMENT`, `WATCH`, `REQUEST CHANGES`, `BLOCK`, 누락된 증거, 비어있지 않은 blockers는 모두 깨끗하지 않습니다.
+
+```bash
+gjc ultragoal record-review-blockers --goal-id <id> \
+  --title "Resolve verification blockers" \
+  --objective "<blocker-resolution objective>" \
+  --evidence "<architect/executor findings>" \
+  --gjc-goal-json <active-goal-get-json-or-path>
+```
+
+## 동적 steering
+
+집계 목표와 원래 제약은 고정한 채, 실제 발견이 스토리 분해를 바꿔야 함을 증명할 때 `gjc ultragoal steer`를 씁니다. steering은 명시적·증거 기반이며, 광범위한 자연어 요청은 추측하지 않고 거부됩니다.
+
+```bash
+gjc ultragoal steer --kind add_subgoal \
+  --title "Investigate blocker" \
+  --objective "Validate the blocker and report evidence." \
+  --evidence "log/test output" \
+  --rationale "The blocker changes the safe execution order." --json
+```
+
+허용 mutation 종류는 `add_subgoal`, `split_subgoal`, `reorder_pending`, `revise_pending_wording`, `annotate_ledger`, `mark_blocked_superseded`입니다. steering은 집계 목표, 원래 brief 제약, 품질 게이트, 완료 상태를 절대 편집하지 않고, 목표를 hard-delete하거나 검증을 약화시키지 않습니다. 수락·거부된 시도 모두 ledger에 감사 항목을 추가합니다.
+
+## 역할 에이전트 위임
+
+스토리가 위임으로 이득을 볼 만큼 클 때는 번들된 역할 에이전트를 씁니다:
+
+| 에이전트 | 레인 |
+| --- | --- |
+| [`executor`](/ko/docs/agents/executor) | 제한된 구현·리팩터·수정 슬라이스. |
+| [`planner`](/ko/docs/agents/planner) | 스토리 시퀀싱이나 핸드오프 정제. |
+| [`architect`](/ko/docs/agents/architect) | 읽기 전용 아키텍처·코드 리뷰(`CLEAR` / `WATCH` / `BLOCK`). |
+| [`critic`](/ko/docs/agents/critic) | 읽기 전용 계획·핸드오프 비평. |
+
+ultragoal 리더가 `goals.json`과 `ledger.jsonl`을 소유합니다. 역할 에이전트는 구현·리뷰 증거를 반환할 뿐, ultragoal을 체크포인트하거나 목표 상태를 변경하지 않습니다.
+
+## ultragoal과 team 함께 쓰기
+
+눈에 보이는 병렬 실행 레인이 도움이 되는 지속 스토리라면 ultragoal을 [`team`](/ko/docs/workflows/team)과 짝지으세요. ultragoal은 리더 소유로 남고, team은 태스크·증거 상태를 반환하는 tmux 실행 엔진입니다. 리더는 최신 목표 스냅샷으로 team 증거에서 ultragoal을 체크포인트합니다. 워커는 목표 상태를 소유하지 않으며 `gjc ultragoal checkpoint`를 실행해서는 안 됩니다.
+
+<Cards>
+<Card title="ralplan" href="/ko/docs/workflows/ralplan" />
+<Card title="team" href="/ko/docs/workflows/team" />
+<Card title="컨텍스트와 compaction" href="/ko/docs/concepts/context-and-compaction" />
+</Cards>

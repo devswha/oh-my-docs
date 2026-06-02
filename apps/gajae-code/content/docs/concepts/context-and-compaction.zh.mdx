@@ -1,0 +1,101 @@
+---
+title: 上下文与 Compaction
+description: Gajae-Code 如何让长会话持续可用——溢出恢复用的上下文提升，然后是自动与手动 compaction。
+---
+
+长会话最终会超出模型的上下文窗口。Gajae-Code 分两步处理：先尝试**上下文提升**（切到更大上下文的模型），仅当其不可用时才回退到 **compaction**（汇总旧历史）。两者都在不丢失先前工作上下文的前提下保留它。
+
+## 上下文提升
+
+Compaction 是有损的——用摘要替换细节。因此 Gajae-Code 遇到上下文溢出错误时，会先切换到更大上下文的同系列模型，尝试在**不** compaction 的情况下恢复。
+
+当前模型上的助手轮次因上下文溢出失败时：
+
+1. 重试前，从活动智能体状态中移除失败的助手错误消息。
+2. **先尝试上下文提升**——若配置了更大的模型可用，则切换模型并在不 compaction 的情况下重试。
+3. 仅当提升不可用（且 compaction 已启用）时，才运行 context-full compaction。
+
+阈值维护遵循相同优先级：在超过阈值的成功轮次上，先尝试提升再 compaction。
+
+<Callout type="info">
+提升保留完整历史；compaction 用细节换空间。配置一个更大上下文的同系列模型，可让 Gajae-Code 尽量推迟 compaction。
+</Callout>
+
+## Compaction 做什么
+
+Compaction 把旧历史改写为当前分支上的摘要，记录为 `compaction` 会话条目（而非普通消息），其中保存 `summary`（及可选 `shortSummary`）、`firstKeptEntryId` 边界和 `tokensBefore`。
+
+```text
+Compaction 前：
+
+  entry:  0     1     2     3      4     5     6      7      8     9
+        ┌─────┬─────┬─────┬──────┬─────┬─────┬──────┬──────┬─────┬──────┐
+        │ hdr │ usr │ ass │ tool │ usr │ ass │ tool │ tool │ ass │ tool │
+        └─────┴─────┴─────┴──────┴─────┴─────┴──────┴──────┴─────┴──────┘
+                                   ↑
+                          firstKeptEntryId (entry 4)
+
+Compaction 后 LLM 所见：
+
+  ┌────────┬─────────┬─────┬─────┬──────┬──────┬─────┬──────┐
+  │ system │ summary │ usr │ ass │ tool │ tool │ ass │ tool │
+  └────────┴─────────┴─────┴─────┴──────┴──────┴─────┴──────┘
+```
+
+重建上下文时，活动路径上最新的 compaction 变成一条摘要消息，然后从 `firstKeptEntryId` 起的保留条目被重放。磁盘上不删除任何内容——原始条目仍在仅追加日志中。
+
+## Compaction 何时运行
+
+共有四个触发器：
+
+| 触发器 | 如何启动 | 行为 |
+| --- | --- | --- |
+| **手动** | `/compact [instructions]` | 按需汇总当前分支 |
+| **溢出恢复** | 同模型的上下文溢出错误 | 先提升；否则以 `reason: "overflow"` compaction 后自动继续 |
+| **阈值维护** | 超过解析阈值的成功轮次 | 先提升；否则以 `reason: "threshold"` compaction |
+| **空闲维护** | 非流式时调用 `runIdleCompaction()` | 以 `reason: "idle"` compaction，不自动继续 |
+
+溢出与阈值路径刻意不同：溢出恢复重试失败轮次并自动继续；阈值维护除非 `compaction.autoContinue` 为 `false`，否则会安排一个由智能体撰写的自动继续提示。
+
+### Compaction 前的修剪
+
+Compaction 前可能先运行工具结果修剪以回收 token。默认策略：保护最新 **40,000** 个工具输出 token；至少需估计节省 **20,000** 个才行动；从不修剪 `skill` 或 `read` 的结果。被修剪结果替换为 `[Output truncated - N tokens]`。若修剪后 token 数降到阈值以下，可避免完整 compaction。
+
+### 切点规则
+
+Compaction 只考虑上次 compaction 之后的条目，并遵循一条硬规则：**绝不在 `toolResult` 处切分**。有效切点为消息条目（`user`、`assistant`、`bashExecution`、`hookMessage`、`branchSummary`、`compactionSummary`）、`custom_message` 和 `branch_summary`。若切点落在轮次中间，会生成两份摘要（历史摘要与轮次前缀摘要），合并为一份存储摘要。
+
+## 策略
+
+`compaction.strategy` 选择维护行为：
+
+- **`context-full`**（默认）— 汇总并在当前会话追加 `compaction` 条目。
+- **`handoff`** — 阈值维护时不写 compaction 条目，而是开启**新**会话并把生成的 handoff 文档作为可见消息注入；若 handoff 未中止却未返回文档，则回退到 context-full。（溢出恢复绝不使用 handoff。）
+- **`off`** — 禁用 compaction。
+
+## 分支摘要
+
+分支摘要是面向 `/tree` 导航（而非 token 溢出）的同类机制。请求摘要并离开某分支时，被放弃的条目（从旧叶到公共祖先）会被汇总，并作为 `branch_summary` 条目附加到**新**导航位置。默认关闭（`branchSummary.enabled: false`）。
+
+## 设置与默认值
+
+| 设置 | 默认值 |
+| --- | --- |
+| `compaction.enabled` | `true` |
+| `compaction.strategy` | `"context-full"` |
+| `compaction.reserveTokens` | `16384` |
+| `compaction.keepRecentTokens` | `20000` |
+| `compaction.autoContinue` | `true` |
+| `compaction.remoteEnabled` | `true` |
+| `compaction.idleEnabled` | `true` |
+| `branchSummary.enabled` | `false` |
+
+未设正阈值覆盖时，阈值为 `contextWindow - max(contextWindow 的 15%, reserveTokens)`。
+
+## 相关
+
+<Cards>
+<Card title="会话与 Worktree" href="/zh/docs/concepts/sessions" />
+<Card title="模型与 Provider" href="/zh/docs/concepts/models-and-providers" />
+<Card title="配置" href="/zh/docs/reference/configuration" />
+</Cards>

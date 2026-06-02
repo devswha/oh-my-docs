@@ -1,0 +1,80 @@
+---
+title: 設定
+description: ~/.gjc レイアウト、config.yml のリトライ予算と fail-fast ケース、そして Gajae-Code の動作を決めるストレージ・挙動の環境変数。
+---
+
+Gajae-Code は設定を小さく保ちます。本ページは `~/.gjc` 配下のファイル、`config.yml` のリトライ予算、ストレージパスとランタイム挙動を制御する環境変数を扱います。
+
+## `~/.gjc` レイアウト
+
+config ルートは `~/.gjc` です（`GJC_CONFIG_DIR` で変更）：
+
+| パス                       | 用途                                |
+| -------------------------- | ----------------------------------- |
+| `~/.gjc/config.yml`        | 一般的なランタイム設定（リトライ予算を含む）。|
+| `~/.gjc/agent/`            | agent ディレクトリ（`GJC_CODING_AGENT_DIR` で変更）。|
+| `~/.gjc/agent/models.yml`  | provider、モデル、ロール、ルーティング。|
+| `~/.gjc/agent/config.yml`  | agent スコープ設定（例：SearXNG 検索設定）。|
+| `~/.gjc/agent/.env`        | agent スコープの環境変数。          |
+| `~/.gjc/.env`              | 設定ルートの環境フォールバック。    |
+
+`GJC_CONFIG_DIR` は home 下の config ルートディレクトリ名を設定します（既定 `.gjc`）。`GJC_CODING_AGENT_DIR` は agent ディレクトリ（既定 `~/<GJC_CONFIG_DIR または .gjc>/agent`）を完全に上書きし、独立に解決されます。`.env` の完全な解決順は[リファレンス](/ja/docs/reference)を参照。
+
+## `config.yml` のリトライ予算
+
+Gajae-Code には 2 つのリトライ層があります：
+
+- **セッション自動リトライ**（`retry.maxRetries`）は終端の一時エラー後に失敗したアシスタントターンを再試行します。
+- **provider リトライ予算**はその終端エラーがセッションに届く前に、provider トランスポート内部のリトライを制御します。
+
+どちらも `~/.gjc/config.yml` で設定します：
+
+```yaml
+retry:
+  # codex-cli request_max_retries 相当。初回リクエストではなくリトライ回数を数える。
+  requestMaxRetries: 4
+  # codex-cli stream_max_retries 相当。リプレイ安全なストリームリトライ回数。
+  streamMaxRetries: 100
+  # セッションレベルの終端エラーリトライは別途設定可能。
+  maxRetries: 3
+  maxDelayMs: 300000
+```
+
+| キー                | 層      | 意味                                                            |
+| ------------------- | ------- | --------------------------------------------------------------- |
+| `requestMaxRetries` | provider| ストリーム確立前の provider SDK/fetch リトライ。初回ではなくリトライ回数。|
+| `streamMaxRetries`  | provider| リプレイ安全なストリームリトライ。provider がユーザー可視コンテンツ前に一時的ストリーム失敗を安全に再生できる場合（または provider 固有の replay-safe 経路）のみ使用。|
+| `maxRetries`        | セッション| 失敗したアシスタントターンの終端エラーリトライ。                |
+| `maxDelayMs`        | セッション| セッションリトライのバックオフ遅延の上限。                      |
+
+### fail-fast ケース
+
+リトライは恒久的な問題を覆い隠しません。次のケースはループせず即座に失敗します：無効な認証、未対応のモデル/provider、不正なリクエスト、コンテキスト超過、ユーザー中断、恒久的なクォータ失敗。
+
+## ストレージと config ルートのパス
+
+`@gajae-code/utils/dirs` 経由で使われ、coding-agent がデータを保存する場所を決めます：
+
+| 変数                   | 既定値 / 挙動                                                |
+| ---------------------- | ------------------------------------------------------------ |
+| `GJC_CONFIG_DIR`       | home 下の config ルートディレクトリ名（既定 `.gjc`）。       |
+| `GJC_CODING_AGENT_DIR` | agent ディレクトリの完全上書き（既定 `~/<GJC_CONFIG_DIR または .gjc>/agent`）。|
+
+## 挙動トグル
+
+いくつかの環境変数がランタイム挙動を切り替えます：
+
+| 変数               | 効果                                                                       |
+| ------------------ | -------------------------------------------------------------------------- |
+| `GJC_NO_PTY`       | `1` で bash ツールの対話 PTY パスを無効化。CLI `--no-pty` 時も内部で設定。  |
+| `GJC_NOTIFICATIONS`| `off` / `0` / `false` でデスクトップ通知を抑制。                           |
+| `GJC_NO_TITLE`     | 設定時（空でない任意の値）、最初のユーザーメッセージで自動セッションタイトル生成を無効化。|
+| `GJC_EDIT_VARIANT` | 有効時に edit ツール variant を強制：`patch`、`replace`、`hashline`、`atom`、`vim`、`apply_patch`。|
+| `GJC_TIMING`       | 設定時に階層的なタイミングスパンツリーを **stderr** へ出力。`GJC_TIMING=x` は対話モードで出力直後にコード 0 で終了（コールドスタートのみ計測）；`GJC_TIMING=full` は上位 N 件ではなく全モジュールロード項目を列挙。|
+
+## 関連
+
+<Cards>
+  <Card title="環境変数" href="/ja/docs/reference/environment-variables" />
+  <Card title="モデルと資格情報" href="/ja/docs/reference/models-and-credentials" />
+</Cards>

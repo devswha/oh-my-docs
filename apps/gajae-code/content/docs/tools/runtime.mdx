@@ -1,0 +1,173 @@
+---
+title: Runtime & Execution
+description: The bash, eval, python-repl, debug, ssh, and job tools that let Gajae-Code agents run commands and code.
+---
+
+Runtime tools are how Gajae-Code agents actually execute things — shell commands, ad-hoc code, debug sessions, remote commands, and background jobs. Each tool below maps to the upstream `docs/tools/` reference; flags, env vars, and limits are verbatim from the source.
+
+## bash
+
+`bash` runs a shell command in the session workspace. Output (stdout and stderr merged) comes back as text; a non-zero exit code is surfaced as an error, not a success.
+
+### Inputs
+
+| Field     | Type                     | Description                                                                                                   |
+| --------- | ------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| `command` | `string`                 | Shell command text. A leading `cd <path> && ...` is rewritten into `cwd` when `cwd` was omitted.              |
+| `env`     | `Record<string, string>` | Extra environment variables. Keys must match `^[A-Za-z_][A-Za-z0-9_]*$`.                                       |
+| `timeout` | `number`                 | Timeout in seconds. Default `300`; clamped to `1..3600`.                                                       |
+| `cwd`     | `string`                 | Working directory, resolved against the session cwd. Must exist and be a directory.                           |
+| `pty`     | `boolean`                | Request PTY mode. Default `false`.                                                                            |
+| `async`   | `boolean`                | Background execution. Available only when async jobs are enabled; returns a job id immediately.               |
+
+### PTY mode and `GJC_NO_PTY`
+
+PTY mode opens an interactive xterm-backed console overlay and forwards your key input into the running process. It is used only when **all** of these hold:
+
+- `pty: true` on the call,
+- the tool context has a UI, and
+- `GJC_NO_PTY !== "1"`.
+
+Set `GJC_NO_PTY=1` to force non-PTY execution everywhere; the tool silently falls back to the non-interactive executor. Print mode and non-UI RPC contexts always run non-PTY.
+
+```bash
+# Disable interactive PTY for the whole session
+GJC_NO_PTY=1 gjc --tmux
+```
+
+### Modes
+
+<Steps>
+<Step>**Foreground non-PTY** — the default. Streams tail-only updates while it runs.</Step>
+<Step>**Foreground PTY** — requires `pty: true`, a UI, and `GJC_NO_PTY !== "1"`. Interactive; `Esc` kills the session from the overlay.</Step>
+<Step>**Explicit background job** — `async: true` registers a job and returns a job id immediately.</Step>
+<Step>**Auto-backgrounded** — when `bash.autoBackground.enabled` is on, a long non-PTY run is moved to the background after it outlives the wait window (default threshold `60s`).</Step>
+</Steps>
+
+### Interceptor
+
+When `bashInterceptor.enabled` is on, common shell misuses are blocked and the agent is pointed at a better-fit tool. Default rules:
+
+| Pattern                                  | Use instead |
+| ---------------------------------------- | ----------- |
+| `cat`, `head`, `tail`, `less`, `more`    | `read`      |
+| `grep`, `rg`, `ripgrep`, `ag`, `ack`     | `search`    |
+| `find`, `fd`, `locate` (name/type/glob)  | `find`      |
+| `sed -i`, `perl -i`, `awk -i inplace`    | `edit`      |
+| `echo`/`printf`/`cat <<` with redirection| `write`     |
+
+A rule only fires when its suggested tool is actually available in the session.
+
+### Limits
+
+- Default timeout `300s`, clamp `1..3600s`.
+- In-memory output tail cap `50KB`; beyond that, only the tail stays in memory and full output can spill to an `artifact://<id>`.
+- Auto-background threshold default `60000ms`, capped to `timeout - 1000ms`.
+
+## eval
+
+`eval` executes Python or JavaScript code in persistent, cell-based runtimes. State persists per language across cells and across tool calls. Prefer it over shelling out to `python -c`, `bun -e`, or `node -e`: you get persistent state, structured `display()` output, image/JSON capture, and proper cancellation.
+
+### Inputs
+
+The single parameter is `cells` — an ordered array. Each cell:
+
+| Field      | Type            | Description                                                            |
+| ---------- | --------------- | ---------------------------------------------------------------------- |
+| `language` | `"py" \| "js"`  | Backend. `"py"` → Python kernel; `"js"` → persistent JavaScript VM.    |
+| `code`     | `string`        | Cell body, verbatim (JSON-encoded — embed newlines directly).          |
+| `title`    | `string`        | Optional label shown in the transcript.                                |
+| `timeout`  | `integer`       | Per-cell timeout in seconds, clamped to `1..600`. Default `30`.        |
+| `reset`    | `boolean`       | Wipe this cell's language kernel before running. Per-language.         |
+
+```json
+{
+  "cells": [
+    { "language": "py", "title": "imports", "code": "import json\nfrom pathlib import Path" },
+    { "language": "py", "title": "load config", "code": "data = json.loads(read('package.json'))\ndisplay(data)" },
+    { "language": "js", "title": "summary", "reset": true, "code": "const data = JSON.parse(await read('package.json'));\ndisplay(data);\nreturn data.name;" }
+  ]
+}
+```
+
+### Backends and `GJC_PY`
+
+Backend choice is **explicit per cell** — there is no auto-detection or fallback. Both backends default to on (`eval.py` / `eval.js`). The `GJC_PY` env var overrides which backends are exposed:
+
+| `GJC_PY`        | Effect                    |
+| --------------- | ------------------------- |
+| `0` / `bash`    | JavaScript backend only.  |
+| `1` / `py`      | Python backend only.      |
+| `mix` / `both`  | Both backends.            |
+
+If a requested backend is disabled or unavailable, that cell throws `ToolError`. When Python preflight fails but `eval.js` is on, `eval` stays available and dispatches to JavaScript unless a cell explicitly asks for Python.
+
+- **JavaScript** runs in a persistent `vm.Context`. Top-level `await` and bare `return` are supported; static/dynamic `import` is rewritten to resolve against the session cwd, and local imports are cache-busted between cells. Prelude globals include `display`, `read`, `write`, `append`, `env`, and a `tool.<name>(args)` proxy for arbitrary session tool calls.
+- **Python** runs inside a long-lived `python3` subprocess speaking NDJSON (no Jupyter, no extra pip deps; Python 3.8+ is enough). Top-level `await` works; rich `display()` output (pandas, matplotlib, PIL) is preserved as image/JSON/markdown.
+
+### Limits
+
+- Per-cell timeout default `30s`, clamp `1..600s`.
+- Output truncation window `50KB`; line cap `3000`.
+- Python retained-kernel idle timeout `5 minutes`; at most `4` sessions; one auto-restart per session before hard failure.
+
+## python-repl
+
+The Python backend behind `eval` is documented in depth as the Python kernel runtime. A few operational notes:
+
+- **Magics** — IPython-style magics are rewritten to plain Python: `%pip`, `%cd`, `%pwd`, `%ls`, `%env`, `%time`/`%timeit`, `%who`/`%whos`, `%reset`, `%load`, `%run`, `%%bash`/`%%sh`, `%%capture`, `%%writefile`, and `!cmd`.
+- **Session vs per-call kernels** — `python.kernelMode = "session"` (default) reuses a retained kernel keyed by session file + cwd; `"per-call"` spawns a fresh subprocess per request and shuts it down after.
+- **Environment** — the runner env is filtered (allowlist + `LC_`/`XDG_`/`GJC_` prefixes; API keys stripped). Runtime resolution prefers an active/located venv, then a managed venv at `~/.gjc/python-env`, then `python`/`python3` on `PATH`.
+- **stdin is not supported** — `input()` blocks until cancellation; pass data programmatically.
+- **Matplotlib** — `MPLBACKEND=Agg` is set so figures render off-screen; each figure is captured as a PNG after the cell.
+
+Relevant env vars: `GJC_PY` (backend exposure), `GJC_PYTHON_SKIP_CHECK=1` (bypass preflight), `GJC_PYTHON_INTEGRATION=1` (gated integration tests), `GJC_PYTHON_IPC_TRACE=1` (log NDJSON frames). `gjc setup python --check` reports the resolved interpreter.
+
+## debug
+
+`debug` drives one Debug Adapter Protocol (DAP) session. It is hidden unless `debug.enabled` is true, and only one active session is allowed at a time.
+
+The `action` field selects the operation. Highlights:
+
+- **Lifecycle** — `launch` (needs `program`), `attach` (needs `pid` or `port`), `terminate`, `sessions`.
+- **Breakpoints** — `set_breakpoint` / `remove_breakpoint` (file+line or function), plus instruction and data breakpoint variants.
+- **Stepping** — `continue`, `step_over`, `step_in`, `step_out`, `pause`.
+- **Inspection** — `stack_trace`, `threads`, `scopes`, `variables`, `evaluate` (context defaults to `repl`), `modules`, `loaded_sources`, `disassemble`, `read_memory`, `write_memory`, `output`, `custom_request`.
+
+Adapters auto-select by file extension / root markers (with `gdb`, `lldb-dap`, `debugpy`, `dlv` and others built in), or you can force one with `adapter`. Per-request `timeout` defaults to `30s`, clamped to `5..300`. `continue` / `step_*` are non-fatal when the target keeps running past the timeout — they return `details.timedOut = true` instead of throwing.
+
+## ssh
+
+`ssh` runs **one** remote command on a discovered SSH host.
+
+| Field     | Type     | Description                                                          |
+| --------- | -------- | -------------------------------------------------------------------- |
+| `host`    | `string` | Host **name key** from discovered config — not an arbitrary host/IP. |
+| `command` | `string` | Remote command string.                                               |
+| `cwd`     | `string` | Remote working directory; the tool prepends a shell-specific `cd`.   |
+| `timeout` | `number` | Timeout in seconds. Default `60`; clamped to `1..3600`.              |
+
+Host discovery is JSON-based only — it does **not** read `~/.ssh/config`. Hosts load from project managed config (`.gjc/ssh.json`), user managed config (`~/.gjc/agent/ssh.json`), then `ssh.json` / `.ssh.json` in the repo root. The `host` value must be the config key, not the raw hostname.
+
+Commands run without a PTY. `StrictHostKeyChecking=accept-new` and `BatchMode=yes` are always set; master connections are reused (`ControlPersist=3600`). A non-zero remote exit becomes an error with the captured output plus `Command exited with code N`.
+
+## job
+
+`job` waits for or cancels background jobs produced by `bash` (`async: true` or auto-background) and async tasks. It is exposed only when background jobs are enabled.
+
+| Field    | Type       | Description                                                                          |
+| -------- | ---------- | ------------------------------------------------------------------------------------ |
+| `poll`   | `string[]` | Job ids to watch. Omitted (with no `cancel`) watches all running jobs.               |
+| `cancel` | `string[]` | Job ids to cancel before any polling.                                                |
+| `list`   | `boolean`  | Read-only snapshot of every job spawned by this agent. Cannot combine with the rest. |
+
+Behavior:
+
+- `job` waits for the **first** watched running job to settle, not all of them; others are reported under `## Still Running` and you call `job` again to keep waiting.
+- Poll wait duration comes from `async.pollWaitDuration` — one of `5s`, `10s`, `30s`, `1m`, `5m` (default `30s`). A timeout is not an error; it returns the current snapshot.
+- Cancelling a non-running job reports `already_completed`; an unknown id reports `not_found`.
+- Job records are retained for `5 minutes` after completion, then evicted.
+
+---
+
+Several runtime tools depend on configuration: `debug` needs `debug.enabled`, `eval` is shaped by `GJC_PY`, and background jobs need async support. See [Environment Variables](/docs/reference/environment-variables) for the full list of toggles.

@@ -1,0 +1,81 @@
+---
+title: 模型路由与 provider
+description: Gajae-Code 如何保留具体 provider 模型、将其合并为 canonical 层、把任务映射到角色，并在运行时选择模型。
+---
+
+Gajae-Code 保留你可访问的每个具体 provider 模型，并在其上构建一层薄薄的 **canonical** 层，使单个 id 能跨 provider 解析。在意运行哪个变体时就固定精确变体；否则选一个 canonical id，让 registry 为你挑选一个可用且已认证的 provider。
+
+本页讲概念模型。`models.yml` 结构、provider 预设与凭据解析见[模型与凭据](/zh/docs/reference/models-and-credentials)。
+
+## 具体模型 vs. canonical 模型
+
+两层并存：
+
+- **具体模型**是精确的 `provider/modelId`，例如 `openai-code/gpt-5.3-openai-code`、`anthropic/anthropic-model-opus-4-6`。选择具体模型会完全跳过合并（coalescing）。
+- **canonical 模型**是把不同 provider 的具体变体分组的官方 upstream id，例如 `anthropic-model-opus-4-6`、`gpt-5.3-openai-code`。
+
+当多个具体变体共享同一 canonical id 时，解析顺序为：
+
+1. 可用性与认证（禁用或未认证的 provider 被跳过），
+2. `modelProviderOrder` 设置，
+3. 未设置时使用既有 registry/provider 顺序。
+
+实际执行某轮的 provider/model 仍记录在会话状态和 transcript 中，canonical 层不会掩盖实际运行的内容。
+
+## 模型角色
+
+角色把任务映射到模型，只需调一次行为而非每次调用都调。支持的角色：
+
+| 角色        | 用途                                  |
+| ---------- | ------------------------------------- |
+| `default`  | 主智能体轮                            |
+| `smol`     | 廉价/快速的次级工作（如记忆整合）       |
+| `slow`     | 质量优先于延迟时的重推理               |
+| `vision`   | 图像能力工作                          |
+| `plan`     | 规划阶段                              |
+| `designer` | 设计导向阶段                          |
+| `commit`   | 提交信息类工作                        |
+| `task`     | 子任务 / 委派工作                     |
+
+每个角色值可附加 thinking 选择器（`:minimal`、`:low`、`:medium`、`:high`、`:xhigh`），例如 `default: openai-code/gpt-5.3-openai-code:high`。
+
+角色值可存储：固定具体变体的 `provider/modelId`，或允许 provider 合并的 canonical id（如 `gpt-5.3-openai-code`）。角色也可指向其他角色；引用方角色上的显式 thinking 后缀在该用途中优先。若请求的角色未配置，则回退到 `default`、活动会话模型、registry 中第一个模型。
+
+## 运行时选择模型
+
+### TUI 中
+
+会话中用 `/model` 切换。选择器同时展示带 provider 前缀的具体模型与 canonical 视图：选 **canonical** 条目存储 canonical 选择器（保留合并）；选 **provider 行**存储显式 `provider/modelId`。
+
+### CLI 中
+
+首选 `--model`（`--provider` 为遗留）。模式解析支持：精确 `provider/modelId`、精确 canonical id、精确裸 id（推断 provider）、模糊/子串匹配、`--models` 的 glob 范围（如 `openai/*`、`*sonnet*`）、可选 `:thinkingLevel` 后缀（`off|minimal|low|medium|high|xhigh`）。精确选择器先解析，模糊/glob 最后运行。`--list-models` 打印 canonical 段加具体 provider 行。
+
+```bash
+gjc --tmux --model anthropic/anthropic-model-opus-4-6:high
+gjc --tmux --models "openai/*"
+```
+
+对 `--models` 与 `enabledModels`：精确 canonical id 展开为该组所有具体变体，显式 `provider/modelId` 保持精确，glob/模糊作用于具体模型。
+
+### 初始模型如何选定
+
+`findInitialModel` 顺序：显式 CLI provider+model → 第一个 scoped 模型（非 resume 时）→ 已保存默认 provider/model → 可用模型中的已知 provider 默认值 → 第一个可用模型。registry 中存在但无可解析认证的模型在凭据就绪前不可选。
+
+## 本地模型发现
+
+本地运行时无显式 provider 项且可达时，Gajae-Code 添加一个无密钥（`auth: none`）的隐式可发现 provider 并归一化发现的模型：
+
+| 运行时      | provider id | 默认 base URL                | 覆盖 env var          |
+| ---------- | ----------- | ---------------------------- | --------------------- |
+| Ollama     | `ollama`    | `http://127.0.0.1:11434`     | `OLLAMA_BASE_URL`     |
+| llama.cpp  | `llama.cpp` | `http://127.0.0.1:8080`      | `LLAMA_CPP_BASE_URL`  |
+| LM Studio  | `lm-studio` | `http://127.0.0.1:1234/v1`   | `LM_STUDIO_BASE_URL`  |
+
+也可在 `models.yml` 中用 provider 级 `discovery.type`（`ollama`、`llama.cpp`、`lm-studio`）显式配置发现（发现需要 provider 级 `api`）。配置结构见[模型与凭据](/zh/docs/reference/models-and-credentials)。
+
+## 后续
+
+- [模型与凭据](/zh/docs/reference/models-and-credentials) — `models.yml` 结构、provider 预设、认证解析顺序。
+- [上下文提升与 compaction](/zh/docs/concepts/context-and-compaction)。
+- [环境变量](/zh/docs/reference/environment-variables)。

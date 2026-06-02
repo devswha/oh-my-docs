@@ -1,0 +1,134 @@
+---
+title: 세션과 Worktree
+description: 지속 가능한 세션 상태, 전환·최근 목록, export/share/fork/resume 작업, 그리고 Git worktree 격리.
+---
+
+Gajae-Code의 모든 실행은 **세션**입니다. 무슨 일이 있었는지 다시 재생할 수 있는 지속 기록이죠. 히스토리, 모델 변경, thinking 레벨 변경, compaction 요약, 증거가 모두 저장되므로 나중에 resume·fork·export·공유할 수 있습니다.
+
+## 세션이 저장하는 것
+
+세션은 JSONL(한 줄에 JSON 객체 하나)로, 작업 디렉터리 단위 경로에 기록됩니다:
+
+```text
+~/.gjc/agent/sessions/--<cwd-encoded>--/<timestamp>_<sessionId>.jsonl
+```
+
+첫 줄은 세션 헤더이고, 나머지 줄은 타입이 있는 엔트리입니다. 런타임에서 엔트리는 **append-only**입니다. 브랜치 내비게이션은 기존 엔트리를 바꾸거나 지우지 않고 포인터만 옮깁니다.
+
+엔트리 종류는 단순한 채팅 메시지보다 훨씬 많습니다:
+
+| 엔트리 타입 | 기록 내용 |
+| --- | --- |
+| `message` | provider·model·내용·토큰 사용량이 담긴 사용자/어시스턴트 메시지 |
+| `model_change` | role(`default`, `smol`, `vision` 등)의 모델 전환 |
+| `thinking_level_change` | 활성 thinking 레벨 변경 |
+| `service_tier_change` | 서비스 티어 변경 |
+| `compaction` | 오래된 히스토리를 대체하는 요약 ([컨텍스트와 Compaction](/ko/docs/concepts/context-and-compaction) 참고) |
+| `branch_summary` | 버려진 `/tree` 브랜치의 요약 |
+| `label` | 특정 엔트리에 붙인 이름표(체크포인트) |
+| `mode_change` | 모드 전환(예: `plan`)과 그 데이터 |
+| `mcp_tool_selection` | 선택된 MCP 디스커버리 도구 |
+| `custom` / `custom_message` | 확장 상태, 그리고 확장이 주입한 컨텍스트 |
+
+큰 내용은 관리 가능하게 유지됩니다. 50만 자를 넘는 문자열은 `[Session persistence truncated large content]` 알림과 함께 잘리고, base64 이미지 블록은 `~/.gjc/agent/blobs/<sha256>` blob 스토어로 분리 저장한 뒤 로드 시 복원합니다.
+
+<Callout type="info">
+저장은 세션이 어시스턴트 메시지를 최소 하나 만들 때까지 미뤄집니다. 그 전까지 엔트리는 메모리에만 있습니다. 그래서 응답을 한 번도 받지 못한 세션은 디스크에 기록되지 않습니다.
+</Callout>
+
+## 트리 모델
+
+디스크의 로그는 append-only지만 런타임 동작은 **트리 기반**입니다:
+
+- 헤더가 아닌 모든 엔트리는 `id`와 `parentId`를 가집니다.
+- 현재 위치는 리프 포인터(`leafId`)입니다.
+- 엔트리를 추가하면 현재 리프의 자식이 만들어지고, 그게 새 리프가 됩니다.
+- 브랜칭은 리프가 가리키는 위치만 바꿉니다. 히스토리를 다시 쓰지 않습니다.
+
+덕분에 `/tree` 내비게이션과 브랜칭이 가볍고 비파괴적입니다. `/tree`는 현재 세션 파일 안에서 이동하고, `/branch`는 선택한 사용자 메시지에서 갈라진 새 세션 파일을 만듭니다.
+
+## 전환과 최근 목록
+
+세션을 찾고 resume하는 경로는 몇 가지입니다.
+
+**최근 목록**은 두 가지 파이프라인을 씁니다:
+
+- 가벼운 요약 뷰는 각 파일의 앞 4 KB만 읽어 헤더와 첫 사용자 텍스트 미리보기를 파싱하고 파일 mtime으로 정렬합니다. 표시 이름 우선순위는 `title` → 첫 사용자 프롬프트 → 세션 id → 파일명입니다.
+- resume 피커와 ID 매칭은 파일 전체를 읽어 더 풍부한 `SessionInfo`(id, cwd, title, 메시지 수, 첫 메시지, 타임스탬프)를 만들고, **메시지가 0개인 세션은 제외**합니다. 그 세션은 resume할 수 없습니다.
+
+**세션 피커**(TUI)는 화살표/페이지 이동, Enter 선택, Esc 취소, Ctrl+C 종료, 그리고 id·title·cwd·첫 메시지·경로에 대한 퍼지 검색을 지원합니다. 현재 디렉터리 범위의 세션만 표시합니다.
+
+**인-프로세스 전환**(`switchSession`)은 resume 계열 작업 뒤에서 일어나는 런타임 전환입니다. 취소 가능한 `session_before_switch` 훅을 내보내고, 진행 중인 작업을 중단하고, 대기 중인 쓰기를 flush하고, 세션 파일 포인터를 옮기고, 새 리프에서 컨텍스트를 재구성하고, 가능하면 기본 모델·thinking 레벨·서비스 티어를 복원한 뒤 `session_switch`를 내보내고 UI 채팅과 todo를 새로고침합니다.
+
+## 세션 작업
+
+<Tabs items={["dump", "export", "share", "fork", "resume", "continue"]}>
+<Tab value="dump">
+
+`/dump`는 현재 세션을 텍스트로 클립보드에 복사합니다. 시스템 프롬프트, 활성 모델·thinking 레벨, 도구 정의, 메시지, thinking 블록, 도구 호출·결과, custom/hook/compaction 엔트리를 직렬화합니다. 저장 상태는 바꾸지 않으며, 인-메모리 세션에서도 동작합니다.
+
+</Tab>
+<Tab value="export">
+
+`/export [path]`는 세션 헤더·엔트리·리프, 현재 시스템 프롬프트, 도구 설명을 담은 HTML 파일을 쓰고 엽니다. CLI에서는 `--export <session.jsonl> [outputPath]`로 세션을 시작하지 않고 파일을 내보낼 수 있습니다.
+
+```bash
+gjc --export ~/.gjc/agent/sessions/--work-pi--/1700000000_1f9d2a6b.jsonl out.html
+```
+
+`--copy` / `clipboard` / `copy` 인자는 여기서 거부되며 `/dump`를 쓰라고 안내합니다. 인자 파싱은 공백 기준이라 공백이 든 따옴표 경로는 보존되지 않습니다.
+
+</Tab>
+<Tab value="share">
+
+`/share`(인터랙티브 전용)는 먼저 세션을 임시 HTML 파일로 export한 뒤:
+
+1. `~/.gjc/agent`에 커스텀 share 스크립트(`share.ts`, `share.js`, `share.mjs`)가 있으면 그것을 사용하고, 반환된 URL/메시지를 표시·열기합니다.
+2. 없으면 비공개 GitHub gist(`gh gist create --public=false`)로 폴백하고, `https://gistpreview.github.io/?<id>` 미리보기 URL을 만들어 엽니다.
+
+커스텀 share 스크립트가 있는데 실패하면 명령은 에러로 끝납니다. gist로 폴백하지 **않습니다**.
+
+</Tab>
+<Tab value="fork">
+
+`/fork`는 현재 세션에서 새 세션 파일을 만들고 활성 정체성을 그쪽으로 전환합니다. 새 헤더는 새 id와 타임스탬프를 받고, `cwd`는 그대로 두며, 이전 세션 id를 `parentSession`으로 기록합니다. 모든 엔트리는 그대로 복사되고, 아티팩트 디렉터리는 best-effort로 복사됩니다.
+
+CLI에서는 `--fork <id|path>`가 시작 전에 소스 세션을 현재 범위로 fork합니다. fork는 지속 세션이 필요합니다. 인-메모리(`--no-session`) 세션이나 스트리밍 중에는 실패합니다.
+
+</Tab>
+<Tab value="resume">
+
+`/resume`는 현재 범위의 세션 피커를 열고 선택한 세션으로 전환합니다. CLI에서는:
+
+- `--resume`(값 없음)은 세션 목록을 띄우고 피커를 엽니다.
+- `--resume <id|path>`는 바로 엽니다. 경로 같으면 그 파일을, 아니면 현재 범위에서 id prefix로, 그다음 전역에서 매칭합니다. 매칭이 **다른 프로젝트**에 속하면 CLI가 현재 디렉터리로 fork할지 물어봅니다.
+
+</Tab>
+<Tab value="continue">
+
+`--continue`는 시작 시 가장 적절한 최근 세션을 resume합니다. 먼저 터미널 단위 breadcrumb를 읽고(터미널과 cwd가 맞고 파일이 아직 있는지 검증), 그다음 가장 최근 수정된 세션으로 폴백하며, 아무것도 없으면 새 세션을 만듭니다. 인터랙티브 `/continue` 명령은 없습니다.
+
+</Tab>
+</Tabs>
+
+<Callout type="warn">
+인-메모리 세션(`--no-session`)은 export·share·fork할 수 없습니다. `/dump`는 파일이 아니라 라이브 에이전트 상태를 직렬화하므로 여전히 동작합니다.
+</Callout>
+
+## Worktree 격리
+
+브랜치 단위·일회성 작업이라면 격리된 Git worktree에서 실행해 메인 체크아웃을 깨끗이 유지하세요:
+
+```bash
+gjc --tmux --worktree <path>
+```
+
+작업 디렉터리마다 세션 범위가 분리되므로, worktree 실행은 자기만의 세션 네임스페이스를 갖습니다. 실험엔 별도 경로를 쓰고, 끝나면 worktree를 버리면 됩니다.
+
+## 관련 문서
+
+<Cards>
+<Card title="컨텍스트와 Compaction" href="/ko/docs/concepts/context-and-compaction" />
+<Card title="모델과 Provider" href="/ko/docs/concepts/models-and-providers" />
+<Card title="설정" href="/ko/docs/reference/configuration" />
+</Cards>

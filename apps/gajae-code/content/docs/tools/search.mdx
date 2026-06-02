@@ -1,0 +1,128 @@
+---
+title: Search and navigation tools
+description: find, search, search_tool_bm25, ast-grep, lsp, and resolve — locate files, match content, query AST, and navigate code.
+---
+
+This family answers "where is it?" and "what is it?" — from filename globbing to regex content matches, AST patterns, and language-server navigation.
+
+## `find`
+
+Find filesystem paths by glob. Reach for `find` when the selection criterion is the filename or path; reach for [`search`](#search) when it is file contents.
+
+| Input | Type | Required | Description |
+| --- | --- | --- | --- |
+| `paths` | `string[]` | Yes | Globs, files, or directories. Multiple entries may merge into one brace-union search. |
+| `hidden` | `boolean` | No | Include hidden files. Defaults to `true`. |
+| `limit` | `number` | No | Max returned paths. Defaults to `1000`. |
+
+- A path with no glob chars searches with an implicit `**/*`; a bare top-level glob like `*.ts` becomes `**/*.ts`; `src/*.ts` stays a non-recursive segment under `src`.
+- Results are sorted most-recently-modified first.
+- `.gitignore` is always honored; there is no model-facing flag to disable it.
+- Searching from the filesystem root `/` is rejected. No matches returns `No files found matching pattern`.
+
+## `search`
+
+Search file contents with a regex across files, directories, globs, and internal URLs.
+
+| Input | Type | Required | Description |
+| --- | --- | --- | --- |
+| `pattern` | `string` | Yes | Regex. Multiline is enabled only when the pattern contains a newline or the sequence `\n`. Escape literal braces (for example ``interface\{\}``). |
+| `paths` | `string[]` | Yes | Files, directories, globs, or internal URLs (no globs on internal URLs). |
+| `i` | `boolean` | No | Case-insensitive. Defaults to `false`. |
+| `gitignore` | `boolean` | No | Respect `.gitignore` in directory scans. Defaults to `true`. |
+| `skip` | `number` | No | Global match offset for pagination. Defaults to `0`. |
+
+Match lines are `*anchor|line` for matches and ` anchor|line` for context (hashline: `*5th|content`; plain: `*5|content`). Directory results are grouped by file under `# <path>` headings. Defaults: 1 line of context before and 3 after.
+
+<Callout type="info">
+The visible page shows the first `100` matches; long lines are truncated at `1024` characters. Use `skip` to page through more. The anchors are consumed by [`edit`](/docs/tools/files).
+</Callout>
+
+## `search_tool_bm25`
+
+Search the hidden tool-discovery index and activate the top matches for the current session. This finds *other tools*, not file content.
+
+| Input | Type | Required | Description |
+| --- | --- | --- | --- |
+| `query` | `string` | Yes | Natural-language or keyword query. Empty-after-trim is rejected. |
+| `limit` | `integer` | No | Max matches to return and activate. Defaults to `8`. |
+
+It ranks discoverable tools with BM25, activates the matches through `activateDiscoveredTools()`, and returns a compact JSON summary:
+
+```json
+{"query":"...","activated_tools":["..."],"match_count":2,"total_tools":17}
+```
+
+Activated tools become available before the next model call in the same turn. The tool only appears when `tools.discoveryMode !== "off"`; in `"all"` mode it can surface hidden discoverable built-ins (defaults `read`, `bash`, `edit` stay active).
+
+## `ast-grep`
+
+Structural code search over supported source files via native ast-grep.
+
+| Input | Type | Required | Description |
+| --- | --- | --- | --- |
+| `pat` | `string` | Yes | A single AST pattern. Must parse as one valid AST node for the inferred language. |
+| `paths` | `string[]` | Yes | Files, directories, globs, or internal URLs with backing files (no globs on internal URLs). |
+| `skip` | `number` | No | Match offset. Defaults to `0`. |
+
+Pattern grammar:
+
+| Token | Meaning |
+| --- | --- |
+| `$NAME` | Capture one AST node. |
+| `$_` | Match one node without binding. |
+| `$$$NAME` | Capture zero or more nodes. |
+| `$$$` | Match zero or more nodes without binding. |
+
+Metavariable names must be uppercase and stand for whole nodes; reusing a name requires identical code at each occurrence. Languages are inferred per file from a broad catalog (`javascript`, `typescript`, `tsx`, `python`, `go`, `rust`, `java`, `c`, `cpp`, `ruby`, `php`, `json`, `yaml`, `html`, `css`, and many more). Matches render as `*LINE+HASH|text` (hashline) or `*LINE|text`, with optional `meta: NAME=value` lines. The visible result defaults to `50` matches.
+
+## `lsp`
+
+Query language servers for diagnostics, navigation, symbols, renames, code actions, capabilities, and raw requests.
+
+| Input | Type | Required | Description |
+| --- | --- | --- | --- |
+| `action` | enum | Yes | `diagnostics`, `definition`, `references`, `hover`, `symbols`, `rename`, `rename_file`, `code_actions`, `type_definition`, `implementation`, `status`, `reload`, `capabilities`, `request`. |
+| `file` | `string` | No | File path; also a glob for `diagnostics`; `"*"` for workspace forms. |
+| `line` | `number` | No | 1-indexed line for position-based actions. Defaults to `1`. |
+| `symbol` | `string` | No | Substring to resolve the column; supports `name#N` occurrence selectors. |
+| `query` | `string` | No | Workspace symbol query, code-action selector, or LSP method for `action=request`. |
+| `new_name` | `string` | No | Required for `rename` and `rename_file`. |
+| `apply` | `boolean` | No | Apply for `rename`/`rename_file` (default on); for `code_actions`, list unless `true`. |
+| `timeout` | `number` | No | Seconds, clamped `5..60`, default `20`. |
+
+Common actions:
+
+- **`diagnostics`** — per-file or glob diagnostics; `file: "*"` runs a workspace check (`cargo check`, `npx tsc --noEmit`, `go build ./...`, or `pyright`).
+- **`definition` / `type_definition` / `implementation` / `references`** — jump-to and find-usages with surrounding context.
+- **`hover`** — type/signature text at a position.
+- **`symbols`** — document symbols, or workspace symbols matching `query`.
+- **`rename` / `rename_file`** — symbol or file rename (preview with `apply: false`).
+- **`code_actions`** — list or apply quick-fixes; `query` filters in list mode, selects (index or title substring) in apply mode.
+- **`status` / `reload` / `capabilities` / `request`** — server introspection and raw JSON-RPC.
+
+<Callout type="info">
+`lsp` is gated on `lsp.enabled` and the session. Servers are auto-detected from root markers and `defaults.json`, or configured per project. `GJC_DISABLE_LSPMUX=1` disables `lspmux` wrapping.
+</Callout>
+
+## `resolve`
+
+Finalize a queued preview action by applying or discarding it. It is a hidden tool: it only works after another tool (such as [`ast-edit`](/docs/tools/files)) stages a preview and forces a one-shot `resolve` choice.
+
+| Input | Type | Required | Description |
+| --- | --- | --- | --- |
+| `action` | `"apply" \| "discard"` | Yes | Commit or reject the queued preview. |
+| `reason` | `string` | Yes | Explanation passed through to the queued callback. |
+
+`apply` runs the producer's apply callback; `discard` runs its reject callback or returns `Discarded: <label>. Reason: <reason>`. With no pending preview it errors with `No pending action to resolve.`
+
+## When to use which
+
+| Goal | Tool |
+| --- | --- |
+| Find files by name or path | `find` |
+| Match text/regex in file contents | `search` |
+| Discover and activate more tools | `search_tool_bm25` |
+| Match a syntactic code pattern | `ast-grep` |
+| Diagnostics, go-to-definition, rename | `lsp` |
+| Apply or discard a staged preview | `resolve` |

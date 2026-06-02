@@ -1,0 +1,135 @@
+---
+title: Guides
+description: An end-to-end walkthrough of a real bug-fix using the Gajae-Code loop — deep-interview to clarify, ralplan to review, ultragoal to carry the work, optional team for parallel execution, and the evidence you get back.
+---
+
+This guide walks one task all the way through the Gajae-Code working loop: a concrete bug fix. It follows the operator sequence from the README — `deep-interview` to clarify, `ralplan` to review the approach, `ultragoal` to carry the work through implementation, revision, and verification, plus an optional `team` step when parallel workers help.
+
+The point of the walkthrough is to show what to expect at each step and what evidence you get back. The sequence describes the operator flow, not hidden automation: the agent still reports what it changed, what it revised after findings, what checks ran, and what evidence supports the fix.
+
+## Before you start
+
+Launch the recommended tmux-backed session. For a bug fix you usually want a branch-local workspace so the main checkout stays clean, so run inside an isolated Git worktree:
+
+```sh
+gjc --tmux --worktree <path>
+```
+
+Use a dedicated path for throwaway or branch-specific work. From here, the loop is `deep-interview -> ralplan -> ultragoal`, with `team` added only when the work benefits from coordinated parallel workers.
+
+## The walkthrough
+
+<Steps>
+
+<Step>
+
+### Clarify the bug with `deep-interview`
+
+Start by removing ambiguity before any planning or code change. Run `deep-interview` to pin down the bug, the affected behavior, the non-goals, and the acceptance checks that will prove the fix works.
+
+```text
+/skill:deep-interview clarify the bug, affected behavior, non-goals, and acceptance checks
+```
+
+**What to expect:** a clarified bug report — not a code change. The artifact stays `pending approval`; `deep-interview` does not start implementation on its own. You leave this step with shared agreement on what's broken and what "fixed" means.
+
+</Step>
+
+<Step>
+
+### Turn it into a reviewed plan with `ralplan`
+
+Once intent and acceptance criteria are clear, build and critique a plan before any mutation. `ralplan` turns the clarified bug report into a fix plan and runs it past the read-only `critic` so weak sequencing or thin verification gets caught before code is touched.
+
+```text
+/skill:ralplan turn the clarified bug report into a reviewed fix plan
+```
+
+**What to expect:** a reviewed fix plan that also stays `pending approval`. Nothing is implemented yet. You approve the plan explicitly when you're satisfied with the approach, sequencing, and the checks it proposes.
+
+</Step>
+
+<Step>
+
+### Create durable goals with `ultragoal`
+
+Hand the approved plan to `ultragoal`, which tracks the work as durable goals through implementation, revision, and verification. Pass the plan with `--brief-file`:
+
+```sh
+gjc ultragoal create-goals --brief-file <approved-plan>
+```
+
+**What to expect:** the work is split into an auditable ledger of goals. Workflow ledgers, plans, and specs persist under `.gjc/` so the trail can be reviewed later.
+
+</Step>
+
+<Step>
+
+### (Optional) Split the work with `team`
+
+Only when the task benefits from coordinated parallel workers, add a `team` step. For example, split the implementation and verification of the bug fix across two `executor` workers backed by tmux:
+
+```sh
+gjc team 2:executor "split implementation and verification for this bug fix"
+```
+
+**What to expect:** `team` is an optional execution mode, not a required handoff. Skip it for single-threaded fixes; reach for it when parallel tmux workers genuinely help.
+
+</Step>
+
+<Step>
+
+### Complete the goals and collect evidence
+
+Drive the goals to completion. `ultragoal` carries the work through to a final evidence summary rather than stopping at "wrote some code."
+
+```sh
+gjc ultragoal complete-goals
+```
+
+**What to expect:** a finished task that comes with the checks that ran and what they showed. The agent reports what it changed, what it revised after findings, which checks ran, and the evidence that supports the fix.
+
+</Step>
+
+</Steps>
+
+## The full operator sequence
+
+For reference, the whole pass in one block:
+
+```text
+/skill:deep-interview clarify the bug, affected behavior, non-goals, and acceptance checks
+/skill:ralplan turn the clarified bug report into a reviewed fix plan
+gjc ultragoal create-goals --brief-file <approved-plan>
+# Optional only for parallel work:
+gjc team 2:executor "split implementation and verification for this bug fix"
+gjc ultragoal complete-goals
+```
+
+## What the evidence looks like
+
+A finished `ultragoal` pass does not end at the diff. The agent reports:
+
+- **What it changed** — the concrete edits, fixes, and refactors the `executor` made.
+- **What it revised after findings** — adjustments made once verification or review surfaced problems.
+- **What checks ran** — the verification steps from the plan, and what they showed.
+- **What evidence supports the fix** — the persisted trail under `.gjc/` that makes the result auditable later.
+
+## Routing: use the smallest workflow that fits
+
+This bug-fix pass uses the full loop, but most tasks need less. Pick the smallest workflow that satisfies the request:
+
+1. Direct implementation for clear, low-risk edits.
+2. `deep-interview` when intent, scope, or acceptance criteria are ambiguous.
+3. `ralplan` when requirements are clear enough to plan but architecture, sequencing, or verification needs consensus.
+4. `ultragoal` when work should be split into durable goals with an auditable ledger.
+5. `team` when approved work benefits from parallel workers.
+
+## Keep going
+
+<Cards>
+  <Card title="Core Concepts" href="/docs/concepts" />
+  <Card title="Workflows" href="/docs/workflows" />
+  <Card title="ultragoal" href="/docs/workflows/ultragoal" />
+  <Card title="team" href="/docs/workflows/team" />
+</Cards>

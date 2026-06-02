@@ -1,13 +1,13 @@
 ---
 title: コアコンセプト
-description: Gajae-Code の動作を定義するワークループ、セッションと worktree の隔離、モデルルーティング、永続的な検証。
+description: Gajae-Code の動作を定義するワークループ、小さな表面の哲学、セッションと worktree の隔離、モデルルーティング、永続的な検証。
 ---
 
-Gajae-Code は公開エージェントの表面を小さく、その周囲のランタイムを信頼できるものに保ちます。いくつかの概念がその挙動を説明します。
+Gajae-Code（`gjc`）は公開エージェントの表面を意図的に小さく保ちつつ、その周囲のランタイムを信頼できるものにします。いくつかの概念がその挙動を説明します。この harness は skill を増やすのではなく、1 つの方法をより良くすることで進化します。
 
 ## ワークループ
 
-Gajae-Code は肥大した skill 群ではなく、1 つの方法に集中します：
+Gajae-Code は肥大した既定表面ではなく、1 つの有用なループに集中します：
 
 ```text
 deep-interview -> ralplan -> ultragoal
@@ -21,27 +21,76 @@ deep-interview -> ralplan -> ultragoal
 
 この順序は隠れた自動化ではなく操作の流れを説明します。エージェントは何を変え、発見後に何を改訂し、どの検査を実行し、どの証拠が結果を裏付けるかを報告します。
 
+具体的な修正フローはおおむね次のようになります：
+
+```text
+/skill:deep-interview バグ・影響する挙動・非目標・受け入れ検査を明確にする
+/skill:ralplan 明確化したバグ報告をレビュー済みの修正計画に変える
+gjc ultragoal create-goals --brief-file <approved-plan>
+# 並列作業が必要な場合のみ：
+gjc team 2:executor "split implementation and verification for this bug fix"
+gjc ultragoal complete-goals
+```
+
+### ワークフロールーティング
+
+要求を満たす最小のワークフローを使います：
+
+1. 明確で低リスクな編集は直接実装します。
+2. 意図・範囲・受け入れ基準が曖昧なら `deep-interview`。
+3. 計画できるほど要件は明確だが、アーキテクチャ・順序・検証に合意が必要なら `ralplan`。
+4. 監査可能な台帳を持つ永続 goal に分けるべきなら `ultragoal`。
+5. 承認済みの作業が並列ワーカーで得をするなら `team`。
+
+実行を明示的に承認するまで、計画成果物は `pending approval` のままです。`deep-interview` と `ralplan` は自ら実装を始めません。
+
+## 小さな表面の哲学
+
+Gajae-Code はちょうど 4 つの既定ワークフロー skill と 4 つの同梱ロールエージェントを提供します。肥大した既定 skill 群はありません。harness はこの小さな方法をより良くすることで改善します。
+
+| ワークフロー skill | 役割                                              |
+| ------------------ | ------------------------------------------------- |
+| `deep-interview`   | 計画やコード変更の前に曖昧さを取り除く。          |
+| `ralplan`          | 変更前に計画を立て批評する。                      |
+| `team`             | 複数ワーカーが役立つ時に tmux 並列実行を任意で調整。|
+| `ultragoal`        | 実装・改訂・検証・証拠まとめを通じ永続 goal を追跡。|
+
+| ロールエージェント | 役割                              |
+| ------------------ | --------------------------------- |
+| `executor`         | 範囲限定の実装・修正・リファクタ。|
+| `architect`        | 読み取り専用のアーキテクチャ／コードレビュー。|
+| `planner`          | 読み取り専用の順序付けと受け入れ基準。|
+| `critic`           | 読み取り専用の計画批評と実行可能性レビュー。|
+
+結果は推論しやすい小さな CLI ですが、必要なときはセッション状態・worktree 隔離・tmux オーケストレーション・モデルルーティング・ツール実行・永続証拠をすべて提供します。
+
 ## セッションと worktree の隔離
 
-各実行は永続状態を持つセッションです — 履歴、モデル変更、証拠が記録されます。セッションは切り替え・fork・resume・エクスポート・共有できます。
-
-ブランチ単位で安全に作業するには、隔離された Git worktree で実行します：
+各実行は永続状態を持つセッションです — 履歴、モデル変更、証拠が記録されます。ブランチ単位で安全に作業するには、隔離された Git worktree で実行します：
 
 ```bash
 gjc --tmux --worktree <path>
 ```
 
+完全なライフサイクルは[セッションと worktree](/ja/docs/concepts/sessions)を参照してください。
+
 ## モデルルーティング
 
-Gajae-Code はすべての具体的な provider モデルを保持し、その上に canonical 層を構築します。正確な `provider/model` を固定することも、provider をまたいで統合される canonical id を選ぶこともできます。
+Gajae-Code はすべての具体的な provider モデルを保持し、その上に canonical 層を構築します。正確な `provider/model` を固定することも、provider をまたいで統合される canonical id を選ぶこともできます。**コンテキストプロモーション**はコンテキスト超過時、compaction にフォールバックする前に小コンテキストモデルを大きいコンテキストの同族モデルへ切り替えて復旧します。
 
-- **モデルロール**がジョブをモデルに対応付けます：`default`、`smol`、`slow`、`vision`、`plan`、`designer`、`commit`、`task`。各ロールに thinking レベル（`:low`、`:medium`、`:high`、`:xhigh`）を付けられます。
-- 実行時は TUI の `/model`、または CLI の `--model` / `--models`（厳密・canonical・あいまい・`openai/*` のような glob）で選択します。
-- ローカルランタイム（Ollama、llama.cpp、LM Studio）は到達可能なら自動検出されます。
-- **コンテキストプロモーション**：コンテキスト超過時、compaction にフォールバックする前に小コンテキストモデルを同 provider の大きいモデルへ切り替えます。
+[モデルルーティングと provider](/ja/docs/concepts/models-and-providers)と[コンテキストプロモーションと圧縮](/ja/docs/concepts/context-and-compaction)を参照してください。
 
-`models.yml` の形式、provider プリセット、認証は[リファレンス](/ja/docs/reference)を参照してください。
+## 永続的な検証と証拠
 
-## 永続的な検証
+ループは「コードを書いた」で止まりません。`ultragoal` が実装・改訂・検証・最終的な証拠まとめまで目標を追跡するため、完了したタスクには実行された検査とその結果が伴います。ワークフロー台帳・計画・仕様は `.gjc/` 配下に残り、後から監査できます。
 
-ループは「コードを書いた」で止まりません。`ultragoal` が実装・改訂・検証・最終的な証拠のまとめまで目標を追跡するため、完了したタスクには実行された検査とその結果が伴います。
+永続的な知識がセッションを越えて引き継がれる仕組みは[メモリ：recall と retain](/ja/docs/concepts/memory)を参照してください。
+
+## コンセプトを見る
+
+<Cards>
+  <Card title="セッションと worktree" href="/ja/docs/concepts/sessions" />
+  <Card title="モデルルーティングと provider" href="/ja/docs/concepts/models-and-providers" />
+  <Card title="コンテキストプロモーションと圧縮" href="/ja/docs/concepts/context-and-compaction" />
+  <Card title="メモリ：recall と retain" href="/ja/docs/concepts/memory" />
+</Cards>

@@ -1,6 +1,10 @@
 {
   "title": "核心概念",
   "pages": [
-    "index"
+    "index",
+    "sessions",
+    "models-and-providers",
+    "context-and-compaction",
+    "memory"
   ]
 }

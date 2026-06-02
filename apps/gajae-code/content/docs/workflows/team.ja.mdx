@@ -1,0 +1,108 @@
+---
+title: team
+description: 実際の GJC ワーカーセッションを調整する、任意の tmux ベース並列実行モード — 必須の引き継ぎ手順ではありません。
+---
+
+`team` は Gajae-Code の tmux ベースのマルチワーカー実行モードです。現在の tmux リーダーウィンドウを分割して実際の `gjc` ワーカー CLI セッションを起動し、`.gjc/state/team/` 配下の状態ファイルと `gjc team api` interop 面でそれらを調整します。
+
+これは**任意の実行モードであり、必須の引き継ぎではありません**。調整された並列ワーカーが本当に役立つときだけ使います。セッション内で完結する有界な並列作業なら、通常はネイティブサブエージェントで十分です。
+
+## team とネイティブサブエージェント
+
+| 用途 | タイミング |
+| --- | --- |
+| **ネイティブサブエージェント** | 1 つのリーダースレッドが数個の独立サブタスクを展開して直接待つ、セッション内の有界並列。 |
+| **`gjc team`** | 永続的で可視な tmux ワーカー、共有タスク状態、ワーカーメールボックス、worktree、明示的なライフサイクル制御、または 1 回のローカル推論を超えて存続すべき長時間実行が必要なとき。 |
+
+ネイティブサブエージェントは team 実行を補完できますが、tmux team ランタイムのステートフルな調整契約を置き換えるものではありません。
+
+## 呼び出し
+
+```bash
+gjc team [N:agent-type] "<task description>"
+```
+
+`N:agent-type` はワーカー数と共有ロールプロンプトを選びます。素の `gjc team "task"` は既定で **executor ワーカー 3 体**、`gjc team 1:executor "task"` は明示的な単一ワーカー形式です。ワーカー数は最大 20 です。
+
+```bash
+gjc team 2:executor "split implementation and verification for this bug fix"
+gjc team 3:executor "analyze feature X and report flaws"
+gjc team "debug flaky integration tests"
+```
+
+`team` はアタッチ済みの tmux リーダーペイン内で起動する必要があります。GJC App や tmux 外の通常セッションでは、まずシェルから `gjc` CLI を起動します。
+
+### 前提条件
+
+- `tmux` がインストール済み（`tmux -V`）。
+- 現在のリーダーセッションが tmux 内（`$TMUX` が設定済み）。
+- `gjc` が意図したインストール/ビルドに解決される。
+
+tmux 外では、非 dry-run 起動は team 状態や worktree を作る前に失敗します。
+
+## 起動時の動作
+
+非 dry-run 起動時、`gjc team` は：
+
+- 引数（`N`、`agent-type`、task）を解析し、現在の tmux リーダーコンテキストを検出します。
+- `.gjc/state/team/<team>/` 配下に team 状態を初期化します（`config.json`、`manifest.v2.json`、`tasks/task-1.json`、`mailbox/worker-1.json`）。
+- 現在のウィンドウを分割します — ワーカー 1 はリーダーの右、追加ワーカーは右列に積まれ、おおよそ 50/50 の左リーダー/右ワーカーのレイアウトを保ちます。
+- 各ワーカーを `GJC_TEAM_NAME`、`GJC_TEAM_WORKER_ID`、`GJC_TEAM_STATE_ROOT` を設定した完全な `gjc` ワーカー CLI セッションとして起動します。
+- 制御をリーダーに戻します。リーダーは既存の左ペインに留まります。
+
+ワーカーは team 状態ルートを共有する専用 git worktree で動くことがあります。リーダー監視中、clean-ahead のワーカー履歴はリーダーへマージされ、分岐した履歴は cherry-pick され、衝突は中止・記録されてリーダーメールボックスへ報告されます。
+
+## ライフサイクル
+
+1. team を開始し、起動の証拠（team 行、tmux ターゲット、ワーカーペイン id、状態ディレクトリ）を確認します。
+2. `gjc team status <team>` または `gjc team resume <team>` で監視します。例：`sleep 30 && gjc team status <team>`。
+3. シャットダウン前に終端タスク状態（`pending=0`、`in_progress=0`、`failed=0`）を待ちます。
+4. `gjc team shutdown <team>` を実行し、`phase=complete` とワーカー状態 `stopped` を確認します。
+
+```bash
+gjc team status <team-name>
+gjc team resume <team-name>
+gjc team shutdown <team-name>
+```
+
+- `status` と `resume` は変更を伴う監視パスです。スナップショットを読み、保留中のワーカー worktree 統合を適用してから、タスク数、ワーカー状態、tmux ターゲット/ペインの証拠、`integration_by_worker` を返します。
+- `shutdown` は記録済みのワーカーペインのみ（保存された tmux ターゲットに今も属し、リーダーペインでないことを確認した上で）終了し、ワーカーを stopped にし、タスク状態から `phase` を設定します — 全タスク完了時のみ `complete`、失敗/ブロック時は `failed`、作業が pending/進行中で残れば `cancelled`。tmux セッションは決して終了させず、`.gjc/state/team/<team>` を証拠として保持します。
+
+## 機械可読 interop
+
+タスクライフサイクル操作には `gjc team api` を使います：
+
+```bash
+gjc team api claim-task --input '{"team_name":"my-team","worker_id":"worker-1"}' --json
+gjc team api transition-task-status --input '{"team_name":"my-team","task_id":"task-1","to":"completed","worker_id":"worker-1","claim_token":"<claim-token>","evidence":"summary of completed work"}' --json
+```
+
+標準のワーカーライフサイクルは `worker-startup-ack` → `claim-task` → `transition-task-status`（claim token、ワーカー id、完了証拠を含む）→ `release-task-claim` です。全操作一覧は `gjc team api --help` を参照してください。
+
+## dry-run 状態
+
+`gjc team ... --dry-run --json` は tmux ペインを起動せずに、実際の起動と同じ機械可読の状態ツリーを作ります。生成された状態は一時的なスモークテスト/レビュー状態として扱ってください — `.gjc/state/team` の内容はコミットせず、不要になったら生成された team ディレクトリを削除します。
+
+## 環境変数
+
+| 変数 | 動作 |
+| --- | --- |
+| `GJC_TEAM_STATE_ROOT` | team 状態ルートを上書き（既定 `<cwd>/.gjc/state/team`）。 |
+| `GJC_TEAM_TMUX_COMMAND` | team 起動用の tmux バイナリ/コマンド上書き（既定 `tmux`）。 |
+| `GJC_TEAM_WORKER_COMMAND` | ワーカー GJC コマンド上書き（既定はアクティブな `gjc` エントリポイントに解決）。 |
+| `GJC_TEAM_WORKER_CLI` | team ワーカー CLI セレクタ。許可値は `auto` または `gjc`。 |
+| `GJC_TEAM_WORKER_CLI_MAP` | カンマ区切りのワーカー CLI セレクタマップ。各項目は `auto` または `gjc`。 |
+
+ワーカー CLI 選択はチームメイト専用です。`auto` または `gjc` のみ許可され、`codex`、`claude`、`gemini` などのレガシー/provider 値は起動前に拒否されます。
+
+全一覧は[環境変数](/ja/docs/reference/environment-variables)を参照してください。
+
+## team と ultragoal の併用
+
+`team` と [`ultragoal`](/ja/docs/workflows/ultragoal) はよく噛み合います。`ultragoal` はリーダー所有で永続し、`team` は可視の並列実行レーンを提供します。ワーカーはタスクと検証の証拠のみを返します — 目標状態を所有せず、ワーカー台帳を書かず、`gjc ultragoal checkpoint` を実行してはいけません。ワーカータスクが終端に達した後もチェックポイント権限はリーダーに残り、`ultragoal` が team を自動起動することはありません。
+
+<Cards>
+<Card title="ultragoal" href="/ja/docs/workflows/ultragoal" />
+<Card title="executor エージェント" href="/ja/docs/agents/executor" />
+<Card title="セッションと worktree" href="/ja/docs/concepts/sessions" />
+</Cards>

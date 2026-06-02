@@ -1,33 +1,39 @@
 ---
 title: 智能体
-description: 四个内置角色智能体 —— executor、architect、planner、critic —— 及其边界。
+description: 四个内置角色智能体 —— executor、architect、planner、critic —— 及其修改边界与在工作循环中的对应。
 ---
 
-Gajae-Code 内置四个边界清晰的角色智能体。两个写、两个只读。
+Gajae-Code 恰好内置四个边界清晰的角色智能体。它们是用于委派的任务角色智能体，不是工作流 skill。两条规则约束它们：**只有一个角色改动文件，其余三个严格只读。**
 
-| 智能体      | 角色                                   | 修改? |
-| ----------- | -------------------------------------- | ----- |
-| `executor`  | 有边界的实现、修复与重构。             | 是    |
-| `architect` | 只读的架构与代码评审。                 | 否    |
-| `planner`   | 只读的排序与验收标准。                 | 否    |
-| `critic`    | 只读的计划评审与可执行性审查。         | 否    |
+## 四个角色
 
-## executor
+| 智能体      | 角色                            | 修改?  | thinking |
+| ----------- | ------------------------------- | ------ | -------- |
+| `executor`  | 有边界的实现、修复与重构。       | **是** | medium   |
+| `architect` | 只读的架构与代码评审。           | 否     | high     |
+| `planner`   | 只读的排序与验收标准。           | 否     | medium   |
+| `critic`    | 只读的计划评审与可执行性审查。   | 否     | high     |
 
-完成有边界的实现工作：写代码、应用修复、执行重构。这是唯一改动文件的角色，并在规划阶段设定的范围内工作，而非无限开放。
+只读角色从不写入、编辑、格式化、提交、推送或改动文件。它们的产出是判断——评估、计划与裁决。只有 `executor` 改动文件，且在规划阶段设定的范围内进行，而非无限开放。
 
-## architect
+<Cards>
+  <Card title="executor" href="/zh/docs/agents/executor">把有边界的任务变为可工作、可验证的改动。唯一的写入者。</Card>
+  <Card title="architect" href="/zh/docs/agents/architect">带严重度分级发现的只读架构与代码评审。</Card>
+  <Card title="planner" href="/zh/docs/agents/planner">只读的排序、验收标准、风险与交接形态。</Card>
+  <Card title="critic" href="/zh/docs/agents/critic">只读的计划评审：可执行且可验证，还是不可。</Card>
+</Cards>
 
-用于架构与代码评审的只读评估角色。不触碰文件即可评估设计或现有代码库——产出是判断，而非编辑。
+## 在循环中的对应
 
-## planner
+角色智能体对应[工作流循环](/zh/docs/workflows)：
 
-排序工作并定义验收标准的只读角色。它把意图转为带明确"完成"条件的有序计划，再由 `ralplan` 评审。
+- **planner** 在 `deep-interview` / `ralplan` 中把意图转为带明确验收标准的有序计划。
+- **critic** 在任何变更前压力测试该计划，返回 `OKAY`、`ITERATE` 或 `REJECT`。
+- **executor** 在 `ultragoal` 下执行已批准的工作，保持 diff 精简并留下证据。
+- **architect** 在设计或变更需要评估时提供独立只读评审（`CLEAR` / `WATCH` / `BLOCK` 及 `APPROVE` / `COMMENT` / `REQUEST CHANGES`）。
 
-## critic
+这些角色的并行运行可用 `team` 协调。
 
-在任何变更前评审计划的合理性与可执行性的只读角色。它是循环中的怀疑者，寻找漏洞、风险和按字面无法执行的步骤。
+## 只读与写入
 
-## 在循环中的位置
-
-角色智能体对应[工作流循环](/zh/docs/workflows)：planner 与 critic 在 `deep-interview` / `ralplan` 中塑造并压力测试计划；executor 在 `ultragoal` 下执行；architect 在设计或变更需要独立评估时提供只读评审。这些角色的并行运行可用 `team` 协调。
+这种分离正是要点。计划、评审与复审与变更隔离，因此文件变更前计划已被压力测试，变更被复审时复审者无法"顺手就改"。委派时选最贴合的最窄角色：评估或计划用只读角色，只有确实要改动时才用 `executor`。

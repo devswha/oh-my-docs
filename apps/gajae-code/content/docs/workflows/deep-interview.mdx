@@ -1,0 +1,44 @@
+---
+title: deep-interview
+description: The clarification skill that removes ambiguity before any planning or code change — the real bug or feature, affected behavior, non-goals, and acceptance checks.
+---
+
+`deep-interview` is the first step of the [working loop](/docs/workflows). It removes ambiguity before any planning or code changes, so the rest of the loop builds on a clear, agreed understanding rather than a guess.
+
+## What it clarifies
+
+Before a plan is drawn or a file is touched, `deep-interview` pins down:
+
+- **The real bug or feature** — what is actually being asked for, separated from how it was first phrased.
+- **Affected behavior** — what user-visible or system behavior is in scope.
+- **Non-goals** — what is explicitly out of scope, so the work does not sprawl.
+- **Acceptance checks** — how you will know the work is done and correct.
+
+## Usage
+
+Invoke it inside a GJC session with `/skill:<name>`:
+
+```text
+/skill:deep-interview clarify the bug, affected behavior, non-goals, and acceptance checks
+```
+
+Describe the problem in your own words; the skill asks the questions needed to turn a vague request into something concrete enough to plan against.
+
+## When to use it
+
+<Cards>
+  <Card title="Use it when">
+    The request is vague, the blast radius is unclear, the bug report is incomplete, or the feature has implicit constraints that were never stated.
+  </Card>
+  <Card title="Skip it when">
+    The task is already fully specified and small — there is nothing left to disambiguate.
+  </Card>
+</Cards>
+
+## Where it fits in the loop
+
+```text
+deep-interview -> ralplan -> ultragoal
+```
+
+`deep-interview` feeds a clarified problem statement into [`ralplan`](/docs/workflows/ralplan), which turns it into a reviewed plan before any mutation. Skipping clarification tends to surface as rework later in [`ultragoal`](/docs/workflows/ultragoal), once findings contradict an assumption that was never checked.

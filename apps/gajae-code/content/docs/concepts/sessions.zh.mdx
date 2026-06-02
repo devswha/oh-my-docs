@@ -1,0 +1,87 @@
+---
+title: 会话与 Worktree
+description: 持久的会话状态、切换与最近列表、export/share/fork/resume 操作，以及 Git worktree 隔离。
+---
+
+每次 Gajae-Code 运行都是一个**会话**：可重放的持久记录。历史、模型变更、thinking 级别变更、compaction 摘要和证据都会保存，因此运行可在之后 resume、fork、导出或共享。
+
+## 会话存储什么
+
+会话以 JSONL（每行一个 JSON 对象）写入按工作目录划分的路径：
+
+```text
+~/.gjc/agent/sessions/--<cwd-encoded>--/<timestamp>_<sessionId>.jsonl
+```
+
+首行是会话头，其余每行是带类型的条目。运行时条目是**仅追加**的——分支导航只移动指针，不修改或删除已有条目。
+
+条目类型远不止聊天消息：
+
+| 条目类型 | 记录内容 |
+| --- | --- |
+| `message` | 含 provider、model、内容与 token 用量的用户/助手消息 |
+| `model_change` | 某角色（`default`、`smol`、`vision` 等）的模型切换 |
+| `thinking_level_change` | thinking 级别变更 |
+| `service_tier_change` | 服务层级变更 |
+| `compaction` | 替换旧历史的摘要（见[上下文与 Compaction](/zh/docs/concepts/context-and-compaction)） |
+| `branch_summary` | 被放弃的 `/tree` 分支摘要 |
+| `label` | 目标条目上的命名检查点 |
+| `mode_change` | 模式切换（如 `plan`）及其数据 |
+| `mcp_tool_selection` | 选中的 MCP discovery 工具 |
+| `custom` / `custom_message` | 扩展状态，以及扩展注入的上下文 |
+
+大内容会被控制：超过 50 万字符的字符串会以 `[Session persistence truncated large content]` 提示截断；base64 图片块会外置到 `~/.gjc/agent/blobs/<sha256>` blob 存储，加载时再还原。
+
+<Callout type="info">
+持久化会延迟到会话至少产生一条助手消息为止。在此之前条目只在内存中——从未得到回复的会话不会落盘。
+</Callout>
+
+## 树模型
+
+磁盘日志是仅追加的，但运行时行为是**基于树**的：
+
+- 每个非头条目都有 `id` 和 `parentId`。
+- 当前位置是叶指针（`leafId`）。
+- 追加条目会创建当前叶的子节点并成为新叶。
+- 分支只改变叶指向，不重写历史。
+
+因此 `/tree` 导航和分支既轻量又非破坏性。`/tree` 在当前会话文件内移动；`/branch` 从选中的用户消息分叉出新会话文件。
+
+## 切换与最近列表
+
+**最近列表**有两条管线：轻量摘要视图只读取每个文件前 4 KB，解析头部与首条用户文本预览，按文件 mtime 排序（显示名优先级：`title` → 首条用户提示 → 会话 id → 文件名）；resume 选择器与 ID 匹配读取完整文件，构建更丰富的 `SessionInfo`，并**排除零消息的会话**（这些不可 resume）。
+
+**会话选择器**（TUI）支持方向/翻页、Enter 选择、Esc 取消、Ctrl+C 退出，以及对 id、title、cwd、首条消息和路径的模糊搜索，仅列出当前目录范围内的会话。
+
+**进程内切换**（`switchSession`）是 resume 类操作背后的运行时转换：发出可取消的 `session_before_switch` 钩子、中止进行中的工作、flush 待写入、重指会话文件、从新叶重建上下文、尽量恢复默认模型/thinking 级别/服务层级，再发出 `session_switch` 并刷新 UI 聊天与待办。
+
+## 会话操作
+
+- **`/dump`** — 把当前会话以文本复制到剪贴板（系统提示、活动模型与 thinking 级别、工具定义、消息、thinking 块、工具调用与结果等）。不改变持久状态，对内存会话也有效。
+- **`/export [path]`** — 写出嵌入会话头/条目/叶、当前系统提示与工具描述的 HTML 文件并打开。CLI 用 `--export <session.jsonl> [outputPath]` 可不启动会话直接导出。`--copy` / `clipboard` / `copy` 在此被拒绝，提示改用 `/dump`。
+- **`/share`**（仅交互）— 先导出临时 HTML，然后：若 `~/.gjc/agent` 存在自定义 share 脚本（`share.ts`/`share.js`/`share.mjs`）则使用之；否则回退到私有 GitHub gist（`gh gist create --public=false`），生成 `https://gistpreview.github.io/?<id>` 预览。自定义脚本存在但失败时报错，**不**回退到 gist。
+- **`/fork`** — 从当前会话创建新会话文件并切换身份：新头获得新 id 与时间戳，`cwd` 不变，前一会话 id 记为 `parentSession`，条目原样复制。CLI 用 `--fork <id|path>`。fork 需要持久会话，内存会话或流式中会失败。
+- **`/resume`** / `--resume` — 打开当前范围的选择器；`--resume <id|path>` 直接打开：路径即开该文件，否则按 id 前缀在当前范围、再全局匹配；匹配属于**其他项目**时 CLI 会询问是否 fork 到当前目录。
+- **`--continue`** — 启动时先读终端 breadcrumb（校验终端、cwd 与文件存在），否则回退到最近修改的会话，都没有则新建。没有交互式 `/continue`。
+
+<Callout type="warn">
+内存会话（`--no-session`）无法 export、share 或 fork。`/dump` 仍可用，因为它序列化的是实时智能体状态。
+</Callout>
+
+## Worktree 隔离
+
+分支级或一次性工作建议在隔离的 Git worktree 中运行，以保持主检出干净：
+
+```bash
+gjc --tmux --worktree <path>
+```
+
+每个工作目录有独立会话范围，因此 worktree 运行拥有自己的会话命名空间。实验用专用路径，完成后丢弃 worktree 即可。
+
+## 相关
+
+<Cards>
+<Card title="上下文与 Compaction" href="/zh/docs/concepts/context-and-compaction" />
+<Card title="模型与 Provider" href="/zh/docs/concepts/models-and-providers" />
+<Card title="配置" href="/zh/docs/reference/configuration" />
+</Cards>

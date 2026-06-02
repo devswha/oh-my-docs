@@ -1,0 +1,81 @@
+---
+title: モデルルーティングと provider
+description: Gajae-Code が具体的な provider モデルを保持し、canonical 層へ統合し、ジョブをロールに対応付け、実行時にモデルを選ぶ仕組み。
+---
+
+Gajae-Code はアクセス可能なすべての具体的な provider モデルを保持し、その上に薄い **canonical** 層を構築して、単一の id を provider をまたいで解決できるようにします。どの変種が走るか気にする場合は正確な変種を固定し、そうでなければ canonical id を選び、利用可能で認証済みの provider を registry に選ばせます。
+
+このページは概念モデルを扱います。`models.yml` の形式、provider プリセット、資格情報の解決は[モデルと資格情報](/ja/docs/reference/models-and-credentials)を参照してください。
+
+## 具体モデル vs. canonical モデル
+
+2 つの層が併存します：
+
+- **具体モデル**は正確な `provider/modelId`（例：`openai-code/gpt-5.3-openai-code`、`anthropic/anthropic-model-opus-4-6`）。具体モデルを選ぶと統合（coalescing）を完全にスキップします。
+- **canonical モデル**は異なる provider の具体変種をまとめる公式 upstream id（例：`anthropic-model-opus-4-6`、`gpt-5.3-openai-code`）。
+
+複数の具体変種が同じ canonical id を共有する場合の解決順：
+
+1. 利用可能性と認証（無効・未認証の provider はスキップ）、
+2. `modelProviderOrder` 設定、
+3. 未設定なら既存の registry/provider 順。
+
+実際にターンを実行した provider/model はセッション状態とトランスクリプトに記録され続けるため、canonical 層が実行内容を隠すことはありません。
+
+## モデルロール
+
+ロールはジョブをモデルに対応付け、呼び出しごとではなく一度だけ挙動を調整できます。対応ロール：
+
+| ロール      | 用途                                   |
+| ---------- | -------------------------------------- |
+| `default`  | メインのエージェントターン               |
+| `smol`     | 安価/高速な補助作業（例：メモリ統合）     |
+| `slow`     | 遅延より品質を優先する重い推論           |
+| `vision`   | 画像対応の作業                          |
+| `plan`     | 計画パス                                |
+| `designer` | デザイン志向のパス                       |
+| `commit`   | コミットメッセージ系の作業               |
+| `task`     | サブタスク / 委譲作業                    |
+
+各ロール値には thinking セレクタ（`:minimal`、`:low`、`:medium`、`:high`、`:xhigh`）を付与できます（例：`default: openai-code/gpt-5.3-openai-code:high`）。
+
+ロール値は、具体変種を固定する `provider/modelId` か、provider 統合を許す canonical id（例：`gpt-5.3-openai-code`）を保持できます。ロールは他のロールを指すこともでき、参照側ロールの明示的 thinking サフィックスがその用途で優先されます。要求したロールが未設定なら `default`、アクティブなセッションモデル、registry の最初のモデルの順にフォールバックします。
+
+## 実行時のモデル選択
+
+### TUI
+
+セッション中は `/model` で切り替えます。ピッカーは provider 接頭の具体モデルと canonical ビューを併記します：**canonical** を選ぶと canonical セレクタを保存（統合を維持）、**provider 行**を選ぶと明示的 `provider/modelId` を保存します。
+
+### CLI
+
+`--model` が推奨セレクタです（`--provider` はレガシー）。パターン解析は、正確な `provider/modelId`、正確な canonical id、正確な素の id（provider 推論）、あいまい/部分一致、`--models` の glob 範囲（例：`openai/*`、`*sonnet*`）、任意の `:thinkingLevel` サフィックス（`off|minimal|low|medium|high|xhigh`）に対応します。正確なセレクタが先に解決され、あいまい/glob は最後に走ります。`--list-models` は canonical セクションと具体 provider 行を出力します。
+
+```bash
+gjc --tmux --model anthropic/anthropic-model-opus-4-6:high
+gjc --tmux --models "openai/*"
+```
+
+`--models` と `enabledModels` では、正確な canonical id はそのグループの全具体変種に展開され、明示的 `provider/modelId` は正確なまま、glob/あいまいは具体モデルに作用します。
+
+### 初期モデルの選び方
+
+`findInitialModel` の順：明示的 CLI provider+model → 最初の scoped モデル（resume でない場合）→ 保存済みデフォルト provider/model → 利用可能モデル中の既知 provider デフォルト → 最初の利用可能モデル。registry に存在しても解決可能な認証がないモデルは、資格情報が揃うまで選択できません。
+
+## ローカルモデルの探索
+
+ローカルランタイムに明示的 provider エントリがなく到達可能な場合、Gajae-Code はキーレス（`auth: none`）の暗黙的な探索可能 provider を追加し、検出したモデルを正規化します：
+
+| ランタイム  | provider id | デフォルト base URL          | 上書き env var        |
+| ---------- | ----------- | ---------------------------- | --------------------- |
+| Ollama     | `ollama`    | `http://127.0.0.1:11434`     | `OLLAMA_BASE_URL`     |
+| llama.cpp  | `llama.cpp` | `http://127.0.0.1:8080`      | `LLAMA_CPP_BASE_URL`  |
+| LM Studio  | `lm-studio` | `http://127.0.0.1:1234/v1`   | `LM_STUDIO_BASE_URL`  |
+
+`models.yml` で provider レベルの `discovery.type`（`ollama`、`llama.cpp`、`lm-studio`）を使い、探索を明示的に構成することもできます（探索には provider レベルの `api` が必要）。設定形式は[モデルと資格情報](/ja/docs/reference/models-and-credentials)を参照してください。
+
+## 次へ
+
+- [モデルと資格情報](/ja/docs/reference/models-and-credentials) — `models.yml` の形式、provider プリセット、認証解決順。
+- [コンテキストプロモーションと compaction](/ja/docs/concepts/context-and-compaction)。
+- [環境変数](/ja/docs/reference/environment-variables)。

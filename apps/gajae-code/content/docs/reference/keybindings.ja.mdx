@@ -1,0 +1,70 @@
+---
+title: キーバインド
+description: /hotkeys で有効なコードを確認し、~/.gjc/agent/keybindings.json でリマップをカスタマイズし、よく使う名前空間付きアクション ID と既定値を参照します。
+---
+
+Gajae-Code（`gjc`）はインタラクティブなキーバインドのセットを備えています。正確なコード（chord）はビルド、読み込んだリマップ、拡張が追加したバインドによって変わります。
+
+## 有効なバインドを見る
+
+`gjc` セッション内で `/hotkeys` を実行すると、現在のビルドで有効なコードを確認できます。この一覧はディスクから読み込んだリマップと拡張が提供するバインドの両方を反映するため、自分の環境では常に最も正確なビューです。
+
+## キーバインドのカスタマイズ
+
+ユーザーのリマップは次の場所にあります。
+
+```text
+~/.gjc/agent/keybindings.json
+```
+
+このファイルは JSON オブジェクトで、キーがキーバインドの**アクション ID**、値が単一のコード文字列またはコード文字列の配列です。`~/.gjc/agent/config.yml` からは読み込まれず、ネストした `keybindings` オブジェクトもありません。
+
+```json
+{
+  "app.model.cycleForward": "Ctrl+P",
+  "app.model.selectTemporary": "Alt+P",
+  "app.plan.toggle": "Alt+Shift+P"
+}
+```
+
+コード名は大文字小文字を区別せず、UI に表示されるのと同じ表記（`Ctrl+P`、`Alt+Shift+P`、`Shift+Enter`、`Ctrl+Backspace` など）を使います。
+
+アクションを空配列に設定すると**無効化**できます。
+
+```json
+{
+  "app.stt.toggle": []
+}
+```
+
+`keybindings.json` の読み込み時に古い非修飾アクション名は移行されますが、新しい設定では下記の名前空間付きアクション ID を使ってください。
+
+## よく使うアクション ID
+
+| アクション ID | 既定 | 意味 |
+| --- | --- | --- |
+| `app.model.cycleForward` | `Ctrl+P` | ロールモデルを前方に巡回 |
+| `app.model.cycleBackward` | `Shift+Ctrl+P` | ロールモデルを後方に巡回 |
+| `app.model.selectTemporary` | `Alt+P` | このセッション限定でモデルを一時選択 |
+| `app.model.select` | `Ctrl+L` | モデルセレクターを開きロールを設定 |
+| `app.plan.toggle` | `Alt+Shift+P` | plan モードの切替 |
+| `app.history.search` | `Ctrl+R` | プロンプト履歴を検索 |
+| `app.tools.expand` | `Ctrl+O` | ツール出力の展開を切替 |
+| `app.thinking.toggle` | `Ctrl+T` | thinking ブロックの表示切替 |
+| `app.thinking.cycle` | `Shift+Tab` | thinking レベルを巡回 |
+| `app.editor.external` | `Ctrl+G` | `$VISUAL` / `$EDITOR` で下書きを編集 |
+| `app.message.followUp` | `Ctrl+Enter` | フォローアップメッセージをキュー |
+| `app.message.dequeue` | `Alt+Up` | キュー中メッセージをエディターへ戻す |
+| `app.clipboard.copyLine` | `Alt+Shift+L` | 現在行をコピー |
+| `app.clipboard.copyPrompt` | `Alt+Shift+C` | プロンプト全体をコピー |
+| `app.stt.toggle` | `Alt+H` | 音声入力の録音を切替 |
+
+これらはよく使うバインドです。拡張が提供するアクションを含む完全でビルド準拠の一覧は `/hotkeys` で確認してください。
+
+## 関連ページ
+
+<Cards>
+  <Card title="設定" href="/ja/docs/reference/configuration" />
+  <Card title="環境変数" href="/ja/docs/reference/environment-variables" />
+  <Card title="テーマ" href="/ja/docs/reference/theme" />
+</Cards>

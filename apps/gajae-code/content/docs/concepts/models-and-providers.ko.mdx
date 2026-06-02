@@ -1,0 +1,116 @@
+---
+title: 모델 라우팅과 provider
+description: Gajae-Code가 구체 provider 모델을 유지하고 canonical 레이어로 합치며, 작업을 역할에 매핑하고 런타임에 모델을 선택하는 방식.
+---
+
+Gajae-Code는 접근 가능한 모든 구체 provider 모델을 유지하고, 그 위에 얇은 **canonical** 레이어를 만들어 하나의 id가 여러 provider를 가로질러 해석되도록 합니다. 어떤 변형이 실행될지 신경 쓸 때는 정확한 변형을 고정하고, 그렇지 않으면 canonical id를 골라 사용 가능하고 인증된 provider를 레지스트리가 선택하게 둡니다.
+
+이 페이지는 개념 모델을 다룹니다. `models.yml` 형식, provider 프리셋, 자격 증명 해석은 [모델과 자격 증명](/ko/docs/reference/models-and-credentials)을 보세요.
+
+## 구체 모델과 canonical 모델
+
+두 레이어가 나란히 존재합니다:
+
+- **구체 모델**은 정확한 `provider/modelId` 항목입니다 — 예: `openai-code/gpt-5.3-openai-code`, `anthropic/anthropic-model-opus-4-6`. 구체 모델을 선택하면 합치기(coalescing)를 완전히 건너뜁니다.
+- **canonical 모델**은 서로 다른 provider의 구체 변형을 묶는 공식 upstream id입니다. 예: `anthropic-model-opus-4-6`, `anthropic-model-haiku-4-5`, `gpt-5.3-openai-code`.
+
+여러 구체 변형이 같은 canonical id를 공유할 때 해석 순서는:
+
+1. 사용 가능 여부와 인증(비활성·미인증 provider는 건너뜀),
+2. `modelProviderOrder` 설정,
+3. `modelProviderOrder`가 없으면 기존 레지스트리/provider 순서.
+
+실제로 턴을 실행한 provider/model은 세션 상태와 트랜스크립트에 그대로 기록되므로, canonical 레이어가 무엇이 돌았는지 가리지 않습니다.
+
+<Cards>
+  <Card title="models.yml 형식과 equivalence" href="/ko/docs/reference/models-and-credentials" />
+  <Card title="컨텍스트 승격과 compaction" href="/ko/docs/concepts/context-and-compaction" />
+</Cards>
+
+## 모델 역할(role)
+
+역할은 작업을 모델에 매핑하므로, 호출마다가 아니라 한 번만 동작을 조정하면 됩니다. 지원 역할:
+
+| 역할        | 용도                                              |
+| ---------- | ------------------------------------------------ |
+| `default`  | 메인 에이전트 턴                                   |
+| `smol`     | 저렴하고 빠른 보조 작업(예: 메모리 통합)            |
+| `slow`     | 지연보다 품질이 중요할 때의 무거운 추론             |
+| `vision`   | 이미지 처리 작업                                   |
+| `plan`     | 계획 패스                                          |
+| `designer` | 디자인 지향 패스                                   |
+| `commit`   | 커밋 메시지류 작업                                 |
+| `task`     | 하위 작업 / 위임 작업                              |
+
+각 역할 값에는 thinking 선택자(`:minimal`, `:low`, `:medium`, `:high`, `:xhigh`)를 붙일 수 있습니다 — 예: `default: openai-code/gpt-5.3-openai-code:high`.
+
+역할 값은 다음 중 하나를 저장합니다:
+
+- 구체 변형을 고정하는 `provider/modelId`, 또는
+- provider 합치기를 허용하는 `gpt-5.3-openai-code` 같은 canonical id.
+
+역할은 다른 역할을 가리킬 수도 있습니다(`pi/smol` 같은 별칭이 `modelRoles`를 통해 확장). 한 역할이 다른 역할을 참조하면 대상 모델이 정상적으로 상속되고, 참조하는 역할에 붙은 명시적 thinking 접미사가 해당 역할 용도에서 우선합니다. 요청한 역할이 설정되지 않았으면 `default`, 그다음 활성 세션 모델, 그다음 레지스트리의 첫 모델 순으로 폴백합니다.
+
+## 런타임 모델 선택
+
+### TUI에서
+
+세션 도중 모델을 바꾸려면 `/model`을 씁니다. 선택기는 provider 접두 구체 모델과 canonical 뷰를 함께 보여줍니다:
+
+- **canonical** 항목을 선택하면 canonical 선택자를 저장합니다(합치기 유지),
+- **provider 행**을 선택하면 명시적 `provider/modelId`를 저장합니다.
+
+### CLI에서
+
+`--model`이 선호 선택자입니다(`--provider`는 레거시). 패턴 파싱은 다음을 지원합니다:
+
+- 정확한 `provider/modelId`
+- 정확한 canonical 모델 id
+- 정확한 단순 모델 id(provider 추론)
+- 퍼지 / 부분 문자열 매칭
+- `--models`의 glob 범위 패턴(예: `openai/*`, `*sonnet*`)
+- 선택적 `:thinkingLevel` 접미사(`off|minimal|low|medium|high|xhigh`)
+
+정확한 선택자가 먼저 해석됩니다: 정확한 `provider/modelId`는 합치기를 건너뛰고, 정확한 canonical id는 canonical 인덱스로 해석되며, 정확한 단순 id도 동작하고, 퍼지/glob 매칭은 그 경로들 이후에만 실행됩니다.
+
+`--list-models`는 canonical 섹션과 구체 provider 행을 함께 출력합니다.
+
+```bash
+# 시작 시 정확한 변형 고정
+gjc --tmux --model anthropic/anthropic-model-opus-4-6:high
+
+# 사용 가능한 집합을 glob으로 제한
+gjc --tmux --models "openai/*"
+```
+
+`--models`와 `enabledModels` 설정에서, 정확한 canonical id는 그 그룹의 모든 구체 변형으로 확장되고, 명시적 `provider/modelId` 항목은 정확히 유지되며, glob/퍼지 매칭은 구체 모델에 작용합니다.
+
+### 초기 모델이 선택되는 방식
+
+`findInitialModel`은 시작 모델을 다음 순서로 해석합니다:
+
+1. 명시적 CLI provider+model,
+2. 첫 범위(scoped) 모델(resume가 아닐 때),
+3. 저장된 기본 provider/model,
+4. 사용 가능한 모델 중 알려진 provider 기본값,
+5. 첫 사용 가능 모델.
+
+레지스트리에 존재하지만 해석 가능한 인증이 없는 모델은 자격 증명이 마련될 때까지 선택할 수 없습니다 — 레지스트리는 "전체 모델"과 "사용 가능한 모델"을 구분합니다.
+
+## 로컬 모델 탐색
+
+로컬 런타임에 대한 명시적 provider 항목이 없고 해당 런타임에 접근 가능하면, Gajae-Code는 키 없는(`auth: none`) 암시적 탐색 provider를 추가하고 탐색된 모델을 정규화합니다:
+
+| 런타임      | provider id | 기본 base URL                    | 재정의 env var         |
+| ---------- | ----------- | -------------------------------- | --------------------- |
+| Ollama     | `ollama`    | `http://127.0.0.1:11434`         | `OLLAMA_BASE_URL`     |
+| llama.cpp  | `llama.cpp` | `http://127.0.0.1:8080`          | `LLAMA_CPP_BASE_URL`  |
+| LM Studio  | `lm-studio` | `http://127.0.0.1:1234/v1`       | `LM_STUDIO_BASE_URL`  |
+
+`models.yml`에서 provider 수준 `discovery.type`을 `ollama`, `llama.cpp`, `lm-studio` 중 하나로 두어 탐색을 직접 구성할 수도 있습니다(탐색에는 provider 수준 `api`가 필요). 설정 형식은 [모델과 자격 증명](/ko/docs/reference/models-and-credentials)을 보세요.
+
+## 다음으로
+
+- [모델과 자격 증명](/ko/docs/reference/models-and-credentials) — `models.yml` 형식, provider 프리셋(`gjc setup provider --preset …`), 인증 해석 순서.
+- [컨텍스트 승격과 compaction](/ko/docs/concepts/context-and-compaction) — 작은 컨텍스트 모델이 compaction 전에 더 큰 형제로 승격되는 방식.
+- [환경 변수](/ko/docs/reference/environment-variables) — base-URL 및 자격 증명 env var.

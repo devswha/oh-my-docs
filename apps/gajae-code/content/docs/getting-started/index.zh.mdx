@@ -11,7 +11,7 @@ description: 安装 Gajae-Code，启动 gjc 可执行文件，运行 deep-interv
 
 ### 安装
 
-推荐使用 Bun：
+Gajae-Code 通过 npm 注册表以 `gajae-code` 发布。推荐使用 Bun：
 
 ```bash
 bun install -g gajae-code
@@ -37,7 +37,7 @@ gjc --tmux
 gjc
 ```
 
-在隔离的 Git worktree 中运行可获得更安全的分支级工作区：
+需要更安全的分支级工作区时，在隔离的 Git worktree 中运行。为一次性或分支专用工作使用独立路径，保持主检出干净：
 
 ```bash
 gjc --tmux --worktree <path>
@@ -53,13 +53,23 @@ Gajae-Code 专注于一个有用的循环：
 
 ```text
 deep-interview -> ralplan -> ultragoal
+                         └─ 当并行 tmux worker 有帮助时可选 team 执行
 ```
 
 - `deep-interview` — 厘清意图、影响范围、非目标与验收标准。
 - `ralplan` — 在变更前构建并评审计划。
 - `$ultragoal` — 推进实现、修订、验证与证据汇总。
 
-只有在并行 tmux worker 有帮助时才加 `$team`。
+只有在并行 tmux worker 有帮助时才加 `$team`。一个具体的修 bug 流程：
+
+```text
+/skill:deep-interview clarify the bug, affected behavior, non-goals, and acceptance checks
+/skill:ralplan turn the clarified bug report into a reviewed fix plan
+gjc ultragoal create-goals --brief-file <approved-plan>
+# 仅并行工作时可选：
+gjc team 2:executor "split implementation and verification for this bug fix"
+gjc ultragoal complete-goals
+```
 
 </Step>
 
@@ -67,17 +77,27 @@ deep-interview -> ralplan -> ultragoal
 
 ## 配置
 
-provider 重试预算等设置位于 `~/.gjc/config.yml`：
+provider 重试预算等设置位于 `~/.gjc/config.yml`（或当前生效的项目/用户设置源）：
 
 ```yaml
 retry:
+  # 类似 codex-cli 的 request_max_retries。统计重试次数，不含首次请求。
   requestMaxRetries: 4
+  # 类似 codex-cli 的 stream_max_retries。统计可安全重放的流重试。
   streamMaxRetries: 100
+  # 会话级的终止错误重试仍可单独配置。
   maxRetries: 3
   maxDelayMs: 300000
 ```
 
+Gajae-Code 有两层重试：会话自动重试（`retry.maxRetries`）在终止性瞬时错误后重试失败的助手回合；provider 重试预算（`requestMaxRetries`、`streamMaxRetries`）在该终止错误到达会话之前，于 provider 传输层内部控制重试。无效认证、不支持的模型/provider、格式错误的请求、上下文溢出、用户中止和永久配额失败均保持快速失败（fail-fast），不会被重试循环掩盖。
+
 ## 下一步
+
+<Cards>
+  <Card title="核心概念" href="/zh/docs/concepts" description="工作循环、会话、模型路由与持久验证。" />
+  <Card title="工作流" href="/zh/docs/workflows" description="deep-interview、ralplan、team、ultragoal。" />
+</Cards>
 
 - 源项目与完整参考：[Yeachan-Heo/gajae-code](https://github.com/Yeachan-Heo/gajae-code)
 - 社区：[Discord](https://discord.gg/sj4exxQ9v)

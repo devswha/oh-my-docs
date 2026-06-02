@@ -1,0 +1,89 @@
+---
+title: 설정
+description: ~/.gjc 레이아웃, config.yml 재시도 예산과 즉시 실패(fail-fast) 케이스, 그리고 Gajae-Code 실행 방식을 결정하는 저장소·동작 환경변수.
+---
+
+Gajae-Code는 설정을 작게 유지합니다. 이 페이지는 `~/.gjc` 아래 파일, `config.yml`의 재시도 예산, 그리고 저장소 경로와 런타임 동작을 제어하는 환경변수를 다룹니다.
+
+## `~/.gjc` 레이아웃
+
+config 루트는 `~/.gjc`입니다 (`GJC_CONFIG_DIR`로 변경):
+
+| 경로                       | 용도                                    |
+| -------------------------- | --------------------------------------- |
+| `~/.gjc/config.yml`        | 일반 런타임 설정(재시도 예산 포함).     |
+| `~/.gjc/agent/`            | agent 디렉터리(`GJC_CODING_AGENT_DIR`로 변경). |
+| `~/.gjc/agent/models.yml`  | provider, 모델, 역할, 라우팅.           |
+| `~/.gjc/agent/config.yml`  | agent 범위 설정(예: SearXNG 검색 설정). |
+| `~/.gjc/agent/.env`        | agent 범위 환경변수.                    |
+| `~/.gjc/.env`              | config 루트 환경변수 폴백.              |
+
+`GJC_CONFIG_DIR`는 홈 아래 config 루트 디렉터리명을 지정합니다(기본 `.gjc`). `GJC_CODING_AGENT_DIR`는 agent 디렉터리(기본 `~/<GJC_CONFIG_DIR 또는 .gjc>/agent`)를 전체 override하며 독립적으로 해석됩니다. 전체 `.env` 해석 순서는 [레퍼런스](/ko/docs/reference)를 보세요.
+
+## `config.yml` 재시도 예산
+
+Gajae-Code에는 두 재시도 레이어가 있습니다:
+
+- **세션 자동 재시도**(`retry.maxRetries`)는 종단(terminal) 일시 오류 후 실패한 어시스턴트 턴을 재시도합니다.
+- **provider 재시도 예산**은 그 종단 오류가 세션에 도달하기 전에 provider 전송 계층 내부에서 재시도를 제어합니다.
+
+둘 다 `~/.gjc/config.yml`에 설정합니다:
+
+```yaml
+retry:
+  # codex-cli request_max_retries와 유사. 초기 요청이 아닌 재시도 횟수를 셈.
+  requestMaxRetries: 4
+  # codex-cli stream_max_retries와 유사. 재생 안전(replay-safe) 스트림 재시도 횟수.
+  streamMaxRetries: 100
+  # 세션 레벨 종단 오류 재시도는 별도로 설정 가능.
+  maxRetries: 3
+  maxDelayMs: 300000
+```
+
+| 키                  | 레이어   | 의미                                                                            |
+| ------------------- | -------- | ------------------------------------------------------------------------------- |
+| `requestMaxRetries` | provider | 스트림 수립 전 provider SDK/fetch 재시도. 첫 요청이 아닌 재시도 횟수를 셈.       |
+| `streamMaxRetries`  | provider | 재생 안전 스트림 재시도. provider가 사용자에게 보이는 콘텐츠 전에 일시 스트림 실패를 안전하게 재생할 수 있을 때만(또는 provider별 replay-safe 경로에서) 사용. |
+| `maxRetries`        | 세션     | 실패한 어시스턴트 턴의 종단 오류 재시도.                                         |
+| `maxDelayMs`        | 세션     | 세션 재시도 백오프 지연의 상한.                                                  |
+
+### 즉시 실패(fail-fast) 케이스
+
+재시도가 영구적 문제를 가리지 않습니다. 다음은 반복하지 않고 즉시 실패합니다:
+
+- 잘못된 인증.
+- 미지원 모델·provider.
+- 잘못된 요청.
+- 컨텍스트 초과.
+- 사용자 중단.
+- 영구 quota 실패.
+
+## 저장소·config 루트 경로
+
+`@gajae-code/utils/dirs`를 통해 사용되며 coding-agent가 데이터를 저장하는 위치를 결정합니다:
+
+| 변수                   | 기본값 / 동작                                                            |
+| ---------------------- | ------------------------------------------------------------------------ |
+| `GJC_CONFIG_DIR`       | 홈 아래 config 루트 디렉터리명(기본 `.gjc`).                             |
+| `GJC_CODING_AGENT_DIR` | agent 디렉터리 전체 override(기본 `~/<GJC_CONFIG_DIR 또는 .gjc>/agent`). |
+
+## 동작 토글
+
+소수의 환경변수가 런타임 동작을 켜고 끕니다:
+
+| 변수               | 효과                                                                                              |
+| ------------------ | ------------------------------------------------------------------------------------------------- |
+| `GJC_NO_PTY`       | `1`이면 bash 도구의 대화형 PTY 경로를 끔. CLI `--no-pty` 사용 시 내부적으로도 설정됨.              |
+| `GJC_NOTIFICATIONS`| `off` / `0` / `false`면 데스크톱 알림 억제.                                                       |
+| `GJC_NO_TITLE`     | 설정 시(빈 값이 아닌 어떤 값이든) 첫 사용자 메시지에서 자동 세션 제목 생성을 끔.                   |
+| `GJC_EDIT_VARIANT` | 유효할 때 edit 도구 variant 강제: `patch`, `replace`, `hashline`, `atom`, `vim`, `apply_patch`.   |
+| `GJC_TIMING`       | 설정 시 계층적 타이밍 스팬 트리를 **stderr**로 출력. `GJC_TIMING=x`는 대화형 모드에서 출력 직후 코드 0으로 종료(콜드 스타트만 측정); `GJC_TIMING=full`은 상위 N개가 아닌 모든 모듈 로드 항목을 나열. |
+
+대화형 모드에서 `GJC_TIMING`은 agent 준비 후(TUI 시작 전) 한 번 출력하고, print 모드에선 전체 프롬프트 배치 완료 후 출력하며, 각 사용자 메시지는 자체 `print:prompt:initial` / `print:prompt:next` 스팬으로 감싸집니다.
+
+## 함께 보기
+
+<Cards>
+  <Card title="환경변수" href="/ko/docs/reference/environment-variables" />
+  <Card title="모델·자격증명" href="/ko/docs/reference/models-and-credentials" />
+</Cards>

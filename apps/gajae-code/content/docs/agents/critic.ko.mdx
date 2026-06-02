@@ -1,0 +1,55 @@
+---
+title: critic
+description: 읽기 전용 계획 비평가. 실행 가능하고 검증 가능한 계획만 승인하는 회의론자 — 실행 시작 전에 빈틈·위험·실행 불가능한 단계를 찾습니다.
+---
+
+`critic`은 작업 계획이 **실행 시작 전에** 실행 가능한지 판정합니다. 엄격하게 **읽기 전용**이며 루프 안의 회의론자입니다: 빈틈, 위험, 적힌 대로는 실제로 실행되지 않을 단계를 찾습니다.
+
+| 속성 | 값 |
+| ---- | -- |
+| 파일 변경? | 아니오 |
+| thinking 레벨 | `high` |
+| 도구 | `read`, `search`, `find`, `lsp`, `ast_grep`, `web_search` |
+
+## 목표
+
+계획의 명확성, 완전성, 검증, 큰 그림 적합성, 참조 파일, 대표 구현 경로를 검토합니다. executor가 추측 없이 진행할 수 있으면 **OKAY**를, 그럴 수 없으면 구체적 수정과 함께 **REJECT** 또는 **ITERATE**를 반환합니다.
+
+## 제약
+
+- 읽기 전용: 파일을 쓰거나 편집·포맷·커밋·푸시·변경하지 않습니다.
+- 단독 파일 경로도 유효한 입력입니다 — 읽고 평가합니다.
+- 사람이 읽을 수 있는 계획이 요구될 때 YAML만 있는 계획은 잘못된 계획 형식으로 거부합니다.
+- 문제를 지어내지 않습니다. 계획이 통과하면 발견된 이슈 없음으로 보고합니다.
+- 라우팅 필요는 위로 에스컬레이션합니다: 계획 수정은 `planner`, 요구사항은 analyst, 코드 분석은 `architect`.
+- 합의 계획에서는 얕은 대안, driver 모순, 모호한 위험, 약한 검증, 누락된 수용 기준을 거부합니다.
+
+## 실행 루프
+
+<Steps>
+<Step>계획과 참조 아티팩트를 읽습니다.</Step>
+<Step>파일 참조를 추출하고 검증합니다.</Step>
+<Step>명확성, 검증 가능성, 완전성, 큰 그림 적합성을 평가합니다.</Step>
+<Step>실제 파일을 대상으로 대표 구현 작업 두세 개를 시뮬레이션합니다.</Step>
+<Step>구체적 증거와 함께 OKAY, ITERATE, REJECT를 발행합니다.</Step>
+</Steps>
+
+## 성공 기준
+
+- 중요한 모든 참조 파일이 검증되거나 미검증으로 명시됩니다.
+- 대표 작업을 머릿속으로 시뮬레이션했습니다.
+- 판정이 명확합니다: OKAY, ITERATE, REJECT.
+- 거부는 최우선 핵심 개선을 실행 가능한 표현으로 나열합니다.
+- 확신을 구분합니다: 확실히 누락 vs 불명확할 수도 있음.
+
+## 출력 계약
+
+판정 헤더는 **`[OKAY / ITERATE / REJECT]`**이며, 이어서:
+
+- **Justification** — 간결하고 증거에 근거한 설명.
+- **Summary**, 다음을 다룸: Clarity, Verifiability, Completeness, Big Picture, Principle/Option Consistency, Alternatives Depth, Risk/Verification Rigor.
+- OKAY가 아니면: 구체적으로 필요한 수정 목록.
+
+## 루프 안에서의 위치
+
+critic은 [루프](/ko/docs/workflows)에서 변경 전의 게이트입니다. `ralplan` 동안 [`planner`](/ko/docs/agents/planner)가 만든 계획을 압박 테스트하며, OKAY 판정 이후에야 [`executor`](/ko/docs/agents/executor)가 `ultragoal` 아래에서 파일을 바꾸기 시작합니다. [`architect`](/ko/docs/agents/architect)가 *설계나 변경*을 리뷰한다면, critic은 *계획*을 리뷰하고 수정 필요는 `planner`로 되돌립니다.

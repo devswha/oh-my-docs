@@ -9,14 +9,25 @@ description: A red-claw coding-agent harness for crisp interviews, resilient pla
 
 > Disclaimer: Gajae-Code is an experimental, beta-stage early project. Expect rough edges and verify outputs before relying on it for important work.
 
-Gajae-Code keeps the public agent surface intentionally small while making the runtime around it dependable. It focuses on one useful loop:
+## What it is
+
+Gajae-Code is published through the npm registry as `gajae-code`; that package installs the `gjc` binary. It keeps the public agent surface intentionally small while making the runtime around it dependable — session state, worktree isolation, tmux orchestration, model routing, tool execution, and persistent evidence are all there when the work needs them.
+
+Rather than a sprawling default skill zoo, the harness improves by making one method better.
+
+## The one useful loop
 
 ```text
 deep-interview -> ralplan -> ultragoal
                          └─ optional team execution when parallel tmux workers help
 ```
 
-Use `deep-interview` to clarify intent, `ralplan` to critique the approach, and `$ultragoal` to carry the work through implementation, revision, verification, and an evidence summary. Add `$team` only when the task benefits from coordinated parallel workers.
+- Use **`deep-interview`** to clarify intent before any planning or code change.
+- Use **`ralplan`** to build and critique the approach before mutation.
+- Use **`$ultragoal`** to carry the work through implementation, revision, verification, and an evidence summary.
+- Add **`$team`** only when the task benefits from coordinated parallel workers — it is an optional execution mode, not a required handoff step.
+
+The sequence describes the operator flow, not hidden automation: the agent still reports what it changed, what it revised after findings, what checks ran, and what evidence supports the result.
 
 ## Install
 
@@ -24,7 +35,11 @@ Use `deep-interview` to clarify intent, `ralplan` to critique the approach, and 
 bun install -g gajae-code
 ```
 
-The package installs the `gjc` binary. The scoped package is also available as `@gajae-code/coding-agent`.
+The package installs the `gjc` binary. The scoped package is also available as `@gajae-code/coding-agent`. Then start the recommended tmux-backed experience:
+
+```bash
+gjc --tmux
+```
 
 ## Workflow surface
 
@@ -46,7 +61,19 @@ And four bundled role agents:
 | `planner`   | Read-only sequencing and acceptance criteria.      |
 | `critic`    | Read-only plan critique and actionability review.  |
 
+## Explore the docs
+
+<Cards>
+  <Card title="Getting Started" href="/docs/getting-started" description="Install, launch gjc, and run your first loop." />
+  <Card title="Core Concepts" href="/docs/concepts" description="The working loop, sessions, model routing, and verification." />
+  <Card title="Workflows" href="/docs/workflows" description="deep-interview, ralplan, team, and ultragoal." />
+  <Card title="Agents" href="/docs/agents" description="executor, architect, planner, and critic." />
+  <Card title="Tools" href="/docs/tools" description="Files, search, runtime, web, session, and media tools." />
+  <Card title="Reference" href="/docs/reference" description="Configuration, models, credentials, keybindings, and theme." />
+</Cards>
+
 ## Next steps
 
 - [Getting Started](/docs/getting-started) — install, launch, and run the first loop.
 - Source project: [Yeachan-Heo/gajae-code](https://github.com/Yeachan-Heo/gajae-code)
+- Community: [Discord](https://discord.gg/sj4exxQ9v)

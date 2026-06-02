@@ -3,67 +3,57 @@ title: Tools
 description: The tool surface Gajae-Code agents use — files, search, runtime, web, session, and media — grouped by family.
 ---
 
-Gajae-Code agents act through a focused tool surface. The tools are grouped by family below; names match the upstream `docs/tools/` reference.
+Gajae-Code agents act through a focused, named tool surface. Every tool maps to an upstream entry in `docs/tools/`, so names, flags, and behavior stay verbatim. The families below link to the deeper per-tool pages.
 
-## Files
+## Tool families
 
-| Tool       | What it does                                  |
-| ---------- | --------------------------------------------- |
-| `read`     | Read file contents.                           |
-| `write`    | Create or overwrite a file.                   |
-| `edit`     | Apply a scoped edit (multiple edit variants). |
-| `ast-edit` | Structural, AST-aware edits.                  |
+<Cards>
+  <Card title="Files" href="/docs/tools/files">
+    `read`, `write`, `edit` (multiple edit variants), and `ast-edit` for structural rewrites.
+  </Card>
+  <Card title="Search and navigation" href="/docs/tools/search">
+    `find`, `search`, `search_tool_bm25`, `ast-grep`, `lsp`, and `resolve`.
+  </Card>
+  <Card title="Runtime and execution" href="/docs/tools/runtime">
+    `bash`, `eval`, `python-repl`, `debug`, `ssh`, and background `job` control.
+  </Card>
+  <Card title="Web and external" href="/docs/tools/web">
+    `web_search`, `browser`, and `github`.
+  </Card>
+  <Card title="Session and memory" href="/docs/tools/session-and-memory">
+    `task`, `todo_write`, `checkpoint`, `rewind`, `recall`, `retain`, `reflect`.
+  </Card>
+  <Card title="Media and misc" href="/docs/tools/media">
+    `render_mermaid`, `inspect_image`, `calc`, `recipe`, `ask`.
+  </Card>
+</Cards>
 
-## Search and navigation
+## At a glance
 
-| Tool              | What it does                                |
-| ----------------- | ------------------------------------------- |
-| `find`            | Locate files by name/path.                  |
-| `search`          | Search file contents.                       |
-| `search_tool_bm25`| Ranked content search.                      |
-| `ast-grep`        | Structural code search by AST pattern.      |
-| `lsp`             | Language-server diagnostics and navigation. |
-| `resolve`         | Resolve symbols / tool runtime resolution.  |
+| Family | Tools | Page |
+| --- | --- | --- |
+| Files | `read` · `write` · `edit` · `ast-edit` | [Files](/docs/tools/files) |
+| Search & navigation | `find` · `search` · `search_tool_bm25` · `ast-grep` · `lsp` · `resolve` | [Search](/docs/tools/search) |
+| Runtime & execution | `bash` · `eval` · `python-repl` · `debug` · `ssh` · `job` | [Runtime](/docs/tools/runtime) |
+| Web & external | `web_search` · `browser` · `github` | [Web](/docs/tools/web) |
+| Session & memory | `task` · `todo_write` · `checkpoint` · `rewind` · `recall` · `retain` · `reflect` | [Session & memory](/docs/tools/session-and-memory) |
+| Media & misc | `render_mermaid` · `inspect_image` · `calc` · `recipe` · `ask` | [Media](/docs/tools/media) |
 
-## Runtime and execution
+## Common conventions
 
-| Tool          | What it does                                       |
-| ------------- | -------------------------------------------------- |
-| `bash`        | Run shell commands (interactive PTY where enabled).|
-| `eval`        | Evaluate code (JavaScript and/or Python backends). |
-| `python-repl` | Persistent Python REPL / kernel.                   |
-| `debug`       | Debugging support.                                 |
-| `ssh`         | Run commands over SSH.                             |
-| `job`         | Manage background jobs.                            |
+A few patterns recur across the tool surface:
 
-## Web and external
+- **Internal URLs.** Content tools (`read`, `search`, `ast-grep`) accept internal URLs such as `agent://`, `artifact://`, `memory://`, `gjc://`, `rule://`, `issue://`, and `pr://` when the router resolves them to a backing resource. Globs are not allowed on internal URLs.
+- **Hashline anchors.** `read`, `search`, and `ast-grep` emit `LINEhh|text` anchors (for example `41th|def alpha():`). `edit` consumes only the `LINEhh` token left of the `|`. Anchors are suppressed for `:raw` reads and immutable resources.
+- **Preview then resolve.** Some tools (notably `ast-edit`) preview first and stage a forced `resolve` action; nothing is written until you `resolve(action: "apply", ...)`.
+- **Limits and truncation.** Output is byte/line capped (search shows the first `100` matches, `ast-grep` defaults to `50`); the result reports when a limit or truncation was reached.
 
-| Tool         | What it does                                  |
-| ------------ | --------------------------------------------- |
-| `web_search` | Search the web (multiple search providers).   |
-| `browser`    | Drive a real browser.                         |
-| `github`     | Interact with GitHub.                         |
+## Tools that need config or credentials
 
-## Session and memory
+Some tools only work once their backend is configured. See [Reference](/docs/reference) for the keys, environment variables, and credentials that enable them.
 
-| Tool         | What it does                                       |
-| ------------ | -------------------------------------------------- |
-| `task`       | Spawn and coordinate subagents.                    |
-| `todo_write` | Track and update a todo list.                      |
-| `checkpoint` | Snapshot session state.                            |
-| `rewind`     | Roll back to an earlier point.                     |
-| `recall`     | Retrieve stored memory.                            |
-| `retain`     | Persist memory for later recall.                   |
-| `reflect`    | Reflective reasoning step.                         |
-
-## Media and misc
-
-| Tool             | What it does                          |
-| ---------------- | ------------------------------------- |
-| `render_mermaid` | Render a Mermaid diagram.             |
-| `inspect_image`  | Inspect an image.                     |
-| `calc`           | Calculator.                           |
-| `recipe`         | Reusable task recipes.                |
-| `ask`            | Ask the user a question.              |
-
-Some tools depend on configuration or credentials (for example `web_search` providers and `browser` need their respective setup). See [Reference](/docs/reference) for the environment variables that enable them.
+- `web_search` and `browser` depend on provider setup.
+- `github` uses the `gh` CLI and its caches.
+- `lsp` is gated on `lsp.enabled` and discovers or configures language servers per project.
+- `search_tool_bm25` only appears when `tools.discoveryMode !== "off"`.
+- The active `edit` variant is selected by `GJC_EDIT_VARIANT`; `ast-edit` file scope by `GJC_MAX_AST_FILES`.

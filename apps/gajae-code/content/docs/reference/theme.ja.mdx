@@ -1,0 +1,76 @@
+---
+title: テーマ
+description: 既定の GJC red-claw ダークテーマ、テーマ設定の永続化先、カスタムテーマの読み込み方法、そして端末の画像プロトコル制御（GJC_FORCE_IMAGE_PROTOCOL、GJC_ALLOW_SIXEL_PASSTHROUGH）。
+---
+
+Gajae-Code（`gjc`）は JSON カラートークンで駆動するテーマ化 TUI を備えています。明示的なユーザー設定が常に優先され、既定の見た目は GJC **red-claw** ダークテーマです。
+
+## 既定テーマ
+
+既定のダークテーマは `red-claw` です — GJC の甲殻類ルックで、赤/オレンジのブランドトークン、独立した意味的 error/warning/diff-removal トークン、カニ志向のシンボル上書きを持ちます。
+
+設定スキーマの既定値：
+
+| 設定 | 既定 |
+| --- | --- |
+| `theme.dark` | `red-claw` |
+| `theme.light` | `light` |
+| `symbolPreset` | `unicode` |
+| `colorBlindMode` | `false` |
+
+これらはグローバル設定 YAML `<agentDir>/config.yml`（既定 `~/.gjc/agent/config.yml`）に永続化されます。レガシーのフラットな `theme: "name"` は輝度検出に基づきネストの `theme.dark` / `theme.light` へ移行されます。
+
+### 自動スロット選択
+
+自動時は次の順で端末の外観からダーク/ライトスロットを選びます。
+
+<Steps>
+  <Step>端末が報告する OSC 11 背景輝度（macOS/Zellij フォールバック経路が有効でない場合）。</Step>
+  <Step>`COLORFGBG` 背景インデックス（`< 8` でダーク、`>= 8` でライト）。</Step>
+  <Step>macOS 外観フォールバック — 既知の不具合がある macOS/Zellij OSC 11 経路のみ。</Step>
+  <Step>ダークスロットへのフォールバック。</Step>
+</Steps>
+
+## テーマが制御するもの
+
+テーマシステムは TUI のカラートークンを駆動します。前景/背景、Markdown スタイル、セレクター/エディター/設定リストのアダプター、シンボルプリセット（`unicode | nerd | ascii`）と上書き、ネイティブ構文ハイライト色、ステータスラインのセグメント色。カスタムテーマでは全 `colors` トークンが必須で、`export` と `symbols` は任意です。
+
+## 組み込み vs カスタムテーマ
+
+検索順：
+
+1. 組み込み埋め込みテーマ（`dark.json`、`light.json`、および `red-claw` を含む全バンドルの `defaults/*.json`）。
+2. カスタムテーマファイル：`<customThemesDir>/<name>.json`。
+
+カスタムテーマディレクトリの既定は `~/.gjc/agent/themes` で、`GJC_CODING_AGENT_DIR`（`$GJC_CODING_AGENT_DIR/themes`）で上書きできます。名前衝突時は組み込みが優先されます。
+
+### カスタムテーマを作る
+
+<Steps>
+  <Step>カスタムテーマディレクトリにファイルを作成（例：`~/.gjc/agent/themes/my-theme.json`）。</Step>
+  <Step>`name`、任意の `vars`、**全必須**の `colors` トークンを含める。任意で `symbols` と `export` も。</Step>
+  <Step>使いたい自動スロットに応じて **設定 -> Display -> Dark theme**（または **Light theme**）で選択。バンドルの甲殻類ルックは `red-claw` を選びます。</Step>
+</Steps>
+
+テーマ選択は確定のみです。矢印キーでの閲覧は描画テーマを変えないため、Enter で確定するまで表示名と永続名は一致します。インタラクティブ実行中はカスタムテーマファイルの編集が保存時に自動リロードされます。組み込みは監視されず、リロードエラー時は最後に正常に読み込んだテーマを保持します。明示切替の失敗時は組み込み `dark` にフォールバックします。
+
+## 端末の画像プロトコル
+
+Gajae-Code は端末の画像プロトコルでインライン画像を描画します。検出は自動ですが、環境変数で強制できます。
+
+| 変数 | 動作 |
+| --- | --- |
+| `GJC_FORCE_IMAGE_PROTOCOL` | 画像プロトコルを強制 — `kitty`、`iterm2`/`iterm`、`sixel`、`none`。 |
+| `GJC_ALLOW_SIXEL_PASSTHROUGH` | `GJC_FORCE_IMAGE_PROTOCOL=sixel` のとき SIXEL パススルーを許可。 |
+
+`GJC_FORCE_IMAGE_PROTOCOL=none` でインライン画像を完全に無効化できます。`GJC_ALLOW_SIXEL_PASSTHROUGH` は強制プロトコルが `sixel` のときのみ有効です。
+
+関連する検出シグナル（通常は端末/OS が設定）：`COLORTERM`、`TERM`、`WT_SESSION`（色能力）と `COLORFGBG`（背景の明暗自動検出）。
+
+## 関連ページ
+
+<Cards>
+  <Card title="設定" href="/ja/docs/reference/configuration" />
+  <Card title="環境変数" href="/ja/docs/reference/environment-variables" />
+  <Card title="キーバインド" href="/ja/docs/reference/keybindings" />
+</Cards>

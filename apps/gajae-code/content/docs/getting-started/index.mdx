@@ -11,13 +11,13 @@ Get the `gjc` binary running and drive your first loop.
 
 ### Install
 
-Use Bun for the recommended runtime workflow:
+Gajae-Code is published through the npm registry as `gajae-code`. Use Bun for the recommended runtime workflow:
 
 ```bash
 bun install -g gajae-code
 ```
 
-This installs the `gjc` binary. The scoped package `@gajae-code/coding-agent` is also available.
+This installs the `gjc` binary. The scoped package is also available as `@gajae-code/coding-agent`.
 
 </Step>
 
@@ -37,7 +37,7 @@ Bare `gjc` launches directly without creating or attaching a tmux session:
 gjc
 ```
 
-Run inside an isolated Git worktree when you want a safer, branch-local workspace:
+Run inside an isolated Git worktree when you want a safer, branch-local workspace. Use a dedicated path for throwaway or branch-specific work so the main checkout stays clean:
 
 ```bash
 gjc --tmux --worktree <path>
@@ -53,13 +53,23 @@ Gajae-Code focuses on one useful loop:
 
 ```text
 deep-interview -> ralplan -> ultragoal
+                         └─ optional team execution when parallel tmux workers help
 ```
 
 - `deep-interview` — clarify intent, affected behavior, non-goals, and acceptance checks.
 - `ralplan` — build and critique the plan before any mutation.
 - `$ultragoal` — carry the work through implementation, revision, verification, and an evidence summary.
 
-Add `$team` only when coordinated parallel tmux workers help.
+Add `$team` only when coordinated parallel tmux workers help. A concrete bug-fix pass might look like:
+
+```text
+/skill:deep-interview clarify the bug, affected behavior, non-goals, and acceptance checks
+/skill:ralplan turn the clarified bug report into a reviewed fix plan
+gjc ultragoal create-goals --brief-file <approved-plan>
+# Optional only for parallel work:
+gjc team 2:executor "split implementation and verification for this bug fix"
+gjc ultragoal complete-goals
+```
 
 </Step>
 
@@ -67,17 +77,27 @@ Add `$team` only when coordinated parallel tmux workers help.
 
 ## Configuration
 
-Provider retry budgets and other settings live in `~/.gjc/config.yml`:
+Provider retry budgets and other settings live in `~/.gjc/config.yml` (or the active project/user settings source):
 
 ```yaml
 retry:
+  # Similar to codex-cli request_max_retries. Counts retries, not the initial request.
   requestMaxRetries: 4
+  # Similar to codex-cli stream_max_retries. Counts replay-safe stream retries.
   streamMaxRetries: 100
+  # Session-level terminal-error retries remain separately configurable.
   maxRetries: 3
   maxDelayMs: 300000
 ```
 
+Gajae-Code has two retry layers: session auto-retry (`retry.maxRetries`) retries a failed assistant turn after a terminal transient error, while provider retry budgets (`requestMaxRetries`, `streamMaxRetries`) control retries inside the provider transport before that terminal error reaches the session. Invalid auth, unsupported models/providers, malformed requests, context overflow, user aborts, and permanent quota failures stay fail-fast instead of being hidden by retry loops.
+
 ## Next steps
+
+<Cards>
+  <Card title="Core Concepts" href="/docs/concepts" description="The working loop, sessions, model routing, and durable verification." />
+  <Card title="Workflows" href="/docs/workflows" description="deep-interview, ralplan, team, and ultragoal." />
+</Cards>
 
 - Source project and full reference: [Yeachan-Heo/gajae-code](https://github.com/Yeachan-Heo/gajae-code)
 - Community: [Discord](https://discord.gg/sj4exxQ9v)

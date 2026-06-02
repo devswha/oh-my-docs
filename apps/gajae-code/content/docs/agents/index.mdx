@@ -1,33 +1,39 @@
 ---
 title: Agents
-description: The four bundled role agents — executor, architect, planner, and critic — and their boundaries.
+description: The four bundled role agents — executor, architect, planner, and critic — their mutation boundaries, and how they map onto the working loop.
 ---
 
-Gajae-Code bundles four role agents with deliberately clear boundaries. Two write, two stay read-only.
+Gajae-Code bundles exactly four role agents with deliberately clear boundaries. They are task-role agents for delegation, not workflow skills. Two patterns govern them: **one role mutates files, three stay strictly read-only.**
 
-| Agent       | Role                                               | Mutates? |
-| ----------- | -------------------------------------------------- | -------- |
-| `executor`  | Bounded implementation, fixes, and refactors.      | Yes      |
-| `architect` | Read-only architecture and code-review assessment. | No       |
-| `planner`   | Read-only sequencing and acceptance criteria.      | No       |
-| `critic`    | Read-only plan critique and actionability review.  | No       |
+## The four roles
 
-## executor
+| Agent       | Role                                               | Mutates? | Thinking |
+| ----------- | -------------------------------------------------- | -------- | -------- |
+| `executor`  | Bounded implementation, fixes, and refactors.      | **Yes**  | medium   |
+| `architect` | Read-only architecture and code-review assessment. | No       | high     |
+| `planner`   | Read-only sequencing and acceptance criteria.      | No       | medium   |
+| `critic`    | Read-only plan critique and actionability review.  | No       | high     |
 
-Does the bounded implementation work: writes code, applies fixes, runs refactors. This is the only role that changes files, and it works against a scope set during planning rather than open-ended.
+The read-only roles never write, edit, format, commit, push, or mutate files. Their output is judgment — assessments, plans, and verdicts. Only `executor` changes files, and it does so against a scope set during planning rather than open-ended.
 
-## architect
+<Cards>
+  <Card title="executor" href="/docs/agents/executor">Turns a scoped task into a working, verified change. The only writer.</Card>
+  <Card title="architect" href="/docs/agents/architect">Read-only architecture and code review with severity-rated findings.</Card>
+  <Card title="planner" href="/docs/agents/planner">Read-only sequencing, acceptance criteria, risks, and handoff shape.</Card>
+  <Card title="critic" href="/docs/agents/critic">Read-only plan critique: actionable and verifiable, or not.</Card>
+</Cards>
 
-A read-only assessment role for architecture and code review. Use it to evaluate a design or an existing codebase without touching files — its output is judgment, not edits.
+## How they map onto the loop
 
-## planner
+The role agents map onto the [workflow loop](/docs/workflows):
 
-A read-only role that sequences the work and defines acceptance criteria. It turns intent into an ordered plan with explicit "done" conditions, which `ralplan` then critiques.
+- **planner** turns intent into an ordered plan with explicit acceptance criteria during `deep-interview` / `ralplan`.
+- **critic** pressure-tests that plan, returning `OKAY`, `ITERATE`, or `REJECT` before any mutation begins.
+- **executor** carries the approved work out under `ultragoal`, keeping diffs small and leaving evidence.
+- **architect** provides an independent read-only review — `CLEAR` / `WATCH` / `BLOCK` plus `APPROVE` / `COMMENT` / `REQUEST CHANGES` — when a design or change needs assessment.
 
-## critic
+Parallel runs of these roles can be coordinated with `team`.
 
-A read-only role that critiques a plan for soundness and actionability before any mutation. It is the skeptic in the loop: it looks for gaps, risks, and steps that won't actually execute as written.
+## Read-only versus write
 
-## How they fit the loop
-
-The role agents map onto the [workflow loop](/docs/workflows): planner and critic shape and pressure-test a plan during `deep-interview` / `ralplan`; executor carries it out under `ultragoal`; architect provides read-only review when a design or change needs an independent assessment. Parallel runs of these roles can be coordinated with `team`.
+The split is the point. Planning, critique, and review are isolated from mutation so a plan is pressure-tested before any file changes, and a change is reviewed without the reviewer being able to "just fix it." When you delegate, pick the narrowest role that fits: a read-only role to assess or plan, `executor` only when something must actually change.

@@ -1,0 +1,85 @@
+---
+title: 테마
+description: 기본 GJC red-claw 다크 테마, 테마 설정이 저장되는 위치, 커스텀 테마 로딩 방식, 그리고 터미널 이미지 프로토콜 제어(GJC_FORCE_IMAGE_PROTOCOL, GJC_ALLOW_SIXEL_PASSTHROUGH).
+---
+
+Gajae-Code(`gjc`)는 JSON 컬러 토큰으로 구동되는 테마 TUI를 제공합니다. 명시적인 사용자 설정이 항상 우선하며, 기본 모습은 GJC **red-claw** 다크 테마입니다.
+
+## 기본 테마
+
+기본 다크 테마는 `red-claw`입니다 — GJC 갑각류 테마로, 빨강/주황 브랜드 토큰, 별도의 시맨틱 error/warning/diff-removal 토큰, 그리고 게 모티프 심볼 오버라이드를 가집니다.
+
+설정 스키마의 기본값:
+
+| 설정 | 기본값 |
+| --- | --- |
+| `theme.dark` | `red-claw` |
+| `theme.light` | `light` |
+| `symbolPreset` | `unicode` |
+| `colorBlindMode` | `false` |
+
+이 값들은 전역 설정 YAML `<agentDir>/config.yml`(기본 `~/.gjc/agent/config.yml`)에 저장됩니다. 레거시 플랫 `theme: "name"`은 휘도 감지에 따라 중첩 `theme.dark` / `theme.light`로 마이그레이션됩니다.
+
+### 자동 슬롯 선택
+
+테마가 자동일 때, GJC는 다음 순서로 터미널 외형에서 다크/라이트 슬롯을 고릅니다.
+
+<Steps>
+  <Step>터미널이 보고한 OSC 11 배경 휘도(macOS/Zellij 폴백 경로가 활성이 아닐 때).</Step>
+  <Step>`COLORFGBG` 배경 인덱스(`< 8`이면 다크, `>= 8`이면 라이트).</Step>
+  <Step>macOS 외형 폴백 — 알려진 결함이 있는 macOS/Zellij OSC 11 경로에만 적용.</Step>
+  <Step>다크 슬롯 폴백.</Step>
+</Steps>
+
+자동 모드는 터미널 외형 변화, `SIGWINCH`, macOS 폴백 옵저버 시 슬롯을 다시 평가합니다.
+
+## 테마가 제어하는 것
+
+테마 시스템은 TUI 컬러 토큰을 구동합니다. 전경/배경, 마크다운 스타일, 선택기/에디터/설정 목록 어댑터, 심볼 프리셋(`unicode | nerd | ascii`)과 오버라이드, 네이티브 구문 강조 색, 상태 줄 세그먼트 색이 포함됩니다. 커스텀 테마는 모든 `colors` 토큰이 필수이며, `export`와 `symbols`는 선택입니다.
+
+## 내장 vs 커스텀 테마
+
+테마 조회 순서:
+
+1. 내장 임베디드 테마(`dark.json`, `light.json`, 그리고 `red-claw`를 포함한 모든 번들 `defaults/*.json`).
+2. 커스텀 테마 파일: `<customThemesDir>/<name>.json`.
+
+커스텀 테마 디렉터리는 기본 `~/.gjc/agent/themes`이며, `GJC_CODING_AGENT_DIR`(`$GJC_CODING_AGENT_DIR/themes`)로 오버라이드됩니다. 이름 충돌 시 내장이 우선합니다.
+
+### 커스텀 테마 만들기
+
+<Steps>
+  <Step>커스텀 테마 디렉터리에 파일을 만듭니다. 예: `~/.gjc/agent/themes/my-theme.json`.</Step>
+  <Step>`name`, 선택적 `vars`, 그리고 **모든 필수** `colors` 토큰을 포함합니다. 선택적으로 `symbols`와 `export`도.</Step>
+  <Step>원하는 자동 슬롯에 따라 **설정 -> Display -> Dark theme**(또는 **Light theme**)에서 선택합니다. 번들 갑각류 모습은 `red-claw`를 고르세요.</Step>
+</Steps>
+
+설정 테마 선택기는 확정 전용입니다. 방향키 탐색은 렌더링 테마를 바꾸지 않으므로, Enter로 확정하기 전까지 표시명과 저장명이 일치합니다. 인터랙티브 실행 중에는 커스텀 테마 파일 편집이 저장 시 자동 리로드됩니다. 내장은 감시하지 않으며, 리로드 오류 시 마지막으로 성공적으로 로드된 테마가 유지됩니다. 명시적 전환이 실패하면 내장 `dark`로 폴백합니다.
+
+## 터미널 이미지 프로토콜
+
+Gajae-Code는 터미널 이미지 프로토콜로 인라인 이미지를 렌더링합니다. 감지는 자동이지만, 환경 변수로 강제할 수 있어요.
+
+| 변수 | 동작 |
+| --- | --- |
+| `GJC_FORCE_IMAGE_PROTOCOL` | 이미지 프로토콜을 강제 — `kitty`, `iterm2`/`iterm`, `sixel`, `none`. |
+| `GJC_ALLOW_SIXEL_PASSTHROUGH` | `GJC_FORCE_IMAGE_PROTOCOL=sixel`일 때 SIXEL 패스스루 허용. |
+
+`GJC_FORCE_IMAGE_PROTOCOL=none`으로 설정하면 인라인 이미지를 완전히 끕니다(멀티플렉서나 이미지 이스케이프를 잘못 처리하는 터미널에서 유용). `GJC_ALLOW_SIXEL_PASSTHROUGH`는 강제 프로토콜이 `sixel`일 때만 적용됩니다.
+
+### 관련 감지 신호
+
+다음은 런타임 신호로 읽히며, 보통 손으로 설정하지 않고 터미널/OS가 설정합니다.
+
+- `COLORTERM`, `TERM`, `WT_SESSION` — 색 지원 능력(테마 컬러 모드).
+- `COLORFGBG` — 터미널 배경 명/암 자동 감지.
+
+컬러 모드는 `COLORTERM=truecolor|24bit` 또는 `WT_SESSION`이면 truecolor, `TERM`이 `dumb`/`linux`/빈 값이면 256-color, 그 외에는 truecolor로 해석됩니다.
+
+## 관련 페이지
+
+<Cards>
+  <Card title="설정" href="/ko/docs/reference/configuration" />
+  <Card title="환경 변수" href="/ko/docs/reference/environment-variables" />
+  <Card title="키 바인딩" href="/ko/docs/reference/keybindings" />
+</Cards>

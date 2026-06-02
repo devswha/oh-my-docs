@@ -1,0 +1,114 @@
+---
+title: 컨텍스트와 Compaction
+description: 긴 세션을 계속 쓸 수 있게 유지하는 방법 — 초과 복구용 컨텍스트 승격, 그다음 자동·수동 compaction.
+---
+
+긴 세션은 결국 모델의 컨텍스트 윈도우를 넘어섭니다. Gajae-Code는 이를 두 단계로 처리합니다. 먼저 **컨텍스트 승격(context promotion)**(더 큰 컨텍스트 모델로 이동)을 시도하고, 그게 불가능할 때만 **compaction**(오래된 히스토리 요약)으로 넘어갑니다. 둘 다 이전 작업 컨텍스트를 잃지 않고 유지합니다.
+
+## 컨텍스트 승격
+
+Compaction은 손실이 있습니다. 디테일을 요약으로 대체하니까요. 그래서 Gajae-Code는 컨텍스트 초과 오류를 만나면, 먼저 더 큰 컨텍스트의 형제 모델로 전환해 compaction **없이** 복구를 시도합니다.
+
+현재 모델에서 어시스턴트 턴이 컨텍스트 초과 오류로 실패하면:
+
+1. 재시도 전에, 실패한 어시스턴트 오류 메시지를 활성 에이전트 상태에서 제거합니다.
+2. **컨텍스트 승격을 먼저** 시도합니다. 설정된 더 큰 모델이 있으면 모델을 전환하고 compaction 없이 재시도합니다.
+3. 승격이 불가능할 때만(그리고 compaction이 켜져 있을 때만) context-full compaction이 돕니다.
+
+임계값 유지(threshold maintenance)도 같은 우선순위를 따릅니다. 임계값을 넘긴 성공 턴에서 compaction 전에 승격을 먼저 시도합니다.
+
+<Callout type="info">
+승격은 전체 히스토리를 보존하고, compaction은 디테일을 내주고 공간을 확보합니다. 더 큰 컨텍스트의 형제 모델을 설정해 두면 Gajae-Code가 compaction을 최대한 미룰 수 있습니다.
+</Callout>
+
+## Compaction이 하는 일
+
+Compaction은 오래된 히스토리를 현재 브랜치의 요약으로 다시 씁니다. 일반 메시지가 아니라 `compaction` 세션 엔트리로 기록됩니다. 이 엔트리에는 `summary`(그리고 선택적 `shortSummary`), `firstKeptEntryId` 경계, `tokensBefore`가 담깁니다.
+
+```text
+Compaction 전:
+
+  entry:  0     1     2     3      4     5     6      7      8     9
+        ┌─────┬─────┬─────┬──────┬─────┬─────┬──────┬──────┬─────┬──────┐
+        │ hdr │ usr │ ass │ tool │ usr │ ass │ tool │ tool │ ass │ tool │
+        └─────┴─────┴─────┴──────┴─────┴─────┴──────┴──────┴─────┴──────┘
+                └────────┬───────┘ └──────────────┬──────────────┘
+               messagesToSummarize            kept messages
+                                   ↑
+                          firstKeptEntryId (entry 4)
+
+Compaction 후 LLM이 보는 것:
+
+  ┌────────┬─────────┬─────┬─────┬──────┬──────┬─────┬──────┐
+  │ system │ summary │ usr │ ass │ tool │ tool │ ass │ tool │
+  └────────┴─────────┴─────┴─────┴──────┴──────┴─────┴──────┘
+       ↑         ↑      └─────────────────┬────────────────┘
+    prompt   from cmp          messages from firstKeptEntryId
+```
+
+컨텍스트를 재구성할 때, 활성 경로의 최신 compaction이 요약 메시지 하나가 되고, `firstKeptEntryId`부터의 보존 엔트리가 다시 재생됩니다. 디스크에서 지워지는 건 없습니다. 원본 엔트리는 append-only 로그에 그대로 남습니다.
+
+## Compaction이 도는 시점
+
+트리거는 네 가지입니다:
+
+| 트리거 | 시작 방법 | 동작 |
+| --- | --- | --- |
+| **수동** | `/compact [instructions]` | 요청 시 현재 브랜치를 요약 |
+| **초과 복구** | 같은 모델의 컨텍스트 초과 오류 | 먼저 승격, 없으면 `reason: "overflow"`로 compaction 후 자동 계속 |
+| **임계값 유지** | 해결된 임계값을 넘긴 성공 턴 | 먼저 승격, 없으면 `reason: "threshold"`로 compaction |
+| **유휴 유지** | 스트리밍 아닐 때 `runIdleCompaction()` | `reason: "idle"`로 compaction, 자동 계속 없음 |
+
+초과와 임계값 경로는 의도적으로 다릅니다. 초과 복구는 실패한 턴을 재시도하고 자동으로 계속하며, 임계값 유지는 `compaction.autoContinue`가 `false`가 아닌 한 에이전트가 작성한 자동-계속 프롬프트를 예약합니다.
+
+### Compaction 전 가지치기(pruning)
+
+Compaction 전에, 토큰을 먼저 회수하려고 도구 결과 가지치기가 돌 수 있습니다. 기본 정책:
+
+- 가장 최신 도구 출력 토큰 **40,000개**를 보호합니다.
+- 작동하려면 추정 총 절감 **20,000개** 이상이 필요합니다.
+- `skill`이나 `read`의 도구 결과는 절대 가지치지 않습니다.
+
+가지친 결과는 `[Output truncated - N tokens]`로 대체됩니다. 가지치기로 토큰 수가 임계값 아래로 떨어지면 전체 compaction을 피할 수 있습니다.
+
+### 컷 지점(cut-point) 규칙
+
+Compaction은 마지막 compaction 이후 엔트리만 고려합니다. 그다음 컷 지점을 찾는데, 하드 규칙이 하나 있습니다. **`toolResult`에서는 절대 자르지 않습니다.** 유효한 컷 지점은 메시지 엔트리(`user`, `assistant`, `bashExecution`, `hookMessage`, `branchSummary`, `compactionSummary`), `custom_message`, `branch_summary`입니다. 컷 지점이 턴 중간에 떨어지면 compaction은 요약 두 개(히스토리 요약과 턴-프리픽스 요약)를 만들어 하나의 저장 요약으로 병합합니다.
+
+## 전략
+
+`compaction.strategy`가 유지 동작을 고릅니다:
+
+- **`context-full`**(기본) — 요약하고 현재 세션에 `compaction` 엔트리를 추가합니다.
+- **`handoff`** — 임계값 유지 시, compaction 엔트리를 쓰는 대신 **새** 세션을 시작하고 생성된 handoff 문서를 보이는 메시지로 주입합니다. handoff가 중단 없이 문서를 반환하지 않으면 context-full compaction으로 폴백합니다. (초과 복구는 handoff를 절대 쓰지 않습니다.)
+- **`off`** — compaction 비활성화.
+
+## 브랜치 요약
+
+브랜치 요약은 토큰 초과가 아니라 `/tree` 내비게이션을 위한 형제 메커니즘입니다. 요약을 요청한 채로 브랜치에서 벗어나면, 버려진 엔트리(이전 리프에서 공통 조상까지)가 요약되어 **새** 내비게이션 위치에 `branch_summary` 엔트리로 붙습니다. 기본은 꺼져 있습니다(`branchSummary.enabled: false`).
+
+## 설정과 기본값
+
+| 설정 | 기본값 |
+| --- | --- |
+| `compaction.enabled` | `true` |
+| `compaction.strategy` | `"context-full"` |
+| `compaction.reserveTokens` | `16384` |
+| `compaction.keepRecentTokens` | `20000` |
+| `compaction.autoContinue` | `true` |
+| `compaction.remoteEnabled` | `true` |
+| `compaction.remoteEndpoint` | `undefined` |
+| `compaction.thresholdPercent` / `thresholdTokens` | `-1` |
+| `compaction.idleEnabled` | `true` |
+| `branchSummary.enabled` | `false` |
+| `branchSummary.reserveTokens` | `16384` |
+
+양수 임계값 오버라이드가 없으면 임계값은 `contextWindow - max(contextWindow의 15%, reserveTokens)`입니다.
+
+## 관련 문서
+
+<Cards>
+<Card title="세션과 Worktree" href="/ko/docs/concepts/sessions" />
+<Card title="모델과 Provider" href="/ko/docs/concepts/models-and-providers" />
+<Card title="설정" href="/ko/docs/reference/configuration" />
+</Cards>

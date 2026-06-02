@@ -1,0 +1,85 @@
+---
+title: Theme
+description: The default GJC red-claw dark theme, where theme settings are persisted, how custom themes are loaded, and the terminal image-protocol controls (GJC_FORCE_IMAGE_PROTOCOL, GJC_ALLOW_SIXEL_PASSTHROUGH).
+---
+
+Gajae-Code (`gjc`) ships a themed TUI driven by JSON color tokens. Explicit user settings always win, and the default look is the GJC **red-claw** dark theme.
+
+## Default theme
+
+The default dark theme is `red-claw` — the GJC crustacean look, with red/orange brand tokens, separate semantic error/warning/diff-removal tokens, and crab-oriented symbol overrides.
+
+Defaults from the settings schema:
+
+| Setting | Default |
+| --- | --- |
+| `theme.dark` | `red-claw` |
+| `theme.light` | `light` |
+| `symbolPreset` | `unicode` |
+| `colorBlindMode` | `false` |
+
+These are persisted to the global config YAML at `<agentDir>/config.yml` (default `~/.gjc/agent/config.yml`). Legacy flat `theme: "name"` is migrated to nested `theme.dark` / `theme.light` based on luminance detection.
+
+### Auto slot selection
+
+When the theme is on auto, GJC picks the dark/light slot from terminal appearance in this order:
+
+<Steps>
+  <Step>Terminal-reported OSC 11 background luminance (unless the macOS/Zellij fallback path is active).</Step>
+  <Step>`COLORFGBG` background index (`< 8` => dark, `>= 8` => light).</Step>
+  <Step>macOS appearance fallback, only for the known-broken macOS/Zellij OSC 11 path.</Step>
+  <Step>Dark slot fallback.</Step>
+</Steps>
+
+Auto mode re-evaluates the slot on terminal appearance changes, `SIGWINCH`, and the macOS fallback observer.
+
+## What the theme controls
+
+The theme system drives the TUI color tokens: foreground/background, markdown styling, selector/editor/settings list adapters, the symbol preset (`unicode | nerd | ascii`) plus overrides, native syntax-highlighting colors, and status-line segment colors. Every `colors` token is required for a custom theme; `export` and `symbols` are optional.
+
+## Built-in vs custom themes
+
+Theme lookup order:
+
+1. Built-in embedded themes (`dark.json`, `light.json`, and all bundled `defaults/*.json`, including `red-claw`).
+2. Custom theme file: `<customThemesDir>/<name>.json`.
+
+The custom themes directory defaults to `~/.gjc/agent/themes`, overridden by `GJC_CODING_AGENT_DIR` (`$GJC_CODING_AGENT_DIR/themes`). Built-ins take precedence on name collision.
+
+### Create a custom theme
+
+<Steps>
+  <Step>Create a file in the custom themes dir, e.g. `~/.gjc/agent/themes/my-theme.json`.</Step>
+  <Step>Include `name`, optional `vars`, and **all required** `colors` tokens; optionally `symbols` and `export`.</Step>
+  <Step>Select it in **Settings -> Display -> Dark theme** (or **Light theme**) depending on which auto slot you want. For the bundled crustacean look, choose `red-claw`.</Step>
+</Steps>
+
+The settings theme picker is confirm-only: arrow-key browsing does not change the rendered theme, so the displayed and persisted names stay aligned until you press Enter. While running interactively, edits to a custom theme file auto-reload on save; built-ins are not watched, and reload errors keep the last successfully loaded theme. A failed explicit switch falls back to the built-in `dark`.
+
+## Terminal image protocol
+
+Gajae-Code renders inline images using a terminal image protocol. Detection is automatic, but you can force it with environment variables:
+
+| Variable | Behavior |
+| --- | --- |
+| `GJC_FORCE_IMAGE_PROTOCOL` | Forces the image protocol — `kitty`, `iterm2`/`iterm`, `sixel`, or `none`. |
+| `GJC_ALLOW_SIXEL_PASSTHROUGH` | Allows SIXEL passthrough when `GJC_FORCE_IMAGE_PROTOCOL=sixel`. |
+
+Set `GJC_FORCE_IMAGE_PROTOCOL=none` to disable inline images entirely (useful over multiplexers or terminals that mishandle image escapes). `GJC_ALLOW_SIXEL_PASSTHROUGH` only applies when the forced protocol is `sixel`.
+
+### Related detection signals
+
+These are read as runtime signals — usually set by the terminal/OS, not configured by hand:
+
+- `COLORTERM`, `TERM`, `WT_SESSION` — color capability (theme color mode).
+- `COLORFGBG` — terminal background light/dark auto-detection.
+
+Color mode resolves to truecolor for `COLORTERM=truecolor|24bit` or `WT_SESSION`, to 256-color for `TERM` in `dumb`/`linux`/empty, and otherwise to truecolor.
+
+## Related pages
+
+<Cards>
+  <Card title="Configuration" href="/docs/reference/configuration" />
+  <Card title="Environment variables" href="/docs/reference/environment-variables" />
+  <Card title="Keybindings" href="/docs/reference/keybindings" />
+</Cards>

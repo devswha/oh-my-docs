@@ -1,0 +1,125 @@
+---
+title: ultragoal
+description: 永続的な repo-native の目標アーティファクト上で、承認された計画を実装・改訂・検証・最終的な証拠のまとめまで進めます。
+---
+
+`ultragoal` は承認された brief を repo-native のアーティファクトに変え、目標を実装・改訂・検証・最終的な証拠のまとめまで安全に進めます。[ワークフローループ](/ja/docs/concepts)における証拠で締める実行段階です。[`ralplan`](/ja/docs/workflows/ralplan) がレビュー済みの計画を生んだ後、`ultragoal` がそれを完了・チェックポイント済みの結果まで運びます。
+
+## 何を追跡するか
+
+計画は永続的な repo-native アーティファクトの小さなセットになります：
+
+| アーティファクト | 目的 |
+| --- | --- |
+| `.gjc/ultragoal/brief.md` | 計画の元になった brief。 |
+| `.gjc/ultragoal/goals.json` | 集約計画とストーリーごとの状態。 |
+| `.gjc/ultragoal/ledger.jsonl` | 永続監査証跡：チェックポイントと steering イベント。 |
+
+新しい計画は既定で、永続計画全体に対する安定したポインタ型の集約目標を持ち、ストーリー進捗は ledger で追跡します。ledger は永続監査証跡なので、成功でも失敗でも毎回チェックポイントします。
+
+## 目標を作る
+
+承認された計画から始めます。brief 文字列、brief ファイル、または stdin を使います：
+
+```bash
+gjc ultragoal create-goals --brief "<brief>"
+gjc ultragoal create-goals --brief-file <approved-plan>
+cat <approved-plan> | gjc ultragoal create-goals --from-stdin
+```
+
+その後 `.gjc/ultragoal/goals.json` を確認し、必要なら調整します。ストーリーごとに 1 つの目標コンテキストを明示的に望む場合のみ `--gjc-goal-mode per-story` を使います。
+
+承認された計画や合意アーティファクトがない要求なら、まず [`ralplan`](/ja/docs/workflows/ralplan) を実行し、その PRD・テスト仕様・ロール一覧・検証ガイドを ledger に保存してください。計画の欠如を場当たり実行で黙って置き換えないでください。
+
+## 目標を完了する
+
+実行を完了まで進めます。`gjc ultragoal status` がすべての目標の完了を報告するまで繰り返します：
+
+1. `gjc ultragoal complete-goals` を実行し、出力された引き継ぎを読みます。
+2. 現在のストーリーのみを実装します。
+3. 下記の必須の完了クリーンアップ・レビューゲートを実行します。
+4. 新しい active 目標スナップショットで永続 ledger をチェックポイントします。
+5. 次のストーリーで繰り返します。失敗は `gjc ultragoal complete-goals --retry-failed` で再開します。
+
+```bash
+gjc ultragoal status
+gjc ultragoal status --json
+gjc ultragoal complete-goals
+gjc ultragoal complete-goals --retry-failed
+```
+
+## チェックポイント
+
+各ストーリーはチェックポイントで記録されます。complete チェックポイントにはクリーンな品質ゲートが必要で、ランタイムフックはそれなしのクローズを拒否します：
+
+```bash
+gjc ultragoal checkpoint --goal-id <id> --status complete \
+  --evidence "<evidence>" \
+  --gjc-goal-json <goal-get-json-or-path> \
+  --quality-gate-json <quality-gate-json-or-path>
+```
+
+ストーリーがブロックまたは失敗したら、終端状態を代わりに記録します：
+
+```bash
+gjc ultragoal checkpoint --goal-id <id> --status failed --evidence "<blocker/evidence>"
+```
+
+ledger を証拠として扱ってください。チェックポイントが receipt を作り、`goals.json.status` だけでは完了の証拠になりません。
+
+## 完了クリーンアップ・レビューゲート
+
+品質ゲートが実行されるまで、ストーリーを `complete` でチェックポイントできません：
+
+1. ストーリーに対する的を絞った検証を実行します。
+2. 変更されたファイルのみを対象にクリーンアップ/リファクタのレビューパスを実行し（関連する編集がなくても cleaner は実行され no-op レポートを記録）、検証を再実行します。
+3. アーキテクチャ・プロダクト・コードのレーンを網羅する `architect` レビューと、変更を壊そうとする `executor` QA/red-team レーンを委譲します。
+4. いずれかのレーンが問題を見つけたら、完了せず `gjc ultragoal record-review-blockers` で永続的な blocker 作業を記録します。
+5. ループがクリーンなときのみ、構造化された品質ゲートと新しい active 目標スナップショットで `complete` チェックポイントします。
+
+「クリーン」とは、すべての `architectReview` ステータスが `"CLEAR"`、recommendation が `"APPROVE"`、executor QA ステータスが `"passed"`、iteration が `fullRerun: true` で `"passed"`、すべての evidence フィールドが非空、すべての blockers 配列が空であることを意味します。`COMMENT`、`WATCH`、`REQUEST CHANGES`、`BLOCK`、証拠の欠如、非空の blockers はすべて非クリーンです。
+
+```bash
+gjc ultragoal record-review-blockers --goal-id <id> \
+  --title "Resolve verification blockers" \
+  --objective "<blocker-resolution objective>" \
+  --evidence "<architect/executor findings>" \
+  --gjc-goal-json <active-goal-get-json-or-path>
+```
+
+## 動的 steering
+
+集約目標と元の制約は固定したまま、実際の発見がストーリー分解の変更を裏付けるときに `gjc ultragoal steer` を使います。steering は明示的かつ証拠ベースで、広範な自然言語要求は推測されず拒否されます。
+
+```bash
+gjc ultragoal steer --kind add_subgoal \
+  --title "Investigate blocker" \
+  --objective "Validate the blocker and report evidence." \
+  --evidence "log/test output" \
+  --rationale "The blocker changes the safe execution order." --json
+```
+
+許可される mutation 種別は `add_subgoal`、`split_subgoal`、`reorder_pending`、`revise_pending_wording`、`annotate_ledger`、`mark_blocked_superseded` です。steering は集約目標、元の brief 制約、品質ゲート、完了状態を決して編集せず、目標を hard-delete したり検証を弱めたりしません。受理・却下いずれの試行も ledger に監査エントリを追記します。
+
+## ロールエージェントへの委譲
+
+ストーリーが委譲に値するほど大きいときは、バンドルされたロールエージェントを使います：
+
+| エージェント | レーン |
+| --- | --- |
+| [`executor`](/ja/docs/agents/executor) | 有界な実装・リファクタ・修正スライス。 |
+| [`planner`](/ja/docs/agents/planner) | ストーリーの順序付けや引き継ぎの洗練。 |
+| [`architect`](/ja/docs/agents/architect) | 読み取り専用のアーキテクチャ・コードレビュー（`CLEAR` / `WATCH` / `BLOCK`）。 |
+| [`critic`](/ja/docs/agents/critic) | 読み取り専用の計画・引き継ぎ批評。 |
+
+ultragoal リーダーが `goals.json` と `ledger.jsonl` を所有します。ロールエージェントは実装・レビューの証拠を返すだけで、ultragoal をチェックポイントしたり目標状態を変更したりしません。
+
+## ultragoal と team の併用
+
+可視の並列実行レーンが役立つ永続ストーリーには、ultragoal を [`team`](/ja/docs/workflows/team) と組み合わせます。ultragoal はリーダー所有のまま、team はタスクと証拠の状態を返す tmux 実行エンジンです。リーダーは新しい目標スナップショットで team の証拠から ultragoal をチェックポイントします。ワーカーは目標状態を所有せず、`gjc ultragoal checkpoint` を実行してはいけません。
+
+<Cards>
+<Card title="ralplan" href="/ja/docs/workflows/ralplan" />
+<Card title="team" href="/ja/docs/workflows/team" />
+<Card title="コンテキストと compaction" href="/ja/docs/concepts/context-and-compaction" />
+</Cards>

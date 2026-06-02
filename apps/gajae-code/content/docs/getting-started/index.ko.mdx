@@ -11,7 +11,7 @@ description: Gajae-Code 설치, gjc 바이너리 실행, deep-interview → ralp
 
 ### 설치
 
-권장 런타임은 Bun입니다:
+Gajae-Code는 npm 레지스트리에 `gajae-code`로 배포됩니다. 권장 런타임은 Bun입니다:
 
 ```bash
 bun install -g gajae-code
@@ -31,13 +31,13 @@ bun install -g gajae-code
 gjc --tmux
 ```
 
-`gjc`만 실행하면 tmux 세션 없이 바로 켜집니다:
+`gjc`만 실행하면 tmux 세션을 만들거나 붙지 않고 바로 켜집니다:
 
 ```bash
 gjc
 ```
 
-브랜치 단위로 더 안전하게 작업하려면 격리된 Git worktree에서 실행합니다:
+브랜치 단위로 더 안전하게 작업하려면 격리된 Git worktree에서 실행합니다. 일회성·브랜치 전용 작업엔 별도 경로를 써서 메인 체크아웃을 깨끗이 유지하세요:
 
 ```bash
 gjc --tmux --worktree <path>
@@ -53,13 +53,23 @@ Gajae-Code는 하나의 쓸모 있는 루프에 집중합니다:
 
 ```text
 deep-interview -> ralplan -> ultragoal
+                         └─ 병렬 tmux 워커가 도움이 될 때만 team 실행
 ```
 
 - `deep-interview` — 의도, 영향 범위, 비목표, 수용 기준을 명확히 합니다.
 - `ralplan` — 변경 전에 계획을 세우고 비평합니다.
 - `$ultragoal` — 구현·수정·검증·증거 요약까지 작업을 끌고 갑니다.
 
-병렬 tmux 워커가 도움이 될 때만 `$team`을 더하세요.
+병렬 tmux 워커가 도움이 될 때만 `$team`을 더하세요. 구체적인 버그 수정 흐름은 이런 모습입니다:
+
+```text
+/skill:deep-interview clarify the bug, affected behavior, non-goals, and acceptance checks
+/skill:ralplan turn the clarified bug report into a reviewed fix plan
+gjc ultragoal create-goals --brief-file <approved-plan>
+# 병렬 작업일 때만 선택:
+gjc team 2:executor "split implementation and verification for this bug fix"
+gjc ultragoal complete-goals
+```
 
 </Step>
 
@@ -67,17 +77,27 @@ deep-interview -> ralplan -> ultragoal
 
 ## 설정
 
-provider 재시도 예산 등 설정은 `~/.gjc/config.yml`에 둡니다:
+provider 재시도 예산 등 설정은 `~/.gjc/config.yml`(또는 활성 프로젝트/사용자 설정 소스)에 둡니다:
 
 ```yaml
 retry:
+  # codex-cli의 request_max_retries와 비슷. 최초 요청이 아닌 재시도 횟수를 셉니다.
   requestMaxRetries: 4
+  # codex-cli의 stream_max_retries와 비슷. replay 가능한 스트림 재시도 횟수를 셉니다.
   streamMaxRetries: 100
+  # 세션 레벨 터미널 오류 재시도는 별도로 설정합니다.
   maxRetries: 3
   maxDelayMs: 300000
 ```
 
+Gajae-Code에는 재시도 계층이 둘 있습니다. 세션 자동 재시도(`retry.maxRetries`)는 터미널 일시 오류 이후 실패한 어시스턴트 턴을 다시 시도하고, provider 재시도 예산(`requestMaxRetries`, `streamMaxRetries`)은 그 터미널 오류가 세션에 도달하기 전 provider 전송 계층 내부의 재시도를 제어합니다. 잘못된 인증, 미지원 모델/provider, 잘못된 요청, 컨텍스트 초과, 사용자 중단, 영구 쿼터 실패는 재시도 루프에 가려지지 않고 즉시 실패(fail-fast)합니다.
+
 ## 다음 단계
+
+<Cards>
+  <Card title="주요 개념" href="/ko/docs/concepts" description="작동 루프, 세션, 모델 라우팅, 지속 가능한 검증." />
+  <Card title="워크플로우" href="/ko/docs/workflows" description="deep-interview, ralplan, team, ultragoal." />
+</Cards>
 
 - 소스 프로젝트와 전체 레퍼런스: [Yeachan-Heo/gajae-code](https://github.com/Yeachan-Heo/gajae-code)
 - 커뮤니티: [Discord](https://discord.gg/sj4exxQ9v)

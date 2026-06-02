@@ -1,13 +1,13 @@
 ---
 title: Core Concepts
-description: The working loop, session and worktree isolation, model routing, and durable verification that define how Gajae-Code operates.
+description: The working loop, the small-surface philosophy, session and worktree isolation, model routing, and durable verification that define how Gajae-Code operates.
 ---
 
-Gajae-Code keeps the public agent surface small and the runtime around it dependable. A few ideas explain how it behaves.
+Gajae-Code (`gjc`) keeps the public agent surface intentionally small while making the runtime around it dependable. A handful of ideas explain how it behaves — and why the harness improves by making one method better instead of growing a skill zoo.
 
 ## The working loop
 
-Gajae-Code focuses on one method rather than a large skill zoo:
+Gajae-Code focuses on one useful loop rather than a sprawling default surface:
 
 ```text
 deep-interview -> ralplan -> ultragoal
@@ -17,15 +17,56 @@ deep-interview -> ralplan -> ultragoal
 - **`deep-interview`** removes ambiguity before any planning or code change.
 - **`ralplan`** builds and critiques a plan before mutation.
 - **`ultragoal`** carries the work through implementation, revision, verification, and an evidence summary.
-- **`team`** is an optional execution mode that coordinates tmux-backed parallel workers — not a required handoff.
+- **`team`** is an optional execution mode that coordinates tmux-backed parallel workers — not a required handoff step.
 
 The sequence describes the operator flow, not hidden automation: the agent still reports what it changed, what it revised after findings, what checks ran, and what evidence supports the result.
 
+A concrete bug-fix pass might look like this:
+
+```text
+/skill:deep-interview clarify the bug, affected behavior, non-goals, and acceptance checks
+/skill:ralplan turn the clarified bug report into a reviewed fix plan
+gjc ultragoal create-goals --brief-file <approved-plan>
+# Optional only for parallel work:
+gjc team 2:executor "split implementation and verification for this bug fix"
+gjc ultragoal complete-goals
+```
+
+### Workflow routing
+
+Use the smallest workflow that satisfies the request:
+
+1. Direct implementation for clear, low-risk edits.
+2. `deep-interview` when intent, scope, or acceptance criteria are ambiguous.
+3. `ralplan` when requirements are clear enough to plan but architecture, sequencing, or verification needs consensus.
+4. `ultragoal` when work should be split into durable goals with an auditable ledger.
+5. `team` when approved work benefits from parallel workers.
+
+Planning artifacts stay `pending approval` until you explicitly approve execution — `deep-interview` and `ralplan` do not start implementation on their own.
+
+## The small-surface philosophy
+
+Gajae-Code ships exactly four default workflow skills and four bundled role agents. There is no sprawling default skill zoo: the harness improves by making this small method better.
+
+| Workflow skill   | What it does                                                                                        |
+| ---------------- | --------------------------------------------------------------------------------------------------- |
+| `deep-interview` | Removes ambiguity before planning or code changes.                                                  |
+| `ralplan`        | Builds and critiques a plan before mutation.                                                        |
+| `team`           | Optionally coordinates tmux-backed parallel execution when the work benefits from multiple workers. |
+| `ultragoal`      | Tracks durable goals through implementation, revisions, verification, and evidence summaries.       |
+
+| Role agent  | What it does                                       |
+| ----------- | -------------------------------------------------- |
+| `executor`  | Bounded implementation, fixes, and refactors.      |
+| `architect` | Read-only architecture and code-review assessment. |
+| `planner`   | Read-only sequencing and acceptance criteria.      |
+| `critic`    | Read-only plan critique and actionability review.  |
+
+The result is a compact CLI that stays easy to reason about, but still gives you session state, worktree isolation, tmux orchestration, model routing, tool execution, and persistent evidence when the work needs it.
+
 ## Sessions and worktree isolation
 
-Each run is a session with durable state — history, model changes, and evidence are recorded. You can switch, fork, resume, export, and share sessions.
-
-For safer, branch-local work, run inside an isolated Git worktree:
+Each run is a session with durable state — history, model changes, and evidence are recorded. For safer, branch-local work, run inside an isolated Git worktree:
 
 ```bash
 gjc --tmux --worktree <path>
@@ -33,17 +74,25 @@ gjc --tmux --worktree <path>
 
 Use a dedicated path for throwaway or branch-specific work so the main checkout stays clean.
 
+See [Sessions & worktrees](/docs/concepts/sessions) for the full lifecycle.
+
 ## Model routing
 
-Gajae-Code keeps every concrete provider model and builds a canonical layer above them, so you can pin an exact `provider/model` or select a canonical id that coalesces across providers.
+Gajae-Code keeps every concrete provider model and builds a canonical layer above them, so you can pin an exact `provider/model` or select a canonical id that coalesces across providers. **Context promotion** recovers from context-overflow errors by switching a small-context model to a larger-context sibling before falling back to compaction.
 
-- **Model roles** map jobs to models: `default`, `smol`, `slow`, `vision`, `plan`, `designer`, `commit`, `task`. Each role can append a thinking level (`:low`, `:medium`, `:high`, `:xhigh`).
-- Pick models at runtime with `/model` in the TUI, or `--model` / `--models` on the CLI (exact, canonical, fuzzy, or glob like `openai/*`).
-- Local runtimes (Ollama, llama.cpp, LM Studio) are discovered automatically when reachable.
-- **Context promotion** recovers from context-overflow errors by switching a small-context model to a larger-context sibling before falling back to compaction.
+See [Model routing & providers](/docs/concepts/models-and-providers) and [Context promotion & compaction](/docs/concepts/context-and-compaction).
 
-See [Configuration](/docs/reference) for the `models.yml` shape, provider presets, and auth.
+## Durable verification and evidence
 
-## Durable verification
+The loop does not stop at "wrote some code." `ultragoal` tracks goals through implementation, revision, verification, and a final evidence summary, so a finished task comes with the checks that ran and what they showed. Workflow ledgers, plans, and specs persist under `.gjc/` so the trail is auditable later.
 
-The loop does not stop at "wrote some code." `ultragoal` tracks goals through implementation, revision, verification, and a final evidence summary, so a finished task comes with the checks that ran and what they showed.
+See [Memory: recall & retain](/docs/concepts/memory) for how durable knowledge carries across sessions.
+
+## Explore the concepts
+
+<Cards>
+  <Card title="Sessions & worktrees" href="/docs/concepts/sessions" />
+  <Card title="Model routing & providers" href="/docs/concepts/models-and-providers" />
+  <Card title="Context promotion & compaction" href="/docs/concepts/context-and-compaction" />
+  <Card title="Memory: recall & retain" href="/docs/concepts/memory" />
+</Cards>

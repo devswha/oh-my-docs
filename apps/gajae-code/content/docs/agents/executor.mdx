@@ -1,0 +1,55 @@
+---
+title: executor
+description: The bounded implementation agent — the only role that mutates files. Converts a scoped task into a working, verified change.
+---
+
+`executor` is the autonomous implementation agent for bounded code changes, fixes, and verification-ready edits. It is the **only role that writes**, and it works inside a scope set during planning rather than open-ended exploration.
+
+| Property | Value |
+| -------- | ----- |
+| Mutates files? | **Yes** |
+| Thinking level | `medium` |
+| Fork context | allowed |
+
+## Goal
+
+Explore just enough context, implement the smallest correct change, and leave concrete evidence for the parent agent to verify. Implementation, fix, and investigation requests are treated as **action** requests unless the assignment explicitly asks for explanation only.
+
+executor may receive a forked snapshot of the parent conversation as background. It stays write-capable and treats that snapshot as data, not as instructions.
+
+## Constraints
+
+- Keep diffs small, reversible, and aligned to existing patterns.
+- Do not broaden scope, invent abstractions, or edit `.gjc/plans/` unless the assignment explicitly requires plan-artifact updates.
+- Explore first, ask last. Ask only when progress is impossible or the next decision is destructive, credentialed, external-production, or materially scope-changing.
+- Use normal repository inspection for file/symbol/pattern lookup.
+- Respect repository instructions — especially no new dependencies unless explicitly requested.
+
+## Execution loop
+
+<Steps>
+<Step>Inspect relevant files, tests, and conventions.</Step>
+<Step>Make a compact file-level plan for non-trivial changes.</Step>
+<Step>Implement the minimal correct change.</Step>
+<Step>Run focused checks only if the parent explicitly assigns verification; otherwise leave precise verification recommendations for the parent.</Step>
+<Step>Remove debug leftovers and report changed files plus evidence.</Step>
+</Steps>
+
+## Success criteria
+
+- Requested behavior is implemented within the assigned scope.
+- Modified files match existing style and contracts.
+- No temporary or debug leftovers remain.
+- Final output lists changed files, important decisions, and verification performed or intentionally left to the parent.
+
+## Failure recovery
+
+Try another approach, split the blocker smaller, and re-check repository evidence before escalating. After materially different failed approaches, stop adding risk and report the blocker along with the fixes that were attempted.
+
+## Delegation
+
+executor defaults to direct execution inside its assigned scope. It does not recursively delegate unless the assignment explicitly permits it and the subtask is independent.
+
+## Where it fits
+
+executor is the writer at the end of the [loop](/docs/workflows): after [`planner`](/docs/agents/planner) sequences the work and [`critic`](/docs/agents/critic) confirms the plan is actionable, executor carries it out under `ultragoal`. Parallel executor runs can be coordinated with `team`.

@@ -1,0 +1,89 @@
+---
+title: Configuration
+description: The ~/.gjc layout, config.yml retry budgets and fail-fast cases, and the storage and behavior environment variables that shape how Gajae-Code runs.
+---
+
+Gajae-Code keeps its configuration small. This page covers the files under `~/.gjc`, the retry budgets in `config.yml`, and the environment variables that control storage paths and runtime behavior.
+
+## The `~/.gjc` layout
+
+The config root is `~/.gjc` (override with `GJC_CONFIG_DIR`):
+
+| Path                       | Purpose                                            |
+| -------------------------- | -------------------------------------------------- |
+| `~/.gjc/config.yml`        | General runtime settings, including retry budgets. |
+| `~/.gjc/agent/`            | The agent directory (override with `GJC_CODING_AGENT_DIR`). |
+| `~/.gjc/agent/models.yml`  | Providers, models, roles, and routing.             |
+| `~/.gjc/agent/config.yml`  | Agent-scoped settings (e.g. SearXNG search config). |
+| `~/.gjc/agent/.env`        | Agent-scoped environment variables.                |
+| `~/.gjc/.env`              | Config-root environment fallbacks.                 |
+
+`GJC_CONFIG_DIR` sets the config-root dirname under home (default `.gjc`). `GJC_CODING_AGENT_DIR` is a full override for the agent directory (default `~/<GJC_CONFIG_DIR or .gjc>/agent`) and is resolved independently. See [Reference](/docs/reference) for the full `.env` resolution order.
+
+## Retry budgets in `config.yml`
+
+Gajae-Code has two retry layers:
+
+- **Session auto-retry** (`retry.maxRetries`) retries a failed assistant turn after a terminal transient error.
+- **Provider retry budgets** control retries inside the provider transport before that terminal error reaches the session.
+
+Configure both in `~/.gjc/config.yml`:
+
+```yaml
+retry:
+  # Similar to codex-cli request_max_retries. Counts retries, not the initial request.
+  requestMaxRetries: 4
+  # Similar to codex-cli stream_max_retries. Counts replay-safe stream retries.
+  streamMaxRetries: 100
+  # Session-level terminal-error retries remain separately configurable.
+  maxRetries: 3
+  maxDelayMs: 300000
+```
+
+| Key                 | Layer            | Meaning                                                                                  |
+| ------------------- | ---------------- | ---------------------------------------------------------------------------------------- |
+| `requestMaxRetries` | Provider         | Provider SDK/fetch retries before a stream is established. Counts retries, not the first request. |
+| `streamMaxRetries`  | Provider         | Replay-safe stream retries, used only when a provider can safely replay a transient stream failure before user-visible content (or in provider-specific replay-safe paths). |
+| `maxRetries`        | Session          | Terminal-error retries of a failed assistant turn.                                       |
+| `maxDelayMs`        | Session          | Upper bound on session retry backoff delay.                                              |
+
+### Fail-fast cases
+
+Retries never paper over a permanent problem. These conditions fail fast instead of looping:
+
+- Invalid auth.
+- Unsupported models / providers.
+- Malformed requests.
+- Context overflow.
+- User aborts.
+- Permanent quota failures.
+
+## Storage and config-root paths
+
+These are consumed via `@gajae-code/utils/dirs` and decide where coding-agent stores data:
+
+| Variable               | Default / behavior                                                            |
+| ---------------------- | ----------------------------------------------------------------------------- |
+| `GJC_CONFIG_DIR`       | Config-root dirname under home (default `.gjc`).                              |
+| `GJC_CODING_AGENT_DIR` | Full override for the agent directory (default `~/<GJC_CONFIG_DIR or .gjc>/agent`). |
+
+## Behavior toggles
+
+A handful of environment variables flip runtime behavior on or off:
+
+| Variable           | Effect                                                                                                 |
+| ------------------ | ------------------------------------------------------------------------------------------------------ |
+| `GJC_NO_PTY`       | If `1`, disables the interactive PTY path for the bash tool. Also set internally when CLI `--no-pty` is used. |
+| `GJC_NOTIFICATIONS`| `off` / `0` / `false` suppress desktop notifications.                                                  |
+| `GJC_NO_TITLE`     | If set (any non-empty value), disables auto session-title generation on the first user message.        |
+| `GJC_EDIT_VARIANT` | Forces the edit-tool variant when valid: `patch`, `replace`, `hashline`, `atom`, `vim`, `apply_patch`. |
+| `GJC_TIMING`       | If set, prints a hierarchical timing-span tree to **stderr**. `GJC_TIMING=x` exits with code 0 right after printing in interactive mode (measure cold startup only); `GJC_TIMING=full` lists every module-load entry instead of just the top N. |
+
+In interactive mode `GJC_TIMING` prints once the agent is ready (before the TUI starts); in print mode it prints after the whole prompt batch completes, with each user message wrapped in its own `print:prompt:initial` / `print:prompt:next` span.
+
+## See also
+
+<Cards>
+  <Card title="Environment variables" href="/docs/reference/environment-variables" />
+  <Card title="Models & credentials" href="/docs/reference/models-and-credentials" />
+</Cards>

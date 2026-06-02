@@ -1,6 +1,10 @@
 {
   "title": "Agents",
   "pages": [
-    "index"
+    "index",
+    "executor",
+    "architect",
+    "planner",
+    "critic"
   ]
 }

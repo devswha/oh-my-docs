@@ -1,0 +1,129 @@
+---
+title: 文件工具
+description: read、write、edit 与 ast-edit —— Gajae-Code 如何读取文件并应用精确或结构化的改动。
+---
+
+文件家族涵盖读取内容与应用改动。`read` 用单个 `path` 字符串打开几乎一切；`write` 创建或覆盖；`edit` 通过多种 variant 做有范围的行编辑；`ast-edit` 执行结构化重写。
+
+## `read`
+
+用单个 `path` 字符串读取文件、目录、归档、SQLite 数据库、内部资源、图像、文档与 URL。结尾的选择器决定切片。
+
+| 输入 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `path` | `string` | 是 | 文件路径、内部 URL 或 Web URL。可以 `:50-100` 或 `:raw` 等选择器结尾。 |
+
+### 选择器
+
+| 后缀 | 含义 |
+| --- | --- |
+| `:raw` | 原文模式，关闭结构摘要与行前缀。 |
+| `:N` / `:LN` | 从 1 基行 `N` 起，开放结尾。 |
+| `:A-B` / `:LA-LB` | 1 基包含行范围。 |
+| `:A+C` / `:LA+LC` | 从 `A` 起 `C` 行。 |
+| `:range:raw` / `:raw:range` | 同样的行选择，原文输出。 |
+
+行号为 1 基（`:0` 无效）。URL 选择器仅支持 `:raw`、`:N`、`:A-B`、`:A+C`，无 `L` 前缀。
+
+### 能打开什么
+
+- **文本文件** —— 启用摘要且文件足够小（`<= 2 MiB`、`<= 20_000` 行）时返回结构摘要（省略段以 `...` 代替）及恢复选择器提示；否则按行范围流式读取。
+- **目录** —— 按最近修改排序的树（深度 `2`，每目录最多 `12` 个），带大小与时间。
+- **归档** —— `.tar`、`.tar.gz`、`.tgz`、`.zip`，语法 `archive.ext:inner/path[:lines]`。
+- **SQLite** —— `db.sqlite` 列表，`:table` 模式+样本，`:table:key` 一行，`?limit=&offset=&order=&where=` 查询，`?q=SELECT ...` 原始只读 SQL。
+- **文档** —— `.pdf`、`.doc(x)`、`.ppt(x)`、`.xls(x)`、`.rtf`、`.epub` 转为文本。
+- **Jupyter** —— `.ipynb` 转为可编辑的 `# %% [code] cell:N` 文本（`:raw` 除外）。
+- **图像** —— 返回内联图像块（最大 `20 MiB`），`inspect_image.enabled` 时仅元数据。
+- **内部 URL** —— `agent://`、`artifact://`、`memory://`、`gjc://`、`rule://`、`issue://`、`pr://`。
+- **Web URL** —— `http://`、`https://`、`www.`；渲染为易读文本，`:raw` 用于正文回退。
+
+<Callout type="info">
+哈希行模式下非 raw 文本读取以 `LINEhh|text`（如 `41th|def alpha():`）前缀，这些锚点供后续 `edit` 消费。单独的 `/` 解析为会话 cwd，而非文件系统根。
+</Callout>
+
+## `write`
+
+创建或覆盖文件、归档条目或 SQLite 行。
+
+| 输入 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `path` | `string` | 是 | 普通路径写文件；`archive.ext:inner/path` 写归档条目；`db.sqlite:table` 插行，`db.sqlite:table:key` 更新/删除。 |
+| `content` | `string` | 是 | 完整替换内容。SQLite 非删除写入须为 JSON5 对象；带行键的空内容删除该行。 |
+
+variant：普通文件（覆盖）、归档条目（替换后重写整个归档，仅此路径创建父目录）、SQLite 插入（`db.sqlite:table` + JSON5 对象）、SQLite 更新/删除（`db.sqlite:table:key`，非空更新、空/空白删除）。
+
+<Callout type="warn">
+`write` 拒绝覆盖被检测为自动生成的文件；提示禁止用 `write` 做日常编辑（改用 `edit`）及未经请求创建 `*.md`/`README`。`write` 从不新建 SQLite 数据库，DB 必须已存在。
+</Callout>
+
+## `edit`
+
+应用源代码编辑。默认模式是 **哈希行** 补丁语言，通过单个 `input` 字符串传入。
+
+| 输入 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `input` | `string` | 是 | 一个或多个编辑段。首个非空行须为 `§PATH`。可选 `*** Begin Patch` / `*** End Patch` 包络若存在则忽略。 |
+
+### 哈希行补丁语言
+
+| 令牌 | 含义 |
+| --- | --- |
+| `§PATH` | 段头 —— 目标文件。 |
+| `»ANCHOR` | 锚点行之后插入。 |
+| `«ANCHOR` | 锚点行之前插入。 |
+| `≔A..B` | 替换或删除范围（有载荷=替换，无=删除）。 |
+| `≔A` | `≔A..A` 的简写。 |
+| `BOF` / `EOF` | 文件首/尾锚点。 |
+
+锚点来自 `read`/`search` 输出的 `LINEhh` 令牌（如 `41th`），只复制 `|` 左侧。解析器对照当前文件校验首尾锚点哈希；若过期则抛出不匹配并尝试基于上次读取快照的恢复。
+
+```text
+§src/a.ts
+»4fb
+const added = true;
+```
+
+### 编辑 variant
+
+活动模式在工具载荷之外由 `resolveEditMode()` 与 `GJC_EDIT_VARIANT` 环境变量决定，默认 `hashline`。
+
+| variant | 作用 |
+| --- | --- |
+| `hashline` | 默认 —— 上述行锚点补丁语言。 |
+| `replace` | 精确/模糊的旧-新文本替换。 |
+| `patch` | 结构化 JSON diff-hunk 模式。 |
+| `apply_patch` | 自由式 `*** Begin Patch` 包络，展开为 patch 模式条目。 |
+| `vim` | 持久模态编辑缓冲区。 |
+| `atom` | Atom 风格编辑模式。 |
+
+<Callout type="info">
+多操作补丁针对原始文件快照解析 —— 不要在前置操作后重排后续锚点；它们自底向上应用。无载荷的 `≔A..B` 删除范围；要原地置空，加入一个显式空载荷行。
+</Callout>
+
+## `ast-edit`
+
+通过原生 ast-grep 对源文件预览并应用结构化重写。
+
+| 输入 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `ops` | `{ pat: string; out: string }[]` | 是 | 一条或多条重写规则。`pat` 不可空，重复 `pat` 失败，空 `out` 删除匹配节点。 |
+| `paths` | `string[]` | 是 | 文件、目录、glob 或带后端文件的内部 URL。内部 URL 禁用 glob。 |
+
+它共享 [`ast-grep`](/zh/docs/tools/search) 的模式语法：`$NAME` 捕获节点，`$_` 不绑定匹配一个，`$$$NAME` / `$$$` 匹配零或多个。元变量名须大写并代表整个节点，`pat` 的捕获替换进 `out`。
+
+<Steps>
+<Step>**先预览。** `ast-edit` 总是先干跑并按文件分组显示 `-before` / `+after`，尚未写入。</Step>
+<Step>**resolve 应用。** 排入强制 `resolve` 动作。调用 `resolve(action: "apply", ...)` 写入，或 `discard` 放弃。</Step>
+<Step>**过期检查。** 应用会实跑重写集，若总数与预览不再吻合则拒绝应用。</Step>
+</Steps>
+
+文件范围受 `GJC_MAX_AST_FILES`（默认 `1000`）限制。目录扫描遵循 `.gitignore`，除非 glob 显式提及否则跳过 `node_modules`。重叠的编辑会中止运行；含语法错误的文件被跳过。
+
+## 何时用哪个
+
+| 目标 | 工具 |
+| --- | --- |
+| 查看内容、切片、DB 或 URL | `read` |
+| 新建文件或整体替换 | `write` |
+| 原地改几行 | `edit` |
+| 跨多文件重写语法模式 | `ast-edit` |

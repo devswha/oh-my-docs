@@ -1,0 +1,129 @@
+---
+title: ultragoal
+description: Carry an approved plan through implementation, revision, verification, and a final evidence summary over durable repo-native goal artifacts.
+---
+
+`ultragoal` turns an approved brief into repo-native artifacts and then drives a goal safely through implementation, revision, verification, and a final evidence summary. It is the execution-through-evidence stage of the [working loop](/docs/concepts): once [`ralplan`](/docs/workflows/ralplan) has produced a reviewed plan, `ultragoal` carries it to a finished, checkpointed result.
+
+## What it tracks
+
+A plan becomes a small set of durable, repo-native artifacts:
+
+| Artifact | Purpose |
+| --- | --- |
+| `.gjc/ultragoal/brief.md` | The brief the plan was built from. |
+| `.gjc/ultragoal/goals.json` | The aggregate plan and per-story state. |
+| `.gjc/ultragoal/ledger.jsonl` | The durable audit trail: checkpoint and steering events. |
+
+New plans default to a stable pointer-style aggregate goal for the whole durable plan, while story progress is tracked in the ledger. The ledger is the durable audit trail — checkpoint after every success or failure.
+
+## Create goals
+
+Start from an approved plan. Use a brief string, a brief file, or stdin:
+
+```bash
+gjc ultragoal create-goals --brief "<brief>"
+gjc ultragoal create-goals --brief-file <approved-plan>
+cat <approved-plan> | gjc ultragoal create-goals --from-stdin
+```
+
+Then inspect `.gjc/ultragoal/goals.json` and refine if needed. Pass `--gjc-goal-mode per-story` only when one goal context per story is explicitly preferred.
+
+If a request has no approved plan or consensus artifact, run [`ralplan`](/docs/workflows/ralplan) first and preserve its PRD, test spec, role roster, and verification guidance in the ledger. Do not silently substitute ad-hoc execution for missing planning.
+
+## Complete goals
+
+Drive execution to completion. Loop until `gjc ultragoal status` reports all goals complete:
+
+<Steps>
+<Step>Run `gjc ultragoal complete-goals` and read the printed handoff.</Step>
+<Step>Implement the current story only.</Step>
+<Step>Run the mandatory completion cleanup and review gate (below).</Step>
+<Step>Checkpoint the durable ledger with a fresh active goal snapshot.</Step>
+<Step>Repeat for the next story; resume failures with `gjc ultragoal complete-goals --retry-failed`.</Step>
+</Steps>
+
+```bash
+gjc ultragoal status
+gjc ultragoal status --json
+gjc ultragoal complete-goals
+gjc ultragoal complete-goals --retry-failed
+```
+
+## Checkpoints
+
+Each story is recorded with a checkpoint. A complete checkpoint requires a clean quality gate; the runtime hook rejects closure without one:
+
+```bash
+gjc ultragoal checkpoint --goal-id <id> --status complete \
+  --evidence "<evidence>" \
+  --gjc-goal-json <goal-get-json-or-path> \
+  --quality-gate-json <quality-gate-json-or-path>
+```
+
+If a story is blocked or fails, record the terminal state instead:
+
+```bash
+gjc ultragoal checkpoint --goal-id <id> --status failed --evidence "<blocker/evidence>"
+```
+
+Treat the ledger as proof: a checkpoint creates a receipt, and `goals.json.status` alone is not proof of completion.
+
+## Completion cleanup and review gate
+
+A story cannot be checkpointed `complete` until the quality gate has run:
+
+<Steps>
+<Step>Run targeted verification for the story.</Step>
+<Step>Run a cleanup/refactor review pass on changed files only (the cleaner still runs and records a no-op report if there are no relevant edits), then rerun verification.</Step>
+<Step>Delegate an `architect` review covering architecture, product, and code lanes, and an `executor` QA/red-team lane that tries to break the change.</Step>
+<Step>If any lane finds an issue, record durable blocker work with <code>gjc ultragoal record-review-blockers</code> instead of completing.</Step>
+<Step>Only when the loop is clean, checkpoint `complete` with the structured quality gate and a fresh active goal snapshot.</Step>
+</Steps>
+
+"Clean" means all `architectReview` statuses are `"CLEAR"`, the recommendation is `"APPROVE"`, executor QA statuses are `"passed"`, iteration is `"passed"` with `fullRerun: true`, every evidence field is non-empty, and every blockers array is empty. `COMMENT`, `WATCH`, `REQUEST CHANGES`, `BLOCK`, missing evidence, or non-empty blockers are non-clean.
+
+```bash
+gjc ultragoal record-review-blockers --goal-id <id> \
+  --title "Resolve verification blockers" \
+  --objective "<blocker-resolution objective>" \
+  --evidence "<architect/executor findings>" \
+  --gjc-goal-json <active-goal-get-json-or-path>
+```
+
+## Dynamic steering
+
+Use `gjc ultragoal steer` when real findings prove the story decomposition should change while the aggregate objective and original constraints stay fixed. Steering is explicit-only and evidence-backed; broad natural-language requests are rejected instead of guessed.
+
+```bash
+gjc ultragoal steer --kind add_subgoal \
+  --title "Investigate blocker" \
+  --objective "Validate the blocker and report evidence." \
+  --evidence "log/test output" \
+  --rationale "The blocker changes the safe execution order." --json
+```
+
+Allowed mutation kinds are `add_subgoal`, `split_subgoal`, `reorder_pending`, `revise_pending_wording`, `annotate_ledger`, and `mark_blocked_superseded`. Steering never edits the aggregate objective, original brief constraints, quality gates, or completion status, and never hard-deletes goals or weakens verification. Accepted and rejected attempts both append audit entries to the ledger.
+
+## Role-agent delegation
+
+When a story is large enough to benefit from delegation, use the bundled role agents:
+
+| Agent | Lane |
+| --- | --- |
+| [`executor`](/docs/agents/executor) | Bounded implementation, refactoring, and fix slices. |
+| [`planner`](/docs/agents/planner) | Story sequencing or handoff refinement. |
+| [`architect`](/docs/agents/architect) | Read-only architecture and code-review (`CLEAR` / `WATCH` / `BLOCK`). |
+| [`critic`](/docs/agents/critic) | Read-only plan or handoff critique. |
+
+The ultragoal leader owns `goals.json` and `ledger.jsonl`. Role agents return implementation and review evidence — they do not checkpoint ultragoal or mutate goal state.
+
+## ultragoal and team together
+
+For a durable story that benefits from a visible parallel execution lane, pair ultragoal with [`team`](/docs/workflows/team). Ultragoal stays leader-owned; team is the tmux execution engine that returns task and evidence status. The leader checkpoints ultragoal from team evidence with a fresh goal snapshot. Workers do not own goal state and must not run `gjc ultragoal checkpoint`.
+
+<Cards>
+<Card title="ralplan" href="/docs/workflows/ralplan" />
+<Card title="team" href="/docs/workflows/team" />
+<Card title="Context & compaction" href="/docs/concepts/context-and-compaction" />
+</Cards>

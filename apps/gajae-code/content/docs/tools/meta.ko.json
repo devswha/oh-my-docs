@@ -1,6 +1,12 @@
 {
   "title": "도구",
   "pages": [
-    "index"
+    "index",
+    "files",
+    "search",
+    "runtime",
+    "web",
+    "session-and-memory",
+    "media"
   ]
 }

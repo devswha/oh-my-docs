@@ -1,6 +1,10 @@
 {
   "title": "智能体",
   "pages": [
-    "index"
+    "index",
+    "executor",
+    "architect",
+    "planner",
+    "critic"
   ]
 }

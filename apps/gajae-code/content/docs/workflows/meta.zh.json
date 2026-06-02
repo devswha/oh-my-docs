@@ -1,6 +1,10 @@
 {
   "title": "工作流",
   "pages": [
-    "index"
+    "index",
+    "deep-interview",
+    "ralplan",
+    "team",
+    "ultragoal"
   ]
 }

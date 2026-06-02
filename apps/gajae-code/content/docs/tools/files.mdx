@@ -1,0 +1,139 @@
+---
+title: File tools
+description: read, write, edit, and ast-edit — how Gajae-Code reads files and applies precise or structural changes.
+---
+
+The file family covers reading content and applying changes. `read` opens almost anything through one `path` string; `write` creates or overwrites; `edit` applies scoped line edits through several variants; `ast-edit` performs structural rewrites.
+
+## `read`
+
+Read files, directories, archives, SQLite databases, internal resources, images, documents, and URLs through a single `path` string. The trailing selector decides the slice.
+
+| Input | Type | Required | Description |
+| --- | --- | --- | --- |
+| `path` | `string` | Yes | Filesystem path, internal URL, or web URL. May end with a trailing selector such as `:50-100` or `:raw`. |
+
+### Selectors
+
+| Suffix | Meaning |
+| --- | --- |
+| `:raw` | Raw/verbatim mode. Disables structural summaries and line prefixes. |
+| `:N` / `:LN` | Start at 1-indexed line `N`, open-ended. |
+| `:A-B` / `:LA-LB` | Inclusive 1-indexed line range. |
+| `:A+C` / `:LA+LC` | `C` lines starting at `A`. |
+| `:range:raw` / `:raw:range` | Same line selection, raw output. |
+
+Line numbers are 1-indexed (`:0` is invalid). URL selectors support only `:raw`, `:N`, `:A-B`, and `:A+C` — no `L` prefix.
+
+### What it can open
+
+- **Text files** — when summarization is enabled and the file is small enough (`<= 2 MiB`, `<= 20_000` lines), `read` returns a structural summary with elided spans replaced by `...` plus a footer telling you the recovery selector; otherwise it streams a line-range read.
+- **Directories** — a recency-sorted tree (depth `2`, up to `12` children per directory) with sizes and ages.
+- **Archives** — `.tar`, `.tar.gz`, `.tgz`, `.zip` via `archive.ext:inner/path[:lines]`.
+- **SQLite** — `db.sqlite` lists tables; `:table` shows schema + samples; `:table:key` reads a row; `?limit=&offset=&order=&where=` queries; `?q=SELECT ...` runs raw read-only SQL.
+- **Documents** — `.pdf`, `.doc(x)`, `.ppt(x)`, `.xls(x)`, `.rtf`, `.epub` are converted to text.
+- **Jupyter notebooks** — `.ipynb` becomes editable `# %% [code] cell:N` text (unless `:raw`).
+- **Images** — returns an inline image block (max `20 MiB`), or metadata only when `inspect_image.enabled`.
+- **Internal URLs** — `agent://`, `artifact://`, `memory://`, `gjc://`, `rule://`, `issue://`, `pr://`.
+- **Web URLs** — `http://`, `https://`, or `www.`; rendered to reader-friendly text, with `:raw` for the body fallback.
+
+<Callout type="info">
+Non-raw text reads in hashline mode are prefixed `LINEhh|text` (for example `41th|def alpha():`). Those anchors are what `edit` consumes later. Bare `/` resolves to the session cwd, not the filesystem root.
+</Callout>
+
+## `write`
+
+Create or overwrite a file, archive entry, or SQLite row.
+
+| Input | Type | Required | Description |
+| --- | --- | --- | --- |
+| `path` | `string` | Yes | Plain path writes a file. `archive.ext:inner/path` writes an archive entry. `db.sqlite:table` inserts a row; `db.sqlite:table:key` updates or deletes one. |
+| `content` | `string` | Yes | Full replacement content. SQLite non-delete writes must parse as a JSON5 object; empty content with a row key deletes the row. |
+
+Variants:
+
+- **Plain file** — overwrites existing files. Parent directories are created only on the archive path, not here.
+- **Archive entry** — `archive.ext:inner/path` for `.tar`, `.tar.gz`, `.tgz`, `.zip`; the whole archive is rewritten after replacing one entry.
+- **SQLite insert** — `db.sqlite:table` with a JSON5 object (empty object inserts default values).
+- **SQLite update/delete** — `db.sqlite:table:key`; non-empty content updates, empty/whitespace content deletes.
+
+<Callout type="warn">
+`write` refuses to overwrite files detected as auto-generated, and the prompt forbids using `write` for routine edits (use `edit`) and creating `*.md` / `README` files unless explicitly requested. SQLite databases are never created by `write`; the DB must already exist.
+</Callout>
+
+## `edit`
+
+Apply source edits. The default mode is the **hashline** patch language, fed through one `input` string.
+
+| Input | Type | Required | Description |
+| --- | --- | --- | --- |
+| `input` | `string` | Yes | One or more edit sections. The first non-blank line must be `§PATH`. An optional `*** Begin Patch` / `*** End Patch` envelope is ignored if present. |
+
+### Hashline patch language
+
+| Token | Meaning |
+| --- | --- |
+| `§PATH` | Section header — the target file. |
+| `»ANCHOR` | Insert after the anchored line. |
+| `«ANCHOR` | Insert before the anchored line. |
+| `≔A..B` | Replace or delete the range (with payload = replace, without = delete). |
+| `≔A` | Sugar for `≔A..A`. |
+| `BOF` / `EOF` | Beginning / end of file anchors. |
+
+Anchors are the `LINEhh` token from `read`/`search` output (for example `41th`). Copy only the part left of `|`. The parser checks the first and last anchor hashes against current file content; if they are stale it throws a mismatch and attempts cache-based recovery against the last read snapshot.
+
+```text
+§src/a.ts
+»4fb
+const added = true;
+```
+
+```text
+§src/a.ts
+≔4fb..6qx
+```
+
+### Edit variants
+
+The active mode is selected outside the tool payload by `resolveEditMode()` and the `GJC_EDIT_VARIANT` environment variable. The default is `hashline`.
+
+| Variant | What it does |
+| --- | --- |
+| `hashline` | Default — line-anchored patch language described above. |
+| `replace` | Exact/fuzzy old/new text replacement. |
+| `patch` | Structured JSON diff-hunk mode. |
+| `apply_patch` | Freeform `*** Begin Patch` envelope, expanded into patch-mode entries. |
+| `vim` | Persistent modal editing buffer. |
+| `atom` | Atom-style edit mode. |
+
+<Callout type="info">
+Multi-op patches are parsed against the original file snapshot — do not renumber later anchors after earlier ops; they are bucketed and applied bottom-up. `≔A..B` with no payload deletes the range; to blank a line in place, include one explicit empty payload line.
+</Callout>
+
+## `ast-edit`
+
+Preview and apply structural rewrites over source files via native ast-grep.
+
+| Input | Type | Required | Description |
+| --- | --- | --- | --- |
+| `ops` | `{ pat: string; out: string }[]` | Yes | One or more rewrite rules. `pat` must be non-empty; duplicate `pat` values fail. Empty `out` deletes the matched node. |
+| `paths` | `string[]` | Yes | Files, directories, globs, or internal URLs with backing files. Globs are forbidden for internal URLs. |
+
+It shares the [`ast-grep`](/docs/tools/search) pattern grammar: `$NAME` captures a node, `$_` matches one unbound, `$$$NAME` / `$$$` match zero-or-more. Metavariable names must be uppercase and stand for whole nodes; captures from `pat` substitute into `out`.
+
+<Steps>
+<Step>**Preview first.** `ast-edit` always runs a dry-run and shows proposed `-before` / `+after` lines grouped by file. Nothing is written yet.</Step>
+<Step>**Resolve to apply.** A forced `resolve` action is staged. Call `resolve(action: "apply", ...)` to write the changes, or `discard` to drop them.</Step>
+<Step>**Stale check.** Apply reruns the rewrite set live and rejects the apply if totals no longer match the preview.</Step>
+</Steps>
+
+File scope is capped by `GJC_MAX_AST_FILES` (default `1000`). Directory scans honor `.gitignore` and skip `node_modules` unless the glob explicitly mentions it. Overlapping computed edits abort the run; files with syntax errors are skipped.
+
+## When to use which
+
+| Goal | Tool |
+| --- | --- |
+| Inspect content, a slice, a DB, or a URL | `read` |
+| Create a new file or fully replace one | `write` |
+| Change a few lines in place | `edit` |
+| Rewrite a syntactic pattern across many files | `ast-edit` |

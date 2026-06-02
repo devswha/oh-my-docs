@@ -1,0 +1,116 @@
+---
+title: Model routing & providers
+description: How Gajae-Code keeps concrete provider models, coalesces them into a canonical layer, maps jobs to roles, and selects a model at runtime.
+---
+
+Gajae-Code keeps every concrete provider model you have access to, then builds a thin **canonical** layer on top so a single id can resolve across providers. You pin an exact variant when you care which one runs, or pick a canonical id and let the registry choose an available, authenticated provider for you.
+
+This page covers the conceptual model. For the `models.yml` shape, provider presets, and credential resolution, see [Models & credentials](/docs/reference/models-and-credentials).
+
+## Concrete vs. canonical models
+
+Two layers exist side by side:
+
+- **Concrete models** are exact `provider/modelId` entries — for example `openai-code/gpt-5.3-openai-code` or `anthropic/anthropic-model-opus-4-6`. Selecting a concrete model bypasses coalescing entirely.
+- **Canonical models** are official upstream ids that group concrete variants from different providers. Examples: `anthropic-model-opus-4-6`, `anthropic-model-haiku-4-5`, `gpt-5.3-openai-code`.
+
+When several concrete variants share a canonical id, resolution picks one by:
+
+1. availability and auth (disabled or unauthenticated providers are skipped),
+2. the `modelProviderOrder` setting, then
+3. existing registry/provider order if `modelProviderOrder` is unset.
+
+Whatever provider/model actually executed a turn is still recorded in session state and transcripts, so the canonical layer never hides what ran.
+
+<Cards>
+  <Card title="models.yml shape & equivalence" href="/docs/reference/models-and-credentials" />
+  <Card title="Context promotion & compaction" href="/docs/concepts/context-and-compaction" />
+</Cards>
+
+## Model roles
+
+Roles map a job to a model so you tune behavior once instead of per call. Supported roles:
+
+| Role       | Used for                                                      |
+| ---------- | ------------------------------------------------------------- |
+| `default`  | The main agent turn                                           |
+| `smol`     | Cheap/fast secondary work (e.g. memory consolidation)         |
+| `slow`     | Heavier reasoning when quality matters more than latency      |
+| `vision`   | Image-capable work                                            |
+| `plan`     | Planning passes                                               |
+| `designer` | Design-oriented passes                                        |
+| `commit`   | Commit-message style work                                     |
+| `task`     | Subtask / delegated work                                      |
+
+Each role value can append a thinking selector — `:minimal`, `:low`, `:medium`, `:high`, or `:xhigh` — for example `default: openai-code/gpt-5.3-openai-code:high`.
+
+A role value may store either:
+
+- `provider/modelId` to pin a concrete variant, or
+- a canonical id such as `gpt-5.3-openai-code` to allow provider coalescing.
+
+Roles can also point at other roles (an alias like `pi/smol` expands through `modelRoles`). When a role references another, the target model inherits normally, and an explicit thinking suffix on the referring role wins for that role-specific use. If a requested role is not configured, resolution falls back to `default`, then the active session model, then the first model in the registry.
+
+## Selecting models at runtime
+
+### In the TUI
+
+Use `/model` to switch models mid-session. The picker shows provider-prefixed concrete models alongside a canonical view:
+
+- selecting a **canonical** entry stores the canonical selector (coalescing stays in effect),
+- selecting a **provider row** stores the explicit `provider/modelId`.
+
+### On the CLI
+
+`--model` is the preferred selector (`--provider` is legacy). Pattern parsing supports:
+
+- exact `provider/modelId`
+- exact canonical model id
+- exact bare model id (provider inferred)
+- fuzzy / substring matching
+- glob scope patterns in `--models` (e.g. `openai/*`, `*sonnet*`)
+- an optional `:thinkingLevel` suffix (`off|minimal|low|medium|high|xhigh`)
+
+Exact selectors resolve first: an exact `provider/modelId` bypasses coalescing, an exact canonical id resolves through the canonical index, an exact bare id still works, and fuzzy/glob matching runs only after those paths.
+
+`--list-models` prints a canonical section plus the concrete provider rows.
+
+```bash
+# Pin an exact variant at launch
+gjc --tmux --model anthropic/anthropic-model-opus-4-6:high
+
+# Scope the available set to a glob
+gjc --tmux --models "openai/*"
+```
+
+For `--models` and the `enabledModels` setting, an exact canonical id expands to all concrete variants in that group, explicit `provider/modelId` entries stay exact, and globs/fuzzy matches operate on concrete models.
+
+### How the initial model is chosen
+
+`findInitialModel` resolves the starting model in this order:
+
+1. explicit CLI provider+model,
+2. the first scoped model (when not resuming),
+3. the saved default provider/model,
+4. known provider defaults among available models,
+5. the first available model.
+
+A model that exists in the registry but lacks resolvable auth is not selectable until credentials are available — the registry distinguishes "all models" from "available models."
+
+## Local model discovery
+
+When no explicit provider entry exists for a local runtime and it is reachable, Gajae-Code adds an implicit, keyless (`auth: none`) discoverable provider and normalizes the discovered models:
+
+| Runtime    | Provider id | Default base URL                  | Override env var       |
+| ---------- | ----------- | --------------------------------- | ---------------------- |
+| Ollama     | `ollama`    | `http://127.0.0.1:11434`          | `OLLAMA_BASE_URL`      |
+| llama.cpp  | `llama.cpp` | `http://127.0.0.1:8080`           | `LLAMA_CPP_BASE_URL`   |
+| LM Studio  | `lm-studio` | `http://127.0.0.1:1234/v1`        | `LM_STUDIO_BASE_URL`   |
+
+You can also configure discovery explicitly in `models.yml` via a provider-level `discovery.type` of `ollama`, `llama.cpp`, or `lm-studio` (discovery requires a provider-level `api`). See [Models & credentials](/docs/reference/models-and-credentials) for the config shape.
+
+## Where to go next
+
+- [Models & credentials](/docs/reference/models-and-credentials) — the `models.yml` shape, provider presets (`gjc setup provider --preset …`), and auth resolution order.
+- [Context promotion & compaction](/docs/concepts/context-and-compaction) — how a small-context model is promoted to a larger sibling before compaction.
+- [Environment variables](/docs/reference/environment-variables) — base-URL and credential env vars.

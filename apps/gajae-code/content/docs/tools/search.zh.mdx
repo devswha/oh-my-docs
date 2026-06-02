@@ -1,0 +1,107 @@
+---
+title: 搜索与导航工具
+description: find、search、search_tool_bm25、ast-grep、lsp 与 resolve —— 定位文件、匹配内容、查询 AST、导航代码。
+---
+
+这一家族回答"在哪里"和"是什么"—— 从文件名 glob 到正则内容匹配、AST 模式与语言服务器导航。
+
+## `find`
+
+按 glob 查找文件系统路径。选择标准是文件名/路径时用 `find`，是文件内容时用 [`search`](#search)。
+
+| 输入 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `paths` | `string[]` | 是 | glob、文件或目录。多个条目可合并为一次 brace-union 搜索。 |
+| `hidden` | `boolean` | 否 | 包含隐藏文件。默认 `true`。 |
+| `limit` | `number` | 否 | 返回路径上限。默认 `1000`。 |
+
+- 无 glob 字符的路径以隐式 `**/*` 搜索；顶层单独 glob `*.ts` 变为 `**/*.ts`；`src/*.ts` 保持 `src` 下的非递归段。
+- 结果按最近修改优先排序。
+- 始终遵循 `.gitignore`，无关闭标志。
+- 从根 `/` 搜索被拒绝。无匹配返回 `No files found matching pattern`。
+
+## `search`
+
+用正则在文件、目录、glob 与内部 URL 间搜索文件内容。
+
+| 输入 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `pattern` | `string` | 是 | 正则。仅当含换行或 `\n` 时启用多行。转义字面花括号（如 ``interface\{\}``）。 |
+| `paths` | `string[]` | 是 | 文件、目录、glob 或内部 URL（内部 URL 禁用 glob）。 |
+| `i` | `boolean` | 否 | 大小写不敏感。默认 `false`。 |
+| `gitignore` | `boolean` | 否 | 目录扫描遵循 `.gitignore`。默认 `true`。 |
+| `skip` | `number` | 否 | 分页用的全局匹配偏移。默认 `0`。 |
+
+匹配行为 `*anchor|line`，上下文行为 ` anchor|line`（哈希行：`*5th|content`，普通：`*5|content`）。目录结果在 `# <path>` 标题下按文件分组。默认前 1 行、后 3 行上下文。可见页显示前 `100` 个匹配，长行在 `1024` 字符截断；用 `skip` 翻页。锚点供 [`edit`](/zh/docs/tools/files) 消费。
+
+## `search_tool_bm25`
+
+搜索隐藏的工具发现索引并为当前会话激活顶部匹配。它查找的是*其他工具*，而非文件内容。
+
+| 输入 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `query` | `string` | 是 | 自然语言或关键词查询。去空后为空则拒绝。 |
+| `limit` | `integer` | 否 | 返回并激活的最大匹配数。默认 `8`。 |
+
+它以 BM25 排序可发现工具，通过 `activateDiscoveredTools()` 激活匹配，并返回紧凑 JSON 摘要：
+
+```json
+{"query":"...","activated_tools":["..."],"match_count":2,"total_tools":17}
+```
+
+激活的工具在同一轮的下次模型调用前可用。该工具仅在 `tools.discoveryMode !== "off"` 时出现；`"all"` 模式可浮现隐藏的可发现内置工具（默认 `read`、`bash`、`edit` 保持激活）。
+
+## `ast-grep`
+
+通过原生 ast-grep 对受支持源文件做结构化代码搜索。
+
+| 输入 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `pat` | `string` | 是 | 单个 AST 模式。须在推断语言下解析为一个有效 AST 节点。 |
+| `paths` | `string[]` | 是 | 文件、目录、glob 或带后端文件的内部 URL（内部 URL 禁用 glob）。 |
+| `skip` | `number` | 否 | 匹配偏移。默认 `0`。 |
+
+模式语法：`$NAME` 捕获一个节点，`$_` 不绑定匹配一个，`$$$NAME` 捕获零或多个，`$$$` 不绑定匹配零或多个。元变量名须大写并代表整个节点；复用同名要求每处代码相同。语言按文件从广泛目录推断（`javascript`、`typescript`、`tsx`、`python`、`go`、`rust`、`java`、`c`、`cpp`、`ruby`、`php`、`json`、`yaml`、`html`、`css` 等）。匹配渲染为 `*LINE+HASH|text`（哈希行）或 `*LINE|text`，可带 `meta: NAME=value` 行。可见结果默认 `50` 个。
+
+## `lsp`
+
+向语言服务器查询诊断、导航、符号、重命名、代码动作、能力与原始请求。
+
+| 输入 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `action` | enum | 是 | `diagnostics`、`definition`、`references`、`hover`、`symbols`、`rename`、`rename_file`、`code_actions`、`type_definition`、`implementation`、`status`、`reload`、`capabilities`、`request`。 |
+| `file` | `string` | 否 | 文件路径；`diagnostics` 也接受 glob；工作区形式用 `"*"`。 |
+| `line` | `number` | 否 | 位置类动作的 1 基行。默认 `1`。 |
+| `symbol` | `string` | 否 | 解析列的子串；支持 `name#N` 出现选择器。 |
+| `query` | `string` | 否 | 工作区符号查询、代码动作选择器或 `action=request` 的 LSP 方法。 |
+| `new_name` | `string` | 否 | `rename`、`rename_file` 必填。 |
+| `apply` | `boolean` | 否 | `rename`/`rename_file` 默认应用；`code_actions` 非 `true` 时仅列出。 |
+| `timeout` | `number` | 否 | 秒，钳制 `5..60`，默认 `20`。 |
+
+主要动作：`diagnostics`（按文件/glob；`file: "*"` 跑工作区检查 `cargo check`、`npx tsc --noEmit`、`go build ./...`、`pyright`）；`definition`/`type_definition`/`implementation`/`references`（跳转与查引用，带上下文）；`hover`（类型/签名）；`symbols`（文档或匹配 `query` 的工作区符号）；`rename`/`rename_file`（`apply: false` 预览）；`code_actions`（列出或应用快速修复）；`status`/`reload`/`capabilities`/`request`（服务器自省与原始 JSON-RPC）。
+
+<Callout type="info">
+`lsp` 受 `lsp.enabled` 与会话限制。服务器从根标记和 `defaults.json` 自动探测或按项目配置。`GJC_DISABLE_LSPMUX=1` 关闭 `lspmux` 包装。
+</Callout>
+
+## `resolve`
+
+通过应用或丢弃来终结排队中的预览动作。它是隐藏工具，仅在另一工具（如 [`ast-edit`](/zh/docs/tools/files)）排入预览并强制一次性 `resolve` 选择后才工作。
+
+| 输入 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `action` | `"apply" \| "discard"` | 是 | 提交或拒绝排队的预览。 |
+| `reason` | `string` | 是 | 传给排队回调的说明。 |
+
+`apply` 运行生产者的 apply 回调；`discard` 运行其 reject 回调或返回 `Discarded: <label>. Reason: <reason>`。无待处理预览时报错 `No pending action to resolve.`
+
+## 何时用哪个
+
+| 目标 | 工具 |
+| --- | --- |
+| 按名称/路径查文件 | `find` |
+| 在文件内容中匹配文本/正则 | `search` |
+| 发现并激活更多工具 | `search_tool_bm25` |
+| 匹配语法代码模式 | `ast-grep` |
+| 诊断、跳转定义、重命名 | `lsp` |
+| 应用或丢弃已排队预览 | `resolve` |

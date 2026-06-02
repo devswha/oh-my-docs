@@ -1,0 +1,133 @@
+---
+title: 指南
+description: 用 Gajae-Code 循环从头到尾修复一个真实 bug —— deep-interview 厘清、ralplan 评审、ultragoal 推进、必要时 team 并行执行，以及最后拿到的证据。
+---
+
+本指南用 Gajae-Code 工作循环把一个任务走完整流程：一次具体的 bug 修复。它遵循 README 的操作顺序——用 `deep-interview` 厘清，用 `ralplan` 评审方法，用 `ultragoal` 把工作推进到实现、修订与验证，并在并行 worker 有帮助时加上可选的 `team` 步骤。
+
+重点是展示每一步该期待什么、会拿到什么证据。这是操作顺序而非隐藏的自动化：agent 仍会报告改了什么、修订了什么、运行了哪些检查、有哪些证据支撑修复。
+
+## 开始之前
+
+启动推荐的 tmux 会话。bug 修复通常希望保持主检出干净，因此在隔离的 Git worktree 中运行：
+
+```sh
+gjc --tmux --worktree <path>
+```
+
+为一次性或分支专属的工作使用专用路径。循环是 `deep-interview -> ralplan -> ultragoal`，仅当协调的并行 worker 有帮助时再加 `team`。
+
+## 走查
+
+<Steps>
+
+<Step>
+
+### 用 `deep-interview` 厘清 bug
+
+在任何规划或改动前先消除歧义。运行 `deep-interview` 锁定 bug、受影响的行为、非目标，以及证明修复有效的验收检查。
+
+```text
+/skill:deep-interview clarify the bug, affected behavior, non-goals, and acceptance checks
+```
+
+**期待：** 一份厘清后的 bug 报告，而非代码改动。产物保持 `pending approval`；`deep-interview` 不会自行开始实现。
+
+</Step>
+
+<Step>
+
+### 用 `ralplan` 转为评审后的计划
+
+意图与验收标准清晰后，在变更前构建并评审计划。`ralplan` 把 bug 报告转成修复计划，交给只读的 `critic`，在动代码前抓出薄弱的排序或验证。
+
+```text
+/skill:ralplan turn the clarified bug report into a reviewed fix plan
+```
+
+**期待：** 一份同样保持 `pending approval` 的评审后修复计划。尚未实现任何内容；满意后再显式批准。
+
+</Step>
+
+<Step>
+
+### 用 `ultragoal` 创建持久目标
+
+把批准的计划交给 `ultragoal`，它把工作作为持久目标跟踪，贯穿实现、修订与验证。用 `--brief-file` 传入计划：
+
+```sh
+gjc ultragoal create-goals --brief-file <approved-plan>
+```
+
+**期待：** 工作被拆分为可审计的目标台账。台账、计划与规格持久保存在 `.gjc/` 下，便于日后审查。
+
+</Step>
+
+<Step>
+
+### （可选）用 `team` 拆分工作
+
+仅当任务受益于协调的并行 worker 时才加 `team`。例如把这次修复的实现与验证拆给两个 tmux 支持的 `executor`：
+
+```sh
+gjc team 2:executor "split implementation and verification for this bug fix"
+```
+
+**期待：** `team` 是可选执行模式，不是必需的交接。单线程修复可跳过；并行 tmux worker 真正有帮助时再用。
+
+</Step>
+
+<Step>
+
+### 完成目标并收集证据
+
+把目标推进到完成。`ultragoal` 不止步于「写了点代码」，而是推进到最终的证据汇总。
+
+```sh
+gjc ultragoal complete-goals
+```
+
+**期待：** 完成的任务附带运行过的检查及其结果。agent 报告改了什么、修订了什么、运行了哪些检查、有哪些证据支撑修复。
+
+</Step>
+
+</Steps>
+
+## 完整操作顺序
+
+```text
+/skill:deep-interview clarify the bug, affected behavior, non-goals, and acceptance checks
+/skill:ralplan turn the clarified bug report into a reviewed fix plan
+gjc ultragoal create-goals --brief-file <approved-plan>
+# 仅并行工作时可选：
+gjc team 2:executor "split implementation and verification for this bug fix"
+gjc ultragoal complete-goals
+```
+
+## 证据是什么样的
+
+完成的 `ultragoal` 不止于 diff。agent 会报告：
+
+- **改了什么** —— `executor` 做的具体编辑、修复与重构。
+- **发现后修订了什么** —— 验证或评审暴露问题后所做的调整。
+- **运行了哪些检查** —— 计划中的验证步骤及其结果。
+- **有哪些证据支撑修复** —— `.gjc/` 下持久保存、可供日后审计的轨迹。
+
+## 路由：用合适的最小工作流
+
+这次修复用了完整循环，但多数任务需要更少。选择满足请求的最小工作流：
+
+1. 清晰、低风险的编辑直接实现。
+2. 意图、范围或验收标准模糊时用 `deep-interview`。
+3. 需求清晰可规划，但架构、排序或验证需要共识时用 `ralplan`。
+4. 工作应拆为带可审计台账的持久目标时用 `ultragoal`。
+5. 批准的工作受益于并行 worker 时用 `team`。
+
+## 继续了解
+
+<Cards>
+  <Card title="核心概念" href="/zh/docs/concepts" />
+  <Card title="工作流" href="/zh/docs/workflows" />
+  <Card title="ultragoal" href="/zh/docs/workflows/ultragoal" />
+  <Card title="team" href="/zh/docs/workflows/team" />
+</Cards>

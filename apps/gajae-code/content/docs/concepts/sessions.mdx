@@ -1,0 +1,134 @@
+---
+title: Sessions & Worktrees
+description: Durable session state, switching and recent listing, export/share/fork/resume operations, and Git worktree isolation.
+---
+
+Every Gajae-Code run is a **session**: a durable, replayable record of what happened. History, model changes, thinking-level changes, compaction summaries, and evidence are all persisted so a run can be resumed, forked, exported, or shared later.
+
+## What a session stores
+
+Sessions are written as JSONL — one JSON object per line — under a working-directory-scoped path:
+
+```text
+~/.gjc/agent/sessions/--<cwd-encoded>--/<timestamp>_<sessionId>.jsonl
+```
+
+The first line is the session header; every remaining line is a typed entry. Entries are **append-only** at runtime — branch navigation moves a pointer rather than mutating or deleting existing entries.
+
+The entry taxonomy covers far more than chat messages:
+
+| Entry type | Records |
+| --- | --- |
+| `message` | A user/assistant message with provider, model, content, and token usage |
+| `model_change` | A model switch for a role (`default`, `smol`, `vision`, …) |
+| `thinking_level_change` | A change to the active thinking level |
+| `service_tier_change` | A change to the service tier |
+| `compaction` | A summary that replaces older history (see [Context & Compaction](/docs/concepts/context-and-compaction)) |
+| `branch_summary` | A summary of an abandoned `/tree` branch |
+| `label` | A named checkpoint on a target entry |
+| `mode_change` | A mode transition (e.g. `plan`) and its data |
+| `mcp_tool_selection` | The selected MCP discovery tools |
+| `custom` / `custom_message` | Extension state, and extension-injected context |
+
+Large content is kept manageable: strings over 500,000 chars are truncated with a `[Session persistence truncated large content]` notice, and base64 image blocks are externalized to a blob store at `~/.gjc/agent/blobs/<sha256>`, then resolved back on load.
+
+<Callout type="info">
+Persistence is deferred until a session produces at least one assistant message. Until then, entries live in memory only — so a session that never got a response is never written to disk.
+</Callout>
+
+## The tree model
+
+The on-disk log is append-only, but runtime behavior is **tree-based**:
+
+- Every non-header entry has an `id` and a `parentId`.
+- The active position is the leaf pointer (`leafId`).
+- Appending an entry creates a child of the current leaf, which becomes the new leaf.
+- Branching changes only where the leaf points — it never rewrites history.
+
+This is what makes `/tree` navigation and branching cheap and non-destructive. `/tree` moves within the current session file; `/branch` creates a new session file forked from a chosen user message.
+
+## Switching & recent listing
+
+Gajae-Code discovers and resumes sessions through a few paths.
+
+**Recent listing** uses two pipelines:
+
+- A lightweight summary view reads only a 4 KB prefix of each file, parses the header plus an earliest-user-text preview, and sorts by file mtime. Display name preference is `title` → first user prompt → session id → filename.
+- The resume picker and ID matching read full files into richer `SessionInfo` records (id, cwd, title, message count, first message, timestamps) and **drop sessions with zero messages** — those are not resumable.
+
+**The session picker** (TUI) supports arrow/page navigation, Enter to select, Esc to cancel, Ctrl+C to exit, and fuzzy search across id, title, cwd, first message, and path. It lists only sessions in the current directory scope.
+
+**In-process switching** (`switchSession`) is the runtime transition behind resume-style operations. It emits a cancellable `session_before_switch` hook, aborts in-flight work, flushes pending writes, repoints the session file, rebuilds context from the new leaf, restores the default model / thinking level / service tier where available, then emits `session_switch` and refreshes the UI chat and todos.
+
+## Session operations
+
+<Tabs items={["dump", "export", "share", "fork", "resume", "continue"]}>
+<Tab value="dump">
+
+`/dump` copies the current session as text to the clipboard. It serializes the system prompt, active model and thinking level, tool definitions, messages, thinking blocks, tool calls and results, and custom/hook/compaction entries. No persistence change is made — and it still works for in-memory sessions.
+
+</Tab>
+<Tab value="export">
+
+`/export [path]` writes an HTML file embedding the session header, entries, leaf, current system prompt, and tool descriptions, then opens it. From the CLI, `--export <session.jsonl> [outputPath]` exports a file without starting a session.
+
+```bash
+gjc --export ~/.gjc/agent/sessions/--work-pi--/1700000000_1f9d2a6b.jsonl out.html
+```
+
+`--copy` / `clipboard` / `copy` arguments are rejected here with a hint to use `/dump`. Argument parsing is whitespace-based, so quoted paths with spaces are not preserved.
+
+</Tab>
+<Tab value="share">
+
+`/share` (interactive only) first exports the session to a temp HTML file, then:
+
+1. If a custom share script exists in `~/.gjc/agent` (`share.ts`, `share.js`, or `share.mjs`), it is used — its returned URL/message is shown and opened.
+2. Otherwise it falls back to a private GitHub gist via `gh gist create --public=false`, builds a `https://gistpreview.github.io/?<id>` preview URL, and opens it.
+
+If a custom share script exists but fails, the command errors — it does **not** fall back to gist.
+
+</Tab>
+<Tab value="fork">
+
+`/fork` creates a new session file from the current one and switches the active identity to it. The new header gets a fresh id and timestamp, keeps the same `cwd`, and records the previous session id as `parentSession`; all entries are copied unchanged, and the artifact directory is copied best-effort.
+
+From the CLI, `--fork <id|path>` forks a source session into the current scope before startup. Forking requires a persistent session — it fails for in-memory (`--no-session`) sessions and while the agent is streaming.
+
+</Tab>
+<Tab value="resume">
+
+`/resume` opens the session picker for the current scope and switches to the selected session. On the CLI:
+
+- `--resume` (no value) lists sessions and opens a picker.
+- `--resume <id|path>` opens directly: a path-like value opens that file; otherwise it matches by id prefix in the current scope, then globally. If the match belongs to **another project**, the CLI offers to fork it into the current directory.
+
+</Tab>
+<Tab value="continue">
+
+`--continue` resumes the most relevant recent session at startup. It reads a terminal-scoped breadcrumb first (validating that the terminal and cwd match and the file still exists), then falls back to the most recently modified session, and creates a new session if none exists. There is no interactive `/continue` command.
+
+</Tab>
+</Tabs>
+
+<Callout type="warn">
+In-memory sessions (`--no-session`) cannot be exported, shared, or forked. `/dump` still works because it serializes live agent state rather than a file.
+</Callout>
+
+## Worktree isolation
+
+For branch-local or throwaway work, run inside an isolated Git worktree so your main checkout stays clean:
+
+```bash
+gjc --tmux --worktree <path>
+```
+
+Because each working directory has its own session scope, a worktree run gets its own session namespace as well. Use a dedicated path for experiments, then discard the worktree when you are done.
+
+## Related
+
+<Cards>
+<Card title="Context & Compaction" href="/docs/concepts/context-and-compaction" />
+<Card title="Models & Providers" href="/docs/concepts/models-and-providers" />
+<Card title="Configuration" href="/docs/reference/configuration" />
+</Cards>

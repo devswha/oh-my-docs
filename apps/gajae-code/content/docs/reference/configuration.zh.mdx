@@ -1,0 +1,80 @@
+---
+title: 配置
+description: ~/.gjc 布局、config.yml 重试预算与快速失败情形，以及决定 Gajae-Code 运行方式的存储与行为环境变量。
+---
+
+Gajae-Code 把配置保持得很小。本页涵盖 `~/.gjc` 下的文件、`config.yml` 中的重试预算，以及控制存储路径与运行时行为的环境变量。
+
+## `~/.gjc` 布局
+
+config 根目录是 `~/.gjc`（用 `GJC_CONFIG_DIR` 覆盖）：
+
+| 路径                       | 用途                              |
+| -------------------------- | --------------------------------- |
+| `~/.gjc/config.yml`        | 通用运行时设置，含重试预算。      |
+| `~/.gjc/agent/`            | agent 目录（用 `GJC_CODING_AGENT_DIR` 覆盖）。|
+| `~/.gjc/agent/models.yml`  | provider、模型、角色与路由。      |
+| `~/.gjc/agent/config.yml`  | agent 范围设置（如 SearXNG 搜索配置）。|
+| `~/.gjc/agent/.env`        | agent 范围环境变量。              |
+| `~/.gjc/.env`              | config 根目录环境变量回退。       |
+
+`GJC_CONFIG_DIR` 设定 home 下 config 根目录名（默认 `.gjc`）。`GJC_CODING_AGENT_DIR` 完整覆盖 agent 目录（默认 `~/<GJC_CONFIG_DIR 或 .gjc>/agent`），独立解析。完整 `.env` 解析顺序见[参考](/zh/docs/reference)。
+
+## `config.yml` 中的重试预算
+
+Gajae-Code 有两层重试：
+
+- **会话自动重试**（`retry.maxRetries`）在终端瞬时错误后重试失败的助手回合。
+- **provider 重试预算**在该终端错误抵达会话之前，控制 provider 传输层内部的重试。
+
+两者都在 `~/.gjc/config.yml` 配置：
+
+```yaml
+retry:
+  # 类似 codex-cli request_max_retries。计重试次数，不含首次请求。
+  requestMaxRetries: 4
+  # 类似 codex-cli stream_max_retries。计可重放（replay-safe）流重试。
+  streamMaxRetries: 100
+  # 会话级终端错误重试，仍可单独配置。
+  maxRetries: 3
+  maxDelayMs: 300000
+```
+
+| 键                  | 层      | 含义                                                            |
+| ------------------- | ------- | --------------------------------------------------------------- |
+| `requestMaxRetries` | provider| 流建立前的 provider SDK/fetch 重试。计重试次数，不含首次请求。  |
+| `streamMaxRetries`  | provider| 可重放流重试，仅当 provider 能在用户可见内容前安全重放瞬时流失败（或在 provider 特定可重放路径中）时使用。|
+| `maxRetries`        | 会话    | 失败助手回合的终端错误重试。                                    |
+| `maxDelayMs`        | 会话    | 会话重试退避延迟上限。                                          |
+
+### 快速失败情形
+
+重试不会掩盖永久性问题。以下情况直接快速失败而非循环重试：无效认证、不支持的模型/provider、错误请求、上下文溢出、用户中止、永久配额失败。
+
+## 存储与 config 根路径
+
+经由 `@gajae-code/utils/dirs` 使用，决定 coding-agent 在哪里存数据：
+
+| 变量                   | 默认值 / 行为                                                |
+| ---------------------- | ------------------------------------------------------------ |
+| `GJC_CONFIG_DIR`       | home 下 config 根目录名（默认 `.gjc`）。                     |
+| `GJC_CODING_AGENT_DIR` | agent 目录完整覆盖（默认 `~/<GJC_CONFIG_DIR 或 .gjc>/agent`）。|
+
+## 行为开关
+
+少量环境变量切换运行时行为：
+
+| 变量               | 效果                                                                       |
+| ------------------ | -------------------------------------------------------------------------- |
+| `GJC_NO_PTY`       | `1` 时禁用 bash 工具的交互 PTY 路径。CLI `--no-pty` 时内部也会设置。        |
+| `GJC_NOTIFICATIONS`| `off` / `0` / `false` 抑制桌面通知。                                       |
+| `GJC_NO_TITLE`     | 设置（任意非空值）时，在首条用户消息上禁用自动会话标题生成。               |
+| `GJC_EDIT_VARIANT` | 有效时强制 edit 工具 variant：`patch`、`replace`、`hashline`、`atom`、`vim`、`apply_patch`。|
+| `GJC_TIMING`       | 设置时把分层计时跨度树打印到 **stderr**。`GJC_TIMING=x` 在交互模式打印后以代码 0 退出（仅测冷启动）；`GJC_TIMING=full` 列出所有模块加载项而非仅前 N 个。|
+
+## 另见
+
+<Cards>
+  <Card title="环境变量" href="/zh/docs/reference/environment-variables" />
+  <Card title="模型与凭据" href="/zh/docs/reference/models-and-credentials" />
+</Cards>

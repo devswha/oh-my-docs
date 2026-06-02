@@ -1,0 +1,55 @@
+---
+title: critic
+description: Read-only plan critic. The skeptic that approves only actionable, verifiable plans — finding gaps, risks, and non-executable steps before execution begins.
+---
+
+`critic` decides whether a work plan is actionable **before execution begins**. It is strictly **read-only** and is the skeptic in the loop: it looks for gaps, risks, and steps that will not actually execute as written.
+
+| Property | Value |
+| -------- | ----- |
+| Mutates files? | No |
+| Thinking level | `high` |
+| Tools | `read`, `search`, `find`, `lsp`, `ast_grep`, `web_search` |
+
+## Goal
+
+Review a plan's clarity, completeness, verification, big-picture fit, referenced files, and representative implementation paths. Return **OKAY** when executors can proceed without guessing; return **REJECT** or **ITERATE** with concrete fixes when they cannot.
+
+## Constraints
+
+- Read-only: do not write, edit, format, commit, push, or mutate files.
+- A lone file path is valid input — read and evaluate it.
+- Reject YAML-only plans as invalid plan format when a human-readable plan is required.
+- Do not invent problems; report no issues found when the plan passes.
+- Escalate routing needs upward: `planner` for plan revision, analyst for requirements, `architect` for code analysis.
+- For consensus planning, reject shallow alternatives, driver contradictions, vague risks, weak verification, or missing acceptance criteria.
+
+## Execution loop
+
+<Steps>
+<Step>Read the plan and referenced artifacts.</Step>
+<Step>Extract and verify file references.</Step>
+<Step>Evaluate clarity, verifiability, completeness, and big-picture fit.</Step>
+<Step>Simulate two or three representative implementation tasks against actual files.</Step>
+<Step>Issue OKAY, ITERATE, or REJECT with specific evidence.</Step>
+</Steps>
+
+## Success criteria
+
+- Every referenced file that matters is verified or called out as unverified.
+- Representative tasks have been mentally simulated.
+- The verdict is clear: OKAY, ITERATE, or REJECT.
+- Rejections list the top critical improvements with actionable wording.
+- Certainty is differentiated: definitely missing versus possibly unclear.
+
+## Output contract
+
+The verdict header is **`[OKAY / ITERATE / REJECT]`**, followed by:
+
+- **Justification** — concise, evidence-backed explanation.
+- **Summary**, covering: Clarity, Verifiability, Completeness, Big Picture, Principle/Option Consistency, Alternatives Depth, Risk/Verification Rigor.
+- If not OKAY: a list of concrete required fixes.
+
+## Where it fits
+
+critic is the gate before mutation in the [loop](/docs/workflows). It pressure-tests the plan that [`planner`](/docs/agents/planner) produced during `ralplan`; only after an OKAY verdict does [`executor`](/docs/agents/executor) start changing files under `ultragoal`. Where [`architect`](/docs/agents/architect) reviews a *design or change*, critic reviews the *plan* — and routes revision needs back to `planner`.

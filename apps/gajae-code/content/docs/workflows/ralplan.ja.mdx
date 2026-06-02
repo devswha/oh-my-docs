@@ -1,0 +1,45 @@
+---
+title: ralplan
+description: 変更前に計画を立て批評するスキル — 問題の理解とファイル変更の間のゲート。
+---
+
+`ralplan` は[動作ループ](/ja/docs/workflows)の中間ステップです。明確化された要求から計画を立て、ファイルが変更される前にその計画を批評します。「問題を理解した」と「ファイルを変え始める」の間のゲートです。
+
+## 何をするか
+
+`ralplan` は 1 つのスキルで 2 つのことを行います：
+
+1. **計画を立てる** — 明確化された要求（理想的には [`deep-interview`](/ja/docs/workflows/deep-interview) の出力）を具体的でレビュー可能な計画に変えます：順序、行う変更、照合する受け入れ基準。
+2. **計画を批評する** — 変更が始まる前に、その計画の抜け、リスクのある前提、実行可能性をレビューします。
+
+要点は批評です。弱い計画をここで捕まえる方が、実装の途中で気づくよりはるかに安上がりです。
+
+## 使い方
+
+GJC セッション内で `/skill:<name>` で呼び出します：
+
+```text
+/skill:ralplan turn the clarified bug report into a reviewed fix plan
+```
+
+明確化された問題定義を渡すと、承認して実行に送れるレビュー済みの計画を返します。
+
+## 変更前のゲート
+
+```text
+deep-interview -> ralplan -> ultragoal
+```
+
+`ralplan` が受け入れられる計画を出すまで、下流はファイルを変更すべきではありません。承認された計画は、[`ultragoal`](/ja/docs/workflows/ultragoal) が実装・改訂・検証で進める brief になります：
+
+```bash
+gjc ultragoal create-goals --brief-file <approved-plan>
+```
+
+## 関わるエージェント
+
+`ralplan` は読み取り専用のロール [エージェント](/ja/docs/agents) を活用し、計画と批評を実行から分離します：
+
+- [`planner`](/ja/docs/agents/planner) — 読み取り専用のシーケンスと受け入れ基準。
+- [`critic`](/ja/docs/agents/critic) — 読み取り専用の計画批評と実行可能性レビュー。
+- [`architect`](/ja/docs/agents/architect) — 計画が構造に触れるときの読み取り専用アーキテクチャ・コードレビュー評価。

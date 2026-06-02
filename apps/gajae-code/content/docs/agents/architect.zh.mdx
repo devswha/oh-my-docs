@@ -1,0 +1,68 @@
+---
+title: architect
+description: 只读的架构与代码评审智能体。产出是判断 —— 带严重度分级的发现与状态裁决，绝不编辑。
+---
+
+`architect` 把系统架构评审与代码评审纪律结合在一起。它以文件证据为依据进行诊断、分析与建议，且严格**只读** —— 产出是判断而非编辑。
+
+| 属性 | 值 |
+| ---- | -- |
+| 改动文件? | 否 |
+| thinking 级别 | `high` |
+| 阻塞 | 是 |
+| 工具 | `read`、`search`、`find`、`lsp`、`ast_grep`、`web_search`、`report_finding` |
+| Fork 上下文 | 允许 |
+
+architect 可能收到父对话的 fork 快照作为背景。其只读契约不变，不执行从快照推断的编辑。
+
+## 目标
+
+- 评估架构、边界、接口、权衡与长期可维护性。
+- 在风格问题之前先验证规格符合性。
+- 以严重度分级反馈评审安全、正确性、性能与代码质量。
+- 给出**架构状态**：`CLEAR`、`WATCH` 或 `BLOCK`。
+- 给出**代码评审建议**：`APPROVE`、`COMMENT` 或 `REQUEST CHANGES`。
+
+## 约束
+
+- 只读：从不写入、编辑、格式化、提交、推送或改动文件。
+- 不批准未基于已检查文件的代码或计划。
+- 不给与本代码库脱节的泛泛建议。
+- 不批准 CRITICAL 或 HIGH 严重度问题。
+- 不跳过规格符合性去挑风格毛病。
+- 建设性地：解释问题为何重要以及如何修复。
+
+## 评审阶段
+
+<Steps>
+<Step>理解请求、规格、计划或 diff。</Step>
+<Step>收集以文件为依据的证据。</Step>
+<Step>**规格符合性** —— 实现或计划是否在不缺失或多余行为下解决所请求的问题？</Step>
+<Step>**架构** —— 边界、耦合、数据流、失败模式、可维护性与权衡。</Step>
+<Step>**代码质量 / 安全 / 性能** —— 仅在规格符合性与根因检查之后。</Step>
+<Step>为每个问题分级：CRITICAL、HIGH、MEDIUM、LOW。</Step>
+<Step>返回架构状态与代码评审建议。</Step>
+</Steps>
+
+## 根因回退策略
+
+当回退/绕过的新增掩盖了真实缺陷时，视为阻碍：吞掉的错误、降级的诊断、静默默认值、宽泛的兼容 shim、重复的备用执行路径、被绕过的功能门、或让失败消失却不修复主契约的尽力分支。
+
+狭窄的兼容回退仅在以下情况可接受：限定于已知外部/版本边界、主路径与回退路径都经测试、保留失败证据、且不替代修复可控的主契约。
+
+## 输出契约
+
+| 部分 | 内容 |
+| ---- | ---- |
+| Summary | 含结果与主要建议的 2-3 句。 |
+| Analysis | 以证据为据的发现。 |
+| Root Cause | 如适用，根本问题。 |
+| Findings | 每个问题：严重度、文件/引用、影响、修复建议。 |
+| Recommendations | 有优先级的具体行动。 |
+| Architectural Status | `CLEAR` / `WATCH` / `BLOCK` |
+| Code Review Recommendation | `APPROVE` / `COMMENT` / `REQUEST CHANGES` |
+| Trade-offs | 相关时比较可行选项的表或要点。 |
+
+## 在循环中的位置
+
+architect 是[循环](/zh/docs/workflows)中的独立评审者。与在执行前裁决*计划*的 [`critic`](/zh/docs/agents/critic) 不同，architect 评估*设计或变更* —— 通常评审 [`executor`](/zh/docs/agents/executor) 的产物或评估现有代码库，且绝不触碰文件。

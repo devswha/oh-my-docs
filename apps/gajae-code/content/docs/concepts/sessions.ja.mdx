@@ -1,0 +1,87 @@
+---
+title: セッションと Worktree
+description: 永続的なセッション状態、切り替えと最近一覧、export/share/fork/resume 操作、そして Git worktree の隔離。
+---
+
+Gajae-Code のすべての実行は**セッション**です。何が起きたかを再生できる永続的な記録で、履歴・モデル変更・thinking レベル変更・compaction 要約・証拠がすべて保存されるため、後から resume・fork・エクスポート・共有できます。
+
+## セッションが保存するもの
+
+セッションは JSONL（1 行に 1 つの JSON オブジェクト）として、作業ディレクトリ単位のパスに書き込まれます：
+
+```text
+~/.gjc/agent/sessions/--<cwd-encoded>--/<timestamp>_<sessionId>.jsonl
+```
+
+先頭行はセッションヘッダー、残りの各行は型付きエントリです。実行時のエントリは**追記のみ**で、ブランチナビゲーションは既存エントリを変更・削除せずポインタを動かすだけです。
+
+エントリの種類はチャットメッセージだけにとどまりません：
+
+| エントリ種別 | 記録内容 |
+| --- | --- |
+| `message` | provider・model・内容・トークン使用量を含むユーザー/アシスタントメッセージ |
+| `model_change` | ロール（`default`、`smol`、`vision` など）のモデル切り替え |
+| `thinking_level_change` | thinking レベルの変更 |
+| `service_tier_change` | サービスティアの変更 |
+| `compaction` | 古い履歴を置き換える要約（[コンテキストと Compaction](/ja/docs/concepts/context-and-compaction) を参照） |
+| `branch_summary` | 放棄された `/tree` ブランチの要約 |
+| `label` | 対象エントリへの名前付きチェックポイント |
+| `mode_change` | モード遷移（例：`plan`）とそのデータ |
+| `mcp_tool_selection` | 選択された MCP discovery ツール |
+| `custom` / `custom_message` | 拡張の状態、および拡張が注入したコンテキスト |
+
+大きな内容は管理可能に保たれます。50 万文字を超える文字列は `[Session persistence truncated large content]` の注記とともに切り詰められ、base64 画像ブロックは `~/.gjc/agent/blobs/<sha256>` の blob ストアへ外部化され、読み込み時に復元されます。
+
+<Callout type="info">
+永続化はセッションが少なくとも 1 つのアシスタントメッセージを生成するまで遅延されます。それまでエントリはメモリ内のみ。応答を一度も得なかったセッションはディスクに書き込まれません。
+</Callout>
+
+## ツリーモデル
+
+ディスク上のログは追記のみですが、実行時の挙動は**ツリーベース**です：
+
+- ヘッダー以外のすべてのエントリは `id` と `parentId` を持ちます。
+- 現在位置はリーフポインタ（`leafId`）です。
+- エントリを追記すると現在のリーフの子が作られ、それが新しいリーフになります。
+- ブランチはリーフの指す先だけを変え、履歴を書き換えません。
+
+このため `/tree` ナビゲーションとブランチは軽量かつ非破壊的です。`/tree` は現在のセッションファイル内を移動し、`/branch` は選んだユーザーメッセージから分岐した新しいセッションファイルを作ります。
+
+## 切り替えと最近一覧
+
+**最近一覧**には 2 つのパイプラインがあります。軽量サマリービューは各ファイルの先頭 4 KB のみを読み、ヘッダーと最初のユーザーテキストのプレビューを解析し、ファイル mtime で並べます（表示名の優先順位：`title` → 最初のユーザープロンプト → セッション id → ファイル名）。resume ピッカーと ID マッチはファイル全体を読み、より豊富な `SessionInfo` を構築し、**メッセージ 0 件のセッションを除外**します（これらは resume 不可）。
+
+**セッションピッカー**（TUI）は矢印/ページ移動、Enter で選択、Esc でキャンセル、Ctrl+C で終了、id・title・cwd・最初のメッセージ・パスへのあいまい検索に対応し、現在のディレクトリ範囲のセッションのみを一覧します。
+
+**プロセス内切り替え**（`switchSession`）は resume 系操作の背後にある実行時遷移です。キャンセル可能な `session_before_switch` フックを発行し、進行中の作業を中断し、保留中の書き込みを flush し、セッションファイルを指し直し、新しいリーフからコンテキストを再構築し、可能ならデフォルトモデル・thinking レベル・サービスティアを復元し、`session_switch` を発行して UI のチャットと todo を更新します。
+
+## セッション操作
+
+- **`/dump`** — 現在のセッションをテキストとしてクリップボードへコピー（システムプロンプト、アクティブなモデルと thinking レベル、ツール定義、メッセージ、thinking ブロック、ツール呼び出しと結果など）。永続状態は変更せず、インメモリセッションでも動作します。
+- **`/export [path]`** — セッションヘッダー/エントリ/リーフ、現在のシステムプロンプト、ツール説明を埋め込んだ HTML ファイルを書き出して開きます。CLI では `--export <session.jsonl> [outputPath]` でセッションを開始せずにエクスポート可能。`--copy` / `clipboard` / `copy` はここでは拒否され `/dump` を案内します。
+- **`/share`**（インタラクティブのみ）— まず一時 HTML へエクスポートし、`~/.gjc/agent` にカスタム share スクリプト（`share.ts`/`share.js`/`share.mjs`）があればそれを使用、なければ非公開 GitHub gist（`gh gist create --public=false`）へフォールバックし `https://gistpreview.github.io/?<id>` プレビューを開きます。カスタムスクリプトが存在して失敗した場合はエラー終了し、gist へは**フォールバックしません**。
+- **`/fork`** — 現在のセッションから新しいセッションファイルを作り、アクティブな identity をそちらへ切り替えます。新ヘッダーは新しい id とタイムスタンプを得て、`cwd` は据え置き、前のセッション id を `parentSession` に記録し、エントリはそのままコピー。CLI では `--fork <id|path>`。fork には永続セッションが必要で、インメモリやストリーミング中は失敗します。
+- **`/resume`** / `--resume` — 現在範囲のピッカーを開きます。`--resume <id|path>` は直接オープン：パス形式ならそのファイル、それ以外は現在範囲で id プレフィックス、続いてグローバルでマッチ。マッチが**別プロジェクト**なら現在のディレクトリへ fork するか尋ねます。
+- **`--continue`** — 起動時にまずターミナル breadcrumb を読み（ターミナル・cwd・ファイル存在を検証）、なければ最近更新されたセッションへフォールバック、それもなければ新規作成します。インタラクティブな `/continue` はありません。
+
+<Callout type="warn">
+インメモリセッション（`--no-session`）は export・share・fork できません。`/dump` はファイルではなくライブのエージェント状態をシリアライズするため引き続き動作します。
+</Callout>
+
+## Worktree の隔離
+
+ブランチ単位や使い捨ての作業は、メインのチェックアウトを汚さないよう隔離された Git worktree で実行してください：
+
+```bash
+gjc --tmux --worktree <path>
+```
+
+各作業ディレクトリは独自のセッション範囲を持つため、worktree 実行は専用のセッション名前空間を得ます。実験には専用パスを使い、終わったら worktree を破棄します。
+
+## 関連
+
+<Cards>
+<Card title="コンテキストと Compaction" href="/ja/docs/concepts/context-and-compaction" />
+<Card title="モデルと Provider" href="/ja/docs/concepts/models-and-providers" />
+<Card title="設定" href="/ja/docs/reference/configuration" />
+</Cards>
