@@ -30,7 +30,7 @@ Gajae-Code 恰好内置四个边界清晰的角色智能体。它们是用于委
 - **planner** 在 `deep-interview` / `ralplan` 中把意图转为带明确验收标准的有序计划。
 - **critic** 在任何变更前压力测试该计划，返回 `OKAY`、`ITERATE` 或 `REJECT`。
 - **executor** 在 `ultragoal` 下执行已批准的工作，保持 diff 精简并留下证据。
-- **architect** 在设计或变更需要评估时提供独立只读评审（`CLEAR` / `WATCH` / `BLOCK` 及 `APPROVE` / `COMMENT` / `REQUEST CHANGES`）。
+- **architect** 是 `ralplan` 循环中一个固定的共识步骤（planner → architect → critic），在规划阶段、任何变更开始之前运行。它对所提方案给出只读的架构与设计评估（`CLEAR` / `WATCH` / `BLOCK` 及 `APPROVE` / `COMMENT` / `REQUEST CHANGES`），而非 executor 之后的评审。
 
 这些角色的并行运行可用 `team` 协调。
 

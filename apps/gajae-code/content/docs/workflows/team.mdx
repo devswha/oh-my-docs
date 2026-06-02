@@ -30,6 +30,10 @@ gjc team 3:executor "analyze feature X and report flaws"
 gjc team "debug flaky integration tests"
 ```
 
+<Callout type="warn">
+`team` only works when the leader session is **inside a tmux session** (`$TMUX` is set). In the GJC App or a plain outside-tmux shell, `gjc team` / `$team` is not directly available — launch the `gjc` CLI from a shell first, e.g. `gjc --tmux`.
+</Callout>
+
 `team` must be launched from inside an attached tmux leader pane. In the GJC App or a plain outside-tmux session, launch the `gjc` CLI from a shell first.
 
 ### Preconditions

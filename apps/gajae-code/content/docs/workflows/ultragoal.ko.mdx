@@ -3,7 +3,7 @@ title: ultragoal
 description: 승인된 계획을 지속 가능한 repo-native 목표 아티팩트 위에서 구현·수정·검증·최종 증거 요약까지 끌고 갑니다.
 ---
 
-`ultragoal`은 승인된 brief를 repo-native 아티팩트로 바꾼 뒤, 목표를 구현·수정·검증·최종 증거 요약까지 안전하게 끌고 갑니다. [작동 루프](/ko/docs/concepts)에서 증거 기반 실행 단계에 해당합니다. [`ralplan`](/ko/docs/workflows/ralplan)이 검토된 계획을 만들고 나면, `ultragoal`이 그것을 완료되고 체크포인트된 결과까지 가져갑니다.
+`ultragoal`은 승인된 brief를 repo-native 아티팩트로 바꾼 뒤, 목표를 구현·수정·검증·최종 증거 요약까지 안전하게 끌고 갑니다. [작동 루프](/ko/docs/workflows)에서 증거 기반 실행 단계에 해당합니다. [`ralplan`](/ko/docs/workflows/ralplan)이 검토된 계획을 만들고 나면, `ultragoal`이 그것을 완료되고 체크포인트된 결과까지 가져갑니다.
 
 ## 무엇을 추적하나
 
@@ -37,11 +37,22 @@ cat <approved-plan> | gjc ultragoal create-goals --from-stdin
 
 <Steps>
 <Step>`gjc ultragoal complete-goals`를 실행하고 출력된 핸드오프를 읽습니다.</Step>
+<Step>`goal({"op":"get"})`를 호출하고, active 목표가 없으면 출력된 payload objective로 `goal({"op":"create",...})`를 호출합니다.</Step>
 <Step>현재 스토리만 구현합니다.</Step>
 <Step>아래의 필수 완료 정리·리뷰 게이트를 실행합니다.</Step>
 <Step>최신 active 목표 스냅샷으로 지속 ledger를 체크포인트합니다.</Step>
 <Step>다음 스토리로 반복하고, 실패는 `gjc ultragoal complete-goals --retry-failed`로 재개합니다.</Step>
 </Steps>
+
+인라인 목표 상태는 통합 `goal` 도구로 다룹니다. 그것이 목표 상태의 유일한 에이전트 대면 표면입니다:
+
+```json
+goal({"op":"get"})
+goal({"op":"create","objective":"<printed payload objective>"})
+goal({"op":"complete"})
+```
+
+집계 모드에서는 중간 스토리에 대해 `goal({"op":"complete"})`를 호출하지 않습니다. 리뷰 게이트를 통과하고 최종 집계 영수증이 존재한 뒤, 마지막 스토리에서만 발동합니다.
 
 ```bash
 gjc ultragoal status
@@ -115,6 +126,8 @@ gjc ultragoal steer --kind add_subgoal \
 | [`planner`](/ko/docs/agents/planner) | 스토리 시퀀싱이나 핸드오프 정제. |
 | [`architect`](/ko/docs/agents/architect) | 읽기 전용 아키텍처·코드 리뷰(`CLEAR` / `WATCH` / `BLOCK`). |
 | [`critic`](/ko/docs/agents/critic) | 읽기 전용 계획·핸드오프 비평. |
+
+독립적인 슬라이스가 있는 큰 서브골에서는, 리더가 순차적 단독 작업 대신 병렬 `executor` 서브에이전트를 띄워야 하며, 각각에 제한적이고 깔끔하게 분리되는 타깃을 줍니다.
 
 ultragoal 리더가 `goals.json`과 `ledger.jsonl`을 소유합니다. 역할 에이전트는 구현·리뷰 증거를 반환할 뿐, ultragoal을 체크포인트하거나 목표 상태를 변경하지 않습니다.
 

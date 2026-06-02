@@ -3,7 +3,7 @@ title: ultragoal
 description: 在持久的 repo-native 目标产物之上，把批准的计划推进到实现、修订、验证和最终证据汇总。
 ---
 
-`ultragoal` 把批准的 brief 变为 repo-native 产物，再安全地把目标推进到实现、修订、验证和最终证据汇总。它是[工作循环](/zh/docs/concepts)中“以证据收尾的执行”阶段：[`ralplan`](/zh/docs/workflows/ralplan) 产出评审过的计划后，`ultragoal` 把它带到完成并 checkpoint 的结果。
+`ultragoal` 把批准的 brief 变为 repo-native 产物，再安全地把目标推进到实现、修订、验证和最终证据汇总。它是[工作循环](/zh/docs/workflows)中“以证据收尾的执行”阶段：[`ralplan`](/zh/docs/workflows/ralplan) 产出评审过的计划后，`ultragoal` 把它带到完成并 checkpoint 的结果。
 
 ## 它跟踪什么
 
@@ -36,10 +36,21 @@ cat <approved-plan> | gjc ultragoal create-goals --from-stdin
 把执行推进到完成。循环直到 `gjc ultragoal status` 报告所有目标完成：
 
 1. 运行 `gjc ultragoal complete-goals` 并阅读打印的交接。
-2. 只实现当前 story。
-3. 运行下方的强制完成清理与评审门。
-4. 用新的 active 目标快照 checkpoint 持久 ledger。
-5. 对下一个 story 重复；失败用 `gjc ultragoal complete-goals --retry-failed` 恢复。
+2. 调用 `goal({"op":"get"})`；若没有 active 目标，用打印的 payload objective 调用 `goal({"op":"create",...})`。
+3. 只实现当前 story。
+4. 运行下方的强制完成清理与评审门。
+5. 用新的 active 目标快照 checkpoint 持久 ledger。
+6. 对下一个 story 重复；失败用 `gjc ultragoal complete-goals --retry-failed` 恢复。
+
+内联目标状态通过统一的 `goal` 工具驱动——它是目标状态唯一面向智能体的接口：
+
+```json
+goal({"op":"get"})
+goal({"op":"create","objective":"<printed payload objective>"})
+goal({"op":"complete"})
+```
+
+在聚合模式下，不要对中间 story 调用 `goal({"op":"complete"})`。它仅在评审门通过且最终聚合回执存在后，在最后一个 story 上触发。
 
 ```bash
 gjc ultragoal status
@@ -111,6 +122,8 @@ gjc ultragoal steer --kind add_subgoal \
 | [`planner`](/zh/docs/agents/planner) | story 排序或交接细化。 |
 | [`architect`](/zh/docs/agents/architect) | 只读架构与代码评审（`CLEAR` / `WATCH` / `BLOCK`）。 |
 | [`critic`](/zh/docs/agents/critic) | 只读计划或交接批评。 |
+
+对于有独立切片的大型子目标，leader 必须派生并行的 `executor` 子智能体，而非串行单独作业，并为每个分配有界、可干净分离的目标。
 
 ultragoal leader 拥有 `goals.json` 和 `ledger.jsonl`。角色智能体返回实现与评审证据——它们不 checkpoint ultragoal，也不改动目标状态。
 

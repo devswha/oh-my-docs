@@ -42,7 +42,7 @@ Roles map a job to a model so you tune behavior once instead of per call. Suppor
 | `commit`   | Commit-message style work                                     |
 | `task`     | Subtask / delegated work                                      |
 
-Each role value can append a thinking selector — `:minimal`, `:low`, `:medium`, `:high`, or `:xhigh` — for example `default: openai-code/gpt-5.3-openai-code:high`.
+Each role value can append a thinking selector — `:minimal`, `:low`, `:medium`, or `:high` — for example `default: openai-code/gpt-5.3-openai-code:high`. (`:xhigh` is a valid CLI thinking level for the `--model` suffix, but is not used as a role-value selector.)
 
 A role value may store either:
 

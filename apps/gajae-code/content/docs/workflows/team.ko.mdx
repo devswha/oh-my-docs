@@ -30,6 +30,10 @@ gjc team 3:executor "analyze feature X and report flaws"
 gjc team "debug flaky integration tests"
 ```
 
+<Callout type="warn">
+`team`은 리더 세션이 **tmux 세션 안에 있을 때**(`$TMUX`가 설정됨)만 동작합니다. GJC App이나 tmux 밖의 평범한 셸에서는 `gjc team` / `$team`을 바로 쓸 수 없습니다 — 먼저 셸에서 `gjc` CLI를 실행하세요. 예: `gjc --tmux`.
+</Callout>
+
 `team`은 연결된 tmux 리더 페인 안에서 띄워야 합니다. GJC App이나 tmux 밖의 평범한 세션이라면 먼저 셸에서 `gjc` CLI를 실행하세요.
 
 ### 전제 조건

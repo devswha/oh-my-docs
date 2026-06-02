@@ -88,7 +88,7 @@ Only when parallel workers genuinely help, split the implementation and verifica
 gjc team 2:executor "split implementation and verification for this bug fix"
 ```
 
-`team` is an optional execution mode, not a required handoff. Skip it for single-threaded fixes.
+`team` is an optional execution mode, not a required handoff. Skip it for single-threaded fixes. It requires running inside a tmux session (`$TMUX` set) — launch the `gjc` CLI from a shell first, e.g. `gjc --tmux`.
 
 </Step>
 

@@ -30,7 +30,7 @@ The role agents map onto the [workflow loop](/docs/workflows):
 - **planner** turns intent into an ordered plan with explicit acceptance criteria during `deep-interview` / `ralplan`.
 - **critic** pressure-tests that plan, returning `OKAY`, `ITERATE`, or `REJECT` before any mutation begins.
 - **executor** carries the approved work out under `ultragoal`, keeping diffs small and leaving evidence.
-- **architect** provides an independent read-only review — `CLEAR` / `WATCH` / `BLOCK` plus `APPROVE` / `COMMENT` / `REQUEST CHANGES` — when a design or change needs assessment.
+- **architect** is a fixed consensus step inside the `ralplan` loop (planner → architect → critic) that runs during planning, before any mutation. It gives a read-only architecture and design assessment of the proposed approach — `CLEAR` / `WATCH` / `BLOCK` plus `APPROVE` / `COMMENT` / `REQUEST CHANGES` — not a post-executor review.
 
 Parallel runs of these roles can be coordinated with `team`.
 

@@ -110,7 +110,7 @@ deep-interview -> ralplan -> ultragoal
 - `ralplan` — 在变更前构建并评审计划。
 - `$ultragoal` — 推进实现、修订、验证与证据汇总。
 
-只有在并行 tmux worker 有帮助时才加 `$team`。一个具体的修 bug 流程：
+只有在并行 tmux worker 有帮助时才加 `$team`。`team` 仅在 tmux 会话内（已设置 `$TMUX`）才工作 —— 请先从 shell 启动 `gjc` CLI，例如 `gjc --tmux`。一个具体的修 bug 流程：
 
 ```text
 /skill:deep-interview clarify the bug, affected behavior, non-goals, and acceptance checks

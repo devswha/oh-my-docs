@@ -3,7 +3,7 @@ title: ultragoal
 description: Carry an approved plan through implementation, revision, verification, and a final evidence summary over durable repo-native goal artifacts.
 ---
 
-`ultragoal` turns an approved brief into repo-native artifacts and then drives a goal safely through implementation, revision, verification, and a final evidence summary. It is the execution-through-evidence stage of the [working loop](/docs/concepts): once [`ralplan`](/docs/workflows/ralplan) has produced a reviewed plan, `ultragoal` carries it to a finished, checkpointed result.
+`ultragoal` turns an approved brief into repo-native artifacts and then drives a goal safely through implementation, revision, verification, and a final evidence summary. It is the execution-through-evidence stage of the [working loop](/docs/workflows): once [`ralplan`](/docs/workflows/ralplan) has produced a reviewed plan, `ultragoal` carries it to a finished, checkpointed result.
 
 ## What it tracks
 
@@ -37,11 +37,22 @@ Drive execution to completion. Loop until `gjc ultragoal status` reports all goa
 
 <Steps>
 <Step>Run `gjc ultragoal complete-goals` and read the printed handoff.</Step>
+<Step>Call `goal({"op":"get"})`; if no active goal exists, call `goal({"op":"create",...})` with the printed payload objective.</Step>
 <Step>Implement the current story only.</Step>
 <Step>Run the mandatory completion cleanup and review gate (below).</Step>
 <Step>Checkpoint the durable ledger with a fresh active goal snapshot.</Step>
 <Step>Repeat for the next story; resume failures with `gjc ultragoal complete-goals --retry-failed`.</Step>
 </Steps>
+
+Inline goal state is driven through the unified `goal` tool — the only agent-facing surface for it:
+
+```json
+goal({"op":"get"})
+goal({"op":"create","objective":"<printed payload objective>"})
+goal({"op":"complete"})
+```
+
+In aggregate mode, do not call `goal({"op":"complete"})` for intermediate stories. It fires only on the final story, after the review gate passes and the final aggregate receipt exists.
 
 ```bash
 gjc ultragoal status
@@ -115,6 +126,8 @@ When a story is large enough to benefit from delegation, use the bundled role ag
 | [`planner`](/docs/agents/planner) | Story sequencing or handoff refinement. |
 | [`architect`](/docs/agents/architect) | Read-only architecture and code-review (`CLEAR` / `WATCH` / `BLOCK`). |
 | [`critic`](/docs/agents/critic) | Read-only plan or handoff critique. |
+
+For large subgoals with independent slices, the leader must spawn parallel `executor` subagents instead of doing serial solo work, giving each a bounded, cleanly separable target.
 
 The ultragoal leader owns `goals.json` and `ledger.jsonl`. Role agents return implementation and review evidence — they do not checkpoint ultragoal or mutate goal state.
 

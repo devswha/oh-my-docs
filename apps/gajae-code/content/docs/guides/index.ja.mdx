@@ -88,7 +88,7 @@ gjc ultragoal create-goals --brief-file <approved-plan>
 gjc team 2:executor "split implementation and verification for this bug fix"
 ```
 
-`team` は任意の実行モードであり、必須の引き継ぎではありません。シングルスレッドの修正では省きます。
+`team` は任意の実行モードであり、必須の引き継ぎではありません。シングルスレッドの修正では省きます。`team` は tmux セッション内（`$TMUX` が設定済み）でのみ動作します — まずシェルから `gjc` CLI を起動してください。例：`gjc --tmux`。
 
 </Step>
 

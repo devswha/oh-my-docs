@@ -110,7 +110,7 @@ deep-interview -> ralplan -> ultragoal
 - `ralplan` — 변경 전에 계획을 세우고 비평합니다.
 - `$ultragoal` — 구현·수정·검증·증거 요약까지 작업을 끌고 갑니다.
 
-병렬 tmux 워커가 도움이 될 때만 `$team`을 더하세요. 구체적인 버그 수정 흐름은 이런 모습입니다.
+병렬 tmux 워커가 도움이 될 때만 `$team`을 더하세요. `team`은 tmux 세션 안(`$TMUX` 설정)에서만 동작합니다 — 먼저 셸에서 `gjc` CLI를 실행하세요. 예: `gjc --tmux`. 구체적인 버그 수정 흐름은 이런 모습입니다.
 
 ```text
 /skill:deep-interview clarify the bug, affected behavior, non-goals, and acceptance checks

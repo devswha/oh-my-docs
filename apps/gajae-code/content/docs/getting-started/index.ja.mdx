@@ -110,7 +110,7 @@ deep-interview -> ralplan -> ultragoal
 - `ralplan` — 変更前に計画を立て批評。
 - `$ultragoal` — 実装・改訂・検証・証拠のまとめまで進める。
 
-並列 tmux ワーカーが役立つ場合のみ `$team` を加えます。具体的なバグ修正の流れは次のとおりです：
+並列 tmux ワーカーが役立つ場合のみ `$team` を加えます。`team` は tmux セッション内（`$TMUX` が設定済み）でのみ動作します — まずシェルから `gjc` CLI を起動してください。例：`gjc --tmux`。具体的なバグ修正の流れは次のとおりです：
 
 ```text
 /skill:deep-interview clarify the bug, affected behavior, non-goals, and acceptance checks

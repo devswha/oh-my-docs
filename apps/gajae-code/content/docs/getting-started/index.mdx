@@ -110,7 +110,7 @@ deep-interview -> ralplan -> ultragoal
 - `ralplan` — build and critique the plan before any mutation.
 - `$ultragoal` — carry the work through implementation, revision, verification, and an evidence summary.
 
-Add `$team` only when coordinated parallel tmux workers help. A concrete bug-fix pass might look like:
+Add `$team` only when coordinated parallel tmux workers help. `team` requires running inside a tmux session (`$TMUX` set) — launch the `gjc` CLI from a shell first, e.g. `gjc --tmux`. A concrete bug-fix pass might look like:
 
 ```text
 /skill:deep-interview clarify the bug, affected behavior, non-goals, and acceptance checks

@@ -30,7 +30,7 @@ Gajae-Code は境界が明確なロールエージェントをちょうど 4 つ
 - **planner** は `deep-interview` / `ralplan` で意図を明示的な受け入れ基準を持つ順序付き計画に変えます。
 - **critic** は変更が始まる前にその計画を検証し、`OKAY`、`ITERATE`、`REJECT` のいずれかを返します。
 - **executor** は `ultragoal` の下で承認済みの作業を実行し、diff を小さく保ち証拠を残します。
-- **architect** は設計や変更に評価が必要なとき、独立した読み取り専用レビュー（`CLEAR` / `WATCH` / `BLOCK` と `APPROVE` / `COMMENT` / `REQUEST CHANGES`）を提供します。
+- **architect** は `ralplan` ループ内の固定された合意ステップ（planner → architect → critic）で、計画段階の、いかなる変更も始まる前に実行されます。提案されたアプローチに対する読み取り専用のアーキテクチャ・設計評価（`CLEAR` / `WATCH` / `BLOCK` と `APPROVE` / `COMMENT` / `REQUEST CHANGES`）を提供し、executor 後のレビューではありません。
 
 これらのロールの並列実行は `team` で調整できます。
 

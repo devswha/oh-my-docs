@@ -3,7 +3,7 @@ title: ultragoal
 description: 永続的な repo-native の目標アーティファクト上で、承認された計画を実装・改訂・検証・最終的な証拠のまとめまで進めます。
 ---
 
-`ultragoal` は承認された brief を repo-native のアーティファクトに変え、目標を実装・改訂・検証・最終的な証拠のまとめまで安全に進めます。[ワークフローループ](/ja/docs/concepts)における証拠で締める実行段階です。[`ralplan`](/ja/docs/workflows/ralplan) がレビュー済みの計画を生んだ後、`ultragoal` がそれを完了・チェックポイント済みの結果まで運びます。
+`ultragoal` は承認された brief を repo-native のアーティファクトに変え、目標を実装・改訂・検証・最終的な証拠のまとめまで安全に進めます。[ワークフローループ](/ja/docs/workflows)における証拠で締める実行段階です。[`ralplan`](/ja/docs/workflows/ralplan) がレビュー済みの計画を生んだ後、`ultragoal` がそれを完了・チェックポイント済みの結果まで運びます。
 
 ## 何を追跡するか
 
@@ -36,10 +36,21 @@ cat <approved-plan> | gjc ultragoal create-goals --from-stdin
 実行を完了まで進めます。`gjc ultragoal status` がすべての目標の完了を報告するまで繰り返します：
 
 1. `gjc ultragoal complete-goals` を実行し、出力された引き継ぎを読みます。
-2. 現在のストーリーのみを実装します。
-3. 下記の必須の完了クリーンアップ・レビューゲートを実行します。
-4. 新しい active 目標スナップショットで永続 ledger をチェックポイントします。
-5. 次のストーリーで繰り返します。失敗は `gjc ultragoal complete-goals --retry-failed` で再開します。
+2. `goal({"op":"get"})` を呼び出し、active 目標がなければ出力された payload objective で `goal({"op":"create",...})` を呼び出します。
+3. 現在のストーリーのみを実装します。
+4. 下記の必須の完了クリーンアップ・レビューゲートを実行します。
+5. 新しい active 目標スナップショットで永続 ledger をチェックポイントします。
+6. 次のストーリーで繰り返します。失敗は `gjc ultragoal complete-goals --retry-failed` で再開します。
+
+インラインの目標状態は統合 `goal` ツールで駆動します。これが目標状態の唯一のエージェント向けインターフェースです：
+
+```json
+goal({"op":"get"})
+goal({"op":"create","objective":"<printed payload objective>"})
+goal({"op":"complete"})
+```
+
+集約モードでは、中間ストーリーに対して `goal({"op":"complete"})` を呼び出しません。レビューゲートを通過し最終集約 receipt が存在した後、最後のストーリーでのみ発火します。
 
 ```bash
 gjc ultragoal status
@@ -111,6 +122,8 @@ gjc ultragoal steer --kind add_subgoal \
 | [`planner`](/ja/docs/agents/planner) | ストーリーの順序付けや引き継ぎの洗練。 |
 | [`architect`](/ja/docs/agents/architect) | 読み取り専用のアーキテクチャ・コードレビュー（`CLEAR` / `WATCH` / `BLOCK`）。 |
 | [`critic`](/ja/docs/agents/critic) | 読み取り専用の計画・引き継ぎ批評。 |
+
+独立したスライスを持つ大きなサブゴールでは、リーダーは逐次的な単独作業ではなく並列の `executor` サブエージェントを起動し、それぞれに有界できれいに分離できるターゲットを与える必要があります。
 
 ultragoal リーダーが `goals.json` と `ledger.jsonl` を所有します。ロールエージェントは実装・レビューの証拠を返すだけで、ultragoal をチェックポイントしたり目標状態を変更したりしません。
 

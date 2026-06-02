@@ -88,7 +88,7 @@ gjc ultragoal create-goals --brief-file <approved-plan>
 gjc team 2:executor "split implementation and verification for this bug fix"
 ```
 
-`team`은 선택적 실행 모드이며, 반드시 거쳐야 하는 단계가 아닙니다. 단일 스레드 수정에는 건너뜁니다.
+`team`은 선택적 실행 모드이며, 반드시 거쳐야 하는 단계가 아닙니다. 단일 스레드 수정에는 건너뜁니다. `team`은 tmux 세션 안(`$TMUX` 설정)에서만 동작하므로 — 먼저 셸에서 `gjc` CLI를 실행하세요. 예: `gjc --tmux`.
 
 </Step>
 

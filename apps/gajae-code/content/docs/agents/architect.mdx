@@ -65,4 +65,4 @@ A narrow compatibility fallback is acceptable only when it is scoped to a known 
 
 ## Where it fits
 
-architect is the independent reviewer in the [loop](/docs/workflows). Unlike [`critic`](/docs/agents/critic), which judges a *plan* before execution, architect assesses a *design or change* — typically reviewing what [`executor`](/docs/agents/executor) produced or evaluating an existing codebase, without ever touching files.
+architect is a fixed consensus step inside the [`ralplan`](/docs/workflows) planning loop. `ralplan` triggers iterative planning with `planner`, architect, and [`critic`](/docs/agents/critic) until consensus is reached — architect runs during planning, after `planner` drafts the plan and before `critic` evaluates it, and always before any mutation begins. Its pass is a read-only architecture and design assessment of the proposed approach, not a post-implementation review of what [`executor`](/docs/agents/executor) produced. It never touches files.

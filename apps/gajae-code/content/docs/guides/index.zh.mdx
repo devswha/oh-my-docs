@@ -88,7 +88,7 @@ gjc ultragoal create-goals --brief-file <approved-plan>
 gjc team 2:executor "split implementation and verification for this bug fix"
 ```
 
-`team` 是可选执行模式,并非必经环节。单线程修复时跳过它。
+`team` 是可选执行模式,并非必经环节。单线程修复时跳过它。它仅在 tmux 会话内（已设置 `$TMUX`）才工作 —— 请先从 shell 启动 `gjc` CLI，例如 `gjc --tmux`。
 
 </Step>
 
