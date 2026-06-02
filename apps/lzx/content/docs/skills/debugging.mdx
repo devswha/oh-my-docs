@@ -1,0 +1,87 @@
+---
+title: debugging
+description: Hypothesis-driven runtime debugging across any language or binary, with root cause confirmed by observed state.
+---
+
+The `debugging` skill is LazyCodex (LZX) doing real runtime debugging — crashes, silent failures, wrong responses, stuck processes, memory leaks, async misbehavior, unexplained timing, even reverse engineering of stripped binaries. It runs a hypothesis-driven loop and refuses to call a bug fixed until observed state proves the root cause. It ships in the OmO (oh-my-openagent) plugin that LazyCodex installs into Codex.
+
+Triggers include "debug this", "why is X not working", "hanging", "attach a debugger", "reverse engineer", "trace this bug", "reproduce and fix", "silent failure", "HTTP 200 but empty", "stuck process", and named tools like `pwndbg`, `gdb`, `lldb`, `node inspect`, `tsx debug`, `pdb`, `dlv`, `delve`, and `rust-gdb`.
+
+## Two disciplines, every time
+
+1. **Runtime truth beats code reading.** Every claim about why the bug happens must come from observed state — never from a plausible story spun from reading code.
+2. **Leave no trace.** Debugging creates artifacts. Every artifact is journaled before it is created, then removed before the task is called done.
+
+## The references hold the HOW
+
+This skill is intentionally small. The actual debugging knowledge lives in `references/` — and reading the matching reference is a hard gate, not a suggestion. Before running any command from a reference's domain, the matching reference must have been read in this session.
+
+- **Runtime references** cover how to launch, attach, breakpoint, and inspect per runtime: Python, Node.js / tsx / Bun / Deno, Rust, Go, native binaries, and bundled-app binaries (Bun/Node SEA, Deno compile, pkg, nexe, Electron, Tauri, PyInstaller). Each one documents a gotcha that silently wastes hours — for example, `tsx` + `node inspect` has a silent source-map failure where line breakpoints never fire.
+- **Specialist tools** are the correct tool in their domain: Playwright CLI for any browser-served UI bug, Ghidra's decompiler before guessing with `strings`/`objdump`, pwndbg in place of plain `gdb`, and pwntools for reproducible binary or network interactions.
+
+The 30-second native-vs-bundled check: `file ./target` calls both ELF/Mach-O, so use `du -h ./target` (50 MB+ is suspect) plus `strings -n 12 ./target | rg -iE 'bun|node_modules|webpack|esbuild|deno|pkg/lib|electron|pyinstaller|nexe|NODE_SEA_FUSE|tauri'`. Hits mean bundled; clean means native.
+
+## The phase loop
+
+Each phase has exactly one reference, read on entering the phase rather than from memory.
+
+<Steps>
+
+<Step>
+
+### Phases 0-1 — Setup and journal
+
+Assess the runtime, ports, symbols, env vars, and watchers before attaching anything. Open a single `.debug-journal.md` that tracks every artifact so the revert is guaranteed.
+
+</Step>
+
+<Step>
+
+### Phases 2-3 — Hypotheses and parallel investigation
+
+Form a minimum of three hypotheses across orthogonal axes, each with distinguishing evidence. Investigate them in parallel — the `debug-squad` team when team mode is enabled, async subagents otherwise.
+
+</Step>
+
+<Step>
+
+### Phase 4 — Oracle Triple
+
+After two consecutive failed rounds, spawn three Oracles with orthogonal framings and synthesize their answers. (This is not the same as the Verification Oracle used for extraction/audit tasks.)
+
+</Step>
+
+<Step>
+
+### Phases 5-7 — Escalate, confirm, fix
+
+Escalate to a user decision only when evidence is exhausted and the call has policy implications. Root cause is confirmed only when toggling the suspected cause toggles the bug. Then lock it with a failing-first test (red → minimal green, no scope expansion).
+
+</Step>
+
+<Step>
+
+### Phases 8-10 — QA, cleanup, verify
+
+QA by actually using the system: tmux for a CLI, Playwright for a browser, real `curl` for an API, a real repro for a binary. Walk the journal and revert every artifact until `git diff` shows only the fix plus the test, then clear the four final evidence gates.
+
+</Step>
+
+</Steps>
+
+## Safety invariants
+
+- Runtime state is the only source of truth — a hypothesis without an observed value is a guess, and guesses are not fixed.
+- Every debug artifact is journaled before it is created.
+- No fix ships without a failing-first test; a red → green transition is required.
+- Type-check or compile success never counts as done — only the actual user scenario does.
+- Errors are never silently swallowed while debugging; if the system swallows them, that is often the bug.
+- Never `git commit` from inside this skill — commits belong to the user-confirmed flow.
+
+## Related skills
+
+<Cards>
+  <Card title="programming" href="/docs/skills/programming">The type discipline LZX applies to every fix.</Card>
+  <Card title="lsp" href="/docs/skills/lsp">Diagnostics, definitions, references, and safe renames.</Card>
+  <Card title="Skills overview" href="/docs/skills">All LazyCodex skills.</Card>
+</Cards>

@@ -1,0 +1,99 @@
+---
+title: ultragoal
+description: Durable repo-native multi-goal plans with embedded success criteria and an evidence audit trail.
+---
+
+The `ultragoal` skill is LazyCodex (LZX) acting as a goal orchestration agent for multi-goal work that survives across turns and sessions. Every goal carries its own success criteria, every criterion is proven by observable evidence from a real-usage scenario that was actually run, and every pass, fail, block, steering change, and checkpoint is audited in an append-only ledger. It ships in the OmO (oh-my-openagent) plugin that LazyCodex installs into Codex.
+
+A green test suite is supporting evidence, never completion proof. Tests alone never prove done.
+
+## Durable state
+
+State lives in the repo, never in the model's head. The skill reads these artifacts before resuming, steering, or checkpointing, and never invents state outside them or `omo ultragoal status --json`.
+
+| Artifact | Purpose |
+|---|---|
+| `.omo/ultragoal/brief.md` | The original brief and durable constraints. |
+| `.omo/ultragoal/goals.json` | Goals, each with embedded `successCriteria`. |
+| `.omo/ultragoal/ledger.jsonl` | Append-only audit trail of every result and checkpoint. |
+
+All writes go through the `omo ultragoal` CLI path — state files are never hand-edited.
+
+## Manual-QA channels
+
+Each criterion is exercised through exactly one channel, run by the agent itself before recording a PASS. `--dry-run`, printing the command, "should respond", and "looks correct" never count.
+
+| Channel | How |
+|---|---|
+| HTTP call | Hit the live endpoint with `curl -i` (or Playwright APIRequestContext); capture status line + headers + body. |
+| tmux | `tmux new-session`, drive with `send-keys`, dump with `capture-pane`; the transcript is the artifact. |
+| Browser use | Drive the real page via Playwright / Puppeteer / Chromium; capture the action log + screenshot. |
+| Computer use | OS-level GUI automation against the running app; capture the action log + screenshot. |
+
+Pure CLI stdout, a DB state diff, or a parsed config dump satisfy CLI- or data-shaped criteria but never replace a channel scenario for user-facing behavior.
+
+## How it runs
+
+<Steps>
+
+<Step>
+
+### Bootstrap
+
+Create goals from the brief with `omo ultragoal create-goals` (`--brief`, `--brief-file`, or `--from-stdin`). Refine each goal so it carries 3+ `successCriteria` covering happy path, edge, regression, and adversarial risk — each with an `id`, `scenario`, `expectedEvidence`, adversarial classes, a stop condition, and the named Manual-QA channel. Then inspect state with `omo ultragoal status --json`.
+
+</Step>
+
+<Step>
+
+### Execution loop
+
+Loop per goal, capped at 5 cycles per goal and 3 identical same-criterion failures. Acquire the next goal via `omo ultragoal complete-goals --json`. For each criterion: plan from the scenario and prior ledger entries, register atomic todos, execute one bounded change, then actually run the named channel scenario and capture the observable artifact.
+
+</Step>
+
+<Step>
+
+### Clean, then record
+
+Tear down every runtime artifact the scenario spawned — server PIDs, tmux sessions, browser contexts, containers, bound ports, temp files — before recording. A one-line cleanup receipt is embedded in the evidence string. Record exactly one result with `omo ultragoal record-evidence --status pass|fail|blocked`. A missing cleanup receipt means BLOCKED, not PASS.
+
+</Step>
+
+<Step>
+
+### Goal completion
+
+Confirm every criterion is `pass` with `omo ultragoal criteria`, then `omo ultragoal checkpoint --status complete` with the evidence summary and a fresh goal snapshot. Blocked or failed goals checkpoint with `--status blocked` / `--status failed` plus diagnosis evidence.
+
+</Step>
+
+<Step>
+
+### Final quality gate
+
+On the last remaining goal with all criteria passing: run targeted verification, run `ai-slop-cleaner` on changed files, rerun verification, then run `$code-review`. Clean means `recommendation == "APPROVE"` and `architectStatus == "CLEAR"`. A clean review checkpoints final completion with `--quality-gate-json`; a non-clean review records review blockers instead.
+
+</Step>
+
+</Steps>
+
+## Dynamic steering
+
+Steering is only for structured, evidence-backed mutation — natural-language steering requests are rejected. Each kind has required fields and runs through `omo ultragoal steer --kind <kind> ... --evidence "<...>" --rationale "<...>" --json`. Kinds include `add_subgoal`, `split_subgoal`, `reorder_pending`, `revise_pending_wording`, `revise_criterion`, `annotate_ledger`, and `mark_blocked_superseded`.
+
+## Stop rules
+
+- All goals complete + all criteria `pass` + a clean final quality gate: DONE.
+- 3× the same criterion failing, or 5 cycles on one goal without all-pass: checkpoint failed and surface the diagnosis.
+- A safety boundary (destructive command, secret exfiltration, production write): block and surface a safe substitute.
+- Leftover QA state (a live process, tmux session, browser context, bound port, temp dir): not a PASS — clean up, append the receipt, then continue.
+- The user issues `/cancel`: release in-progress state cleanly and do not auto-resume.
+
+## Related skills
+
+<Cards>
+  <Card title="review-work" href="/docs/skills/review-work">Multi-angle post-implementation review.</Card>
+  <Card title="programming" href="/docs/skills/programming">The type discipline LZX applies to every line.</Card>
+  <Card title="Skills overview" href="/docs/skills">All LazyCodex skills.</Card>
+</Cards>

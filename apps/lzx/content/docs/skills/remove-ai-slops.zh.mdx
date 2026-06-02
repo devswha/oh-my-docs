@@ -7,6 +7,8 @@ description: 在保持行为不变的前提下清理 AI 生成的代码异味。
 
 触发短语包括 "remove ai slops"、"clean ai code"、"deslop"、"cleanup AI generated"。
 
+`remove-ai-slops` 是编排者：确定范围（分支 diff 或文件清单），先用回归测试锁定行为，再以 `deep` 智能体每批 5 个并行对各文件执行分类清理，最后用质量门验证。每个 `deep` 智能体都加载 `ai-slop-remover` 技能 —— 仅对单个文件移除 slop 的单文件 worker。多个文件通过每文件一个、并行调用该 worker 来处理。
+
 ## 范围
 
 - **默认**：相对 `merge-base main` 的分支 diff —— 无需参数。

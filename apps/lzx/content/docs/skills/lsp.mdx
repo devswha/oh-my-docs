@@ -68,14 +68,13 @@ Project config lives at `.codex/lsp-client.json`; user config lives at `~/.codex
 
 When a server is reported missing, `lsp.status` tells you whether the binary is uninstalled, disabled, or simply not configured.
 
-## Related — AST-grep
-
-For structural search and rewrite (matching code by shape rather than text, then rewriting the matched pattern), LazyCodex also ships AST-grep alongside the LSP tools. LSP answers semantic questions about real symbols; AST-grep performs syntax-tree-level pattern matching and edits. They complement each other for precise, IDE-grade changes.
+For structural search and rewrite (matching code by shape rather than text), see the [`refactor`](/docs/skills/refactor) skill, which drives `ast_grep_search` / `ast_grep_replace`.
 
 ## Related skills
 
 <Cards>
   <Card title="programming" href="/docs/skills/programming">The type discipline LZX applies to every line.</Card>
+  <Card title="refactor" href="/docs/skills/refactor">Test-verified refactoring with structural search and rewrite.</Card>
   <Card title="comment-checker" href="/docs/skills/comment-checker">Feedback after edit-like operations.</Card>
   <Card title="Skills overview" href="/docs/skills">All LazyCodex skills.</Card>
 </Cards>

@@ -1,0 +1,99 @@
+---
+title: ultragoal
+description: 成功基準を埋め込み証拠監査の証跡を残す、リポジトリに常駐する永続的なマルチゴール計画。
+---
+
+`ultragoal` スキルは LazyCodex（LZX）が、ターンとセッションをまたいで生き延びるマルチゴール作業のためのゴールオーケストレーションエージェントとして動くものです。すべてのゴールは自前の成功基準を持ち、すべての基準は実際に走らせた実使用シナリオの観測可能な証拠で証明され、すべての pass・fail・block・ステアリング変更・チェックポイントが追記専用の台帳に監査されます。LazyCodex が Codex に導入する OmO（oh-my-openagent）プラグインに同梱されます。
+
+緑のテストスイートは補助的な証拠であって、完了の証明ではありません。テストだけでは決して完了を証明できません。
+
+## 永続的な状態
+
+状態はモデルの頭の中ではなくリポジトリに常駐します。このスキルは再開・ステアリング・チェックポイントの前にこれらのアーティファクトを読み、それらや `omo ultragoal status --json` の外の状態を決して捏造しません。
+
+| アーティファクト | 用途 |
+|---|---|
+| `.omo/ultragoal/brief.md` | 元のブリーフと永続的な制約。 |
+| `.omo/ultragoal/goals.json` | ゴール一覧、各々に `successCriteria` を内蔵。 |
+| `.omo/ultragoal/ledger.jsonl` | すべての結果とチェックポイントの追記専用監査証跡。 |
+
+すべての書き込みは `omo ultragoal` CLI 経路を通します。状態ファイルは決して手で編集しません。
+
+## 手動 QA チャネル
+
+各基準はちょうど 1 つのチャネルで実行され、PASS を記録する前にエージェント自身が走らせます。`--dry-run`、コマンドの出力、「応答するはず」「正しそう」は決して認められません。
+
+| チャネル | 方法 |
+|---|---|
+| HTTP 呼び出し | `curl -i`（または Playwright APIRequestContext）でライブエンドポイントを叩き、ステータス行 + ヘッダ + 本文を取得。 |
+| tmux | `tmux new-session` で起動し `send-keys` で操作、`capture-pane` でダンプ。トランスクリプトがアーティファクト。 |
+| ブラウザ使用 | Playwright / Puppeteer / Chromium で実ページを操作し、アクションログ + スクリーンショットを取得。 |
+| コンピュータ使用 | 稼働中アプリへの OS レベル GUI 自動化で、アクションログ + スクリーンショットを取得。 |
+
+純粋な CLI stdout、DB 状態差分、パース済み設定ダンプは CLI やデータ形状の基準を満たしますが、ユーザー向け挙動についてのチャネルシナリオを置き換えません。
+
+## 実行の流れ
+
+<Steps>
+
+<Step>
+
+### ブートストラップ
+
+ブリーフから `omo ultragoal create-goals`（`--brief`、`--brief-file`、`--from-stdin`）でゴールを作ります。各ゴールが happy path・エッジ・リグレッション・敵対的リスクを網羅する `successCriteria` を 3 つ以上持つよう磨きます。各基準には `id`、`scenario`、`expectedEvidence`、敵対的クラス、停止条件、名前付き手動 QA チャネルが入ります。その後 `omo ultragoal status --json` で状態を点検します。
+
+</Step>
+
+<Step>
+
+### 実行ループ
+
+ゴールごとにループし、1 ゴール 5 サイクル、同一基準の同一失敗 3 回を上限とします。`omo ultragoal complete-goals --json` で次のゴールを取得します。各基準ごとに: シナリオと過去の台帳エントリから計画し、原子的 Todo を登録し、境界づけられた変更を 1 つ実行し、その後、名前付きチャネルシナリオを実際に走らせて観測可能なアーティファクトを取得します。
+
+</Step>
+
+<Step>
+
+### クリーンしてから記録
+
+記録の前に、シナリオが生んだすべてのランタイムアーティファクトを撤去します。サーバー PID、tmux セッション、ブラウザコンテキスト、コンテナ、占有ポート、一時ファイルまで。証拠文字列に 1 行のクリーンアップ受領を埋め込みます。`omo ultragoal record-evidence --status pass|fail|blocked` でちょうど 1 つの結果を記録します。クリーンアップ受領が無ければ PASS ではなく BLOCKED です。
+
+</Step>
+
+<Step>
+
+### ゴール完了
+
+`omo ultragoal criteria` ですべての基準が `pass` であることを確認し、証拠要約と新しいゴールスナップショットを添えて `omo ultragoal checkpoint --status complete` を実行します。ブロックまたは失敗したゴールは診断証拠とともに `--status blocked` / `--status failed` でチェックポイントします。
+
+</Step>
+
+<Step>
+
+### 最終品質ゲート
+
+すべての基準が合格している最後の残りゴールで: ターゲット検証を走らせ、変更ファイルに `ai-slop-cleaner` を走らせ、検証を再実行し、その後 `$code-review` を実行します。`recommendation == "APPROVE"` かつ `architectStatus == "CLEAR"` ならクリーンです。クリーンなレビューは `--quality-gate-json` で最終完了をチェックポイントし、クリーンでなければ代わりにレビューブロッカーを記録します。
+
+</Step>
+
+</Steps>
+
+## 動的ステアリング
+
+ステアリングは構造化された、証拠裏付けのある変更にのみ使います。自然言語のステアリング要求は拒否されます。各種別には必須フィールドがあり、`omo ultragoal steer --kind <kind> ... --evidence "<...>" --rationale "<...>" --json` で実行します。種別には `add_subgoal`、`split_subgoal`、`reorder_pending`、`revise_pending_wording`、`revise_criterion`、`annotate_ledger`、`mark_blocked_superseded` があります。
+
+## 停止ルール
+
+- 全ゴール完了 + 全基準 `pass` + 最終品質ゲートがクリーン: DONE。
+- 同一基準の 3 回失敗、または 1 ゴールで全合格なしの 5 サイクル: 失敗でチェックポイントし診断を提示。
+- 安全境界（破壊的コマンド、シークレット流出、本番書き込み）: ブロックして安全な代替を提示。
+- 残留した QA 状態（生きたプロセス、tmux セッション、ブラウザコンテキスト、占有ポート、一時ディレクトリ）: PASS ではない。クリーンアップして受領を添え、続行。
+- ユーザーが `/cancel` を発行: 進行中の状態をきれいに解放し、自動再開しない。
+
+## 関連スキル
+
+<Cards>
+  <Card title="review-work" href="/ja/docs/skills/review-work">多角的な実装後レビュー。</Card>
+  <Card title="programming" href="/ja/docs/skills/programming">LZX があらゆる行に適用する型規律。</Card>
+  <Card title="スキル概要" href="/ja/docs/skills">すべての LazyCodex スキル。</Card>
+</Cards>

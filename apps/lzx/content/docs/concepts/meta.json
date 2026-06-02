@@ -3,6 +3,7 @@
   "pages": [
     "ultrawork",
     "discipline-agents",
-    "model-routing"
+    "model-routing",
+    "hooks-lifecycle"
   ]
 }

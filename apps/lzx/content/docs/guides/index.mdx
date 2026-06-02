@@ -49,7 +49,7 @@ You leave with a plan file, not a code change.
 
 #### Execute the plan with `$start-work`
 
-Hand the plan to `$start-work`. It runs every top-level checkbox with durable Boulder state in `.omo/boulder.json`, fans independent sub-tasks out to parallel subagents, and applies strict TDD plus its evidence gates.
+Hand the plan to `$start-work`. It runs every top-level checkbox with durable Boulder state in `.omo/boulder.json`, fans independent sub-tasks out to parallel subagents, and applies strict TDD. A Stop-hook re-injects the next turn until the plan is complete, and five evidence gates must pass: plan reread, automated verification, manual-QA, adversarial QA, and cleanup.
 
 ```bash
 $start-work add-oauth-login
@@ -104,10 +104,10 @@ Run it again when the shape of the codebase changes.
 Point execution at an isolated Git worktree so the main checkout stays clean while the plan runs.
 
 ```bash
-$start-work refactor-payments --worktree ../wt-refactor-payments
+$start-work refactor-payments --worktree /home/you/wt-refactor-payments
 ```
 
-The plan executes inside that worktree; review and merge once `ORCHESTRATION COMPLETE` prints.
+Pass an absolute path to `--worktree`. The plan executes inside that worktree; review and merge once `ORCHESTRATION COMPLETE` prints.
 
 ### Post-implementation review
 

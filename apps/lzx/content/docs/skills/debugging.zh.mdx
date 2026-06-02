@@ -1,0 +1,87 @@
+---
+title: debugging
+description: 跨任意语言或二进制的假设驱动运行时调试，由观测状态确认根因。
+---
+
+`debugging` 技能是 LazyCodex（LZX）执行真正的运行时调试：崩溃、静默失败、错误响应、卡住的进程、内存泄漏、异步异常、无法解释的时序，甚至对剥离符号的二进制做逆向工程。它运行假设驱动的循环，在观测状态证明根因之前绝不宣布修复完成。它随 LazyCodex 安装到 Codex 的 OmO（oh-my-openagent）插件一起提供。
+
+触发短语包括 "debug this"、"why is X not working"、"hanging"、"attach a debugger"、"reverse engineer"、"trace this bug"、"reproduce and fix"、"silent failure"、"HTTP 200 but empty"、"stuck process"，以及 `pwndbg`、`gdb`、`lldb`、`node inspect`、`tsx debug`、`pdb`、`dlv`、`delve`、`rust-gdb` 等工具名。
+
+## 每次都遵守的两条纪律
+
+1. **运行时真相胜过读代码。** 关于 bug 为何发生的每个论断都必须来自观测状态，绝不能来自读代码编出的合理故事。
+2. **不留痕迹。** 调试会产生工件。每个工件在创建前先记入日志，并在宣布任务完成前移除。
+
+## HOW 在 references 中
+
+本技能刻意保持精简。真正的调试知识在 `references/` 中，阅读匹配的参考文件是硬性闸门而非建议。在运行某参考领域的任何命令前，本会话中必须已读过该参考。
+
+- **运行时参考**按运行时说明如何启动、附加、设断点与检查：Python、Node.js / tsx / Bun / Deno、Rust、Go、原生二进制，以及打包应用二进制（Bun/Node SEA、Deno compile、pkg、nexe、Electron、Tauri、PyInstaller）。每篇都记录一个会悄悄浪费数小时的陷阱——例如 `tsx` + `node inspect` 存在静默的源映射失败，行断点永远不触发。
+- **专用工具**是各自领域的正确工具：浏览器服务的 UI bug 用 Playwright CLI，在用 `strings`/`objdump` 瞎猜前先用 Ghidra 反编译器，用 pwndbg 取代普通 `gdb`，与二进制或网络的可复现交互用 pwntools。
+
+30 秒区分原生与打包：`file ./target` 会把两者都称为 ELF/Mach-O，因此配合 `du -h ./target`（50 MB 以上可疑）与 `strings -n 12 ./target | rg -iE 'bun|node_modules|webpack|esbuild|deno|pkg/lib|electron|pyinstaller|nexe|NODE_SEA_FUSE|tauri'`。有命中即打包；干净即原生。
+
+## 阶段循环
+
+每个阶段恰有一个参考，在进入阶段时阅读，而非凭记忆。
+
+<Steps>
+
+<Step>
+
+### 阶段 0-1 — 准备与日志
+
+在附加任何东西前，先评估运行时、端口、符号、环境变量与监听器。打开单一的 `.debug-journal.md` 追踪每个工件，确保可回退。
+
+</Step>
+
+<Step>
+
+### 阶段 2-3 — 假设与并行调查
+
+在正交的维度上至少形成三个假设，每个带有可区分的证据。并行调查它们——团队模式开启时用 `debug-squad` 团队，否则用异步子智能体。
+
+</Step>
+
+<Step>
+
+### 阶段 4 — Oracle Triple
+
+连续两轮失败后，以正交框架启动三个 Oracle 并综合其答案。（与用于提取/审计任务的 Verification Oracle 不同。）
+
+</Step>
+
+<Step>
+
+### 阶段 5-7 — 升级、确认、修复
+
+仅当证据耗尽且该判断有策略含义时，才升级到用户决策。仅当切换可疑原因会切换 bug 时，根因才算确认。然后用先失败的测试锁定（red → 最小 green，不扩大范围）。
+
+</Step>
+
+<Step>
+
+### 阶段 8-10 — QA、清理、验证
+
+通过真正使用系统来做 QA：CLI 用 tmux，浏览器用 Playwright，API 用真实 `curl`，二进制用真实复现。沿日志回退每个工件，直到 `git diff` 只剩修复与测试，再通过最后四道证据闸门。
+
+</Step>
+
+</Steps>
+
+## 安全不变量
+
+- 运行时状态是唯一真相来源——没有观测值的假设只是猜测，猜测不修复。
+- 每个调试工件在创建前先记入日志。
+- 没有先失败的测试，任何修复都不出货；必须有 red → green 转换。
+- 类型检查或编译成功绝不算完成——只有真实用户场景才算。
+- 调试中绝不静默吞掉错误；若系统吞错，那往往就是 bug 本身。
+- 绝不在本技能内 `git commit`——提交属于用户确认后的流程。
+
+## 相关技能
+
+<Cards>
+  <Card title="programming" href="/zh/docs/skills/programming">LZX 应用于每次修复的类型纪律。</Card>
+  <Card title="lsp" href="/zh/docs/skills/lsp">诊断、定义、引用与安全重命名。</Card>
+  <Card title="技能总览" href="/zh/docs/skills">全部 LazyCodex 技能。</Card>
+</Cards>

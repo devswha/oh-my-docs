@@ -68,14 +68,13 @@ description: Codex를 위한 language-server 진단, 정의, 참조, 심볼, 안
 
 서버가 누락으로 보고되면 `lsp.status`가 바이너리가 미설치인지, 비활성인지, 단지 미구성인지 알려줍니다.
 
-## 관련 — AST-grep
-
-구조적 검색·재작성(텍스트가 아닌 형태로 코드를 매칭한 뒤 매칭된 패턴을 재작성)을 위해 LazyCodex는 LSP 도구와 함께 AST-grep도 제공합니다. LSP는 실제 심볼에 대한 의미론적 질문에 답하고, AST-grep은 구문 트리 수준의 패턴 매칭과 편집을 수행합니다. 둘은 정밀한 IDE급 변경을 위해 상호 보완합니다.
+구조적 검색·재작성(텍스트가 아닌 형태로 코드를 매칭)이 필요하면 `ast_grep_search` / `ast_grep_replace`를 구동하는 [`refactor`](/ko/docs/skills/refactor) 스킬을 참고하세요.
 
 ## 관련 스킬
 
 <Cards>
   <Card title="programming" href="/ko/docs/skills/programming">모든 줄에 적용되는 타입 규율.</Card>
+  <Card title="refactor" href="/ko/docs/skills/refactor">구조적 검색·재작성을 갖춘 테스트 검증 리팩터링.</Card>
   <Card title="comment-checker" href="/ko/docs/skills/comment-checker">편집류 작업 후 피드백.</Card>
   <Card title="스킬 개요" href="/ko/docs/skills">모든 LazyCodex 스킬.</Card>
 </Cards>

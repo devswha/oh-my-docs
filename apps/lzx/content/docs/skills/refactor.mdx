@@ -1,0 +1,103 @@
+---
+title: refactor
+description: Intelligent codemap-driven refactoring with full codebase awareness, LSP, and AST-grep.
+---
+
+The `refactor` skill is LazyCodex (LZX) performing intelligent, deterministic refactoring instead of blind search-and-replace. It maps the codebase before touching anything, assesses test coverage to choose a verification strategy, plans meticulously, then executes step-by-step with LSP and AST-grep — running tests after every change so a refactor never introduces a regression. It ships in the OmO (oh-my-openagent) plugin that LazyCodex installs into Codex.
+
+Triggers include "refactor", "refactoring", "cleanup", "restructure", "extract", "simplify", and "modernize".
+
+## Usage
+
+```
+/refactor <refactoring-target> [--scope=<file|module|project>] [--strategy=<safe|aggressive>]
+```
+
+- **refactoring-target** — a file path, a symbol name, a pattern, or a description like "extract validation logic into a separate module".
+- **`--scope`** — `file`, `module` (default), or `project`.
+- **`--strategy`** — `safe` (default, maximum test coverage required) or `aggressive` (broader changes with adequate coverage).
+
+## The phases
+
+<Steps>
+
+<Step>
+
+### Phase 0 — Intent gate
+
+Before any action, classify the request. Specific files, symbols, or "refactor X to Y" proceed straight to analysis. Open-ended "improve" / "clean up", ambiguous scope, or missing context must trigger a clarifying question before anything moves.
+
+</Step>
+
+<Step>
+
+### Phase 1 — Codebase analysis
+
+Launch parallel explore agents to find the target, its dependents, similar patterns, related tests, and architectural context. While they run, use direct tools: LSP for definitions, references, and symbols, and AST-grep for structural pattern analysis.
+
+</Step>
+
+<Step>
+
+### Phase 2 — Build codemap
+
+From the analysis, build a definitive codemap: core files, the dependency graph (imports / imported-by / used-by), impact zones rated by risk and coverage, and the established patterns the refactor must follow. From it, mark what must follow existing patterns, what must not break, what is safe to change, and what requires migration.
+
+</Step>
+
+<Step>
+
+### Phase 3 — Test assessment
+
+Detect the test infrastructure and analyze coverage. Coverage sets the verification strategy: high (>80%) runs existing tests after each step; medium (50-80%) adds safety assertions; low (&lt;50%) pauses to propose adding tests first; none blocks aggressive refactoring outright.
+
+</Step>
+
+<Step>
+
+### Phase 4 — Plan generation
+
+Invoke the Plan agent with the codemap, coverage, and constraints to produce atomic, independently verifiable steps ordered by dependency, each with exact files and line ranges and a rollback strategy. Convert the plan into granular todos.
+
+</Step>
+
+<Step>
+
+### Phase 5 — Execute
+
+Run each step under a strict protocol: read current state, verify baseline diagnostics, execute, then verify (diagnostics clean, tests pass, type-check clean). Any failure stops and reverts immediately — never proceed to the next step with broken tests.
+
+</Step>
+
+<Step>
+
+### Phase 6 — Final verification
+
+Run the full test suite, type-check, lint, build (if applicable), and final diagnostics on every changed file, then produce a summary of what changed and the verification results.
+
+</Step>
+
+</Steps>
+
+## Structural search and rewrite — where AST-grep lives
+
+Refactor is where AST-grep actually operates. `ast_grep_search` finds code by shape rather than text, and `ast_grep_replace` rewrites the matched pattern. The critical rule: always run `ast_grep_replace` with `dryRun=true` first, review the preview, then execute with `dryRun=false`.
+
+LSP and AST-grep complement each other. LSP answers semantic questions about real symbols — `lsp_prepare_rename` then `lsp_rename` for a safe workspace-wide rename, `lsp_diagnostics` after every edit. AST-grep performs syntax-tree-level pattern matching and edits for transformations that aren't a single symbol rename.
+
+## Critical rules
+
+- Never skip the diagnostics check after a change, and never proceed with failing tests.
+- Never use `as any`, `@ts-ignore`, or `@ts-expect-error`, and never delete tests to make them pass.
+- Refactor only after understanding existing patterns; preview before applying.
+- For deprecated APIs, consult the `librarian` for the modern replacement — but do not auto-upgrade a library version unless the user explicitly requests migration.
+- For complex architectural decisions, consult the `oracle` (read-only).
+- Abort and consult the user on zero coverage, public-API breakage, unclear scope, or three consecutive verification failures.
+
+## Related skills
+
+<Cards>
+  <Card title="lsp" href="/docs/skills/lsp">Diagnostics, definitions, references, and safe renames.</Card>
+  <Card title="programming" href="/docs/skills/programming">The type discipline LZX applies to every line.</Card>
+  <Card title="Skills overview" href="/docs/skills">All LazyCodex skills.</Card>
+</Cards>

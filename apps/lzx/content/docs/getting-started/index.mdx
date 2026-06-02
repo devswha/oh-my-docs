@@ -11,7 +11,10 @@ LazyCodex installs the OmO agent harness into Codex with a single `npx` line —
 
 ### Prerequisites
 
-LazyCodex runs inside OpenAI Codex, so you need the [OpenAI Codex CLI](https://github.com/openai/codex) installed and working.
+- [Bun](https://bun.sh)
+- The [OpenAI Codex CLI](https://github.com/openai/codex)
+
+LazyCodex runs inside OpenAI Codex, so the Codex CLI must be installed and working.
 
 </Step>
 
@@ -45,9 +48,9 @@ The installer wires the OmO harness — commands, skills, hooks, and model routi
 
 ### Authenticate
 
-LazyCodex runs inside Codex, so authentication is your existing Codex/OpenAI login plus any OmO provider keys you want to route to. The install TUI walks the setup, including subscription detection, model selection, and provider auth.
+There is no separate LazyCodex login command. The installer (and any LLM agent you let run it) handles subscription detection, model selection, and provider auth automatically. Being logged into the Codex CLI itself is a prerequisite, but it is not a LazyCodex auth step.
 
-For provider keys and routing details, see [Configuration](/docs/reference/configuration).
+For provider and routing details, see [Configuration](/docs/reference/configuration).
 
 </Step>
 

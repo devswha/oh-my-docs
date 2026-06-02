@@ -49,7 +49,7 @@ $ulw-plan "리프레시 토큰 회전이 포함된 OAuth 로그인 추가"
 
 #### `$start-work`로 계획 실행하기
 
-계획을 `$start-work`에 넘기세요. `.omo/boulder.json`의 내구성 있는 Boulder 상태로 모든 최상위 체크박스를 실행하고, 독립적인 하위 작업은 병렬 서브에이전트로 분산하며, 엄격한 TDD와 증거 게이트를 적용합니다.
+계획을 `$start-work`에 넘기세요. `.omo/boulder.json`의 내구성 있는 Boulder 상태로 모든 최상위 체크박스를 실행하고, 독립적인 하위 작업은 병렬 서브에이전트로 분산하며, 엄격한 TDD를 적용합니다. Stop-hook이 계획이 완료될 때까지 다음 턴을 다시 주입하고, 다섯 개의 증거 게이트(계획 재독, 자동 검증, 수동 QA, 적대적 QA, 정리)를 모두 통과해야 합니다.
 
 ```bash
 $start-work add-oauth-login
@@ -104,10 +104,10 @@ $ulw-loop "CI에서 불안정한 체크아웃 테스트를 통과시키기" --co
 실행을 격리된 Git 워크트리로 향하게 해서, 계획이 도는 동안 메인 체크아웃을 깨끗하게 유지하세요.
 
 ```bash
-$start-work refactor-payments --worktree ../wt-refactor-payments
+$start-work refactor-payments --worktree /home/you/wt-refactor-payments
 ```
 
-계획은 해당 워크트리 안에서 실행됩니다. `ORCHESTRATION COMPLETE`가 출력되면 리뷰하고 머지하세요.
+`--worktree`에는 절대 경로를 넘기세요. 계획은 해당 워크트리 안에서 실행됩니다. `ORCHESTRATION COMPLETE`가 출력되면 리뷰하고 머지하세요.
 
 ### 구현 후 리뷰
 

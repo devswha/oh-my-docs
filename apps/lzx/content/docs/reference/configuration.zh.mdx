@@ -15,6 +15,8 @@ npx lazycodex-ai install
 
 没有全局安装，始终通过 `npx` 调用。这是 `npx --yes --package oh-my-openagent omo install --platform=codex` 的简写。
 
+> 这就是 "Codex Light setup"：安装程序把 Codex 市场插件接为 `omo@sisyphuslabs`，而公开的 `lazycodex-ai` 包仍是你调用的别名/入口。
+
 ## Codex 平台目标
 
 LazyCodex 始终面向 Codex。`--platform=codex` 参数已内置于 `lazycodex-ai` 可执行文件的 `install` 路径，因此框架连接到 [OpenAI Codex CLI](https://github.com/openai/codex) 而非其他平台。你不需要自行传入 `--platform`。
@@ -48,12 +50,7 @@ npx lazycodex-ai install
 npx lazycodex-ai install --no-tui --codex-autonomous
 ```
 
-| 标志 | 作用 |
-| --- | --- |
-| `--no-tui` | 不使用交互式 TUI 运行安装程序。 |
-| `--codex-autonomous` | 将 Codex 配置为自主运行。 |
-
-`install` 之后的任何标志都会原样转发给 `omo install`。
+`--no-tui --codex-autonomous` 一起传入，用于完全自主、无提示的设置。`lazycodex-ai` 可执行文件并不解释它们 —— `install` 之后的任何标志都会原样转发给 `omo install`，由 `omo install` 赋予其含义。
 
 </Tab>
 

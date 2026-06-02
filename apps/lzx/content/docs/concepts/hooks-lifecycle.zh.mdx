@@ -1,0 +1,68 @@
+---
+title: Hooks & Lifecycle
+description: OmO 插件在 Codex 中注册的生命周期钩子 —— 规则注入、遥测、注释检查与 LSP 诊断。
+---
+
+LazyCodex(LZX)随 OmO 插件提供一组生命周期钩子，它们在 Codex 会话的固定节点触发：让项目规则保持加载、在编辑后给出反馈、运行诊断 —— 无需你手动调用任何东西。以下内容都注册在插件的 `hooks.json` 中。
+
+## 何时触发什么
+
+| 事件 | 触发内容 |
+|---|---|
+| `SessionStart` | 加载 OMO 项目规则（[rules](/zh/docs/skills/rules) 组件），随后记录[遥测](#已安装的组件)。 |
+| `UserPromptSubmit` | 重新注入 OMO 项目规则、运行 ultrawork 检测器、检查 ultragoal 引导。 |
+| `PostToolUse`（编辑类工具） | 运行 [comment-checker](/zh/docs/skills/comment-checker) 反馈与 [LSP](/zh/docs/skills/lsp) 诊断；对 `apply_patch` 还会匹配项目规则。 |
+| `PostCompact`（`manual` 或 `auto`） | 重置 OMO 项目规则缓存，让注入的规则在上下文压缩后依然存在。 |
+
+## SessionStart
+
+Codex 会话开始时，运行两个钩子：
+
+- **Rules** —— `rules hook session-start` 加载 OMO 项目规则，使智能体在启动时已将 `AGENTS.md`、rules、instruction 文件载入上下文。
+- **Telemetry** —— `telemetry hook session-start` 记录会话已开始。
+
+## UserPromptSubmit
+
+每次提交提示时，按顺序运行三个钩子：
+
+- **Rules** —— `rules hook user-prompt-submit` 重新注入 OMO 项目规则，使其随对话变长而持续存在。
+- **Ultrawork 检测器** —— 一个 Python 钩子（`ultrawork/hooks/ultrawork-detector.py`），用于在提示中检测 `ultrawork` 触发词。
+- **Ultragoal** —— `ultragoal hook user-prompt-submit` 检查 ultragoal 引导。
+
+## PostToolUse
+
+编辑类工具运行后，OmO 会检查其结果。匹配器针对编辑家族：
+
+```text
+^(apply_patch|write|Write|edit|Edit|multi_edit|multiedit|MultiEdit)$
+```
+
+命中后运行两个钩子：
+
+- **comment-checker** —— `comment-checker hook post-tool-use` 对你刚写或刚改的注释给出反馈。参见 [comment-checker](/zh/docs/skills/comment-checker)。
+- **LSP** —— `lsp hook post-tool-use` 对被编辑的代码运行 language-server 诊断。参见 [lsp](/zh/docs/skills/lsp)。
+
+第二个更窄的匹配器（`^apply_patch$`）会额外运行 `rules hook post-tool-use`，对该补丁匹配项目规则。
+
+## PostCompact
+
+当 Codex 压缩上下文时 —— `manual` 或 `auto` —— `rules hook post-compact` 重置 OMO 项目规则缓存。正是这一点让注入的规则在旧上下文被摘要清除时不会一并丢失，而能挺过压缩。
+
+## 已安装的组件
+
+上述钩子是进入已安装组件的轻量入口：
+
+| 组件 | 负责 |
+|---|---|
+| `rules` | 会话开始时、每次提示时、`apply_patch` 时、压缩后注入项目规则。 |
+| `telemetry` | 会话开始记录。 |
+| `comment-checker` | 编辑类工具之后的注释反馈。 |
+| `lsp` | 编辑类工具之后的 language-server 诊断。 |
+| `ultrawork` | 提示时的 ultrawork 检测器。 |
+| `ultragoal` | 每次提示时的 ultragoal 引导检查。 |
+
+<Cards>
+  <Card title="rules" href="/zh/docs/skills/rules">从 AGENTS、rules、instruction 文件注入的项目指令。</Card>
+  <Card title="comment-checker" href="/zh/docs/skills/comment-checker">编辑类操作后对注释的反馈。</Card>
+  <Card title="lsp" href="/zh/docs/skills/lsp">诊断、定义、引用、符号与安全 rename。</Card>
+</Cards>

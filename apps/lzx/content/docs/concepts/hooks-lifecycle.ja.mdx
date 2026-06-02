@@ -1,0 +1,68 @@
+---
+title: Hooks & Lifecycle
+description: OmO プラグインが Codex に登録するライフサイクルフック —— ルール注入、テレメトリ、コメント検査、LSP 診断。
+---
+
+LazyCodex(LZX)は、Codex セッションの決まった地点で発火するライフサイクルフックとともに OmO プラグインを提供します。これらのフックはプロジェクトルールを読み込んだまま保ち、編集後のフィードバックを表に出し、診断を実行します —— ユーザーが手動で何かを呼び出す必要はありません。以下の内容はすべてプラグインの `hooks.json` に登録されています。
+
+## いつ何が発火するか
+
+| イベント | 発火する内容 |
+|---|---|
+| `SessionStart` | OMO プロジェクトルール（[rules](/ja/docs/skills/rules) コンポーネント）を読み込み、続いて[テレメトリ](#インストール済みコンポーネント)を記録します。 |
+| `UserPromptSubmit` | OMO プロジェクトルールを再注入し、ultrawork ディテクターを実行し、ultragoal ステアリングを確認します。 |
+| `PostToolUse`(編集系ツール) | [comment-checker](/ja/docs/skills/comment-checker) のフィードバックと [LSP](/ja/docs/skills/lsp) 診断を実行します。`apply_patch` の場合はプロジェクトルールも照合します。 |
+| `PostCompact`(`manual` または `auto`) | 注入されたルールがコンテキスト圧縮後も残るよう、OMO プロジェクトルールキャッシュをリセットします。 |
+
+## SessionStart
+
+Codex セッションが始まると、2 つのフックが実行されます。
+
+- **Rules** —— `rules hook session-start` が OMO プロジェクトルールを読み込み、エージェントは `AGENTS.md`・rules・instruction ファイルを既にコンテキストに持って開始します。
+- **Telemetry** —— `telemetry hook session-start` がセッション開始を記録します。
+
+## UserPromptSubmit
+
+プロンプトを送信するたびに、3 つのフックが順に実行されます。
+
+- **Rules** —— `rules hook user-prompt-submit` が OMO プロジェクトルールを再注入し、会話が長くなっても残り続けます。
+- **Ultrawork ディテクター** —— プロンプト内の `ultrawork` トリガーを検出する Python フック(`ultrawork/hooks/ultrawork-detector.py`)です。
+- **Ultragoal** —— `ultragoal hook user-prompt-submit` が ultragoal ステアリングを確認します。
+
+## PostToolUse
+
+編集系ツールが実行された後、OmO はその結果を検査します。マッチャーは編集ファミリーを対象とします。
+
+```text
+^(apply_patch|write|Write|edit|Edit|multi_edit|multiedit|MultiEdit)$
+```
+
+マッチすると 2 つのフックが実行されます。
+
+- **comment-checker** —— `comment-checker hook post-tool-use` が、たった今書いたり変更したコメントにフィードバックを与えます。[comment-checker](/ja/docs/skills/comment-checker) を参照してください。
+- **LSP** —— `lsp hook post-tool-use` が編集されたコードに language-server 診断を実行します。[lsp](/ja/docs/skills/lsp) を参照してください。
+
+2 つ目の、より狭いマッチャー(`^apply_patch$`)は追加で `rules hook post-tool-use` を実行し、そのパッチにプロジェクトルールを照合します。
+
+## PostCompact
+
+Codex がコンテキストを圧縮するとき —— `manual` または `auto` —— `rules hook post-compact` が OMO プロジェクトルールキャッシュをリセットします。これにより、注入されたルールは、古いコンテキストが要約されて消えるときに一緒に失われず、圧縮を生き延びます。
+
+## インストール済みコンポーネント
+
+上記のフックは、インストール済みコンポーネントへの薄い入口です。
+
+| コンポーネント | 担当 |
+|---|---|
+| `rules` | セッション開始時、すべてのプロンプト時、`apply_patch` 時、圧縮後のプロジェクトルール注入。 |
+| `telemetry` | セッション開始の記録。 |
+| `comment-checker` | 編集系ツール後のコメントフィードバック。 |
+| `lsp` | 編集系ツール後の language-server 診断。 |
+| `ultrawork` | プロンプト時の ultrawork ディテクター。 |
+| `ultragoal` | プロンプトごとの ultragoal ステアリング確認。 |
+
+<Cards>
+  <Card title="rules" href="/ja/docs/skills/rules">AGENTS・rules・instruction ファイルから注入されるプロジェクト指示。</Card>
+  <Card title="comment-checker" href="/ja/docs/skills/comment-checker">編集系操作の後のコメントへのフィードバック。</Card>
+  <Card title="lsp" href="/ja/docs/skills/lsp">診断・定義・参照・シンボル・安全な rename。</Card>
+</Cards>

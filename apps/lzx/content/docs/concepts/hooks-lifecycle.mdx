@@ -1,0 +1,68 @@
+---
+title: Hooks & Lifecycle
+description: The lifecycle hooks the OmO plugin registers in Codex — rules injection, telemetry, comment checks, and LSP diagnostics.
+---
+
+LazyCodex (LZX) ships the OmO plugin with lifecycle hooks that fire at well-defined points in a Codex session. They keep your project rules loaded, surface feedback after edits, and run diagnostics — without you invoking anything by hand. Everything below is registered in the plugin's `hooks.json`.
+
+## What fires, when
+
+| Event | What fires |
+|---|---|
+| `SessionStart` | Loads OMO project rules (the [rules](/docs/skills/rules) component), then records [telemetry](#installed-components). |
+| `UserPromptSubmit` | Re-injects OMO project rules, runs the ultrawork detector, and checks ultragoal steering. |
+| `PostToolUse` (edit-like tools) | Runs the [comment-checker](/docs/skills/comment-checker) feedback pass and [LSP](/docs/skills/lsp) diagnostics; for `apply_patch`, also matches project rules. |
+| `PostCompact` (`manual` or `auto`) | Resets the OMO project rule cache so injected rules survive context compaction. |
+
+## SessionStart
+
+When a Codex session begins, two hooks run:
+
+- **Rules** — `rules hook session-start` loads OMO project rules so the agent starts with your `AGENTS.md`, rules, and instruction files already in context.
+- **Telemetry** — `telemetry hook session-start` records that the session started.
+
+## UserPromptSubmit
+
+Every time you submit a prompt, three hooks run in order:
+
+- **Rules** — `rules hook user-prompt-submit` re-injects OMO project rules so they stay present as the conversation grows.
+- **Ultrawork detector** — a Python hook (`ultrawork/hooks/ultrawork-detector.py`) that detects the `ultrawork` trigger in your prompt.
+- **Ultragoal** — `ultragoal hook user-prompt-submit` checks ultragoal steering.
+
+## PostToolUse
+
+After edit-like tools run, OmO inspects the result. The matcher targets the edit family:
+
+```text
+^(apply_patch|write|Write|edit|Edit|multi_edit|multiedit|MultiEdit)$
+```
+
+For any match, two hooks run:
+
+- **comment-checker** — `comment-checker hook post-tool-use` gives feedback on comments you just wrote or changed. See [comment-checker](/docs/skills/comment-checker).
+- **LSP** — `lsp hook post-tool-use` runs language-server diagnostics on the edited code. See [lsp](/docs/skills/lsp).
+
+A second, narrower matcher (`^apply_patch$`) additionally runs `rules hook post-tool-use` to match project rules against the patch.
+
+## PostCompact
+
+When Codex compacts context — `manual` or `auto` — `rules hook post-compact` resets the OMO project rule cache. This is what lets injected rules survive compaction instead of being lost when older context is summarized away.
+
+## Installed components
+
+The hooks above are thin entry points into installed components:
+
+| Component | Powers |
+|---|---|
+| `rules` | Project-rule injection at session start, on every prompt, on `apply_patch`, and after compaction. |
+| `telemetry` | Session-start recording. |
+| `comment-checker` | Comment feedback after edit-like tools. |
+| `lsp` | Language-server diagnostics after edit-like tools. |
+| `ultrawork` | The prompt-time ultrawork detector. |
+| `ultragoal` | Ultragoal steering checks on each prompt. |
+
+<Cards>
+  <Card title="rules" href="/docs/skills/rules">Project instructions injected from AGENTS, rules, and instruction files.</Card>
+  <Card title="comment-checker" href="/docs/skills/comment-checker">Feedback on comments after edit-like operations.</Card>
+  <Card title="lsp" href="/docs/skills/lsp">Diagnostics, definitions, references, symbols, and safe renames.</Card>
+</Cards>

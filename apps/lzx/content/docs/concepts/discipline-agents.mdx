@@ -5,7 +5,9 @@ description: Sisyphus orchestrates Hephaestus, Oracle, and Librarian — a coord
 
 LazyCodex (LZX) does not run as one big prompt. It installs a small cast of **discipline agents** into Codex, each tuned to one job. Sisyphus reads your intent and delegates; the specialists work their lanes; the loop keeps moving until the result is verified by evidence instead of a hopeful status update.
 
-These agents come from the **OmO (oh-my-openagent)** harness. LazyCodex is a thin distribution layer that packages that harness for Codex — "LazyVim for Codex." The roles below are the harness's, not invented for this page.
+These agents come from the **OmO (oh-my-openagent)** harness. LazyCodex is a thin distribution layer that packages that harness for Codex — "LazyVim for Codex."
+
+> **Where the role detail comes from.** The LazyCodex README only *names* these agents — "Sisyphus orchestrates Hephaestus, Oracle, Librarian." The per-role behavior and tool boundaries below are defined by the underlying **OmO** engine, not by the LazyCodex README. See the OmO agent docs for the authoritative source.
 
 ## The cast
 
@@ -29,13 +31,13 @@ The read-only boundaries on Oracle and Librarian are part of the harness. They s
 
 ## How they coordinate
 
-Sisyphus is the only agent that delegates. It splits a request into units and hands them to the right specialist:
+Sisyphus is the entry-point orchestrator: it reads intent, splits a request into units, and hands them to the right specialist.
 
 - **Hephaestus** takes the implementation and hard-reasoning units.
 - **Oracle** verifies the result and consults on architecture and debugging, read-only.
 - **Librarian** retrieves the context (docs, repos, examples) the workers need.
 
-Because delegation is explicit, multiple lanes can run at once.
+Oracle and Librarian do not delegate — their tool access is read-only by design. Because delegation is explicit, multiple lanes can run at once.
 
 ## Parallel execution
 

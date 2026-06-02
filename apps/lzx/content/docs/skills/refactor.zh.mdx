@@ -1,0 +1,103 @@
+---
+title: refactor
+description: 具备完整代码库感知、由代码图驱动并结合 LSP 与 AST-grep 的智能重构。
+---
+
+`refactor` 技能是 LazyCodex（LZX）执行智能、确定性重构，而非盲目的查找替换。它在改动任何东西之前先绘制代码图，评估测试覆盖以选定验证策略，细致规划，再结合 LSP 与 AST-grep 逐步执行——每次改动后都跑测试，使重构绝不引入回归。它随 LazyCodex 安装到 Codex 的 OmO（oh-my-openagent）插件一起提供。
+
+触发短语包括 "refactor"、"refactoring"、"cleanup"、"restructure"、"extract"、"simplify"、"modernize"。
+
+## 用法
+
+```
+/refactor <refactoring-target> [--scope=<file|module|project>] [--strategy=<safe|aggressive>]
+```
+
+- **refactoring-target** — 文件路径、符号名、模式，或像 "把校验逻辑抽取到独立模块" 这样的描述。
+- **`--scope`** — `file`、`module`（默认）或 `project`。
+- **`--strategy`** — `safe`（默认，要求最大测试覆盖）或 `aggressive`（在足够覆盖下进行更大改动）。
+
+## 阶段
+
+<Steps>
+
+<Step>
+
+### 阶段 0 — 意图闸门
+
+在任何动作前先分类请求。具体文件、符号或 "把 X 重构为 Y" 直接进入分析。开放式的 "改进"/"清理"、范围含糊或缺少上下文，都必须在任何推进前先触发澄清提问。
+
+</Step>
+
+<Step>
+
+### 阶段 1 — 代码库分析
+
+并行启动 explore 智能体，查找目标、其依赖者、相似模式、相关测试与架构上下文。它们运行时，使用直接工具：定义、引用与符号用 LSP，结构化模式分析用 AST-grep。
+
+</Step>
+
+<Step>
+
+### 阶段 2 — 构建代码图
+
+依据分析构建确定的代码图：核心文件、依赖图（imports / imported-by / used-by）、按风险与覆盖评级的影响区，以及重构必须遵循的既有模式。据此标出必须遵循的既有模式、不可破坏的部分、可安全改动的部分，以及需要迁移的部分。
+
+</Step>
+
+<Step>
+
+### 阶段 3 — 测试评估
+
+检测测试基础设施并分析覆盖。覆盖决定验证策略：高（>80%）每步后跑既有测试；中（50-80%）追加安全断言；低（&lt;50%）暂停并建议先补测试；无则直接阻止 aggressive 重构。
+
+</Step>
+
+<Step>
+
+### 阶段 4 — 生成计划
+
+携带代码图、覆盖与约束调用 Plan 智能体，产出按依赖排序、可独立验证的原子步骤，每步带精确文件与行范围及回滚策略。把计划转换为细粒度待办。
+
+</Step>
+
+<Step>
+
+### 阶段 5 — 执行
+
+每步按严格协议执行：读取当前状态、确认基线诊断、执行，然后验证（诊断干净、测试通过、类型检查干净）。任何失败立即停止并回退——绝不在测试损坏时进入下一步。
+
+</Step>
+
+<Step>
+
+### 阶段 6 — 最终验证
+
+跑完整测试套件、类型检查、lint、构建（如适用），以及每个改动文件的最终诊断，再产出改动内容与验证结果的摘要。
+
+</Step>
+
+</Steps>
+
+## 结构化搜索与重写 — AST-grep 所在
+
+重构正是 AST-grep 真正运作之处。`ast_grep_search` 按形状而非文本查找代码，`ast_grep_replace` 重写匹配的模式。关键规则：`ast_grep_replace` 始终先以 `dryRun=true` 运行，审阅预览，再以 `dryRun=false` 执行。
+
+LSP 与 AST-grep 互补。LSP 回答关于真实符号的语义问题——安全的工作区级重命名用 `lsp_prepare_rename` 再 `lsp_rename`，每次编辑后用 `lsp_diagnostics`。AST-grep 为非单符号重命名的变换执行语法树级别的模式匹配与编辑。
+
+## 关键规则
+
+- 改动后绝不跳过诊断检查，绝不在测试失败时继续。
+- 绝不使用 `as any`、`@ts-ignore`、`@ts-expect-error`，绝不删测试来让其通过。
+- 只在理解既有模式后重构；应用前先预览。
+- 对已弃用 API，咨询 `librarian` 获取现代替代——但除非用户明确要求迁移，否则不自动升级库版本。
+- 复杂架构决策咨询（只读的）`oracle`。
+- 在零覆盖、破坏公共 API、范围不清或连续三次验证失败时，中止并咨询用户。
+
+## 相关技能
+
+<Cards>
+  <Card title="lsp" href="/zh/docs/skills/lsp">诊断、定义、引用与安全重命名。</Card>
+  <Card title="programming" href="/zh/docs/skills/programming">LZX 应用于每一行的类型纪律。</Card>
+  <Card title="技能总览" href="/zh/docs/skills">全部 LazyCodex 技能。</Card>
+</Cards>

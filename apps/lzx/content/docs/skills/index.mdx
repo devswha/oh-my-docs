@@ -12,13 +12,17 @@ Skills are invoked from inside a Codex session. The discipline agents (Sisyphus,
 | Skill | Use it for |
 | --- | --- |
 | [`review-work`](/docs/skills/review-work) | Multi-angle post-implementation review |
-| [`remove-ai-slops`](/docs/skills/remove-ai-slops) | Behavior-preserving cleanup of AI-looking code |
+| [`remove-ai-slops`](/docs/skills/remove-ai-slops) | Behavior-preserving cleanup of AI-looking code [^1] |
+| [`debugging`](/docs/skills/debugging) | Systematic root-cause debugging |
+| [`refactor`](/docs/skills/refactor) | Test-verified refactoring, including structural search and rewrite via `ast_grep_search` / `ast_grep_replace` |
 | [`frontend-ui-ux`](/docs/skills/frontend-ui-ux) | Designed UI work instead of generic layout filling |
 | [`programming`](/docs/skills/programming) | Strict TypeScript, Rust, Python, or Go discipline |
 | [`LSP`](/docs/skills/lsp) | Diagnostics, definitions, references, symbols, and renames |
-| `AST-grep` | Structural search and rewrite across code |
 | [`rules`](/docs/skills/rules) | Project instructions from AGENTS, rules, and instruction files |
 | [`comment-checker`](/docs/skills/comment-checker) | Feedback after edit-like operations |
+| [`ultragoal`](/docs/skills/ultragoal) | Goal-locked, evidence-driven completion |
+
+[^1]: `ai-slop-remover` is the single-file worker that `remove-ai-slops` invokes in parallel — it is not a separate user-facing skill.
 
 ## How skills fit in
 
@@ -26,11 +30,18 @@ Skills are invoked from inside a Codex session. The discipline agents (Sisyphus,
 - Skills add specialist judgment around those pillars: review, cleanup, UI craft, language discipline, and code intelligence.
 - A skill is loaded for the task at hand and unloaded after, so agent prompts stay lean.
 
+## Where skills live
+
+OmO can load skills from project and user locations such as `.opencode/skills`, `~/.config/opencode/skills`, `.claude/skills`, `.agents/skills`, and `~/.agents/skills`.
+
 ## Per-skill docs
 
 <Cards>
   <Card title="review-work" href="/docs/skills/review-work">Five parallel agents review completed work; all must pass.</Card>
   <Card title="remove-ai-slops" href="/docs/skills/remove-ai-slops">Lock behavior with tests, then strip AI slop, then verify.</Card>
   <Card title="frontend-ui-ux" href="/docs/skills/frontend-ui-ux">Designer-turned-developer craft for polished UI surfaces.</Card>
+  <Card title="debugging" href="/docs/skills/debugging">Systematic root-cause debugging.</Card>
+  <Card title="refactor" href="/docs/skills/refactor">Test-verified refactoring with structural search and rewrite.</Card>
+  <Card title="ultragoal" href="/docs/skills/ultragoal">Goal-locked, evidence-driven completion.</Card>
   <Card title="Command pillars" href="/docs/commands">The `$ulw-*` and `/init-deep` workflows skills run on top of.</Card>
 </Cards>

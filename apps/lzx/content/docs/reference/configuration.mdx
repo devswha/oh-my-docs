@@ -15,6 +15,8 @@ npx lazycodex-ai install
 
 No global install. Always invoke via `npx`. This is shorthand for `npx --yes --package oh-my-openagent omo install --platform=codex`.
 
+> This is the "Codex Light setup": the installer wires the Codex marketplace plugin as `omo@sisyphuslabs`, while the public `lazycodex-ai` package stays the alias/entrypoint you invoke.
+
 ## The Codex platform target
 
 LazyCodex always targets Codex. The `--platform=codex` argument is baked into the `install` path of the `lazycodex-ai` bin, so the harness is wired for the [OpenAI Codex CLI](https://github.com/openai/codex) rather than any other platform. You do not pass `--platform` yourself.
@@ -48,12 +50,7 @@ For a fully autonomous, no-prompt setup, add both flags:
 npx lazycodex-ai install --no-tui --codex-autonomous
 ```
 
-| Flag | Effect |
-| --- | --- |
-| `--no-tui` | Runs the installer without the interactive TUI. |
-| `--codex-autonomous` | Configures Codex for autonomous operation. |
-
-Any flags after `install` are forwarded verbatim to `omo install`.
+`--no-tui --codex-autonomous` are passed together for a fully autonomous, no-prompt setup. The `lazycodex-ai` bin does not interpret them — any flags after `install` are forwarded verbatim to `omo install`, which assigns their meaning.
 
 </Tab>
 

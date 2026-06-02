@@ -5,8 +5,11 @@
     "remove-ai-slops",
     "frontend-ui-ux",
     "programming",
+    "debugging",
+    "refactor",
     "lsp",
     "rules",
-    "comment-checker"
+    "comment-checker",
+    "ultragoal"
   ]
 }

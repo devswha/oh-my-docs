@@ -7,6 +7,8 @@ description: Behavior-preserving cleanup of AI-generated code smells.
 
 Triggers include "remove ai slops", "clean ai code", "deslop", and "cleanup AI generated".
 
+`remove-ai-slops` is the orchestrator: it determines scope (branch diff or file list), locks behavior with regression tests first, then runs categorized cleanup across files via parallel `deep` agents in batches of 5, then verifies with quality gates. Each `deep` agent loads the `ai-slop-remover` skill — the single-file worker that removes slop from exactly one file. Multiple files are handled by invoking that worker in parallel, one per file.
+
 ## Scope
 
 - **Default**: the branch diff versus `merge-base main` — no arguments needed.

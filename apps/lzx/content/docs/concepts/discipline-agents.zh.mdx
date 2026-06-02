@@ -5,7 +5,9 @@ description: Sisyphus 编排 Hephaestus、Oracle、Librarian —— 一支在 Co
 
 LazyCodex(LZX)不是一个庞大的提示词，而是在 Codex 中安装一小批 **纪律智能体**，每个只负责一件事。Sisyphus 读取你的意图并分派，专家在各自的车道工作，循环持续推进，直到结果由证据验证，而非乐观的状态汇报。
 
-这些智能体来自 **OmO(oh-my-openagent)** 框架。LazyCodex 是把该框架打包给 Codex 的薄分发层 —— "Codex 版 LazyVim"。下列角色出自框架本身，并非为本页杜撰。
+这些智能体来自 **OmO(oh-my-openagent)** 框架。LazyCodex 是把该框架打包给 Codex 的薄分发层 —— "Codex 版 LazyVim"。
+
+> **角色细节的来源。** LazyCodex README 只*列出*这些智能体的名字 —— "Sisyphus 编排 Hephaestus、Oracle、Librarian"。下列各角色的行为与工具边界由底层的 **OmO** 引擎定义，而非 LazyCodex README。权威来源请参阅 OmO 智能体文档。
 
 ## 团队成员
 
@@ -29,13 +31,13 @@ Oracle 与 Librarian 的只读边界是框架的一部分，防止"聪明"的智
 
 ## 如何协作
 
-唯一进行分派的智能体是 Sisyphus。它把请求拆成单元，交给合适的专家：
+Sisyphus 是入口编排者：读取意图，把请求拆成单元，交给合适的专家。
 
 - **Hephaestus** 承担实现与硬推理单元。
 - **Oracle** 验证结果，并以只读方式就架构和调试提供咨询。
 - **Librarian** 检索工作者所需的上下文(文档、仓库、示例)。
 
-由于分派是显式的，多条车道可同时运行。
+Oracle 与 Librarian 不进行分派 —— 它们的工具访问按设计为只读。由于分派是显式的，多条车道可同时运行。
 
 ## 并行执行
 

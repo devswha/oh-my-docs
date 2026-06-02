@@ -1,0 +1,68 @@
+---
+title: Hooks & Lifecycle
+description: OmO 플러그인이 Codex에 등록하는 라이프사이클 훅 — 규칙 주입, 텔레메트리, 주석 검사, LSP 진단.
+---
+
+LazyCodex(LZX)는 Codex 세션의 정해진 지점에서 발동하는 라이프사이클 훅과 함께 OmO 플러그인을 제공합니다. 이 훅들은 프로젝트 규칙을 계속 로드해 두고, 편집 후 피드백을 표면화하며, 진단을 실행합니다 — 사용자가 직접 무엇을 호출하지 않아도 됩니다. 아래 내용은 모두 플러그인의 `hooks.json`에 등록되어 있습니다.
+
+## 무엇이, 언제 발동하나
+
+| 이벤트 | 발동하는 것 |
+|---|---|
+| `SessionStart` | OMO 프로젝트 규칙([rules](/ko/docs/skills/rules) 컴포넌트)을 로드한 다음 [텔레메트리](#설치된-컴포넌트)를 기록합니다. |
+| `UserPromptSubmit` | OMO 프로젝트 규칙을 다시 주입하고, ultrawork 디텍터를 실행하며, ultragoal 스티어링을 확인합니다. |
+| `PostToolUse`(편집류 도구) | [comment-checker](/ko/docs/skills/comment-checker) 피드백 패스와 [LSP](/ko/docs/skills/lsp) 진단을 실행합니다. `apply_patch`의 경우 프로젝트 규칙도 매칭합니다. |
+| `PostCompact`(`manual` 또는 `auto`) | 주입된 규칙이 컨텍스트 컴팩션에서도 살아남도록 OMO 프로젝트 규칙 캐시를 초기화합니다. |
+
+## SessionStart
+
+Codex 세션이 시작되면 두 개의 훅이 실행됩니다.
+
+- **Rules** — `rules hook session-start`가 OMO 프로젝트 규칙을 로드해, 에이전트가 `AGENTS.md`, rules, instruction 파일을 이미 컨텍스트에 갖고 시작합니다.
+- **Telemetry** — `telemetry hook session-start`가 세션 시작을 기록합니다.
+
+## UserPromptSubmit
+
+프롬프트를 제출할 때마다 세 개의 훅이 순서대로 실행됩니다.
+
+- **Rules** — `rules hook user-prompt-submit`가 OMO 프로젝트 규칙을 다시 주입해, 대화가 길어져도 규칙이 계속 남아 있습니다.
+- **Ultrawork 디텍터** — 프롬프트에서 `ultrawork` 트리거를 감지하는 Python 훅(`ultrawork/hooks/ultrawork-detector.py`)입니다.
+- **Ultragoal** — `ultragoal hook user-prompt-submit`가 ultragoal 스티어링을 확인합니다.
+
+## PostToolUse
+
+편집류 도구가 실행된 뒤 OmO가 그 결과를 검사합니다. 매처는 편집 계열을 대상으로 합니다.
+
+```text
+^(apply_patch|write|Write|edit|Edit|multi_edit|multiedit|MultiEdit)$
+```
+
+매칭되면 두 개의 훅이 실행됩니다.
+
+- **comment-checker** — `comment-checker hook post-tool-use`가 방금 작성하거나 변경한 주석에 대해 피드백을 줍니다. [comment-checker](/ko/docs/skills/comment-checker)를 참고하세요.
+- **LSP** — `lsp hook post-tool-use`가 편집된 코드에 language-server 진단을 실행합니다. [lsp](/ko/docs/skills/lsp)를 참고하세요.
+
+더 좁은 두 번째 매처(`^apply_patch$`)는 추가로 `rules hook post-tool-use`를 실행해 패치에 대해 프로젝트 규칙을 매칭합니다.
+
+## PostCompact
+
+Codex가 컨텍스트를 컴팩션할 때 — `manual` 또는 `auto` — `rules hook post-compact`가 OMO 프로젝트 규칙 캐시를 초기화합니다. 덕분에 주입된 규칙이, 오래된 컨텍스트가 요약되어 사라질 때 함께 유실되지 않고 컴팩션을 견뎌냅니다.
+
+## 설치된 컴포넌트
+
+위 훅들은 설치된 컴포넌트로 들어가는 얇은 진입점입니다.
+
+| 컴포넌트 | 담당 |
+|---|---|
+| `rules` | 세션 시작 시, 모든 프롬프트마다, `apply_patch` 시, 컴팩션 후의 프로젝트 규칙 주입. |
+| `telemetry` | 세션 시작 기록. |
+| `comment-checker` | 편집류 도구 이후의 주석 피드백. |
+| `lsp` | 편집류 도구 이후의 language-server 진단. |
+| `ultrawork` | 프롬프트 시점의 ultrawork 디텍터. |
+| `ultragoal` | 프롬프트마다의 ultragoal 스티어링 확인. |
+
+<Cards>
+  <Card title="rules" href="/ko/docs/skills/rules">AGENTS, rules, instruction 파일에서 주입되는 프로젝트 지침.</Card>
+  <Card title="comment-checker" href="/ko/docs/skills/comment-checker">편집류 작업 후 주석에 대한 피드백.</Card>
+  <Card title="lsp" href="/ko/docs/skills/lsp">진단, 정의, 참조, 심볼, 안전한 rename.</Card>
+</Cards>
