@@ -1,0 +1,105 @@
+---
+title: programming
+description: One strict discipline for TypeScript, Rust, Python, and Go — type-strict, stack-first, TDD.
+---
+
+The `programming` skill is the type discipline LazyCodex (LZX) applies to every line of code it writes. It activates automatically whenever Codex touches a `.py`, `.pyi`, `.rs`, `.ts`, `.tsx`, `.mts`, `.cts`, or `.go` file, or any project manifest. There is no separate command — the skill ships inside the OmO (oh-my-openagent) plugin that LazyCodex installs into Codex.
+
+## TL;DR
+
+One philosophy across four languages: **type-strict, stack-first, async-correct, and architecturally honest about file size.** Strict types, modern toolchains, parse-don't-validate, exhaustive matching, typed errors, no escape hatches, a 250 pure-LOC ceiling, and TDD. Even one-off scripts get the full treatment.
+
+## The language gate
+
+Before writing a single line, the skill identifies the language and loads the matching reference set. Nothing is written until the per-language rules are loaded.
+
+| File / language | Toolchain |
+|---|---|
+| `.py`, `.pyi` (Python) | uv + basedpyright (`typeCheckingMode = "all"`) + ruff (`select = ["ALL"]`) + pytest |
+| `.rs`, `Cargo.toml` (Rust) | cargo + clippy (`pedantic` + `nursery`) + rustfmt + cargo-nextest + nightly miri |
+| `.ts`, `.tsx`, `.mts`, `.cts` (TypeScript) | Bun + Biome + `tsc --noEmit` (strict + `noUncheckedIndexedAccess`) |
+| `.go`, `go.mod` (Go) | go modules + gofumpt + golangci-lint v2 + nilaway + `go test -race` |
+
+## The shared philosophy
+
+Six axioms every recipe derives from:
+
+1. **The type system is your proof system.** If a bug can be a type error, it must be one.
+2. **Parse, don't validate.** Untrusted input is parsed into a typed value at the boundary once (Pydantic v2 / serde / Zod), never re-validated inside.
+3. **One name = one concept.** A `UserId` is not a `string`. Use `NewType`, newtype tuple structs, or branded types for every distinct semantic primitive.
+4. **Exhaustive variant matching, always.** `match` + `assert_never` (Python), `match` (Rust), `switch` + `assertNever` (TypeScript), sealed interface + exhaustive linter (Go). `if`/`elif`/`else` on a tagged variant is forbidden.
+5. **Trust framework guarantees; validate only at boundaries.** No defensive null checks, no `try/except` around code that cannot raise.
+6. **Test-driven.** No production line ships without a failing test that proved it was needed.
+
+## TDD discipline
+
+Every change follows red → green → refactor, in that order.
+
+<Steps>
+
+<Step>
+
+### Red
+
+Write a failing test that names the behavior in Given / When / Then. Run it and confirm it fails for the right reason — the function not existing yet, not a typo or missing import.
+
+</Step>
+
+<Step>
+
+### Green
+
+Write the minimum code to make the test pass. The second case is the next red.
+
+</Step>
+
+<Step>
+
+### Refactor
+
+With the test green, restructure ruthlessly. The test is the safety net.
+
+</Step>
+
+</Steps>
+
+The test pyramid ships all three rungs: many fast **unit** tests (< 10 ms each), some **integration** tests against real downstreams via testcontainers, and a few **E2E** scenarios that drive the real surface. A feature with zero E2E coverage is undone. Mocks are a last resort — prefer real objects, in-memory fakes, then testcontainers before reaching for a mock.
+
+## The 250 pure-LOC ceiling
+
+A source file whose pure LOC (non-blank, non-comment) exceeds 250 is a **defect**, not a style preference. At 250 LOC a reviewer can still hold the whole file in working memory and spot a cross-cutting bug.
+
+- **Creating** a file that will exceed 250 LOC: split it before the first commit, by responsibility.
+- **Editing** a file already over 250 LOC and adding lines: refactor the unit you touch into its own file first.
+- **Reading** a file over 250 LOC: surface the smell, propose a concrete split, and ask before carrying it forward.
+
+Forbidden escapes: counting comments toward the budget, splitting by token count (`service-2.ts`), catch-all dump files (`utils.py`, `helpers.ts`), or "close enough" at 230 LOC.
+
+## Cross-language iron list
+
+Applied unless the per-language reference is stricter:
+
+- Immutable by default (`frozen=True` / `let` / `readonly` / value types).
+- Branded primitives for every semantic unit.
+- No untyped escape hatches: no `any`/`Any`, no `unwrap`/`!`, no `# type: ignore`/`@ts-ignore`, no numeric `as` narrowing.
+- No bare error strings — typed exceptions, `thiserror`/`anyhow`, `Error` subclasses, sentinel + `%w` wrap.
+- Resources via RAII (`with` / `Drop` / `using` / `defer`).
+- A mandatory async runtime: anyio (never bare asyncio), tokio, platform-native with `AbortSignal`, `context.Context` + errgroup.
+
+## Post-write review loop
+
+Every time the skill finishes writing or substantively editing code, before declaring done:
+
+1. **Measure** pure LOC for every changed file.
+2. **Interpret**: ≤ 200 healthy, 200–250 warning band, > 250 defect (refactor now).
+3. **Self-review** single responsibility, boundary purity, exhaustive matching, escape hatches, defensive layers, one-off helpers, and test coverage.
+
+If the file is over the ceiling or more than two issues surface, the skill loads the `refactor` skill (safe codemap-driven multi-step refactor) or `remove-ai-slops` (categorized cleanup with tests pinned first).
+
+## Related
+
+<Cards>
+  <Card title="lsp" href="/docs/skills/lsp">Diagnostics, definitions, references, and safe renames.</Card>
+  <Card title="comment-checker" href="/docs/skills/comment-checker">Feedback after edit-like operations.</Card>
+  <Card title="Skills overview" href="/docs/skills">All LazyCodex skills.</Card>
+</Cards>

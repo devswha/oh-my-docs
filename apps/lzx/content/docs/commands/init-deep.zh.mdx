@@ -1,0 +1,64 @@
+---
+title: /init-deep
+description: 生成分层的 AGENTS.md 项目记忆，让后续智能体以完整上下文起步。
+---
+
+`/init-deep` 为 LazyCodex 构建项目记忆。它在整个仓库中生成分层的 `AGENTS.md` 文件，使后续的每一次智能体运行都能在即将修改的代码旁边获得所需上下文。
+
+当仓库太大、无法凭记忆解释时运行它。
+
+## 它做什么
+
+<Steps>
+
+<Step>
+
+### 给复杂目录打分
+
+`/init-deep` 遍历代码库，按复杂度给目录打分，找出真正需要书面指引的部分。
+
+</Step>
+
+<Step>
+
+### 在代码附近写入本地指引
+
+对重要的目录，它会把描述该代码的 `AGENTS.md` 写在附近——这样指引会出现在智能体正在工作的位置，而不是埋在一个巨大的根文件里。
+
+</Step>
+
+<Step>
+
+### 为后续智能体留下路标
+
+最终形成一套分层的 `AGENTS.md` 文件，在智能体动手修改前给出路标：这里有什么、各部分如何衔接、需要注意什么。
+
+</Step>
+
+</Steps>
+
+## 何时运行
+
+- **首次进入某个代码库时。** 在让 LazyCodex 在陌生或大型仓库中做实际工作之前，先运行 `/init-deep`，让智能体以完整上下文起步。
+- **仓库太大、无法凭记忆解释时。** 当你无法用一句话概括项目时，让 `/init-deep` 替你绘制地图。
+
+## 何时重新运行
+
+当**代码库的形态发生变化**时重新运行 `/init-deep`——出现新的顶层区域、发生重大重构，或某次重组使现有的 `AGENTS.md` 路标过时。保持记忆最新，能让之后每次运行都有据可依。
+
+## 它所处的位置
+
+`/init-deep` 是记忆步骤。地图就绪后，命令支柱负责干活：
+
+- `$ulw-plan` 在改动任何代码前先决定要构建什么。
+- `$start-work` 把计划执行到最后一个复选框。
+- `$ulw-loop` 让开放式任务持续推进，直到结果被验证。
+
+## 相关文档
+
+<Cards>
+<Card title="命令支柱" href="/zh/docs/commands" />
+<Card title="$ulw-plan" href="/zh/docs/commands/ulw-plan" />
+<Card title="$start-work" href="/zh/docs/commands/start-work" />
+<Card title="$ulw-loop" href="/zh/docs/commands/ulw-loop" />
+</Cards>

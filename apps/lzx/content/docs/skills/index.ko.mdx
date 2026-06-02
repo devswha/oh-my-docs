@@ -1,0 +1,36 @@
+---
+title: 스킬
+description: LazyCodex가 명령 기둥 위에 올려 쓰는 전문가 플레이북입니다.
+---
+
+LazyCodex는 OmO(oh-my-openagent)를 Codex 에이전트 하니스로 패키징합니다. 명령 기둥(`$ulw-plan`, `$start-work`, `$ulw-loop`, `/init-deep`) 위에 OmO 플러그인이 여러 스킬을 설치합니다. 스킬은 재사용 가능한 지시문 묶음으로, 집중 워커를 도메인 전문가로 바꿔 줍니다.
+
+스킬은 Codex 세션 안에서 호출됩니다. 규율 에이전트(Sisyphus, Hephaestus, Oracle, Librarian)가 작업과 도메인이 겹치는 스킬을 로드한 뒤 그 플레이북을 따릅니다.
+
+## 설치되는 스킬
+
+| 스킬 | 쓰임새 |
+| --- | --- |
+| [`review-work`](/ko/docs/skills/review-work) | 다각도 구현 후 리뷰 |
+| [`remove-ai-slops`](/ko/docs/skills/remove-ai-slops) | 동작을 보존하면서 AI 티 나는 코드 정리 |
+| [`frontend-ui-ux`](/ko/docs/skills/frontend-ui-ux) | 일반적인 레이아웃 채우기 대신 디자인된 UI 작업 |
+| [`programming`](/ko/docs/skills/programming) | 엄격한 TypeScript, Rust, Python, Go 규율 |
+| [`LSP`](/ko/docs/skills/lsp) | 진단, 정의, 참조, 심볼, 이름 변경 |
+| `AST-grep` | 코드 전반의 구조적 검색과 재작성 |
+| [`rules`](/ko/docs/skills/rules) | AGENTS, rules, 지시 파일에서 가져온 프로젝트 지시문 |
+| [`comment-checker`](/ko/docs/skills/comment-checker) | 편집류 작업 후 피드백 |
+
+## 스킬이 들어가는 자리
+
+- 명령 기둥이 루프를 가집니다: 계획, 실행, 검증된 완료.
+- 스킬은 그 기둥 둘레에 전문가 판단을 더합니다: 리뷰, 정리, UI 장인 작업, 언어 규율, 코드 인텔리전스.
+- 스킬은 해당 작업에 대해서만 로드되고 끝나면 내려가므로, 에이전트 프롬프트가 가볍게 유지됩니다.
+
+## 스킬별 문서
+
+<Cards>
+  <Card title="review-work" href="/ko/docs/skills/review-work">완료된 작업을 다섯 에이전트가 병렬 리뷰하고, 전부 통과해야 합니다.</Card>
+  <Card title="remove-ai-slops" href="/ko/docs/skills/remove-ai-slops">테스트로 동작을 고정한 뒤 AI 슬롭을 걷어내고 검증합니다.</Card>
+  <Card title="frontend-ui-ux" href="/ko/docs/skills/frontend-ui-ux">디자이너 출신 개발자의 감각으로 다듬은 UI 표면.</Card>
+  <Card title="명령 기둥" href="/ko/docs/commands">스킬이 그 위에서 도는 `$ulw-*`와 `/init-deep` 워크플로우.</Card>
+</Cards>

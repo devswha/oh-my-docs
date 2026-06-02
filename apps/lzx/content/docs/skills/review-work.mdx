@@ -1,0 +1,72 @@
+---
+title: review-work
+description: Multi-angle post-implementation review run by five parallel agents.
+---
+
+`review-work` is a post-implementation review orchestrator. After any significant implementation, it launches five specialized sub-agents in parallel to inspect the work from complementary angles. All five must pass for the review to pass: if even one fails, the review fails.
+
+Triggers include phrases like "review work", "review my work", "review changes", "QA my work", "verify implementation", and "post-implementation review".
+
+## The five agents
+
+| # | Agent | Type | Answers | Level |
+| --- | --- | --- | --- | --- |
+| 1 | Goal & Constraint Verifier | Oracle | Did we build exactly what was asked, within the rules? | MAIN |
+| 2 | QA Executor | unspecified-high | Does it actually work when you run it? | MAIN |
+| 3 | Code Reviewer | Oracle | Is the code well-written and consistent? | MAIN |
+| 4 | Security Auditor | Oracle | Are there security vulnerabilities? | SUB |
+| 5 | Context Miner | unspecified-high | Did we miss any context? | MAIN |
+
+Oracle agents receive everything in the prompt (diff, full file contents, and context) because they cannot read files or run commands. The `unspecified-high` agents are autonomous: they read files, run commands, and use tools, so they get goals and pointers rather than raw dumps.
+
+## How it runs
+
+<Steps>
+
+<Step>
+
+### Phase 0 — Gather context
+
+Collect the inputs first, pulling most from the conversation history: the original GOAL, CONSTRAINTS, and BACKGROUND. Auto-collect CHANGED_FILES and DIFF from git, read the full contents of each changed file, and detect the RUN_COMMAND from `package.json`, `Makefile`, or `docker-compose.yml`.
+
+```bash
+git diff --name-only HEAD~1   # or: git diff --name-only main...HEAD
+git diff HEAD~1               # or: git diff main...HEAD
+```
+
+Never check out a PR branch in the main worktree. Create a new git worktree (`git worktree add`) and work there.
+
+</Step>
+
+<Step>
+
+### Phase 1 — Launch all five
+
+Launch all five agents in a single turn, each in the background. No sequential launches, no waiting between them. The Goal Verifier breaks the goal into sub-requirements and marks each ACHIEVED / MISSED / PARTIAL. The QA Executor brainstorms 15-30 scenarios, augments them, builds a task list, and executes in priority order. The Code Reviewer grades correctness, pattern consistency, type safety, performance, and tech debt. The Security Auditor checks input validation, auth, secrets, and data exposure. The Context Miner searches git history, GitHub, comms channels, and codebase cross-references.
+
+</Step>
+
+<Step>
+
+### Phase 2 — Wait and collect
+
+End your turn after launching. Collect each verdict as the agents finish. Do not deliver the final report until all five have completed.
+
+</Step>
+
+<Step>
+
+### Phase 3 — Deliver verdict
+
+All five PASS means REVIEW PASSED. Any FAIL means REVIEW FAILED. The final report tabulates each area, aggregates blocking issues, lists key findings, and — when failed — states exactly what to fix in priority order.
+
+</Step>
+
+</Steps>
+
+## Verdict logic
+
+- Every agent returns a verdict and confidence.
+- A single FAIL fails the whole review.
+- On failure, findings name the problem, the file, and the fix — no vague "consider improving X".
+- On success, the report stays short and notes only non-blocking suggestions.

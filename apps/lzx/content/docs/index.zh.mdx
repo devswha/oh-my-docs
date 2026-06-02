@@ -1,0 +1,57 @@
+---
+title: LazyCodex
+description: 为 Codex 打包的 OmO 智能体框架 —— 项目记忆、规划、执行与经过验证的完成。Codex 版的 LazyVim。
+---
+
+![LazyCodex](/images/hero.png)
+
+**LazyCodex（LZX）** 将 [OmO（oh-my-openagent）](https://github.com/code-yeongyu/oh-my-openagent) 打包为面向复杂代码库的 Codex 智能体框架。可以把它理解为 lazy.nvim 之于 LazyVim，但服务于 Codex。
+
+OmO 为 Codex 提供完整的智能体框架：纪律智能体、并行执行、多模型路由、技能系统和钩子。LazyCodex 将该框架打包成只需一行 `npx` 即可安装的可复用 Codex 配置，无需全局安装。
+
+> _"LazyVim 让 Neovim 对普通人也好用。LazyCodex 为 Codex 做了同样的事。"_
+
+## 你能获得什么
+
+| 功能 | 说明 |
+| --- | --- |
+| **纪律智能体** | Sisyphus 编排 Hephaestus、Oracle、Librarian —— 一支完整的 AI 开发团队。 |
+| **并行执行** | 多个智能体同时处理相互独立的子任务。 |
+| **多模型路由** | 按任务类别自动选择最合适的模型。 |
+| **技能系统** | 面向专项工作的可扩展技能库。 |
+| **钩子与生命周期** | 为每个智能体动作提供前/后钩子。 |
+| **零配置** | 开箱即用的合理默认值，可按需覆盖。 |
+
+## 命令支柱
+
+LazyCodex 为 Codex 安装三个命令支柱以及一个项目记忆命令。支柱命令使用安装程序输出的 `$command` 语法调用。
+
+| 命令 | 作用 |
+| --- | --- |
+| `/init-deep` | 生成分层的 `AGENTS.md` 项目记忆。 |
+| `$ulw-plan` | Prometheus 战略规划器。将计划写入 `plans/<slug>.md`，绝不编写产品代码。 |
+| `$start-work` | 执行计划直至所有复选框完成，然后打印 **ORCHESTRATION COMPLETE**。 |
+| `$ulw-loop` | 自引用循环，运行直至 Oracle 验证完成。 |
+
+典型流程：先运行一次 `/init-deep` 建立项目记忆，用 `$ulw-plan "要构建什么"` 确定方案，再用 `$start-work` 执行；当你希望工作持续推进直到结果被证据验证时，则使用 `$ulw-loop "任务"`。
+
+## 为什么会出现不同的 GPT 模型
+
+OmO 不会在每个子任务上都动用最强模型。它定义任务类别并将每类路由到最合适的模型：`quick` 落到 `gpt-5.4-mini` 这样的小模型，`ultrabrain` 为困难逻辑使用高推理 GPT 模型，智能体编码路径使用 Codex 调优的 GPT 模型。核心是配额纪律 —— 深度推理用强模型，够用时用更快的模型。
+
+## 浏览文档
+
+<Cards>
+  <Card title="快速开始" href="/zh/docs/getting-started" description="将 LazyCodex 安装进 Codex 并运行第一个任务。" />
+  <Card title="命令" href="/zh/docs/commands" description="命令支柱：ulw-plan、start-work、ulw-loop、init-deep。" />
+  <Card title="概念" href="/zh/docs/concepts" description="ultrawork 循环、纪律智能体、模型路由。" />
+  <Card title="技能" href="/zh/docs/skills" description="review-work、remove-ai-slops、frontend-ui-ux、programming 等。" />
+  <Card title="用例与指南" href="/zh/docs/guides" description="日常任务的实操示例。" />
+  <Card title="参考" href="/zh/docs/reference" description="配置与 CLI。" />
+</Cards>
+
+## 下一步
+
+- [快速开始](/zh/docs/getting-started) —— 安装 LazyCodex 并运行第一个任务。
+- 底层引擎：[oh-my-openagent (OmO)](https://github.com/code-yeongyu/oh-my-openagent)
+- [GitHub 上的 LazyCodex](https://github.com/code-yeongyu/lazycodex)

@@ -1,0 +1,77 @@
+---
+title: 設定
+description: インストールフラグ、Codex プラットフォーム対象、zero-config デフォルト、そして provider・モデル設定が OmO のどこにあるか。
+---
+
+LazyCodex は設定を最小に保ちます。LazyCodex が直接公開するつまみはインストールフラグのみで、それ以降のすべて（provider、モデル、ルーティング、フック）は基盤の OmO エンジンで設定します。
+
+## デフォルトは zero-config
+
+LazyCodex は妥当なデフォルト値を備え、インストール直後から動作します。デフォルトがリポジトリに合わないときだけ設定に手を入れます。事前に作成すべき独立した設定ファイルはありません。インストールしてすぐ作業を始めてください。
+
+```bash
+npx lazycodex-ai install
+```
+
+グローバルインストールはありません。常に `npx` で呼び出します。これは `npx --yes --package oh-my-openagent omo install --platform=codex` の短縮形です。
+
+## Codex プラットフォーム対象
+
+LazyCodex は常に Codex を対象とします。`--platform=codex` 引数は `lazycodex-ai` バイナリの `install` 経路に組み込まれており、ハーネスは他のプラットフォームではなく [OpenAI Codex CLI](https://github.com/openai/codex) に接続されます。`--platform` を自分で渡すことはありません。
+
+### 前提条件
+
+- [Bun](https://bun.sh)
+- [OpenAI Codex CLI](https://github.com/openai/codex)
+
+## インストールフラグ
+
+<Tabs items={["対話", "自律"]}>
+
+<Tab value="対話">
+
+デフォルトのインストーラーは対話式（TUI）です。サブスクリプションを検出し、モデル選択を補助し、provider 認証を案内します。
+
+```bash
+npx lazycodex-ai install
+```
+
+LLM エージェントにインストールとセットアップを任せることを強く推奨します。サブスクリプション検出、モデル選択、provider 認証を自動で処理します。
+
+</Tab>
+
+<Tab value="自律">
+
+完全自律・プロンプトなしのセットアップには、両方のフラグを追加します。
+
+```bash
+npx lazycodex-ai install --no-tui --codex-autonomous
+```
+
+| フラグ | 効果 |
+| --- | --- |
+| `--no-tui` | 対話式 TUI なしでインストーラーを実行します。 |
+| `--codex-autonomous` | Codex を自律運用向けに構成します。 |
+
+`install` の後ろのフラグはすべて `omo install` へそのまま転送されます。
+
+</Tab>
+
+</Tabs>
+
+## provider・モデル設定
+
+provider とモデルの設定は LazyCodex ではなく OmO が担います。インストール中、OmO はどのモデルサブスクリプションを持っているか尋ね、それに応じて各タスクカテゴリをルーティングします。これがマルチモデルルーティング層です。
+
+- インストーラーが provider 認証を代わりに接続します。エージェントに実行させるのが推奨経路です。
+- provider キーは環境から読み込まれます。すべての `*_API_KEY` と OAuth 資格情報は機密として扱ってください。ログ出力・コミットは禁止です。
+- インストールを超えた深い provider・モデル調整は OmO の規約に従います。provider 環境変数とモデル解決ルールは OmO のドキュメントを参照してください。
+
+> provider キーを勝手に作らないでください。選んだ provider が文書化したキーを環境経由で渡し、ルーティングはインストーラーに解決させてください。
+
+## 関連
+
+<Cards>
+  <Card title="CLI" href="/ja/docs/reference/cli">`lazycodex-ai` が OmO へどう転送されるか、そして `--dry-run`。</Card>
+  <Card title="モデルルーティング" href="/ja/docs/concepts/model-routing">タスクカテゴリごとに異なる GPT モデルが現れる理由。</Card>
+</Cards>

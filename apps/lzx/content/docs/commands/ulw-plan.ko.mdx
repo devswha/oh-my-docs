@@ -1,0 +1,81 @@
+---
+title: $ulw-plan
+description: Prometheus 전략 플래너 — 제품 코드를 쓰지 않고 아이디어를 결정이 완료된 계획으로 바꿉니다.
+---
+
+`$ulw-plan`은 전략 계획 컨설턴트(Prometheus)입니다. 아이디어를 결정이 완료된 작업 계획으로 바꿔 줍니다. 구현자가 **아니라** 플래너입니다. "X를 해줘"라고 하면 X를 위한 계획을 만들 뿐, 제품 코드는 절대 쓰지 않습니다.
+
+## 문법
+
+```bash
+$ulw-plan "what to build"
+```
+
+## 언제 쓰나요
+
+구현 전에 결정이 필요한 작업에 `$ulw-plan`을 씁니다. 범위가 불분명하거나, 가능한 접근이 여러 개거나, 누군가 코드를 건드리기 전에 순서를 잡아야 하는 횡단 변경 같은 경우입니다.
+
+빠른 답이나 작은 수정만 필요하면 그냥 평소처럼 프롬프트하세요. 계획이 이미 있다면 바로 [`$start-work`](/ko/docs/commands/start-work)로 넘어가세요.
+
+## 흐름
+
+<Steps>
+
+<Step>
+
+### 소크라테스식 인터뷰
+
+Prometheus가 계획 전에 모호함을 없애는 데 필요한 질문을 합니다.
+
+</Step>
+
+<Step>
+
+### 병렬 코드베이스 탐색
+
+관련 코드를 병렬로 탐색해, 실제로 존재하는 것 위에 계획을 세웁니다.
+
+</Step>
+
+<Step>
+
+### Metis 갭 분석
+
+빠진 결정, 엣지 케이스, 위험을 찾는 갭 분석을 수행합니다.
+
+</Step>
+
+<Step>
+
+### 계획 작성
+
+작업 계획을 `plans/<slug>.md`에 씁니다.
+
+</Step>
+
+<Step>
+
+### 선택적 Momus 리뷰
+
+추가 엄밀함이 필요하면 고정확도 리뷰를 돌릴 수 있습니다.
+
+</Step>
+
+</Steps>
+
+## 무엇을 얻나요
+
+질문, 리서치, 그리고 `$start-work`에 바로 넘길 수 있는 `plans/<slug>.md`의 결정 완료 작업 계획입니다.
+
+```bash
+$ulw-plan "migrate the auth service to OAuth with refresh tokens"
+# → plans/oauth-refresh-tokens.md 작성
+$start-work
+```
+
+## 관련 문서
+
+<Cards>
+  <Card title="$start-work" href="/ko/docs/commands/start-work">Prometheus가 쓴 계획을 체크박스 하나씩 실행합니다.</Card>
+  <Card title="커맨드 기둥" href="/ko/docs/commands">$ulw-plan이 다른 커맨드와 어떻게 조합되는지.</Card>
+</Cards>

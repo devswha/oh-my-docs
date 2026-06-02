@@ -1,0 +1,103 @@
+---
+title: 快速开始
+description: 用一行 npx 命令将 LazyCodex 安装进 Codex，完成认证，再用 init-deep、ulw-plan、start-work、ulw-loop 运行第一个任务。
+---
+
+LazyCodex 用一行 `npx` 命令将 OmO 智能体框架安装进 Codex，无需全局安装。先完成配置，再运行第一个任务。
+
+<Steps>
+
+<Step>
+
+### 前置条件
+
+LazyCodex 运行在 OpenAI Codex 内部，因此你需要安装并能正常使用 [OpenAI Codex CLI](https://github.com/openai/codex)。
+
+</Step>
+
+<Step>
+
+### 安装
+
+一行即可。无需全局安装，也不要用 `npm i -g`，始终使用 `npx`：
+
+```bash
+npx lazycodex-ai install
+```
+
+它是面向 Codex 平台的 OmO 安装程序的简写：
+
+```bash
+npx --yes --package oh-my-openagent omo install --platform=codex
+```
+
+如需完全自主、无 TUI 的配置，加上自主模式标志：
+
+```bash
+npx lazycodex-ai install --no-tui --codex-autonomous
+```
+
+安装程序会把 OmO 框架（命令、技能、钩子、模型路由）接入你的 Codex 配置。强烈建议让 LLM 智能体替你运行安装并完成配置；智能体会自动处理订阅检测、模型选择和提供方认证。
+
+</Step>
+
+<Step>
+
+### 认证
+
+LazyCodex 运行在 Codex 内部，因此认证就是你现有的 Codex/OpenAI 登录，外加你想路由到的任意 OmO 提供方密钥。安装 TUI 会引导完成配置，包括订阅检测、模型选择和提供方认证。
+
+提供方密钥与路由细节见[配置](/zh/docs/reference/configuration)。
+
+</Step>
+
+<Step>
+
+### 运行第一个任务
+
+先建立项目记忆，再使用命令支柱。支柱命令使用安装程序输出的 `$command` 语法调用。
+
+首先生成分层的 `AGENTS.md` 项目记忆，让智能体一开始就具备完整上下文：
+
+```text
+/init-deep
+```
+
+然后按工作选择一个支柱：
+
+- `$ulw-plan "要构建什么"` —— Prometheus 规划方案并写入 `plans/<slug>.md`，绝不编写产品代码。
+- `$start-work [plan-name] [--worktree <path>]` —— 执行计划直至所有复选框完成，然后打印 **ORCHESTRATION COMPLETE**。
+- `$ulw-loop "任务" [--completion-promise=TEXT] [--strategy=reset|continue]` —— 自引用循环，运行直至 Oracle 验证完成。
+
+典型流程是先规划再执行：
+
+```text
+/init-deep
+$ulw-plan "构建一个用于任务管理的 REST API"
+$start-work
+```
+
+或者，对于需要持续推进直到结果被证据验证的开放式任务，直接使用循环：
+
+```text
+$ulw-loop "修复失败的结账流程并端到端验证"
+```
+
+</Step>
+
+</Steps>
+
+## 技能
+
+除命令支柱外，LazyCodex 还为专项工作安装 OmO 的技能层 —— `review-work`、`remove-ai-slops`、`frontend-ui-ux`、`programming`、`LSP`、`rules`、`comment-checker` 等。命令层保持简单，技能则补充专家判断。完整库见[技能](/zh/docs/skills)。
+
+## 下一步
+
+<Cards>
+  <Card title="命令" href="/zh/docs/commands" description="命令支柱：ulw-plan、start-work、ulw-loop、init-deep。" />
+  <Card title="概念" href="/zh/docs/concepts" description="ultrawork 循环、纪律智能体、模型路由。" />
+  <Card title="用例与指南" href="/zh/docs/guides" description="日常任务的实操示例。" />
+</Cards>
+
+- 底层引擎：[oh-my-openagent (OmO)](https://github.com/code-yeongyu/oh-my-openagent)
+- [GitHub 上的 LazyCodex](https://github.com/code-yeongyu/lazycodex)

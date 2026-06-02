@@ -1,0 +1,42 @@
+---
+title: comment-checker
+description: 编辑类操作后对注释的自动反馈。
+---
+
+`comment-checker` skill 让 LazyCodex（LZX）对自己写的注释保持诚实。编辑后，hook 会检查所触及的注释，若有问题，便向 Codex 交付阻断式（blocking）反馈，要求其在继续前修复。它内置于 LazyCodex 安装到 Codex 的 OmO（oh-my-openagent）插件中。
+
+## 一句话概述
+
+`comment-checker` 在编辑类操作后自动运行。当它报告警告时，Codex 会收到阻断式反馈，必须先修复或解释被标记的注释，才能继续。没有命令、也没有可调用的 MCP 工具 —— 它就是自动运行。
+
+## 工作方式
+
+插件为成功的编辑类调用注册 `PostToolUse` hook：
+
+- `apply_patch`
+- `write`
+- `edit`
+- `multi_edit`
+- `multiedit`
+
+当 checker 在上述调用之一后标记某条注释时，Codex 会得到阻断式反馈。期望很简单 —— 修复被标记的注释，或解释它为何正确，再进入下一步。
+
+## 范围
+
+| 方面 | 行为 |
+|---|---|
+| MCP 工具 | 不暴露 —— 无可调用项。 |
+| 非编辑工具 | 本插件忽略。 |
+| checker 二进制缺失 | 不产生 hook 输出，正常 Codex 工作不受打断。 |
+
+## 为何重要
+
+注释漂移（注释与其下代码不符）是缓慢累积的困惑的典型来源。由于检查在引入该注释的同一次编辑上触发，反馈在变更仍新鲜时到达，而非留待后续审阅。它与 `programming` skill 的写后审阅循环天然配对。
+
+## 相关 skill
+
+<Cards>
+  <Card title="programming" href="/zh/docs/skills/programming">应用于每一行的类型规范。</Card>
+  <Card title="rules" href="/zh/docs/skills/rules">注入到每次会话的项目指令。</Card>
+  <Card title="Skills 概览" href="/zh/docs/skills">所有 LazyCodex skill。</Card>
+</Cards>

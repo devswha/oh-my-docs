@@ -1,0 +1,81 @@
+---
+title: lsp
+description: Language-server diagnostics, definitions, references, symbols, and safe renames for Codex.
+---
+
+The `lsp` skill gives LazyCodex (LZX) language-server precision inside the Codex workspace. Instead of grepping for a symbol or guessing at a type error, Codex queries a real language server for diagnostics, definitions, references, document symbols, and rename safety. It ships in the OmO (oh-my-openagent) plugin that LazyCodex installs into Codex.
+
+## TL;DR
+
+Use `lsp` when Codex needs ground-truth answers about code: what's wrong after an edit, where a symbol is defined, who uses it, and whether a rename is safe. The `lsp.*` names are MCP tool calls invoked through the tool interface — they are not shell commands.
+
+## Tools
+
+| Tool | Purpose |
+|---|---|
+| `lsp.status` | List configured, installed, missing, disabled, and active language servers. |
+| `lsp.diagnostics` | Check one file or directory for diagnostics. Prefer `severity: "error"` after edits. |
+| `lsp.goto_definition` | Locate a symbol definition from file, line, and character. |
+| `lsp.find_references` | Find usages of a symbol across the workspace. |
+| `lsp.symbols` | Inspect document symbols or search workspace symbols. |
+| `lsp.prepare_rename` | Check whether a rename is valid at a position. |
+| `lsp.rename` | Apply a language-server workspace edit for a rename. |
+
+## Typical flow
+
+<Steps>
+
+<Step>
+
+### Check the servers
+
+If diagnostics report a missing language server, run `lsp.status` first to see what is configured, installed, or disabled.
+
+</Step>
+
+<Step>
+
+### Verify after editing
+
+After an `apply_patch`, run `lsp.diagnostics` with `severity: "error"` on the touched file to confirm the change compiles cleanly.
+
+</Step>
+
+<Step>
+
+### Navigate and rename safely
+
+Use `lsp.goto_definition` and `lsp.find_references` to understand impact, then `lsp.prepare_rename` followed by `lsp.rename` to apply a workspace-wide rename through the server's own edit.
+
+</Step>
+
+</Steps>
+
+## Configuration
+
+Project config lives at `.codex/lsp-client.json`; user config lives at `~/.codex/lsp-client.json`.
+
+```json
+{
+  "lsp": {
+    "typescript": {
+      "command": ["typescript-language-server", "--stdio"],
+      "extensions": [".ts", ".tsx", ".js", ".jsx"]
+    }
+  }
+}
+```
+
+When a server is reported missing, `lsp.status` tells you whether the binary is uninstalled, disabled, or simply not configured.
+
+## Related — AST-grep
+
+For structural search and rewrite (matching code by shape rather than text, then rewriting the matched pattern), LazyCodex also ships AST-grep alongside the LSP tools. LSP answers semantic questions about real symbols; AST-grep performs syntax-tree-level pattern matching and edits. They complement each other for precise, IDE-grade changes.
+
+## Related skills
+
+<Cards>
+  <Card title="programming" href="/docs/skills/programming">The type discipline LZX applies to every line.</Card>
+  <Card title="comment-checker" href="/docs/skills/comment-checker">Feedback after edit-like operations.</Card>
+  <Card title="Skills overview" href="/docs/skills">All LazyCodex skills.</Card>
+</Cards>

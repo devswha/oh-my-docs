@@ -1,0 +1,45 @@
+---
+title: 多模型路由
+description: 按任务类别自动选择模型 —— 遵守配额纪律，基于基准，而非随机更换。
+---
+
+LazyCodex(LZX)的一次运行不会对每个子任务都动用你最好的模型。底层的 OmO 框架定义了**任务类别**与回退链，使每个工作单元落到最合适的 GPT 模型。这是基于基准的路由，而非随机更换模型。
+
+## 为什么会出现不同的 GPT 模型
+
+如果一次运行中出现 `gpt-5.2` 配 `xhigh`、`gpt-5.4-mini`、`gpt-5.3-codex`，或 `gpt-5.5` 配 `xhigh` 等更新的等价模型，不必惊讶。这是有意为之。
+
+框架会挑选适合该工作的模型：
+
+| 类别 | 路由到 | 用于 |
+|---|---|---|
+| `quick` | `gpt-5.4-mini` | 小改动 |
+| `ultrabrain` | 高推理 GPT 模型 | 硬逻辑 |
+| agentic coding | Codex 调优的 GPT 模型(如 `gpt-5.3-codex`) | 软件工程路径(可用时) |
+
+## 配额纪律
+
+要点是配额纪律：任务需要深度推理时用最强模型，足够时用更便宜更快的模型，让并行的智能体工作保持高效，而不是把高级配额烧在常规步骤上。
+
+这与[并行执行](/zh/docs/concepts/discipline-agents)相配：多条车道同时运行，各以合适的成本。
+
+## 基于基准，逐个模型
+
+该路由反映了 OpenAI 对每个模型的官方说明：
+
+- **GPT-5.2** 被 OpenAI 记录为在代码评审、查找缺陷与复杂工具使用上更强；其公告指出其 API 最大推理强度使用 `xhigh`。
+- **GPT-5.3-Codex** 是 OpenAI 面向智能体式软件工程的 Codex 调优模型，其公告报告了 SWE-Bench Pro、Terminal-Bench 2.0、OSWorld Verified 等公开编码智能体基准。
+- **GPT-5.4 mini** 定位于高效的日常编码、计算机使用与子智能体 —— 这正是轻量任务会落到它，而非动用前沿推理模型的原因。
+
+## 参考链接
+
+- [OpenAI GPT-5.2 公告](https://openai.com/index/introducing-gpt-5-2/)
+- [OpenAI GPT-5.2 模型文档](https://platform.openai.com/docs/models/gpt-5.2/)
+- [OpenAI GPT-5.3-Codex 模型文档](https://developers.openai.com/api/docs/models/gpt-5.3-codex)
+- [OpenAI GPT-5.4 mini 与 nano 公告](https://openai.com/index/introducing-gpt-5-4-mini-and-nano/)
+- [OpenAI 最新模型指南](https://platform.openai.com/docs/guides/latest-model)
+
+<Cards>
+  <Card title="纪律智能体" href="/zh/docs/concepts/discipline-agents">被路由的工作分派给谁。</Card>
+  <Card title="ultrawork 循环" href="/zh/docs/concepts/ultrawork">被路由的并行工作如何收敛到经过验证的完成。</Card>
+</Cards>

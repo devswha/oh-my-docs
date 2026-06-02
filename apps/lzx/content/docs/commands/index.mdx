@@ -1,0 +1,69 @@
+---
+title: Command Pillars
+description: The four LazyCodex commands — $ulw-plan, $start-work, $ulw-loop, and /init-deep — and how they compose.
+---
+
+LazyCodex installs a small, stable command layer into Codex. The command layer stays simple on purpose; specialist judgment lives in the [skills](/docs/skills). These commands ship as OmO commands for Codex — invoke them with the `$command` syntax shown by the installer.
+
+## The four pillars
+
+| Command | Type this | What it does |
+| --- | --- | --- |
+| [`$ulw-plan`](/docs/commands/ulw-plan) | `$ulw-plan "what to build"` | Prometheus strategic planner. Writes a plan to `plans/<slug>.md`. Never writes product code. |
+| [`$start-work`](/docs/commands/start-work) | `$start-work [plan-name] [--worktree <path>]` | Executes a plan until every checkbox is done. Prints **ORCHESTRATION COMPLETE**. |
+| [`$ulw-loop`](/docs/commands/ulw-loop) | `$ulw-loop "task" [--completion-promise=TEXT] [--strategy=reset\|continue]` | Self-referential loop that runs until Oracle-verified completion. Caps at 500 iterations in ultrawork mode, 100 in normal mode. |
+| [`/init-deep`](/docs/commands/init-deep) | `/init-deep` | Generates hierarchical `AGENTS.md` project memory. Run it on a large or freshly changed codebase. |
+
+## How they compose
+
+There are two natural flows. Pick by how much you know going in.
+
+<Steps>
+
+<Step>
+
+### Plan first, then execute
+
+When the work needs decisions before implementation, plan it, then hand the plan to `$start-work`.
+
+```bash
+$ulw-plan "add OAuth login with refresh tokens"
+$start-work
+```
+
+`$ulw-plan` interviews you, explores the codebase, and writes `plans/<slug>.md` without touching product code. `$start-work` then drives that plan to completion, checkbox by checkbox, with durable Boulder progress.
+
+</Step>
+
+<Step>
+
+### Verified completion for open-ended work
+
+When the task should keep moving until evidence (not a hopeful status update) proves it is done, run the loop.
+
+```bash
+$ulw-loop "make the flaky payment tests pass"
+```
+
+The agent works continuously and emits a completion promise, but the loop ends only after an Oracle verifies the result. If verification fails, it continues.
+
+</Step>
+
+</Steps>
+
+## Project memory comes first
+
+For a large codebase, run `/init-deep` once before either flow. It scores complex directories and writes hierarchical `AGENTS.md` files so every later command starts with full context.
+
+```bash
+/init-deep
+```
+
+## Explore each command
+
+<Cards>
+  <Card title="$ulw-plan" href="/docs/commands/ulw-plan">Prometheus strategic planning — turn an idea into a decision-complete plan.</Card>
+  <Card title="$start-work" href="/docs/commands/start-work">Durable plan execution until every checkbox is checked.</Card>
+  <Card title="$ulw-loop" href="/docs/commands/ulw-loop">Self-referential loop with Oracle-verified completion.</Card>
+  <Card title="/init-deep" href="/docs/commands/init-deep">Hierarchical AGENTS.md project memory.</Card>
+</Cards>

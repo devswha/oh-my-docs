@@ -1,0 +1,34 @@
+---
+title: 레퍼런스
+description: LazyCodex 설정과 CLI 레퍼런스 — 깊은 설정은 그 아래의 OmO 규약을 따릅니다.
+---
+
+이 섹션은 LazyCodex(LZX) 런타임 레퍼런스입니다. LazyCodex는 [OmO(oh-my-openagent)](https://github.com/code-yeongyu/oh-my-openagent)를 Codex 에이전트 하니스로 패키징한 얇은 배포 레이어입니다. LazyCodex로 실행하는 모든 작업은 OmO로 전달되므로, 깊은 설정은 OmO 규약을 따릅니다.
+
+## LazyCodex가 담당하는 것
+
+LazyCodex 자체는 작습니다. 제공하는 것은 하나입니다 — `npx`로 호출하며 Codex 플랫폼을 대상으로 OmO를 설치하고 구동하는 `lazycodex-ai` npm bin입니다.
+
+```bash
+npx lazycodex-ai install
+```
+
+이는 `npx --yes --package oh-my-openagent omo install --platform=codex`의 단축형입니다. 전역 설치는 없습니다 — 항상 `npx`로 호출합니다. 하니스는 나중에 덮어쓸 수 있는 zero-config 기본값과 함께 제공됩니다.
+
+## OmO가 담당하는 것
+
+설치가 끝나면 그 아래의 OmO 엔진이 나머지를 담당합니다 — 규율 에이전트(Sisyphus, Hephaestus, Oracle, Librarian), 병렬 실행, 멀티 모델 라우팅, 스킬, 훅, 검증된 완료입니다. 설치 플래그를 넘어 provider·모델·동작을 조정하려면, 사실상 OmO를 설정하는 것입니다.
+
+## 이 섹션의 구성
+
+<Cards>
+  <Card title="설정" href="/ko/docs/reference/configuration">설치 플래그, Codex 플랫폼 대상, zero-config 기본값, provider·모델 설정.</Card>
+  <Card title="CLI" href="/ko/docs/reference/cli">`lazycodex-ai` bin, OmO로 전달되는 방식, `--dry-run`, 그리고 세션 내 커맨드 기둥.</Card>
+</Cards>
+
+## 빠른 안내
+
+- **[설정](/ko/docs/reference/configuration)** — `--no-tui`, `--codex-autonomous`, Codex 플랫폼 대상, provider·모델 설정이 OmO 어디에 있는지.
+- **[CLI](/ko/docs/reference/cli)** — `npx lazycodex-ai`가 `omo` 호출로 어떻게 확장되는지, 그리고 `$ulw-plan` / `$start-work` / `$ulw-loop` 커맨드 기둥.
+
+모든 provider `*_API_KEY`와 OAuth 자격증명은 비밀로 다루세요 — 로깅·커밋 금지.

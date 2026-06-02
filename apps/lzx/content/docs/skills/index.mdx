@@ -1,0 +1,36 @@
+---
+title: Skills
+description: Specialist playbooks LazyCodex loads on top of the command pillars.
+---
+
+LazyCodex packages OmO (oh-my-openagent) as the Codex agent harness. On top of the command pillars (`$ulw-plan`, `$start-work`, `$ulw-loop`, `/init-deep`), the OmO plugin installs a set of skills: reusable instruction packs that turn a focused worker into a domain specialist.
+
+Skills are invoked from inside a Codex session. The discipline agents (Sisyphus, Hephaestus, Oracle, Librarian) load the skill whose domain overlaps the task, then follow its playbook.
+
+## Installed skills
+
+| Skill | Use it for |
+| --- | --- |
+| [`review-work`](/docs/skills/review-work) | Multi-angle post-implementation review |
+| [`remove-ai-slops`](/docs/skills/remove-ai-slops) | Behavior-preserving cleanup of AI-looking code |
+| [`frontend-ui-ux`](/docs/skills/frontend-ui-ux) | Designed UI work instead of generic layout filling |
+| [`programming`](/docs/skills/programming) | Strict TypeScript, Rust, Python, or Go discipline |
+| [`LSP`](/docs/skills/lsp) | Diagnostics, definitions, references, symbols, and renames |
+| `AST-grep` | Structural search and rewrite across code |
+| [`rules`](/docs/skills/rules) | Project instructions from AGENTS, rules, and instruction files |
+| [`comment-checker`](/docs/skills/comment-checker) | Feedback after edit-like operations |
+
+## How skills fit in
+
+- Command pillars own the loop: planning, execution, and verified completion.
+- Skills add specialist judgment around those pillars: review, cleanup, UI craft, language discipline, and code intelligence.
+- A skill is loaded for the task at hand and unloaded after, so agent prompts stay lean.
+
+## Per-skill docs
+
+<Cards>
+  <Card title="review-work" href="/docs/skills/review-work">Five parallel agents review completed work; all must pass.</Card>
+  <Card title="remove-ai-slops" href="/docs/skills/remove-ai-slops">Lock behavior with tests, then strip AI slop, then verify.</Card>
+  <Card title="frontend-ui-ux" href="/docs/skills/frontend-ui-ux">Designer-turned-developer craft for polished UI surfaces.</Card>
+  <Card title="Command pillars" href="/docs/commands">The `$ulw-*` and `/init-deep` workflows skills run on top of.</Card>
+</Cards>

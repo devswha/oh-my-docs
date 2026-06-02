@@ -1,0 +1,57 @@
+---
+title: LazyCodex
+description: Codex를 위해 패키징된 OmO 에이전트 하네스 — 프로젝트 메모리, 계획, 실행, 검증된 완료. Codex를 위한 LazyVim입니다.
+---
+
+![LazyCodex](/images/hero.png)
+
+**LazyCodex(LZX)**는 복잡한 코드베이스를 위한 Codex 에이전트 하네스로서 [OmO(oh-my-openagent)](https://github.com/code-yeongyu/oh-my-openagent)를 패키징합니다. lazy.nvim에 대한 LazyVim과 같지만, Codex를 위한 것이라고 생각하시면 됩니다.
+
+OmO는 Codex에 완전한 에이전트 하네스를 제공합니다. 규율 에이전트, 병렬 실행, 멀티 모델 라우팅, 스킬 시스템, 훅이 모두 포함됩니다. LazyCodex는 그 하네스를 한 줄의 `npx` 명령으로 설치할 수 있는 반복 가능한 Codex 세팅으로 패키징합니다. 전역 설치는 필요 없습니다.
+
+> _"LazyVim이 Neovim을 나머지 우리들이 쓸 수 있게 만들었듯, LazyCodex는 Codex에 같은 일을 합니다."_
+
+## 무엇을 얻나요
+
+| 기능 | 설명 |
+| --- | --- |
+| **규율 에이전트** | Sisyphus가 Hephaestus, Oracle, Librarian을 오케스트레이션합니다. 완전한 AI 개발팀입니다. |
+| **병렬 실행** | 여러 에이전트가 독립적인 하위 작업을 동시에 처리합니다. |
+| **멀티 모델 라우팅** | 작업 카테고리별로 가장 적합한 모델이 자동으로 선택됩니다. |
+| **스킬 시스템** | 전문 작업을 위한 확장 가능한 스킬 라이브러리입니다. |
+| **훅 & 라이프사이클** | 모든 에이전트 동작에 대한 사전/사후 훅을 제공합니다. |
+| **무설정** | 합리적인 기본값을 바로 제공하며, 원할 때 재정의할 수 있습니다. |
+
+## 커맨드 기둥
+
+LazyCodex는 Codex를 위해 세 가지 커맨드 기둥과 프로젝트 메모리 커맨드를 설치합니다. 기둥 커맨드는 설치 프로그램이 출력하는 `$command` 구문으로 호출합니다.
+
+| 커맨드 | 하는 일 |
+| --- | --- |
+| `/init-deep` | 계층형 `AGENTS.md` 프로젝트 메모리를 생성합니다. |
+| `$ulw-plan` | Prometheus 전략 플래너입니다. `plans/<slug>.md`에 계획을 작성하며, 제품 코드는 절대 작성하지 않습니다. |
+| `$start-work` | 모든 체크박스가 완료될 때까지 계획을 실행한 뒤 **ORCHESTRATION COMPLETE**를 출력합니다. |
+| `$ulw-loop` | Oracle이 검증한 완료에 이를 때까지 실행되는 자기 참조 루프입니다. |
+
+일반적인 흐름은 다음과 같습니다. 프로젝트 메모리를 위해 `/init-deep`를 한 번 실행하고, 접근 방식을 정하기 위해 `$ulw-plan "무엇을 만들지"`를 실행한 다음, `$start-work`로 실행합니다. 결과가 증거로 검증될 때까지 작업을 계속 진행하고 싶다면 `$ulw-loop "작업"`을 사용하세요.
+
+## 왜 서로 다른 GPT 모델이 나타나나요
+
+OmO는 모든 하위 작업에 가장 강력한 모델을 쓰지 않습니다. 작업 카테고리를 정의하고 각 카테고리를 가장 적합한 모델로 라우팅합니다. `quick`은 `gpt-5.4-mini` 같은 작은 모델로, `ultrabrain`은 어려운 로직을 위해 고추론 GPT 모델로 보내며, 에이전트형 코딩 경로는 Codex 튜닝 GPT 모델을 사용합니다. 핵심은 할당량 관리입니다. 깊은 추론에는 강력한 모델을, 그 정도면 충분할 때는 더 빠른 모델을 씁니다.
+
+## 문서 둘러보기
+
+<Cards>
+  <Card title="시작하기" href="/ko/docs/getting-started" description="LazyCodex를 Codex에 설치하고 첫 작업을 실행합니다." />
+  <Card title="커맨드" href="/ko/docs/commands" description="커맨드 기둥: ulw-plan, start-work, ulw-loop, init-deep." />
+  <Card title="개념" href="/ko/docs/concepts" description="ultrawork 루프, 규율 에이전트, 모델 라우팅." />
+  <Card title="스킬" href="/ko/docs/skills" description="review-work, remove-ai-slops, frontend-ui-ux, programming 등." />
+  <Card title="사용 사례 & 가이드" href="/ko/docs/guides" description="일상 작업을 위한 실제 예시." />
+  <Card title="레퍼런스" href="/ko/docs/reference" description="설정과 CLI." />
+</Cards>
+
+## 다음 단계
+
+- [시작하기](/ko/docs/getting-started) — LazyCodex를 설치하고 첫 작업을 실행합니다.
+- 기반 엔진: [oh-my-openagent (OmO)](https://github.com/code-yeongyu/oh-my-openagent)
+- [GitHub의 LazyCodex](https://github.com/code-yeongyu/lazycodex)

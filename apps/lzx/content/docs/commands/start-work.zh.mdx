@@ -1,0 +1,77 @@
+---
+title: $start-work
+description: 执行 Prometheus 计划直到每个复选框完成，并保持持久的 Boulder 进度。
+---
+
+`$start-work` 执行 [Prometheus 工作计划](/zh/docs/commands/ulw-plan)，直到每个顶层复选框完成。它是"先规划"流程的实现一半：交给它一份计划，它会把计划推进到完成。
+
+## 语法
+
+```bash
+$start-work [plan-name] [--worktree <absolute-path>]
+```
+
+- `plan-name` —— 可选。要执行的计划（来自 `plans/<slug>.md`）。省略则使用最近的计划。
+- `--worktree <absolute-path>` —— 可选。在隔离的 git worktree 中运行工作。
+
+## 工作方式
+
+- `.omo/boulder.json` 中的**持久 Boulder 状态**跨回合与会话存续，进度在多次运行之间不会丢失。
+- 一个 **Stop-hook** 在计划完成前重新注入下一回合 —— 循环自我维持。
+- **独立的子任务**扇出到并行子智能体。
+- **严格 TDD 加五道证据关卡**：重读计划、自动验证、手动 QA、对抗式 QA、清理。
+- 每勾选一个复选框，**进度都会记入账本（ledger）**。
+
+## 完成
+
+当每个复选框都被勾选时，输出一个 `ORCHESTRATION COMPLETE` 块。
+
+```text
+ORCHESTRATION COMPLETE
+```
+
+## 典型流程
+
+<Steps>
+
+<Step>
+
+### 准备好计划
+
+用 `$ulw-plan` 写一份，或让 `$start-work` 指向已有的 `plans/<slug>.md`。
+
+```bash
+$ulw-plan "add OAuth login with refresh tokens"
+```
+
+</Step>
+
+<Step>
+
+### 执行
+
+```bash
+$start-work oauth-refresh-tokens
+```
+
+独立工作扇出到并行子智能体；持久的 Boulder 进度可承受中断。
+
+</Step>
+
+<Step>
+
+### 等待完成
+
+`$start-work` 只有在每个复选框都被勾选时才停止，并输出 `ORCHESTRATION COMPLETE`。
+
+</Step>
+
+</Steps>
+
+## 相关
+
+<Cards>
+  <Card title="$ulw-plan" href="/zh/docs/commands/ulw-plan">编写 $start-work 将执行的计划。</Card>
+  <Card title="$ulw-loop" href="/zh/docs/commands/ulw-loop">无书面计划的开放式任务的已验证完成。</Card>
+  <Card title="命令支柱" href="/zh/docs/commands">命令如何组合。</Card>
+</Cards>

@@ -1,0 +1,56 @@
+---
+title: rules
+description: Automatic project instructions injected from AGENTS, rules, and instruction files.
+---
+
+The `rules` skill keeps LazyCodex (LZX) anchored to your project's own instructions. Once the OmO (oh-my-openagent) plugin is enabled in Codex, project rules are injected automatically — Codex always works with your `AGENTS.md`, `CLAUDE.md`, and rule files in context, without you pasting them every session.
+
+## TL;DR
+
+Codex Rules is automatic. It injects static project instructions at the start of every session and on each prompt, plus file-specific rules after edits. No command to run — enable the plugin and your repo conventions follow Codex everywhere.
+
+## What it injects
+
+- **Static project instructions** on `SessionStart` and `UserPromptSubmit`.
+- **Matching file-specific rules** after Codex `apply_patch` by default.
+
+Dynamic `PostToolUse` output is injected as additional context and is deduplicated per plugin data session. Codex Rules does not rewrite tool output — it only adds your instructions alongside it.
+
+## Supported project sources
+
+| Source | Notes |
+|---|---|
+| `AGENTS.md` | Primary project memory (pairs with `/init-deep`). |
+| `CLAUDE.md` | Compatible Claude-style instructions. |
+| `CONTEXT.md` | General project context. |
+| `.sisyphus/rules/**/*.md` | Discipline-agent rule tree. |
+| `.claude/rules/**/*.md` | Claude rule directory. |
+| `.cursor/rules/**/*.md` | Cursor rules. |
+| `.github/instructions/**/*.md` | GitHub instruction files. |
+| `.github/copilot-instructions.md` | Copilot instructions. |
+
+## Configuration
+
+Tune behavior with environment variables:
+
+| Variable | Effect |
+|---|---|
+| `CODEX_RULES_DISABLED=1` | Turn the skill off entirely. |
+| `CODEX_RULES_MODE=both\|static\|dynamic\|off` | Choose static, dynamic, both, or off. |
+| `CODEX_RULES_MAX_RULE_CHARS=<number>` | Cap the size of each injected rule. |
+| `CODEX_RULES_MAX_RESULT_CHARS=<number>` | Cap the size of injected result context. |
+| `CODEX_RULES_ENABLED_SOURCES=AGENTS.md,.sisyphus/rules` | Restrict which sources are read. |
+
+The legacy `PI_RULES_*` variables are accepted as fallbacks for users migrating from `pi-rules`.
+
+## Pairs with `/init-deep`
+
+`/init-deep` generates hierarchical `AGENTS.md` project memory, and the `rules` skill is what then keeps that memory in front of Codex on every session and prompt. Generate the memory once, and `rules` injects it from then on.
+
+## Related skills
+
+<Cards>
+  <Card title="comment-checker" href="/docs/skills/comment-checker">Feedback after edit-like operations.</Card>
+  <Card title="programming" href="/docs/skills/programming">The type discipline LZX applies to every line.</Card>
+  <Card title="Skills overview" href="/docs/skills">All LazyCodex skills.</Card>
+</Cards>

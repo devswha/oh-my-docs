@@ -1,0 +1,34 @@
+---
+title: 参考
+description: LazyCodex 的配置与 CLI 参考 —— 深度配置沿用其底层 OmO 的约定。
+---
+
+本节是 LazyCodex（LZX）的运行时参考。LazyCodex 是一个轻量分发层，将 [OmO（oh-my-openagent）](https://github.com/code-yeongyu/oh-my-openagent) 打包为 Codex 的代理框架。通过 LazyCodex 运行的一切都会转发给 OmO，因此深度配置沿用 OmO 的约定。
+
+## LazyCodex 负责什么
+
+LazyCodex 本身很小，只提供一件事：用 `npx` 调用、面向 Codex 平台安装并驱动 OmO 的 `lazycodex-ai` npm 可执行文件。
+
+```bash
+npx lazycodex-ai install
+```
+
+这是 `npx --yes --package oh-my-openagent omo install --platform=codex` 的简写。没有全局安装 —— 始终通过 `npx` 调用。框架自带 zero-config 默认值，之后可覆盖。
+
+## OmO 负责什么
+
+安装后，底层的 OmO 引擎负责其余部分：规律代理（Sisyphus、Hephaestus、Oracle、Librarian）、并行执行、多模型路由、技能、钩子与已验证的完成。若要在安装标志之外调整 provider、模型或行为，本质上就是在配置 OmO。
+
+## 本节内容
+
+<Cards>
+  <Card title="配置" href="/zh/docs/reference/configuration">安装标志、Codex 平台目标、zero-config 默认值、provider 与模型设置。</Card>
+  <Card title="CLI" href="/zh/docs/reference/cli">`lazycodex-ai` 可执行文件、转发到 OmO 的方式、`--dry-run`，以及会话内命令支柱。</Card>
+</Cards>
+
+## 快速导览
+
+- **[配置](/zh/docs/reference/configuration)** —— `--no-tui`、`--codex-autonomous`、Codex 平台目标，以及 provider/模型设置在 OmO 中的位置。
+- **[CLI](/zh/docs/reference/cli)** —— `npx lazycodex-ai` 如何展开为 `omo` 调用，以及 `$ulw-plan` / `$start-work` / `$ulw-loop` 命令支柱。
+
+请将所有 provider `*_API_KEY` 和 OAuth 凭据视为机密 —— 切勿记录或提交。

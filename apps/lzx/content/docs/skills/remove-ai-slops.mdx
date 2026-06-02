@@ -1,0 +1,88 @@
+---
+title: remove-ai-slops
+description: Behavior-preserving cleanup of AI-generated code smells.
+---
+
+`remove-ai-slops` removes AI-generated code smells (slop) from branch changes or an explicit file list while strictly preserving behavior. The core safety invariant: behavior is locked by green regression tests before a single line is removed. A checklist is not safety; a passing test is.
+
+Triggers include "remove ai slops", "clean ai code", "deslop", and "cleanup AI generated".
+
+## Scope
+
+- **Default**: the branch diff versus `merge-base main` — no arguments needed.
+- **Optional**: an explicit file list passed by the caller (for example, a loop workflow's changed-files set).
+
+Deleted, binary, generated, and vendored files are filtered out.
+
+## Slop categories
+
+The skill evaluates ten categories, grouped by kind.
+
+| Group | Categories |
+| --- | --- |
+| Stylistic | Obvious comments; over-defensive code; excessive complexity |
+| Structural | Needless abstraction; boundary violations; dead code |
+| Hidden cost | Duplication; performance equivalences |
+| Behavior coverage | Missing tests |
+| Structural (size) | Oversized modules (250+ pure LOC) |
+
+Each category carries explicit KEEP rules. Comments that explain WHY, validation at system boundaries, abstractions that provide a real seam, and intentional patterns are preserved. Performance fixes apply only when behavior equivalence is obvious — otherwise SKIP. Oversized modules trigger a full modular refactoring, not just a flag, with each new file named after the concept it owns (never `utils`, `helpers`, `common`, or `part_1`).
+
+## Process
+
+<Steps>
+
+<Step>
+
+### Determine scope
+
+If file paths were passed, that is the scope. Otherwise use the branch diff:
+
+```bash
+git diff $(git merge-base main HEAD)..HEAD --name-only
+```
+
+</Step>
+
+<Step>
+
+### Lock behavior with regression tests
+
+For each in-scope file, identify the observable behavior, find existing coverage, and write the narrowest regression test that pins current behavior before editing. The baseline must be green. If you cannot establish a green baseline, STOP and report.
+
+</Step>
+
+<Step>
+
+### Plan, then clean in parallel
+
+Produce an explicit per-file cleanup plan ordered safest to riskiest (comments → dead code → defensive → duplication → complexity → abstraction/boundary → performance → tests → oversized-modules). Then process files via `deep` agents loaded with the `ai-slop-remover` skill, batched five at a time in parallel. If a file fails, retry once; otherwise escalate it.
+
+</Step>
+
+<Step>
+
+### Verify with quality gates
+
+Run regression tests, lint, typecheck (LSP diagnostics plus the project type-checker), unit/integration tests, and any static/security scan. Gates that are genuinely N/A are reported as `N/A`, never silently skipped. Then walk the safety/behavior/quality critical-review checklist.
+
+</Step>
+
+<Step>
+
+### Fix issues
+
+If any gate fails, revert the offending change with `git checkout` or a targeted edit, re-apply only what is provably safe, and re-run the gate. Fail three times on the same file and you STOP and escalate.
+
+</Step>
+
+</Steps>
+
+## Anti-patterns
+
+- Skipping the regression-test phase — removing code on uncovered ground is a behavior-change time bomb.
+- Bundling unrelated refactors into one cleanup commit.
+- Disguising an algorithm change as a performance optimization.
+- Silent skips — say `N/A` and why.
+- Removing comments that explain WHY.
+- Touching files outside scope.

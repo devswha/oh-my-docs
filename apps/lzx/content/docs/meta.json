@@ -1,0 +1,12 @@
+{
+  "title": "LazyCodex Docs",
+  "pages": [
+    "index",
+    "getting-started",
+    "guides",
+    "commands",
+    "concepts",
+    "skills",
+    "reference"
+  ]
+}

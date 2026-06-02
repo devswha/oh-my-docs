@@ -1,0 +1,97 @@
+---
+title: LazyCodex とは
+description: OmO（oh-my-openagent）を Codex のエージェント harness としてパッケージ化した薄い配布レイヤー — プロジェクトメモリ、計画、実行、検証済みの完了。「怠け者のための、Codex の中の omo。」
+---
+
+LazyCodex（LZX）は [OmO（oh-my-openagent）](https://github.com/code-yeongyu/oh-my-openagent)を Codex のエージェント harness としてパッケージ化します。OmO は Codex に規律エージェント、並列オーケストレーション、マルチモデルルーティング、skill、hook、検証済みの完了を与えるエンジンです。LazyCodex はこのエンジンを 1 行のコマンドで導入できる再現可能な Codex セットアップにまとめます。
+
+> _"LazyVim が Neovim を皆に使えるものにしたように、LazyCodex は Codex に同じことをします。"_
+
+[lazy.nvim](https://github.com/folke/lazy.nvim)に対する [LazyVim](https://github.com/LazyVim/LazyVim)を、Codex 向けにしたものと考えてください。ひとことで言えば**怠け者のための、Codex の中の omo** です。
+
+## 薄い配布レイヤー
+
+LazyCodex はエージェント harness を再実装せず、1 つを配布します。中核エンジンは OmO で、`npx lazycodex-ai install` は `npx --yes --package oh-my-openagent omo install --platform=codex` の短縮形です。LazyCodex が加えるのは、すっきりと覚えやすい入口と Codex 向けのインストールです。
+
+```text
+lazycodex/
+├── src/            → oh-my-openagent（OmO サブモジュール — エンジン）
+└── packages/
+    └── web/        → lazycodex.ai のドキュメントサイト
+```
+
+実際に作業をするすべて — エージェント、ルーティング、skill、hook、検証 — は OmO サブモジュール内にあります。LazyCodex は Codex をそこへ向けるレイヤーです。
+
+## harness が Codex に与えるもの
+
+インストールすると、Codex は OmO harness 全体を実行します：
+
+| 機能 | Codex における意味 |
+| --- | --- |
+| 規律エージェント | Sisyphus が Hephaestus・Oracle・Librarian を編成 — 完全な AI 開発チーム |
+| 並列実行 | 独立したサブタスクを複数エージェントへ同時に振り分け |
+| マルチモデルルーティング | タスクカテゴリごとに適切な GPT モデルを自動選択 |
+| skill システム | 専門的判断（レビュー、クリーンアップ、フロントエンド、LSP、AST-grep など） |
+| hook & ライフサイクル | 各エージェント動作の前後の pre/post hook |
+| ゼロ設定 | 妥当な既定値、必要なときだけ上書き |
+
+## 4 つの核心アイデア
+
+harness は 4 つのことを端から端まで的確に行うために存在します：
+
+<Steps>
+
+<Step>
+
+### プロジェクトメモリ
+
+`/init-deep` はリポジトリ全体に階層的な `AGENTS.md` コンテキストを生成し、エージェントが編集前に適切なファイルを把握できるようにします。コードベースが記憶だけで説明しきれないときに実行します。
+
+</Step>
+
+<Step>
+
+### 計画
+
+`$ulw-plan "何を作るか"` は曖昧なアイデアを意思決定完了済みの計画に変え、`plans/<slug>.md` に書き出します。計画のみを行い、プロダクトコードは書きません。
+
+</Step>
+
+<Step>
+
+### 実行
+
+`$start-work [plan-name]` はすべてのチェックボックスが完了するまで計画を実行し、永続的な進捗を保ち、計画完了時に **ORCHESTRATION COMPLETE** を出力します。
+
+</Step>
+
+<Step>
+
+### 検証済みの完了
+
+`$ulw-loop "task"` は楽観的な状況報告ではなく証拠で検証されるまで進み続けます。ループが終わるには Oracle が作業を確認する必要があります。
+
+</Step>
+
+</Steps>
+
+## インストール
+
+```bash
+npx lazycodex-ai install
+```
+
+グローバルインストールはありません — 常に `npx` を使います。完全自律・no-TUI のセットアップ：
+
+```bash
+npx lazycodex-ai install --no-tui --codex-autonomous
+```
+
+## コンセプトを見る
+
+<Cards>
+  <Card title="ultrawork ループ" href="/ja/docs/concepts/ultrawork" />
+  <Card title="規律エージェント" href="/ja/docs/concepts/discipline-agents" />
+  <Card title="マルチモデルルーティング" href="/ja/docs/concepts/model-routing" />
+  <Card title="コマンドの柱" href="/ja/docs/commands" />
+</Cards>

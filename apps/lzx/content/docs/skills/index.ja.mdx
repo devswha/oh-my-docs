@@ -1,0 +1,36 @@
+---
+title: スキル
+description: LazyCodex がコマンド柱の上に読み込む専門家プレイブック。
+---
+
+LazyCodex は OmO（oh-my-openagent）を Codex のエージェントハーネスとしてパッケージします。コマンド柱（`$ulw-plan`、`$start-work`、`$ulw-loop`、`/init-deep`）の上に、OmO プラグインが一連のスキルをインストールします。スキルは再利用可能な指示パックで、集中したワーカーをドメイン専門家に変えます。
+
+スキルは Codex セッションの内部で呼び出されます。規律エージェント（Sisyphus、Hephaestus、Oracle、Librarian）がタスクとドメインが重なるスキルを読み込み、そのプレイブックに従います。
+
+## インストールされるスキル
+
+| スキル | 用途 |
+| --- | --- |
+| [`review-work`](/ja/docs/skills/review-work) | 多角的な実装後レビュー |
+| [`remove-ai-slops`](/ja/docs/skills/remove-ai-slops) | 振る舞いを保ちつつ AI らしいコードを整理 |
+| [`frontend-ui-ux`](/ja/docs/skills/frontend-ui-ux) | 汎用的なレイアウト埋めではなく、設計された UI 作業 |
+| [`programming`](/ja/docs/skills/programming) | 厳格な TypeScript、Rust、Python、Go の規律 |
+| [`LSP`](/ja/docs/skills/lsp) | 診断、定義、参照、シンボル、リネーム |
+| `AST-grep` | コード全体の構造的な検索と書き換え |
+| [`rules`](/ja/docs/skills/rules) | AGENTS、rules、指示ファイルからのプロジェクト指示 |
+| [`comment-checker`](/ja/docs/skills/comment-checker) | 編集系操作後のフィードバック |
+
+## スキルの位置づけ
+
+- コマンド柱がループを担います: 計画、実行、検証済みの完了。
+- スキルはその柱の周りに専門家の判断を加えます: レビュー、整理、UI の作り込み、言語規律、コードインテリジェンス。
+- スキルは目の前のタスクのために読み込まれ、終われば外れるため、エージェントのプロンプトは軽量に保たれます。
+
+## スキル別ドキュメント
+
+<Cards>
+  <Card title="review-work" href="/ja/docs/skills/review-work">5 つの並列エージェントが完了作業をレビューし、全員の合格が必要。</Card>
+  <Card title="remove-ai-slops" href="/ja/docs/skills/remove-ai-slops">テストで振る舞いを固定し、AI スロップを除去し、検証。</Card>
+  <Card title="frontend-ui-ux" href="/ja/docs/skills/frontend-ui-ux">デザイナー出身開発者の手腕で磨かれた UI サーフェス。</Card>
+  <Card title="コマンド柱" href="/ja/docs/commands">スキルがその上で動く `$ulw-*` と `/init-deep` のワークフロー。</Card>
+</Cards>

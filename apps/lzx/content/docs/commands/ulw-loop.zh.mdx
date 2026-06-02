@@ -1,0 +1,87 @@
+---
+title: $ulw-loop
+description: 一个自我引用的循环，直到 Oracle 验证结果确实完成才会停止。
+---
+
+`$ulw-loop` 是 LazyCodex 的持久化命令。它运行一个自我引用的开发循环：不靠乐观的状态汇报停止，而是在 Oracle 依据证据验证结果之后才停止。
+
+当任务是开放式的、你希望以证据而非智能体自己宣称完成来判断时使用它。
+
+## 语法
+
+```bash
+$ulw-loop "task description" [--completion-promise=TEXT] [--strategy=reset|continue]
+```
+
+| 组成 | 含义 |
+| --- | --- |
+| `"task description"` | 要达成的结果。写明你想要的结果，而非步骤。 |
+| `--completion-promise=TEXT` | 智能体认为完成时必须输出的确切短语。 |
+| `--strategy=reset` | 每次迭代从干净状态开始。 |
+| `--strategy=continue` | 在迭代之间延续上下文。 |
+
+## 工作原理
+
+该循环刻意设计为不能仅凭智能体自己说了算就结束。
+
+<Steps>
+
+<Step>
+
+### 持续工作
+
+智能体规划、执行并收集证据，遵循与 `ultrawork` 模式相同的结果优先、证据驱动的纪律。
+
+</Step>
+
+<Step>
+
+### 输出完成承诺
+
+当智能体认为任务完成时，会输出 `<promise>DONE</promise>`（或你的 `--completion-promise` 文本）。这只是意图信号，**不会**结束循环。
+
+</Step>
+
+<Step>
+
+### Oracle 验证
+
+Oracle 依据证据审查结果。只有在系统确认 Oracle 验证通过后，循环才结束。
+
+</Step>
+
+<Step>
+
+### 失败时继续
+
+若验证失败，循环会带着这条消息继续：_"Oracle verification failed. Continuing ULTRAWORK loop."_
+
+</Step>
+
+</Steps>
+
+## 迭代上限
+
+循环有上限，不会无限运行。
+
+| 模式 | 迭代上限 |
+| --- | --- |
+| ultrawork 模式 | 500 |
+| 普通模式 | 100 |
+
+## 何时使用
+
+- 任务是**开放式的** —— "让不稳定的测试套件通过"、"让构建变绿"、"完成这次迁移"。
+- 你希望以**证据**而非状态汇报来判断完成。
+- 你愿意让智能体持续迭代，直到 Oracle 签字认可。
+
+若工作需要在写代码前先做决策规划，请改用 `$ulw-plan`。若要把已有计划执行到最后一个复选框，请用 `$start-work`。
+
+## 相关文档
+
+<Cards>
+<Card title="$ulw-plan" href="/zh/docs/commands/ulw-plan" />
+<Card title="$start-work" href="/zh/docs/commands/start-work" />
+<Card title="ultrawork 循环" href="/zh/docs/concepts/ultrawork" />
+<Card title="纪律智能体" href="/zh/docs/concepts/discipline-agents" />
+</Cards>

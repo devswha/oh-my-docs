@@ -1,0 +1,81 @@
+---
+title: $ulw-plan
+description: Prometheus strategic planner — turn an idea into a decision-complete plan without writing product code.
+---
+
+`$ulw-plan` is the strategic planning consultant (Prometheus). It turns an idea into a decision-complete work plan. It is a planner, **not** an implementer: when you say "do X" it produces a plan for X and never writes product code.
+
+## Syntax
+
+```bash
+$ulw-plan "what to build"
+```
+
+## When to use it
+
+Reach for `$ulw-plan` when the work needs decisions before implementation — an unclear scope, multiple viable approaches, or cross-cutting changes that should be sequenced before anyone touches code.
+
+If you just want a quick answer or a small edit, prompt normally. If a plan already exists, jump straight to [`$start-work`](/docs/commands/start-work).
+
+## The flow
+
+<Steps>
+
+<Step>
+
+### Socratic interview
+
+Prometheus asks the questions needed to remove ambiguity before any planning.
+
+</Step>
+
+<Step>
+
+### Parallel codebase exploration
+
+It explores the relevant code in parallel to ground the plan in what actually exists.
+
+</Step>
+
+<Step>
+
+### Metis gap analysis
+
+A gap-analysis pass looks for missing decisions, edge cases, and risks.
+
+</Step>
+
+<Step>
+
+### Write the plan
+
+The work plan is written to `plans/<slug>.md`.
+
+</Step>
+
+<Step>
+
+### Optional Momus review
+
+A high-accuracy review pass can be run for extra rigor.
+
+</Step>
+
+</Steps>
+
+## What you get
+
+Questions, research, and a decision-complete work plan at `plans/<slug>.md` that you can hand directly to `$start-work`.
+
+```bash
+$ulw-plan "migrate the auth service to OAuth with refresh tokens"
+# → writes plans/oauth-refresh-tokens.md
+$start-work
+```
+
+## Related
+
+<Cards>
+  <Card title="$start-work" href="/docs/commands/start-work">Execute the plan Prometheus wrote, checkbox by checkbox.</Card>
+  <Card title="Command pillars" href="/docs/commands">How $ulw-plan composes with the other commands.</Card>
+</Cards>

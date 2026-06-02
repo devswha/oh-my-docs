@@ -1,0 +1,73 @@
+---
+title: ultrawork ループ
+description: $ulw-loop が作業を Oracle 検証済みの完了まで進める仕組み — 楽観的な状況ではなく証拠、反復上限、--completion-promise と --strategy、そして $ulw-plan・$start-work との関係。
+---
+
+ultrawork は看板モードです。プロンプトのどこかに `ultrawork`（または短い別名 `ulw`）を入力すると、最高精度・結果優先・証拠駆動のオーケストレーションが有効になります。
+
+> _"計画し、実行し、検証し、証拠を添えて残す。"_
+
+原則はシンプルです。エージェントが完了したと言ったから完了なのではありません。**Oracle が証拠に照らして検証**したときに完了です。
+
+## ultrawork が強制すること
+
+ultrawork が有効なとき、harness は楽観的な「完了したように見える」では満足しません：
+
+- 厳格な TDD：RED → GREEN → SURFACE → CLEAN
+- 少なくとも 3 つの現実的な QA シナリオ
+- 実際の手動 QA チャネル（HTTP 呼び出し、tmux、ブラウザ）
+- 作業が本当に完了するまで回る拘束力のある検証ゲート
+
+## $ulw-loop：検証済みの完了
+
+`$ulw-loop` は検証済みの完了まで回る自己参照型の開発ループです。エージェントは継続的に作業し、完了したと判断すると `<promise>DONE</promise>` を出します — しかしそれでループは終わり**ません**。
+
+まず Oracle が結果を検証する必要があります。システムが Oracle の検証を確認した後にのみループは終わります。検証が失敗すると、次のメッセージと共に継続します：
+
+```text
+Oracle verification failed. Continuing ULTRAWORK loop.
+```
+
+### 構文
+
+```bash
+$ulw-loop "task description" [--completion-promise=TEXT] [--strategy=reset|continue]
+```
+
+| フラグ | 効果 |
+| --- | --- |
+| `--completion-promise=TEXT` | 検証前にエージェントが満たすべき約束テキストを指定 |
+| `--strategy=reset` | 各反復をクリーンな状態から開始 |
+| `--strategy=continue` | 反復間で状態を引き継ぐ |
+
+### 反復上限
+
+ループは無限に回らないよう上限があります：
+
+- ultrawork モードで **500** 回
+- 通常モードで **100** 回
+
+## 楽観的な状況ではなく証拠
+
+ループは「コードを少し書いた」では止まりません。エージェントが期待する状況報告ではなく、証拠 — 実行された検査とその結果 — で結果が確認されたときに止まります。だからこそ `<promise>DONE</promise>` とループ終了の間に Oracle が立ちます。
+
+## 柱の中での位置づけ
+
+`$ulw-loop` は 3 つのコマンドの柱の 1 つで、それぞれ異なる形の作業のためにあります：
+
+| 柱 | 使うとき |
+| --- | --- |
+| `$ulw-plan` | コードを書く前に意思決定が必要なとき。`plans/<slug>.md` を書き、プロダクトコードは書かない。 |
+| `$start-work` | 計画が整い、完了まで実行すべきとき。**ORCHESTRATION COMPLETE** を出力。 |
+| `$ulw-loop` | 結果が証拠で検証されるまで作業を進め続けるべきとき。 |
+
+典型的な流れ：`$ulw-plan` が意思決定完了済みの計画を作り、`$start-work` がチェックボックスごとに実行し、`$ulw-loop` がオープンエンドのタスクを Oracle が承認するまで回し続けます。
+
+## 関連
+
+<Cards>
+  <Card title="$ulw-loop コマンド" href="/ja/docs/commands/ulw-loop" />
+  <Card title="$ulw-plan コマンド" href="/ja/docs/commands/ulw-plan" />
+  <Card title="$start-work コマンド" href="/ja/docs/commands/start-work" />
+  <Card title="規律エージェント" href="/ja/docs/concepts/discipline-agents" />
+</Cards>

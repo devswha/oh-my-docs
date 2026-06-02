@@ -1,0 +1,72 @@
+---
+title: review-work
+description: 由五个并行智能体执行的多角度实现后评审。
+---
+
+`review-work` 是实现后评审编排器。在完成任何重要实现之后，它并行启动五个专门的子智能体，从互补角度检查工作。五个全部通过，评审才通过；只要一个失败，评审即失败。
+
+触发短语包括 "review work"、"review my work"、"review changes"、"QA my work"、"verify implementation"、"post-implementation review"。
+
+## 五个智能体
+
+| # | 智能体 | 类型 | 回答的问题 | 级别 |
+| --- | --- | --- | --- | --- |
+| 1 | 目标与约束验证者 | Oracle | 是否在规则内构建了所要求的内容？ | MAIN |
+| 2 | QA 执行者 | unspecified-high | 运行起来是否真的可用？ | MAIN |
+| 3 | 代码评审者 | Oracle | 代码是否写得好且一致？ | MAIN |
+| 4 | 安全审计者 | Oracle | 是否存在安全漏洞？ | SUB |
+| 5 | 上下文挖掘者 | unspecified-high | 是否遗漏了上下文？ | MAIN |
+
+Oracle 智能体无法读取文件或运行命令，因此 diff、完整文件内容和上下文都在提示中提供。`unspecified-high` 智能体是自主的：它们读文件、运行命令、使用工具，因此得到的是目标与线索，而非原始转储。
+
+## 运行流程
+
+<Steps>
+
+<Step>
+
+### 阶段 0 — 收集上下文
+
+先收集输入，多数来自对话记录：原始 GOAL、CONSTRAINTS、BACKGROUND。从 git 自动收集 CHANGED_FILES 和 DIFF，读取每个改动文件的完整内容，并从 `package.json`、`Makefile` 或 `docker-compose.yml` 中检测 RUN_COMMAND。
+
+```bash
+git diff --name-only HEAD~1   # 或: git diff --name-only main...HEAD
+git diff HEAD~1               # 或: git diff main...HEAD
+```
+
+切勿在主工作树中检出 PR 分支。创建新的 git 工作树（`git worktree add`）并在其中工作。
+
+</Step>
+
+<Step>
+
+### 阶段 1 — 一次启动五个
+
+在一轮内全部启动五个智能体，各自后台运行。不顺序启动，中间不等待。目标验证者把目标拆成子需求，逐项标记 ACHIEVED / MISSED / PARTIAL。QA 执行者头脑风暴出 15-30 个场景，补充后建立任务清单，按优先级执行。代码评审者评估正确性、模式一致性、类型安全、性能与技术债。安全审计者检查输入校验、鉴权、密钥与数据暴露。上下文挖掘者翻查 git 历史、GitHub、沟通渠道与代码交叉引用。
+
+</Step>
+
+<Step>
+
+### 阶段 2 — 等待并收集
+
+启动后结束本轮。每个智能体完成时收集其结论。五个全部完成前不交付最终报告。
+
+</Step>
+
+<Step>
+
+### 阶段 3 — 给出结论
+
+五个全 PASS 即 REVIEW PASSED，任一 FAIL 即 REVIEW FAILED。最终报告按领域列表、汇总阻断问题、列出关键发现，并在失败时按优先级精确说明应修复什么。
+
+</Step>
+
+</Steps>
+
+## 结论逻辑
+
+- 每个智能体都给出结论与置信度。
+- 单个 FAIL 即使整个评审失败。
+- 失败时，发现项点名问题、文件与修复方案，没有含糊的 "考虑改进 X"。
+- 成功时，报告保持简短，仅记录非阻断性建议。

@@ -1,0 +1,77 @@
+---
+title: $start-work
+description: Prometheus の計画をすべてのチェックボックスが完了するまで実行し、永続的な Boulder 進捗を保ちます。
+---
+
+`$start-work` は [Prometheus 作業計画](/ja/docs/commands/ulw-plan)を、トップレベルのチェックボックスがすべて完了するまで実行します。計画優先フローの実装側です。計画を渡せば、その計画を完了まで進めます。
+
+## 構文
+
+```bash
+$start-work [plan-name] [--worktree <absolute-path>]
+```
+
+- `plan-name` — 任意。実行する計画（`plans/<slug>.md`）。省略すると最新の計画を使います。
+- `--worktree <absolute-path>` — 任意。隔離された git worktree で作業を実行します。
+
+## 仕組み
+
+- `.omo/boulder.json` の**永続的な Boulder 状態**はターンやセッションをまたいで維持され、実行の間に進捗が失われません。
+- **Stop フック**が計画完了まで次のターンを再注入します — ループは自己継続します。
+- **独立したサブタスク**は並列サブエージェントへファンアウトします。
+- **厳格な TDD に加えて 5 つの証拠ゲート**：計画の再読、自動検証、手動 QA、敵対的 QA、クリーンアップ。
+- チェックボックスが付くたびに**進捗が台帳（ledger）に記録されます**。
+
+## 完了
+
+すべてのチェックボックスが付くと `ORCHESTRATION COMPLETE` ブロックを出力します。
+
+```text
+ORCHESTRATION COMPLETE
+```
+
+## 典型的な流れ
+
+<Steps>
+
+<Step>
+
+### 計画を用意する
+
+`$ulw-plan` で書くか、既存の `plans/<slug>.md` を `$start-work` に指し示します。
+
+```bash
+$ulw-plan "add OAuth login with refresh tokens"
+```
+
+</Step>
+
+<Step>
+
+### 実行する
+
+```bash
+$start-work oauth-refresh-tokens
+```
+
+独立した作業は並列サブエージェントへファンアウトし、永続的な Boulder 進捗が中断に耐えます。
+
+</Step>
+
+<Step>
+
+### 完了を待つ
+
+`$start-work` はすべてのチェックボックスが付いたときだけ停止し、`ORCHESTRATION COMPLETE` を出力します。
+
+</Step>
+
+</Steps>
+
+## 関連
+
+<Cards>
+  <Card title="$ulw-plan" href="/ja/docs/commands/ulw-plan">$start-work が実行する計画を書きます。</Card>
+  <Card title="$ulw-loop" href="/ja/docs/commands/ulw-loop">書面の計画なしでのオープンエンドなタスクの検証済み完了。</Card>
+  <Card title="コマンドの柱" href="/ja/docs/commands">コマンドがどう組み合わさるか。</Card>
+</Cards>

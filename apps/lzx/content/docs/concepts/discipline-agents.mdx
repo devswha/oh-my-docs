@@ -1,0 +1,52 @@
+---
+title: Discipline agents
+description: Sisyphus orchestrates Hephaestus, Oracle, and Librarian — a coordinated AI dev team running inside Codex with parallel execution.
+---
+
+LazyCodex (LZX) does not run as one big prompt. It installs a small cast of **discipline agents** into Codex, each tuned to one job. Sisyphus reads your intent and delegates; the specialists work their lanes; the loop keeps moving until the result is verified by evidence instead of a hopeful status update.
+
+These agents come from the **OmO (oh-my-openagent)** harness. LazyCodex is a thin distribution layer that packages that harness for Codex — "LazyVim for Codex." The roles below are the harness's, not invented for this page.
+
+## The cast
+
+<Cards>
+  <Card title="Sisyphus" href="/docs/concepts/discipline-agents">Main orchestrator. Reads intent, plans, delegates, tracks progress, finishes the work.</Card>
+  <Card title="Hephaestus" href="/docs/concepts/discipline-agents">Autonomous deep worker. Implementation, architecture, debugging, and synthesis.</Card>
+  <Card title="Oracle" href="/docs/concepts/discipline-agents">Read-only verification and architecture/debugging consultation. No writes.</Card>
+  <Card title="Librarian" href="/docs/concepts/discipline-agents">Fast, cheap retrieval of docs, remote repositories, and OSS examples.</Card>
+</Cards>
+
+## Roles at a glance
+
+| Agent | Role | Boundary |
+|---|---|---|
+| **Sisyphus** | Orchestrator | Reads intent, splits the work, delegates to specialists, tracks todos, and only stops when the task is done. |
+| **Hephaestus** | Implementation | The deep worker that writes code, debugs, and reasons through hard logic and synthesis. |
+| **Oracle** | Verification & review | Read-only consultant for architecture and debugging. Verifies completion; performs no writes, edits, or delegation. |
+| **Librarian** | Retrieval | Research-only. Pulls documentation, remote repos, and OSS code. No writes, edits, or delegation. |
+
+The read-only boundaries on Oracle and Librarian are part of the harness. They stop a "smart" agent from doing unsafe work in the wrong role — retrieval and review never silently mutate your codebase.
+
+## How they coordinate
+
+Sisyphus is the only agent that delegates. It splits a request into units and hands them to the right specialist:
+
+- **Hephaestus** takes the implementation and hard-reasoning units.
+- **Oracle** verifies the result and consults on architecture and debugging, read-only.
+- **Librarian** retrieves the context (docs, repos, examples) the workers need.
+
+Because delegation is explicit, multiple lanes can run at once.
+
+## Parallel execution
+
+LazyCodex runs specialists in parallel when the main session can keep moving without a result. Independent research and self-contained units run simultaneously; work stays synchronous when a result blocks the next implementation decision. Each unit is paired with a model that fits the job — see [Multi-model routing](/docs/concepts/model-routing).
+
+## Where this fits
+
+- The command pillars drive these agents: [`$ulw-plan`](/docs/commands/ulw-plan) plans, [`$start-work`](/docs/commands/start-work) executes a plan, and [`$ulw-loop`](/docs/commands/ulw-loop) keeps looping until Oracle-verified completion.
+- Verified completion is what makes the loop stop — see [The ultrawork loop](/docs/concepts/ultrawork).
+
+<Cards>
+  <Card title="Multi-model routing" href="/docs/concepts/model-routing">How each unit lands on the right GPT model.</Card>
+  <Card title="The ultrawork loop" href="/docs/concepts/ultrawork">Self-referential looping until completion is verified.</Card>
+</Cards>

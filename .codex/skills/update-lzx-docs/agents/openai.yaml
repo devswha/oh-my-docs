@@ -1,0 +1,4 @@
+interface:
+  display_name: "Update LazyCodex Docs"
+  short_description: "Refresh LazyCodex (LZX) docs from latest upstream"
+  default_prompt: "Use $update-lzx-docs to refresh the LazyCodex docs from the latest code-yeongyu/lazycodex upstream repository."

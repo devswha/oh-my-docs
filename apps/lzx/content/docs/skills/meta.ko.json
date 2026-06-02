@@ -1,0 +1,12 @@
+{
+  "title": "스킬",
+  "pages": [
+    "review-work",
+    "remove-ai-slops",
+    "frontend-ui-ux",
+    "programming",
+    "lsp",
+    "rules",
+    "comment-checker"
+  ]
+}

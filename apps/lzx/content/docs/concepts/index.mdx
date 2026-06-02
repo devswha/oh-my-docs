@@ -1,0 +1,97 @@
+---
+title: What LazyCodex Is
+description: A thin distribution layer that packages OmO (oh-my-openagent) as the Codex agent harness — project memory, planning, execution, and verified completion, "omo in Codex, packaged for the lazy."
+---
+
+LazyCodex (LZX) packages [OmO (oh-my-openagent)](https://github.com/code-yeongyu/oh-my-openagent) as the agent harness for Codex. OmO is the engine that gives Codex discipline agents, parallel orchestration, multi-model routing, skills, hooks, and verified completion. LazyCodex bundles that engine into a repeatable Codex setup you install with one command.
+
+> _"LazyVim made Neovim usable for the rest of us. LazyCodex does the same for Codex."_
+
+Think [LazyVim](https://github.com/LazyVim/LazyVim) for [lazy.nvim](https://github.com/folke/lazy.nvim), but for Codex. It is **omo in Codex, packaged for the lazy.**
+
+## A thin distribution layer
+
+LazyCodex does not reimplement the agent harness — it distributes one. The core engine is OmO, and `npx lazycodex-ai install` is shorthand for `npx --yes --package oh-my-openagent omo install --platform=codex`. What LazyCodex adds is a clean, memorable entry point and a Codex-shaped install.
+
+```text
+lazycodex/
+├── src/            → oh-my-openagent (OmO submodule — the engine)
+└── packages/
+    └── web/        → the lazycodex.ai documentation site
+```
+
+Everything that does the work — agents, routing, skills, hooks, verification — lives in the OmO submodule. LazyCodex is the layer that points Codex at it.
+
+## What the harness gives Codex
+
+Once installed, Codex runs the full OmO harness:
+
+| Capability | What it means in Codex |
+| --- | --- |
+| Discipline agents | Sisyphus orchestrates Hephaestus, Oracle, and Librarian — a full AI dev team |
+| Parallel execution | Independent subtasks fan out to multiple agents at once |
+| Multi-model routing | The right GPT model is chosen automatically per task category |
+| Skills system | Specialist judgment (review, cleanup, frontend, LSP, AST-grep, and more) |
+| Hooks & lifecycle | Pre/post hooks around every agent action |
+| Zero config | Sensible defaults out of the box; override only when you want to |
+
+## The four ideas
+
+The harness exists to do four things well, end to end:
+
+<Steps>
+
+<Step>
+
+### Project memory
+
+`/init-deep` generates hierarchical `AGENTS.md` context across the repository, so agents land with the right files in view before they edit. Run it when the codebase is too large to explain from memory.
+
+</Step>
+
+<Step>
+
+### Planning
+
+`$ulw-plan "what to build"` turns a fuzzy idea into a decision-complete plan written to `plans/<slug>.md`. It plans only — it never writes product code.
+
+</Step>
+
+<Step>
+
+### Execution
+
+`$start-work [plan-name]` executes a plan until every checkbox is done, with durable progress, and prints **ORCHESTRATION COMPLETE** when the plan is finished.
+
+</Step>
+
+<Step>
+
+### Verified completion
+
+`$ulw-loop "task"` keeps moving until the result is verified by evidence rather than a hopeful status update. An Oracle must confirm the work before the loop ends.
+
+</Step>
+
+</Steps>
+
+## Install
+
+```bash
+npx lazycodex-ai install
+```
+
+No global install — always use `npx`. For a fully autonomous, no-TUI setup:
+
+```bash
+npx lazycodex-ai install --no-tui --codex-autonomous
+```
+
+## Explore the concepts
+
+<Cards>
+  <Card title="The ultrawork loop" href="/docs/concepts/ultrawork" />
+  <Card title="Discipline agents" href="/docs/concepts/discipline-agents" />
+  <Card title="Multi-model routing" href="/docs/concepts/model-routing" />
+  <Card title="Command pillars" href="/docs/commands" />
+</Cards>

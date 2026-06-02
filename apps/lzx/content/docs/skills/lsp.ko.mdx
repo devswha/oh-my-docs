@@ -1,0 +1,81 @@
+---
+title: lsp
+description: Codex를 위한 language-server 진단, 정의, 참조, 심볼, 안전한 rename.
+---
+
+`lsp` 스킬은 Codex 워크스페이스 안에서 LazyCodex(LZX)에게 language-server 수준의 정밀함을 제공합니다. 심볼을 grep하거나 타입 에러를 추측하는 대신, Codex는 실제 language server에 진단, 정의, 참조, 문서 심볼, rename 안전성을 질의합니다. LazyCodex가 Codex에 설치하는 OmO(oh-my-openagent) 플러그인에 포함되어 있습니다.
+
+## 한 줄 요약
+
+코드에 대한 정확한 답이 필요할 때 `lsp`를 사용합니다 — 편집 후 무엇이 잘못됐는지, 심볼이 어디에 정의됐는지, 누가 사용하는지, rename이 안전한지. `lsp.*` 이름은 도구 인터페이스로 호출하는 MCP 도구 호출이며, 셸 명령이 아닙니다.
+
+## 도구
+
+| 도구 | 용도 |
+|---|---|
+| `lsp.status` | 구성·설치·누락·비활성·활성 language server 목록. |
+| `lsp.diagnostics` | 파일이나 디렉터리의 진단 확인. 편집 후에는 `severity: "error"` 권장. |
+| `lsp.goto_definition` | 파일·행·문자 위치에서 심볼 정의를 찾기. |
+| `lsp.find_references` | 워크스페이스 전체에서 심볼 사용처 찾기. |
+| `lsp.symbols` | 문서 심볼 검사 또는 워크스페이스 심볼 검색. |
+| `lsp.prepare_rename` | 해당 위치에서 rename이 유효한지 확인. |
+| `lsp.rename` | language-server 워크스페이스 edit으로 rename 적용. |
+
+## 일반 흐름
+
+<Steps>
+
+<Step>
+
+### 서버 확인
+
+진단이 language server 누락을 보고하면, 먼저 `lsp.status`로 구성·설치·비활성 상태를 확인합니다.
+
+</Step>
+
+<Step>
+
+### 편집 후 검증
+
+`apply_patch` 후, 건드린 파일에 `severity: "error"`로 `lsp.diagnostics`를 실행해 변경이 깔끔히 컴파일되는지 확인합니다.
+
+</Step>
+
+<Step>
+
+### 안전한 탐색과 rename
+
+`lsp.goto_definition`과 `lsp.find_references`로 영향 범위를 파악한 뒤, `lsp.prepare_rename` → `lsp.rename`으로 서버 자체 edit을 통해 워크스페이스 전역 rename을 적용합니다.
+
+</Step>
+
+</Steps>
+
+## 설정
+
+프로젝트 설정은 `.codex/lsp-client.json`, 사용자 설정은 `~/.codex/lsp-client.json`에 있습니다.
+
+```json
+{
+  "lsp": {
+    "typescript": {
+      "command": ["typescript-language-server", "--stdio"],
+      "extensions": [".ts", ".tsx", ".js", ".jsx"]
+    }
+  }
+}
+```
+
+서버가 누락으로 보고되면 `lsp.status`가 바이너리가 미설치인지, 비활성인지, 단지 미구성인지 알려줍니다.
+
+## 관련 — AST-grep
+
+구조적 검색·재작성(텍스트가 아닌 형태로 코드를 매칭한 뒤 매칭된 패턴을 재작성)을 위해 LazyCodex는 LSP 도구와 함께 AST-grep도 제공합니다. LSP는 실제 심볼에 대한 의미론적 질문에 답하고, AST-grep은 구문 트리 수준의 패턴 매칭과 편집을 수행합니다. 둘은 정밀한 IDE급 변경을 위해 상호 보완합니다.
+
+## 관련 스킬
+
+<Cards>
+  <Card title="programming" href="/ko/docs/skills/programming">모든 줄에 적용되는 타입 규율.</Card>
+  <Card title="comment-checker" href="/ko/docs/skills/comment-checker">편집류 작업 후 피드백.</Card>
+  <Card title="스킬 개요" href="/ko/docs/skills">모든 LazyCodex 스킬.</Card>
+</Cards>

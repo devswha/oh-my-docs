@@ -1,0 +1,105 @@
+---
+title: programming
+description: TypeScript、Rust、Python、Go 共用的严格规范 —— 类型优先、TDD。
+---
+
+`programming` skill 是 LazyCodex（LZX）对它所写每一行代码应用的类型规范。当 Codex 触及 `.py`、`.pyi`、`.rs`、`.ts`、`.tsx`、`.mts`、`.cts`、`.go` 文件或任何项目 manifest 时自动激活。它没有单独命令，内置于 LazyCodex 安装到 Codex 的 OmO（oh-my-openagent）插件中。
+
+## 一句话概述
+
+四种语言共享同一哲学：**类型优先、栈优先、async 正确、对文件大小诚实。** 严格类型、现代工具链、parse-don't-validate、穷尽匹配、带类型的错误、禁止逃逸口、250 纯 LOC 上限、TDD。一次性脚本同样适用。
+
+## 语言闸门
+
+在写下任何一行之前，skill 先识别语言并加载对应的参考集。语言专属规则加载前不写任何代码。
+
+| 文件 / 语言 | 工具链 |
+|---|---|
+| `.py`、`.pyi`（Python） | uv + basedpyright（`typeCheckingMode = "all"`）+ ruff（`select = ["ALL"]`）+ pytest |
+| `.rs`、`Cargo.toml`（Rust） | cargo + clippy（`pedantic` + `nursery`）+ rustfmt + cargo-nextest + nightly miri |
+| `.ts`、`.tsx`、`.mts`、`.cts`（TypeScript） | Bun + Biome + `tsc --noEmit`（strict + `noUncheckedIndexedAccess`） |
+| `.go`、`go.mod`（Go） | go modules + gofumpt + golangci-lint v2 + nilaway + `go test -race` |
+
+## 共享哲学
+
+所有配方都源自六条公理：
+
+1. **类型系统就是你的证明系统。** 凡能表达为类型错误的 bug，必须表达为类型错误。
+2. **Parse, don't validate。** 不可信输入在边界处只解析一次为类型值（Pydantic v2 / serde / Zod），内部不再重复校验。
+3. **一个名字 = 一个概念。** `UserId` 不是 `string`。对每个语义原语使用 `NewType`、newtype 元组 struct 或 branded type。
+4. **始终穷尽匹配 variant。** `match` + `assert_never`（Python）、`match`（Rust）、`switch` + `assertNever`（TypeScript）、sealed interface + 穷尽 linter（Go）。对 tagged variant 用 `if`/`elif`/`else` 被禁止。
+5. **信任框架保证，仅在边界校验。** 禁止防御性 null 检查，禁止对不会抛错的代码加 `try/except`。
+6. **测试驱动。** 没有先证明其必要性的失败测试，不发布任何生产代码。
+
+## TDD 规范
+
+每次变更遵循 red → green → refactor 顺序。
+
+<Steps>
+
+<Step>
+
+### Red
+
+用 Given / When / Then 写一个命名行为的失败测试。运行并确认它因正确的原因失败 —— 是函数尚不存在，而非拼写错误或 import 缺失。
+
+</Step>
+
+<Step>
+
+### Green
+
+写出让测试通过的最小代码。第二个用例是下一个 red。
+
+</Step>
+
+<Step>
+
+### Refactor
+
+测试为 green 时，毫不留情地重构。测试就是安全网。
+
+</Step>
+
+</Steps>
+
+测试金字塔包含三层：大量快速 **unit** 测试（每个 < 10ms），部分通过 testcontainers 对真实下游的 **integration** 测试，少量驱动真实接口的 **E2E** 场景。零 E2E 覆盖的功能视为未完成。mock 是最后手段 —— 优先真实对象、内存 fake，再到 testcontainers。
+
+## 250 纯 LOC 上限
+
+纯 LOC（非空、非注释）超过 250 的源文件是**缺陷**，而非风格偏好。250 LOC 时审阅者仍能把整个文件装进工作记忆并发现横切 bug。
+
+- **创建**会超过 250 LOC 的文件：在首次提交前按职责拆分。
+- **编辑**已超 250 LOC 的文件并新增行：先把所触及的单元抽到独立文件。
+- **阅读**超过 250 LOC 的文件：明确指出 smell，提出具体拆分方案，再询问是否继续。
+
+禁止的逃避：把注释算进预算、按 token 数拆分（`service-2.ts`）、catch-all 倾倒文件（`utils.py`、`helpers.ts`）、在 230 LOC 时"差不多了"。
+
+## 跨语言铁律
+
+除非语言专属参考更严格，否则适用：
+
+- 默认不可变（`frozen=True` / `let` / `readonly` / 值类型）。
+- 对每个语义单元使用 branded 原语。
+- 禁止逃逸口：禁 `any`/`Any`、`unwrap`/`!`、`# type: ignore`/`@ts-ignore`、数字 `as` 收窄。
+- 禁止裸错误字符串 —— 带类型异常、`thiserror`/`anyhow`、`Error` 子类、sentinel + `%w` 包裹。
+- 用 RAII 管理资源（`with` / `Drop` / `using` / `defer`）。
+- 强制 async 运行时：anyio（禁裸 asyncio）、tokio、基于 `AbortSignal` 的平台原生、`context.Context` + errgroup。
+
+## 写后审阅循环
+
+每次完成写代码或实质性编辑、宣告完成前执行：
+
+1. **测量**每个变更文件的纯 LOC。
+2. **判定**：≤ 200 健康，200–250 警告区，> 250 缺陷（立即重构）。
+3. **自审**单一职责、边界纯度、穷尽匹配、逃逸口、防御层、一次性 helper、测试覆盖。
+
+若超过上限或出现两个以上问题，skill 会加载 `refactor`（安全的 codemap 驱动多步重构）或 `remove-ai-slops`（先固定测试的分类清理）。
+
+## 相关
+
+<Cards>
+  <Card title="lsp" href="/zh/docs/skills/lsp">诊断、定义、引用与安全 rename。</Card>
+  <Card title="comment-checker" href="/zh/docs/skills/comment-checker">编辑类操作后的反馈。</Card>
+  <Card title="Skills 概览" href="/zh/docs/skills">所有 LazyCodex skill。</Card>
+</Cards>

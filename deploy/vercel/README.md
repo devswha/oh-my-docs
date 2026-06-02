@@ -10,6 +10,7 @@ This directory records the Vercel project mapping for the `oh-my-docs` monorepo.
 | Claude Code docs | `apps/claudecode` | `oh-my-claudecode-docs` |
 | OpenAgent docs | `apps/openagent` | `oh-my-openagent-docs` |
 | Gajae-Code docs | `apps/gajae-code` | `gajae-code-docs` |
+| LazyCodex docs | `apps/lzx` | `lzx-docs` |
 
 `projects.json` stores Vercel project IDs and org IDs only. It does **not** store deployment tokens, environment variables, or secrets.
 
@@ -39,6 +40,7 @@ The imported projects were originally standalone repos, so Vercel currently repo
 - `oh-my-claudecode-docs` → `apps/claudecode`
 - `oh-my-openagent-docs` → `apps/openagent`
 - `gajae-code-docs` → `apps/gajae-code`
+- `lzx-docs` → `apps/lzx`
 
 Dry-run the intended API update:
 
@@ -61,6 +63,7 @@ npm run vercel:deploy:codex
 npm run vercel:deploy:claudecode
 npm run vercel:deploy:openagent
 npm run vercel:deploy:gajae-code
+npm run vercel:deploy:lzx
 npm run vercel:deploy:all
 ```
 
@@ -71,6 +74,7 @@ npm run vercel:deploy:codex:prod
 npm run vercel:deploy:claudecode:prod
 npm run vercel:deploy:openagent:prod
 npm run vercel:deploy:gajae-code:prod
+npm run vercel:deploy:lzx:prod
 ```
 
 For CI, set `VERCEL_TOKEN` in the CI secret store. Do not commit tokens or pulled environment files.

@@ -1,0 +1,56 @@
+---
+title: rules
+description: AGENTS, rules, instruction 파일에서 자동으로 주입되는 프로젝트 지침.
+---
+
+`rules` 스킬은 LazyCodex(LZX)를 프로젝트 고유의 지침에 단단히 고정합니다. Codex에서 OmO(oh-my-openagent) 플러그인이 활성화되면 프로젝트 규칙이 자동으로 주입됩니다 — 매 세션마다 붙여넣지 않아도 Codex는 항상 `AGENTS.md`, `CLAUDE.md`, 규칙 파일을 컨텍스트에 두고 작업합니다.
+
+## 한 줄 요약
+
+Codex Rules는 자동입니다. 모든 세션 시작과 각 프롬프트마다 정적 프로젝트 지침을 주입하고, 편집 후에는 파일별 규칙을 주입합니다. 실행할 명령은 없습니다 — 플러그인을 켜면 레포 컨벤션이 어디서나 Codex를 따라옵니다.
+
+## 주입 대상
+
+- `SessionStart`와 `UserPromptSubmit`에서의 **정적 프로젝트 지침**.
+- 기본적으로 Codex `apply_patch` 후의 **매칭되는 파일별 규칙**.
+
+동적 `PostToolUse` 출력은 추가 컨텍스트로 주입되며, 플러그인 데이터 세션 단위로 중복 제거됩니다. Codex Rules는 도구 출력을 재작성하지 않고, 그 곁에 지침만 덧붙입니다.
+
+## 지원 프로젝트 소스
+
+| 소스 | 비고 |
+|---|---|
+| `AGENTS.md` | 주요 프로젝트 메모리(`/init-deep`와 짝). |
+| `CLAUDE.md` | Claude 스타일 호환 지침. |
+| `CONTEXT.md` | 일반 프로젝트 컨텍스트. |
+| `.sisyphus/rules/**/*.md` | 규율 에이전트 규칙 트리. |
+| `.claude/rules/**/*.md` | Claude 규칙 디렉터리. |
+| `.cursor/rules/**/*.md` | Cursor 규칙. |
+| `.github/instructions/**/*.md` | GitHub instruction 파일. |
+| `.github/copilot-instructions.md` | Copilot 지침. |
+
+## 설정
+
+환경 변수로 동작을 조정합니다.
+
+| 변수 | 효과 |
+|---|---|
+| `CODEX_RULES_DISABLED=1` | 스킬 전체 비활성화. |
+| `CODEX_RULES_MODE=both\|static\|dynamic\|off` | static, dynamic, both, off 선택. |
+| `CODEX_RULES_MAX_RULE_CHARS=<number>` | 주입되는 각 규칙 크기 제한. |
+| `CODEX_RULES_MAX_RESULT_CHARS=<number>` | 주입되는 결과 컨텍스트 크기 제한. |
+| `CODEX_RULES_ENABLED_SOURCES=AGENTS.md,.sisyphus/rules` | 읽을 소스를 제한. |
+
+레거시 `PI_RULES_*` 변수는 `pi-rules`에서 마이그레이션하는 사용자를 위한 폴백으로 허용됩니다.
+
+## `/init-deep`와의 짝
+
+`/init-deep`는 계층적 `AGENTS.md` 프로젝트 메모리를 생성하고, `rules` 스킬은 그 메모리를 매 세션·프롬프트마다 Codex 앞에 유지해 줍니다. 메모리를 한 번 생성하면, 이후 `rules`가 계속 주입합니다.
+
+## 관련 스킬
+
+<Cards>
+  <Card title="comment-checker" href="/ko/docs/skills/comment-checker">편집류 작업 후 피드백.</Card>
+  <Card title="programming" href="/ko/docs/skills/programming">모든 줄에 적용되는 타입 규율.</Card>
+  <Card title="스킬 개요" href="/ko/docs/skills">모든 LazyCodex 스킬.</Card>
+</Cards>

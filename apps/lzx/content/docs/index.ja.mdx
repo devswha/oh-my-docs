@@ -1,0 +1,57 @@
+---
+title: LazyCodex
+description: Codex 向けにパッケージ化された OmO エージェントハーネス — プロジェクトメモリ、計画、実行、検証済みの完了。Codex のための LazyVim。
+---
+
+![LazyCodex](/images/hero.png)
+
+**LazyCodex（LZX）** は、複雑なコードベース向けの Codex エージェントハーネスとして [OmO（oh-my-openagent）](https://github.com/code-yeongyu/oh-my-openagent) をパッケージ化したものです。lazy.nvim に対する LazyVim のようなもの、ただし Codex 向け、と考えてください。
+
+OmO は Codex に完全なエージェントハーネスを提供します。規律エージェント、並列実行、マルチモデルルーティング、スキルシステム、フックです。LazyCodex はそのハーネスを、一行の `npx` で導入できる再現可能な Codex セットアップとしてパッケージ化します。グローバルインストールは不要です。
+
+> _「LazyVim は Neovim を一般の人にも使えるものにしました。LazyCodex は Codex に同じことをします。」_
+
+## 得られるもの
+
+| 機能 | 説明 |
+| --- | --- |
+| **規律エージェント** | Sisyphus が Hephaestus、Oracle、Librarian をオーケストレーションします。完全な AI 開発チームです。 |
+| **並列実行** | 複数のエージェントが独立したサブタスクを同時に処理します。 |
+| **マルチモデルルーティング** | タスクカテゴリごとに最適なモデルを自動選択します。 |
+| **スキルシステム** | 専門作業のための拡張可能なスキルライブラリです。 |
+| **フックとライフサイクル** | すべてのエージェント動作に対する前後フックを提供します。 |
+| **ゼロ設定** | 妥当なデフォルトをそのまま提供し、必要に応じて上書きできます。 |
+
+## コマンドの柱
+
+LazyCodex は Codex 向けに 3 つのコマンドの柱とプロジェクトメモリ用コマンドを導入します。柱コマンドはインストーラーが表示する `$command` 構文で呼び出します。
+
+| コマンド | 機能 |
+| --- | --- |
+| `/init-deep` | 階層型の `AGENTS.md` プロジェクトメモリを生成します。 |
+| `$ulw-plan` | Prometheus 戦略プランナー。計画を `plans/<slug>.md` に書き出し、プロダクトコードは決して書きません。 |
+| `$start-work` | すべてのチェックボックスが完了するまで計画を実行し、**ORCHESTRATION COMPLETE** を出力します。 |
+| `$ulw-loop` | Oracle が検証する完了に達するまで実行される自己参照ループです。 |
+
+典型的な流れは次のとおりです。プロジェクトメモリのために `/init-deep` を一度実行し、`$ulw-plan "何を作るか"` で方針を決め、`$start-work` で実行します。結果が証拠で検証されるまで作業を進め続けたい場合は `$ulw-loop "タスク"` を使います。
+
+## なぜ異なる GPT モデルが現れるのか
+
+OmO はすべてのサブタスクに最強モデルを使うわけではありません。タスクカテゴリを定義し、各カテゴリを最適なモデルへルーティングします。`quick` は `gpt-5.4-mini` のような小型モデルへ、`ultrabrain` は難しいロジックのために高推論 GPT モデルへ、エージェント型コーディング経路は Codex 調整済み GPT モデルを使います。要点はクォータ管理です。深い推論には強力なモデルを、それで十分なときはより速いモデルを使います。
+
+## ドキュメントを見る
+
+<Cards>
+  <Card title="はじめに" href="/ja/docs/getting-started" description="LazyCodex を Codex に導入し、最初のタスクを実行します。" />
+  <Card title="コマンド" href="/ja/docs/commands" description="コマンドの柱：ulw-plan、start-work、ulw-loop、init-deep。" />
+  <Card title="コンセプト" href="/ja/docs/concepts" description="ultrawork ループ、規律エージェント、モデルルーティング。" />
+  <Card title="スキル" href="/ja/docs/skills" description="review-work、remove-ai-slops、frontend-ui-ux、programming など。" />
+  <Card title="ユースケース & ガイド" href="/ja/docs/guides" description="日常タスクの実践例。" />
+  <Card title="リファレンス" href="/ja/docs/reference" description="設定と CLI。" />
+</Cards>
+
+## 次のステップ
+
+- [はじめに](/ja/docs/getting-started) — LazyCodex を導入し、最初のタスクを実行します。
+- 基盤エンジン：[oh-my-openagent (OmO)](https://github.com/code-yeongyu/oh-my-openagent)
+- [GitHub の LazyCodex](https://github.com/code-yeongyu/lazycodex)

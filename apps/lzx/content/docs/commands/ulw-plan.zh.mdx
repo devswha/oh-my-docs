@@ -1,0 +1,81 @@
+---
+title: $ulw-plan
+description: Prometheus 战略规划器 — 在不编写产品代码的情况下，把想法变成决策完备的计划。
+---
+
+`$ulw-plan` 是战略规划顾问（Prometheus）。它把想法变成决策完备的工作计划。它是规划者，**而非**实现者：当你说"做 X"时，它会为 X 生成计划，从不编写产品代码。
+
+## 语法
+
+```bash
+$ulw-plan "what to build"
+```
+
+## 何时使用
+
+当工作在实现前需要决策时使用 `$ulw-plan` —— 范围不清、有多种可行方案，或需要在任何人动代码前先排序的横切改动。
+
+如果你只想要快速答案或小改动，正常提示即可。如果计划已存在，直接跳到 [`$start-work`](/zh/docs/commands/start-work)。
+
+## 流程
+
+<Steps>
+
+<Step>
+
+### 苏格拉底式访谈
+
+Prometheus 在任何规划前提出消除歧义所需的问题。
+
+</Step>
+
+<Step>
+
+### 并行代码库探索
+
+它并行探索相关代码，让计划立足于实际存在的内容。
+
+</Step>
+
+<Step>
+
+### Metis 缺口分析
+
+一次缺口分析查找缺失的决策、边界情况和风险。
+
+</Step>
+
+<Step>
+
+### 写出计划
+
+将工作计划写入 `plans/<slug>.md`。
+
+</Step>
+
+<Step>
+
+### 可选的 Momus 评审
+
+需要额外严谨时可运行一次高准确度评审。
+
+</Step>
+
+</Steps>
+
+## 你将获得
+
+问题、调研，以及一份可直接交给 `$start-work` 的、位于 `plans/<slug>.md` 的决策完备工作计划。
+
+```bash
+$ulw-plan "migrate the auth service to OAuth with refresh tokens"
+# → 写出 plans/oauth-refresh-tokens.md
+$start-work
+```
+
+## 相关
+
+<Cards>
+  <Card title="$start-work" href="/zh/docs/commands/start-work">逐个复选框执行 Prometheus 写出的计划。</Card>
+  <Card title="命令支柱" href="/zh/docs/commands">$ulw-plan 如何与其他命令组合。</Card>
+</Cards>

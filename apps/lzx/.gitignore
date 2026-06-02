@@ -1,0 +1,48 @@
+node_modules/
+node_modules
+.next
+.source
+.vercel
+
+# env files
+.env
+.env*.local
+!.env.example
+
+# OS
+.DS_Store
+Thumbs.db
+
+# build
+*.tsbuildinfo
+next-env.d.ts
+out/
+
+# debug
+*.log
+npm-debug.log*
+
+# legacy
+generate-thumbnail.js
+social-preview.html
+social-preview-1x.png
+
+# tools
+.omc/*
+!.omc/skills/
+.omc/skills/*
+!.omc/skills/sync-omc-docs/
+!.omc/skills/sync-omx-docs/
+!.omc/skills/add-docs-locale/
+.sisyphus/
+.omx/
+.codex/
+**/.omc/state/
+**/.omc/logs/
+**/.omc/state
+**/.omc/logs
+.playwright-mcp/
+*.tar.gz
+
+# patina-max local run archive
+.patina-max/

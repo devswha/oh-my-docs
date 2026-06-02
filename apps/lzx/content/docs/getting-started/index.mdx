@@ -1,0 +1,103 @@
+---
+title: Getting Started
+description: Install LazyCodex into Codex with one npx line, authenticate, and run your first task with init-deep, ulw-plan, start-work, and ulw-loop.
+---
+
+LazyCodex installs the OmO agent harness into Codex with a single `npx` line — no global install. Get it set up, then drive your first task.
+
+<Steps>
+
+<Step>
+
+### Prerequisites
+
+LazyCodex runs inside OpenAI Codex, so you need the [OpenAI Codex CLI](https://github.com/openai/codex) installed and working.
+
+</Step>
+
+<Step>
+
+### Install
+
+One line. No global install, no `npm i -g` — always use `npx`:
+
+```bash
+npx lazycodex-ai install
+```
+
+This is shorthand for the OmO installer targeting the Codex platform:
+
+```bash
+npx --yes --package oh-my-openagent omo install --platform=codex
+```
+
+For a fully autonomous, no-TUI setup, add the autonomous flags:
+
+```bash
+npx lazycodex-ai install --no-tui --codex-autonomous
+```
+
+The installer wires the OmO harness — commands, skills, hooks, and model routing — into your Codex setup. It is strongly recommended to let an LLM agent run the install and walk the setup for you; the agent handles subscription detection, model selection, and provider auth automatically.
+
+</Step>
+
+<Step>
+
+### Authenticate
+
+LazyCodex runs inside Codex, so authentication is your existing Codex/OpenAI login plus any OmO provider keys you want to route to. The install TUI walks the setup, including subscription detection, model selection, and provider auth.
+
+For provider keys and routing details, see [Configuration](/docs/reference/configuration).
+
+</Step>
+
+<Step>
+
+### Run your first task
+
+Start by building project memory, then reach for the command pillars. Invoke the pillars with the `$command` syntax the installer prints.
+
+First, generate hierarchical `AGENTS.md` project memory so agents start with full context:
+
+```text
+/init-deep
+```
+
+Then choose a pillar for the work:
+
+- `$ulw-plan "what to build"` — Prometheus plans the approach and writes it to `plans/<slug>.md`. It never writes product code.
+- `$start-work [plan-name] [--worktree <path>]` — executes a plan until every checkbox is done, then prints **ORCHESTRATION COMPLETE**.
+- `$ulw-loop "task" [--completion-promise=TEXT] [--strategy=reset|continue]` — a self-referential loop that runs until Oracle-verified completion.
+
+A typical flow plans first, then executes:
+
+```text
+/init-deep
+$ulw-plan "build a REST API for managing tasks"
+$start-work
+```
+
+Or, for an open-ended task that should keep moving until the result is verified by evidence, use the loop directly:
+
+```text
+$ulw-loop "fix the failing checkout flow and verify it end to end"
+```
+
+</Step>
+
+</Steps>
+
+## Skills
+
+Beyond the command pillars, LazyCodex installs OmO's skill layer for specialized work — `review-work`, `remove-ai-slops`, `frontend-ui-ux`, `programming`, `LSP`, `rules`, `comment-checker`, and more. The command layer stays simple while skills add specialist judgment. See [Skills](/docs/skills) for the full library.
+
+## Next steps
+
+<Cards>
+  <Card title="Commands" href="/docs/commands" description="The command pillars: ulw-plan, start-work, ulw-loop, init-deep." />
+  <Card title="Concepts" href="/docs/concepts" description="The ultrawork loop, discipline agents, and model routing." />
+  <Card title="Use cases & guide" href="/docs/guides" description="Worked examples for everyday tasks." />
+</Cards>
+
+- The underlying engine: [oh-my-openagent (OmO)](https://github.com/code-yeongyu/oh-my-openagent)
+- [LazyCodex on GitHub](https://github.com/code-yeongyu/lazycodex)

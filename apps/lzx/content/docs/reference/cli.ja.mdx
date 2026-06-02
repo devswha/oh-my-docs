@@ -1,0 +1,86 @@
+---
+title: CLI
+description: lazycodex-ai npm バイナリ、OmO への転送方法、--dry-run フラグ、そしてセッション内コマンドの柱。
+---
+
+LazyCodex が提供する CLI は一つ、`lazycodex-ai` npm バイナリです。これは薄いフォワーダーで、すべての呼び出しは `npx` 経由で実行される `omo` コマンドへ展開されます。グローバルインストールはありません。常に `npx` で呼び出します。
+
+## OmO への転送方法
+
+バイナリは引数を読み取り `oh-my-openagent` へ転送します。`install` サブコマンドは Codex プラットフォームを固定するため特別扱いされ、それ以外はそのまま通過します。
+
+<Tabs items={["install", "その他のコマンド"]}>
+
+<Tab value="install">
+
+```bash
+npx lazycodex-ai install
+```
+
+は次へ展開されます。
+
+```bash
+npx --yes --package oh-my-openagent omo install --platform=codex
+```
+
+`install` の後ろの引数はすべてそのまま付加されます。例：
+
+```bash
+npx lazycodex-ai install --no-tui --codex-autonomous
+# → npx --yes --package oh-my-openagent omo install --platform=codex --no-tui --codex-autonomous
+```
+
+</Tab>
+
+<Tab value="その他のコマンド">
+
+`install` 以外の最初の引数は、プラットフォーム固定を付けずに `omo` へ直接転送されます。
+
+```bash
+npx lazycodex-ai <args...>
+# → npx --yes --package oh-my-openagent omo <args...>
+```
+
+</Tab>
+
+</Tabs>
+
+## `--dry-run`
+
+`--dry-run` を**最初の**引数に置くと、コマンドを実行する代わりに解決済みの `npx` コマンドを出力して終了します。
+
+```bash
+npx lazycodex-ai --dry-run install --no-tui --codex-autonomous
+```
+
+出力：
+
+```text
+npx --yes --package oh-my-openagent omo install --platform=codex --no-tui --codex-autonomous
+```
+
+`--dry-run` は転送前に取り除かれるため、残りの引数は実際の実行とまったく同じに解決されます。実行前に正確な `omo` 呼び出しを確認するのに使います。
+
+## 終了の挙動
+
+バイナリは解決済みコマンドを継承された stdio で実行し、そのコマンドのステータスコードで終了します。`npx` 自体の起動に失敗した場合はエラーを出力し、非ゼロで終了します。
+
+## セッション内コマンドの柱
+
+インストール後、LazyCodex は OmO のコマンドの柱を Codex 内に登録します。これらはシェルではなく Codex セッションで入力します。インストーラーが正確な `$command` 構文を表示します。
+
+| コマンド | 入力 | 動作 |
+| --- | --- | --- |
+| [`$ulw-plan`](/ja/docs/commands/ulw-plan) | `$ulw-plan "what to build"` | Prometheus 戦略プランナー。`plans/<slug>.md` に計画を書き、製品コードは決して書きません。 |
+| [`$start-work`](/ja/docs/commands/start-work) | `$start-work [plan-name] [--worktree <path>]` | すべてのチェックボックスが完了するまで計画を実行し、**ORCHESTRATION COMPLETE** を出力します。 |
+| [`$ulw-loop`](/ja/docs/commands/ulw-loop) | `$ulw-loop "task" [--completion-promise=TEXT] [--strategy=reset\|continue]` | Oracle 検証の完了まで回る自己参照ループ。ultrawork モードで 500 回、通常モードで 100 回が上限。 |
+| [`/init-deep`](/ja/docs/commands/init-deep) | `/init-deep` | 階層型の `AGENTS.md` プロジェクトメモリを生成します。 |
+
+詳細は[コマンド](/ja/docs/commands)概要を参照してください。
+
+## 関連
+
+<Cards>
+  <Card title="設定" href="/ja/docs/reference/configuration">インストールフラグと Codex プラットフォーム対象。</Card>
+  <Card title="はじめに" href="/ja/docs/getting-started">LazyCodex を Codex にインストールする。</Card>
+</Cards>

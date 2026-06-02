@@ -1,0 +1,77 @@
+---
+title: $start-work
+description: Execute a Prometheus plan until every checkbox is done, with durable Boulder progress.
+---
+
+`$start-work` executes a [Prometheus work plan](/docs/commands/ulw-plan) until every top-level checkbox is done. It is the implementation half of the plan-first flow: hand it a plan, and it drives the plan to completion.
+
+## Syntax
+
+```bash
+$start-work [plan-name] [--worktree <absolute-path>]
+```
+
+- `plan-name` — optional. The plan to execute (from `plans/<slug>.md`). Omit it to use the most recent plan.
+- `--worktree <absolute-path>` — optional. Run the work in an isolated git worktree.
+
+## How it works
+
+- **Durable Boulder state** in `.omo/boulder.json` survives across turns and sessions, so progress is never lost between runs.
+- A **Stop-hook** re-injects the next turn until the plan is complete — the loop keeps itself going.
+- **Independent sub-tasks fan out** to parallel subagents.
+- **Strict TDD plus five evidence gates**: plan reread, automated verification, manual QA, adversarial QA, and cleanup.
+- **Progress is recorded to a ledger** as each checkbox is checked.
+
+## Done
+
+When every checkbox is checked, it prints an `ORCHESTRATION COMPLETE` block.
+
+```text
+ORCHESTRATION COMPLETE
+```
+
+## Typical flow
+
+<Steps>
+
+<Step>
+
+### Have a plan ready
+
+Either write one with `$ulw-plan` or point `$start-work` at an existing `plans/<slug>.md`.
+
+```bash
+$ulw-plan "add OAuth login with refresh tokens"
+```
+
+</Step>
+
+<Step>
+
+### Execute it
+
+```bash
+$start-work oauth-refresh-tokens
+```
+
+Independent work fans out to parallel subagents; durable Boulder progress survives interruptions.
+
+</Step>
+
+<Step>
+
+### Wait for completion
+
+`$start-work` stops only when every checkbox is checked and prints `ORCHESTRATION COMPLETE`.
+
+</Step>
+
+</Steps>
+
+## Related
+
+<Cards>
+  <Card title="$ulw-plan" href="/docs/commands/ulw-plan">Write the plan that $start-work executes.</Card>
+  <Card title="$ulw-loop" href="/docs/commands/ulw-loop">Verified completion for open-ended tasks without a written plan.</Card>
+  <Card title="Command pillars" href="/docs/commands">How the commands compose.</Card>
+</Cards>

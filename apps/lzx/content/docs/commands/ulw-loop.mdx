@@ -1,0 +1,87 @@
+---
+title: $ulw-loop
+description: A self-referential loop that keeps working until an Oracle verifies the result is actually done.
+---
+
+`$ulw-loop` is LazyCodex's persistence command. It runs a self-referential development loop that does not stop on a hopeful status update — it stops only when an Oracle has verified the result against evidence.
+
+Use it when the task is open-ended and you want completion judged by proof, not by the agent declaring victory.
+
+## Syntax
+
+```bash
+$ulw-loop "task description" [--completion-promise=TEXT] [--strategy=reset|continue]
+```
+
+| Part | Meaning |
+| --- | --- |
+| `"task description"` | The outcome to drive toward. State the result you want, not the steps. |
+| `--completion-promise=TEXT` | The exact phrase the agent must emit when it believes the work is done. |
+| `--strategy=reset` | Start each iteration from a clean slate. |
+| `--strategy=continue` | Carry context forward across iterations. |
+
+## How it works
+
+The loop is deliberately not allowed to end on the agent's own say-so.
+
+<Steps>
+
+<Step>
+
+### Work continuously
+
+The agent plans, executes, and gathers evidence — the same outcome-first, evidence-driven discipline that the `ultrawork` mode enforces.
+
+</Step>
+
+<Step>
+
+### Emit the completion promise
+
+When the agent believes the task is finished, it emits `<promise>DONE</promise>` (or your `--completion-promise` text). This signals intent — it does **not** end the loop.
+
+</Step>
+
+<Step>
+
+### Oracle verifies
+
+An Oracle reviews the result against the evidence. The loop ends only after the system confirms the Oracle verified it.
+
+</Step>
+
+<Step>
+
+### Continue on failure
+
+If verification fails, the loop keeps going with the message: _"Oracle verification failed. Continuing ULTRAWORK loop."_
+
+</Step>
+
+</Steps>
+
+## Iteration limits
+
+The loop is bounded so it cannot run forever:
+
+| Mode | Iteration cap |
+| --- | --- |
+| ultrawork mode | 500 |
+| normal mode | 100 |
+
+## When to use it
+
+- The task is **open-ended** — "make the flaky test suite pass," "get the build green," "land this migration."
+- You want completion judged by **evidence**, not by a status report.
+- You are willing to let the agent keep iterating until the Oracle signs off.
+
+For decision-heavy work that needs a plan before code, reach for `$ulw-plan` instead. To execute an existing plan to the last checkbox, use `$start-work`.
+
+## Related
+
+<Cards>
+<Card title="$ulw-plan" href="/docs/commands/ulw-plan" />
+<Card title="$start-work" href="/docs/commands/start-work" />
+<Card title="The ultrawork loop" href="/docs/concepts/ultrawork" />
+<Card title="Discipline agents" href="/docs/concepts/discipline-agents" />
+</Cards>

@@ -1,0 +1,56 @@
+---
+title: rules
+description: 从 AGENTS、rules、instruction 文件自动注入的项目指令。
+---
+
+`rules` skill 让 LazyCodex（LZX）始终锚定在你项目自身的指令上。在 Codex 中启用 OmO（oh-my-openagent）插件后，项目规则会自动注入 —— 无需每次会话粘贴，Codex 始终把你的 `AGENTS.md`、`CLAUDE.md` 和规则文件放在上下文中工作。
+
+## 一句话概述
+
+Codex Rules 是自动的。它在每次会话开始和每条提示时注入静态项目指令，并在编辑后注入文件专属规则。无需运行命令 —— 启用插件，仓库约定便处处跟随 Codex。
+
+## 注入内容
+
+- 在 `SessionStart` 和 `UserPromptSubmit` 时注入**静态项目指令**。
+- 默认在 Codex `apply_patch` 后注入**匹配的文件专属规则**。
+
+动态 `PostToolUse` 输出作为附加上下文注入，并按插件数据会话去重。Codex Rules 不重写工具输出，只在其旁附加你的指令。
+
+## 支持的项目来源
+
+| 来源 | 说明 |
+|---|---|
+| `AGENTS.md` | 主要项目记忆（与 `/init-deep` 配对）。 |
+| `CLAUDE.md` | 兼容 Claude 风格指令。 |
+| `CONTEXT.md` | 通用项目上下文。 |
+| `.sisyphus/rules/**/*.md` | 纪律 agent 规则树。 |
+| `.claude/rules/**/*.md` | Claude 规则目录。 |
+| `.cursor/rules/**/*.md` | Cursor 规则。 |
+| `.github/instructions/**/*.md` | GitHub instruction 文件。 |
+| `.github/copilot-instructions.md` | Copilot 指令。 |
+
+## 配置
+
+用环境变量调整行为：
+
+| 变量 | 效果 |
+|---|---|
+| `CODEX_RULES_DISABLED=1` | 完全关闭 skill。 |
+| `CODEX_RULES_MODE=both\|static\|dynamic\|off` | 选择 static、dynamic、both 或 off。 |
+| `CODEX_RULES_MAX_RULE_CHARS=<number>` | 限制每条注入规则的大小。 |
+| `CODEX_RULES_MAX_RESULT_CHARS=<number>` | 限制注入结果上下文的大小。 |
+| `CODEX_RULES_ENABLED_SOURCES=AGENTS.md,.sisyphus/rules` | 限制读取的来源。 |
+
+旧版 `PI_RULES_*` 变量作为 `pi-rules` 迁移用户的回退被接受。
+
+## 与 `/init-deep` 配对
+
+`/init-deep` 生成分层的 `AGENTS.md` 项目记忆，而 `rules` skill 负责在每次会话与提示时把该记忆摆在 Codex 面前。生成记忆一次，此后由 `rules` 持续注入。
+
+## 相关 skill
+
+<Cards>
+  <Card title="comment-checker" href="/zh/docs/skills/comment-checker">编辑类操作后的反馈。</Card>
+  <Card title="programming" href="/zh/docs/skills/programming">应用于每一行的类型规范。</Card>
+  <Card title="Skills 概览" href="/zh/docs/skills">所有 LazyCodex skill。</Card>
+</Cards>

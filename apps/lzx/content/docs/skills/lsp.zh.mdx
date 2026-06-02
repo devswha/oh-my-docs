@@ -1,0 +1,81 @@
+---
+title: lsp
+description: 面向 Codex 的 language-server 诊断、定义、引用、符号与安全 rename。
+---
+
+`lsp` skill 让 LazyCodex（LZX）在 Codex 工作区内拥有 language-server 级别的精度。Codex 不再靠 grep 符号或猜测类型错误，而是向真实的 language server 查询诊断、定义、引用、文档符号和 rename 安全性。它内置于 LazyCodex 安装到 Codex 的 OmO（oh-my-openagent）插件中。
+
+## 一句话概述
+
+当 Codex 需要关于代码的可靠答案时使用 `lsp` —— 编辑后哪里出错、符号定义在哪、谁在用它、rename 是否安全。`lsp.*` 名称是通过工具接口调用的 MCP 工具调用，不是 shell 命令。
+
+## 工具
+
+| 工具 | 用途 |
+|---|---|
+| `lsp.status` | 列出已配置、已安装、缺失、已禁用和活动的 language server。 |
+| `lsp.diagnostics` | 检查文件或目录的诊断。编辑后建议 `severity: "error"`。 |
+| `lsp.goto_definition` | 从文件、行、字符位置定位符号定义。 |
+| `lsp.find_references` | 在工作区内查找符号的使用处。 |
+| `lsp.symbols` | 检查文档符号或搜索工作区符号。 |
+| `lsp.prepare_rename` | 检查该位置 rename 是否有效。 |
+| `lsp.rename` | 应用 language-server 工作区编辑以完成 rename。 |
+
+## 典型流程
+
+<Steps>
+
+<Step>
+
+### 检查服务器
+
+若诊断报告缺少 language server，先运行 `lsp.status` 查看已配置、已安装或已禁用的状态。
+
+</Step>
+
+<Step>
+
+### 编辑后验证
+
+执行 `apply_patch` 后，对所触及文件以 `severity: "error"` 运行 `lsp.diagnostics`，确认变更可干净编译。
+
+</Step>
+
+<Step>
+
+### 安全导航与 rename
+
+用 `lsp.goto_definition` 和 `lsp.find_references` 了解影响范围，再以 `lsp.prepare_rename` → `lsp.rename` 通过服务器自身的编辑应用全工作区 rename。
+
+</Step>
+
+</Steps>
+
+## 配置
+
+项目配置位于 `.codex/lsp-client.json`，用户配置位于 `~/.codex/lsp-client.json`。
+
+```json
+{
+  "lsp": {
+    "typescript": {
+      "command": ["typescript-language-server", "--stdio"],
+      "extensions": [".ts", ".tsx", ".js", ".jsx"]
+    }
+  }
+}
+```
+
+当服务器被报告缺失时，`lsp.status` 会告诉你二进制是未安装、已禁用，还是仅仅未配置。
+
+## 相关 —— AST-grep
+
+对于结构化搜索与改写（按形状而非文本匹配代码，再改写匹配到的模式），LazyCodex 还在 LSP 工具之外提供 AST-grep。LSP 回答关于真实符号的语义问题，AST-grep 在语法树层面进行模式匹配与编辑。二者互补，实现精确的 IDE 级变更。
+
+## 相关 skill
+
+<Cards>
+  <Card title="programming" href="/zh/docs/skills/programming">应用于每一行的类型规范。</Card>
+  <Card title="comment-checker" href="/zh/docs/skills/comment-checker">编辑类操作后的反馈。</Card>
+  <Card title="Skills 概览" href="/zh/docs/skills">所有 LazyCodex skill。</Card>
+</Cards>

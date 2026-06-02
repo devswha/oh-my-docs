@@ -1,0 +1,81 @@
+---
+title: $ulw-plan
+description: Prometheus 戦略プランナー — 製品コードを書かずに、アイデアを決定の整った計画へ変えます。
+---
+
+`$ulw-plan` は戦略計画コンサルタント（Prometheus）です。アイデアを決定の整った作業計画へ変えます。実装者では**なく**プランナーです。「X をやって」と言えば X の計画を作るだけで、製品コードは決して書きません。
+
+## 構文
+
+```bash
+$ulw-plan "what to build"
+```
+
+## いつ使うか
+
+実装前に判断が必要な作業に `$ulw-plan` を使います。範囲が不明確、実行可能な方法が複数ある、または誰かがコードに触れる前に順序付けすべき横断的な変更などです。
+
+手早い回答や小さな編集だけなら通常どおりプロンプトします。計画がすでにあるなら、そのまま [`$start-work`](/ja/docs/commands/start-work) へ進みます。
+
+## 流れ
+
+<Steps>
+
+<Step>
+
+### ソクラテス式インタビュー
+
+Prometheus は計画の前に曖昧さを取り除くために必要な質問をします。
+
+</Step>
+
+<Step>
+
+### 並列コードベース探索
+
+関連コードを並列で探索し、実際に存在するものの上に計画を据えます。
+
+</Step>
+
+<Step>
+
+### Metis ギャップ分析
+
+欠けている判断、エッジケース、リスクを探すギャップ分析を行います。
+
+</Step>
+
+<Step>
+
+### 計画の書き出し
+
+作業計画を `plans/<slug>.md` に書きます。
+
+</Step>
+
+<Step>
+
+### 任意の Momus レビュー
+
+さらなる厳密さが必要なら高精度レビューを実行できます。
+
+</Step>
+
+</Steps>
+
+## 得られるもの
+
+質問、調査、そして `$start-work` にそのまま渡せる `plans/<slug>.md` の決定の整った作業計画です。
+
+```bash
+$ulw-plan "migrate the auth service to OAuth with refresh tokens"
+# → plans/oauth-refresh-tokens.md を書き出す
+$start-work
+```
+
+## 関連
+
+<Cards>
+  <Card title="$start-work" href="/ja/docs/commands/start-work">Prometheus が書いた計画をチェックボックス一つずつ実行。</Card>
+  <Card title="コマンドの柱" href="/ja/docs/commands">$ulw-plan が他のコマンドとどう組み合わさるか。</Card>
+</Cards>

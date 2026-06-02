@@ -1,0 +1,42 @@
+---
+title: comment-checker
+description: Automatic feedback on comments after edit-like operations.
+---
+
+The `comment-checker` skill keeps LazyCodex (LZX) honest about the comments it writes. After an edit, a hook checks the touched comments and, if something is off, hands Codex blocking feedback to fix before moving on. It ships in the OmO (oh-my-openagent) plugin that LazyCodex installs into Codex.
+
+## TL;DR
+
+`comment-checker` runs automatically after edit-like operations. When it reports a warning, Codex receives blocking feedback and must fix or explain the flagged comment before continuing. There is no command and no MCP tool to call — it just runs.
+
+## How it works
+
+The plugin registers a `PostToolUse` hook for successful edit-like calls:
+
+- `apply_patch`
+- `write`
+- `edit`
+- `multi_edit`
+- `multiedit`
+
+When the checker flags a comment after one of those calls, Codex gets blocking feedback. The expectation is simple: fix the flagged comment, or explain why it is correct, before moving to the next step.
+
+## Scope
+
+| Aspect | Behavior |
+|---|---|
+| MCP tool | None exposed — there is nothing to invoke. |
+| Non-edit tools | Ignored by this plugin. |
+| Missing checker binary | Emits no hook output, so normal Codex work continues uninterrupted. |
+
+## Why it matters
+
+Comment drift — comments that lie about the code beneath them — is a classic source of slow-burn confusion. Because the check fires on the same edit that introduced the comment, the feedback arrives while the change is still fresh, not in a later review pass. It pairs naturally with the `programming` skill's post-write review loop.
+
+## Related skills
+
+<Cards>
+  <Card title="programming" href="/docs/skills/programming">The type discipline LZX applies to every line.</Card>
+  <Card title="rules" href="/docs/skills/rules">Project instructions injected into every session.</Card>
+  <Card title="Skills overview" href="/docs/skills">All LazyCodex skills.</Card>
+</Cards>

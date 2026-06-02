@@ -1,0 +1,86 @@
+---
+title: CLI
+description: lazycodex-ai npm 可执行文件、转发到 OmO 的方式、--dry-run 标志，以及会话内命令支柱。
+---
+
+LazyCodex 只提供一个 CLI：`lazycodex-ai` npm 可执行文件。它是一个轻量转发器 —— 每次调用都会展开为通过 `npx` 运行的 `omo` 命令。没有全局安装，始终通过 `npx` 调用。
+
+## 如何转发到 OmO
+
+可执行文件读取参数并转发给 `oh-my-openagent`。`install` 子命令被特殊处理以固定 Codex 平台；其余的原样透传。
+
+<Tabs items={["install", "其他命令"]}>
+
+<Tab value="install">
+
+```bash
+npx lazycodex-ai install
+```
+
+展开为：
+
+```bash
+npx --yes --package oh-my-openagent omo install --platform=codex
+```
+
+`install` 之后的任何参数都会原样追加。例如：
+
+```bash
+npx lazycodex-ai install --no-tui --codex-autonomous
+# → npx --yes --package oh-my-openagent omo install --platform=codex --no-tui --codex-autonomous
+```
+
+</Tab>
+
+<Tab value="其他命令">
+
+非 `install` 的首个参数会不加平台固定地直接转发给 `omo`：
+
+```bash
+npx lazycodex-ai <args...>
+# → npx --yes --package oh-my-openagent omo <args...>
+```
+
+</Tab>
+
+</Tabs>
+
+## `--dry-run`
+
+把 `--dry-run` 作为**第一个**参数，会打印解析后的 `npx` 命令而不运行，然后退出：
+
+```bash
+npx lazycodex-ai --dry-run install --no-tui --codex-autonomous
+```
+
+打印：
+
+```text
+npx --yes --package oh-my-openagent omo install --platform=codex --no-tui --codex-autonomous
+```
+
+`--dry-run` 在转发前被剥离，因此其余参数的解析与真实运行完全一致。可用它在执行前确认确切的 `omo` 调用。
+
+## 退出行为
+
+可执行文件以继承的 stdio 运行解析后的命令，并以该命令的状态码退出。若 `npx` 本身无法启动，则打印错误并以非零码退出。
+
+## 会话内命令支柱
+
+安装后，LazyCodex 在 Codex 内注册 OmO 的命令支柱。这些命令在 Codex 会话中输入，而非在 shell 中。安装程序会显示确切的 `$command` 语法。
+
+| 命令 | 输入 | 作用 |
+| --- | --- | --- |
+| [`$ulw-plan`](/zh/docs/commands/ulw-plan) | `$ulw-plan "what to build"` | Prometheus 战略规划器。把计划写入 `plans/<slug>.md`，从不编写产品代码。 |
+| [`$start-work`](/zh/docs/commands/start-work) | `$start-work [plan-name] [--worktree <path>]` | 执行计划直至每个复选框完成，打印 **ORCHESTRATION COMPLETE**。 |
+| [`$ulw-loop`](/zh/docs/commands/ulw-loop) | `$ulw-loop "task" [--completion-promise=TEXT] [--strategy=reset\|continue]` | 自指循环，直到 Oracle 验证完成。ultrawork 模式上限 500 次，普通模式 100 次。 |
+| [`/init-deep`](/zh/docs/commands/init-deep) | `/init-deep` | 生成分层的 `AGENTS.md` 项目记忆。 |
+
+完整说明见[命令](/zh/docs/commands)概览。
+
+## 另见
+
+<Cards>
+  <Card title="配置" href="/zh/docs/reference/configuration">安装标志与 Codex 平台目标。</Card>
+  <Card title="快速开始" href="/zh/docs/getting-started">把 LazyCodex 安装到 Codex。</Card>
+</Cards>

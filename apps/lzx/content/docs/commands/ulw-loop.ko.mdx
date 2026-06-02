@@ -1,0 +1,87 @@
+---
+title: $ulw-loop
+description: 결과가 실제로 끝났는지 Oracle이 검증할 때까지 멈추지 않는 자기 참조 루프입니다.
+---
+
+`$ulw-loop`는 LazyCodex의 지속성 명령어입니다. 희망 섞인 상태 보고가 아니라, Oracle이 증거를 바탕으로 결과를 검증한 뒤에야 멈추는 자기 참조 개발 루프를 실행합니다.
+
+작업이 열린 형태이고, 에이전트의 "끝났다" 선언이 아니라 증거로 완료 여부를 판단하고 싶을 때 사용합니다.
+
+## 문법
+
+```bash
+$ulw-loop "task description" [--completion-promise=TEXT] [--strategy=reset|continue]
+```
+
+| 구성 요소 | 의미 |
+| --- | --- |
+| `"task description"` | 도달하고자 하는 결과입니다. 단계가 아니라 원하는 결과를 적습니다. |
+| `--completion-promise=TEXT` | 작업이 끝났다고 판단했을 때 에이전트가 출력해야 하는 정확한 문구입니다. |
+| `--strategy=reset` | 매 반복을 깨끗한 상태에서 시작합니다. |
+| `--strategy=continue` | 반복 사이에 컨텍스트를 이어서 가져갑니다. |
+
+## 동작 방식
+
+이 루프는 의도적으로 에이전트 스스로의 판단만으로는 끝나지 않도록 설계되어 있습니다.
+
+<Steps>
+
+<Step>
+
+### 계속해서 작업합니다
+
+에이전트는 계획하고, 실행하고, 증거를 모읍니다. `ultrawork` 모드가 강제하는 결과 우선, 증거 기반 규율과 동일합니다.
+
+</Step>
+
+<Step>
+
+### 완료 약속을 출력합니다
+
+작업이 끝났다고 판단하면 에이전트는 `<promise>DONE</promise>`(또는 `--completion-promise`로 지정한 문구)를 출력합니다. 이는 의도를 알리는 신호일 뿐, 루프를 끝내지는 **않습니다**.
+
+</Step>
+
+<Step>
+
+### Oracle가 검증합니다
+
+Oracle가 증거를 바탕으로 결과를 검토합니다. 시스템이 Oracle의 검증을 확인한 뒤에야 루프가 종료됩니다.
+
+</Step>
+
+<Step>
+
+### 실패 시 계속 진행합니다
+
+검증에 실패하면 루프는 다음 메시지와 함께 계속됩니다. _"Oracle verification failed. Continuing ULTRAWORK loop."_
+
+</Step>
+
+</Steps>
+
+## 반복 횟수 한도
+
+루프가 무한히 돌지 않도록 상한이 있습니다.
+
+| 모드 | 반복 한도 |
+| --- | --- |
+| ultrawork 모드 | 500 |
+| 일반 모드 | 100 |
+
+## 언제 사용하나요
+
+- 작업이 **열린 형태**일 때 — "불안정한 테스트 스위트를 통과시켜줘", "빌드를 그린 상태로 만들어줘", "이 마이그레이션을 끝내줘".
+- 완료 여부를 상태 보고가 아니라 **증거**로 판단하고 싶을 때.
+- Oracle가 승인할 때까지 에이전트가 계속 반복하도록 맡기고 싶을 때.
+
+코드 전에 계획이 필요한 결정 중심의 작업이라면 `$ulw-plan`을 사용하세요. 이미 만들어진 계획을 마지막 체크박스까지 실행하려면 `$start-work`를 사용하세요.
+
+## 관련 문서
+
+<Cards>
+<Card title="$ulw-plan" href="/ko/docs/commands/ulw-plan" />
+<Card title="$start-work" href="/ko/docs/commands/start-work" />
+<Card title="ultrawork 루프" href="/ko/docs/concepts/ultrawork" />
+<Card title="규율 에이전트" href="/ko/docs/concepts/discipline-agents" />
+</Cards>

@@ -1,0 +1,81 @@
+---
+title: lsp
+description: Codex 向けの language-server 診断・定義・参照・シンボル・安全な rename。
+---
+
+`lsp` スキルは、Codex ワークスペース内で LazyCodex（LZX）に language-server 級の精度を与えます。シンボルを grep したり型エラーを推測したりする代わりに、Codex は実際の language server に診断・定義・参照・ドキュメントシンボル・rename の安全性を問い合わせます。LazyCodex が Codex にインストールする OmO（oh-my-openagent）プラグインに同梱されています。
+
+## 一行要約
+
+コードについて確実な答えが必要なときに `lsp` を使います —— 編集後に何が間違っているか、シンボルがどこで定義されているか、誰が使っているか、rename は安全か。`lsp.*` という名前はツールインターフェース経由で呼び出す MCP ツール呼び出しであり、シェルコマンドではありません。
+
+## ツール
+
+| ツール | 用途 |
+|---|---|
+| `lsp.status` | 設定済み・インストール済み・欠落・無効・アクティブな language server を一覧。 |
+| `lsp.diagnostics` | ファイルやディレクトリの診断を確認。編集後は `severity: "error"` 推奨。 |
+| `lsp.goto_definition` | ファイル・行・文字位置からシンボル定義を特定。 |
+| `lsp.find_references` | ワークスペース全体でシンボルの使用箇所を検索。 |
+| `lsp.symbols` | ドキュメントシンボルの検査、またはワークスペースシンボルの検索。 |
+| `lsp.prepare_rename` | その位置で rename が有効か確認。 |
+| `lsp.rename` | language-server のワークスペース編集で rename を適用。 |
+
+## 典型的な流れ
+
+<Steps>
+
+<Step>
+
+### サーバーを確認
+
+診断が language server の欠落を報告したら、まず `lsp.status` で設定・インストール・無効の状態を確認します。
+
+</Step>
+
+<Step>
+
+### 編集後に検証
+
+`apply_patch` の後、触れたファイルに `severity: "error"` で `lsp.diagnostics` を実行し、変更がクリーンにコンパイルされるか確認します。
+
+</Step>
+
+<Step>
+
+### 安全なナビゲーションと rename
+
+`lsp.goto_definition` と `lsp.find_references` で影響範囲を把握し、`lsp.prepare_rename` → `lsp.rename` でサーバー自身の編集を通じてワークスペース全体の rename を適用します。
+
+</Step>
+
+</Steps>
+
+## 設定
+
+プロジェクト設定は `.codex/lsp-client.json`、ユーザー設定は `~/.codex/lsp-client.json` にあります。
+
+```json
+{
+  "lsp": {
+    "typescript": {
+      "command": ["typescript-language-server", "--stdio"],
+      "extensions": [".ts", ".tsx", ".js", ".jsx"]
+    }
+  }
+}
+```
+
+サーバーが欠落と報告されたら、`lsp.status` がバイナリ未インストールか、無効か、単に未設定かを教えてくれます。
+
+## 関連 —— AST-grep
+
+構造的な検索・書き換え（テキストではなく形でコードをマッチし、マッチしたパターンを書き換える）には、LazyCodex は LSP ツールに加えて AST-grep も提供します。LSP は実シンボルに関する意味論的な問いに答え、AST-grep は構文木レベルのパターンマッチと編集を行います。両者は精密な IDE 級の変更のために補完し合います。
+
+## 関連スキル
+
+<Cards>
+  <Card title="programming" href="/ja/docs/skills/programming">すべての行に適用される型規律。</Card>
+  <Card title="comment-checker" href="/ja/docs/skills/comment-checker">編集系操作後のフィードバック。</Card>
+  <Card title="スキル概要" href="/ja/docs/skills">すべての LazyCodex スキル。</Card>
+</Cards>

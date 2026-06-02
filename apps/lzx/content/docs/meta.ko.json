@@ -1,0 +1,12 @@
+{
+  "title": "LazyCodex 문서",
+  "pages": [
+    "index",
+    "getting-started",
+    "guides",
+    "commands",
+    "concepts",
+    "skills",
+    "reference"
+  ]
+}

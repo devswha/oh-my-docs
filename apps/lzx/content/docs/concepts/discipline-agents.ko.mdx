@@ -1,0 +1,52 @@
+---
+title: 규율 에이전트
+description: Sisyphus가 Hephaestus, Oracle, Librarian을 오케스트레이션하는 — Codex 안에서 병렬로 동작하는 협력형 AI 개발 팀.
+---
+
+LazyCodex(LZX)는 하나의 거대한 프롬프트로 돌지 않습니다. Codex 안에 작은 **규율 에이전트** 진영을 설치하며, 각 에이전트는 하나의 역할에 맞춰져 있습니다. Sisyphus가 의도를 읽고 위임하면 전문 에이전트들이 각자의 레인에서 일하고, 루프는 희망 섞인 상태 보고가 아니라 증거로 결과가 검증될 때까지 계속 움직입니다.
+
+이 에이전트들은 **OmO(oh-my-openagent)** 하니스에서 옵니다. LazyCodex는 그 하니스를 Codex용으로 패키징한 얇은 배포 레이어입니다 — "Codex를 위한 LazyVim". 아래 역할은 이 페이지에서 지어낸 것이 아니라 하니스의 것입니다.
+
+## 에이전트 진영
+
+<Cards>
+  <Card title="Sisyphus" href="/ko/docs/concepts/discipline-agents">메인 오케스트레이터. 의도를 읽고 계획하고 위임하며, 진행을 추적하고 작업을 끝까지 마칩니다.</Card>
+  <Card title="Hephaestus" href="/ko/docs/concepts/discipline-agents">자율적인 심층 작업자. 구현, 아키텍처, 디버깅, 종합을 담당합니다.</Card>
+  <Card title="Oracle" href="/ko/docs/concepts/discipline-agents">읽기 전용 검증 및 아키텍처·디버깅 자문. 쓰기는 하지 않습니다.</Card>
+  <Card title="Librarian" href="/ko/docs/concepts/discipline-agents">문서, 원격 저장소, OSS 예제를 빠르고 저렴하게 검색합니다.</Card>
+</Cards>
+
+## 역할 한눈에 보기
+
+| 에이전트 | 역할 | 경계 |
+|---|---|---|
+| **Sisyphus** | 오케스트레이터 | 의도를 읽고 작업을 나눠 전문 에이전트에 위임하며, todo를 추적하고 작업이 끝났을 때만 멈춥니다. |
+| **Hephaestus** | 구현 | 코드를 작성하고 디버깅하며 어려운 로직과 종합을 추론하는 심층 작업자입니다. |
+| **Oracle** | 검증·리뷰 | 아키텍처와 디버깅을 위한 읽기 전용 자문가입니다. 완료를 검증하며 쓰기·수정·위임은 하지 않습니다. |
+| **Librarian** | 검색 | 리서치 전용. 문서, 원격 저장소, OSS 코드를 가져옵니다. 쓰기·수정·위임은 하지 않습니다. |
+
+Oracle과 Librarian의 읽기 전용 경계는 하니스의 일부입니다. "똑똑한" 에이전트가 잘못된 역할에서 위험한 작업을 하는 것을 막아, 검색과 리뷰가 코드베이스를 조용히 변경하지 못하게 합니다.
+
+## 협력 방식
+
+위임하는 에이전트는 Sisyphus 하나뿐입니다. 요청을 단위로 나눠 알맞은 전문 에이전트에 넘깁니다:
+
+- **Hephaestus**는 구현과 어려운 추론 단위를 맡습니다.
+- **Oracle**은 결과를 검증하고, 읽기 전용으로 아키텍처와 디버깅을 자문합니다.
+- **Librarian**은 작업자가 필요로 하는 컨텍스트(문서, 저장소, 예제)를 가져옵니다.
+
+위임이 명시적이기 때문에 여러 레인이 동시에 돌 수 있습니다.
+
+## 병렬 실행
+
+LazyCodex는 메인 세션이 결과 없이도 계속 진행할 수 있을 때 전문 에이전트를 병렬로 실행합니다. 독립적인 리서치와 자기완결적 단위는 동시에 돌고, 결과가 다음 구현 결정을 막을 때는 동기적으로 유지됩니다. 각 단위는 작업에 맞는 모델과 짝지어집니다 — [멀티 모델 라우팅](/ko/docs/concepts/model-routing)을 보세요.
+
+## 어디에 맞물리나
+
+- 커맨드 기둥이 이 에이전트들을 구동합니다: [`$ulw-plan`](/ko/docs/commands/ulw-plan)이 계획하고, [`$start-work`](/ko/docs/commands/start-work)가 계획을 실행하며, [`$ulw-loop`](/ko/docs/commands/ulw-loop)는 Oracle이 검증한 완료까지 루프를 돕니다.
+- 루프를 멈추게 하는 것은 검증된 완료입니다 — [ultrawork 루프](/ko/docs/concepts/ultrawork)를 보세요.
+
+<Cards>
+  <Card title="멀티 모델 라우팅" href="/ko/docs/concepts/model-routing">각 단위가 알맞은 GPT 모델에 도달하는 방식.</Card>
+  <Card title="ultrawork 루프" href="/ko/docs/concepts/ultrawork">완료가 검증될 때까지 도는 자기 참조 루프.</Card>
+</Cards>

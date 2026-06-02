@@ -1,0 +1,36 @@
+---
+title: 技能
+description: LazyCodex 在命令支柱之上加载的专家手册。
+---
+
+LazyCodex 把 OmO（oh-my-openagent）封装为 Codex 智能体框架。在命令支柱（`$ulw-plan`、`$start-work`、`$ulw-loop`、`/init-deep`）之上，OmO 插件安装了一组技能：可复用的指令包，把专注的 worker 变成领域专家。
+
+技能在 Codex 会话内部调用。纪律智能体（Sisyphus、Hephaestus、Oracle、Librarian）加载与任务领域重叠的技能，然后遵循其手册执行。
+
+## 已安装的技能
+
+| 技能 | 用途 |
+| --- | --- |
+| [`review-work`](/zh/docs/skills/review-work) | 多角度的实现后评审 |
+| [`remove-ai-slops`](/zh/docs/skills/remove-ai-slops) | 保持行为不变地清理 AI 痕迹代码 |
+| [`frontend-ui-ux`](/zh/docs/skills/frontend-ui-ux) | 经过设计的 UI，而非泛泛地填充布局 |
+| [`programming`](/zh/docs/skills/programming) | 严格的 TypeScript、Rust、Python、Go 规范 |
+| [`LSP`](/zh/docs/skills/lsp) | 诊断、定义、引用、符号与重命名 |
+| `AST-grep` | 跨代码的结构化搜索与重写 |
+| [`rules`](/zh/docs/skills/rules) | 来自 AGENTS、rules、指令文件的项目指令 |
+| [`comment-checker`](/zh/docs/skills/comment-checker) | 编辑类操作后的反馈 |
+
+## 技能的位置
+
+- 命令支柱掌管循环：规划、执行、经过验证的完成。
+- 技能在这些支柱周围加入专家判断：评审、清理、UI 打磨、语言规范、代码智能。
+- 技能只为当前任务加载，结束后卸载，使智能体提示保持精简。
+
+## 各技能文档
+
+<Cards>
+  <Card title="review-work" href="/zh/docs/skills/review-work">五个并行智能体评审已完成的工作，必须全部通过。</Card>
+  <Card title="remove-ai-slops" href="/zh/docs/skills/remove-ai-slops">先用测试锁定行为，再清除 AI slop，最后验证。</Card>
+  <Card title="frontend-ui-ux" href="/zh/docs/skills/frontend-ui-ux">设计师转开发者的手艺，打造精致 UI 表面。</Card>
+  <Card title="命令支柱" href="/zh/docs/commands">技能运行其上的 `$ulw-*` 与 `/init-deep` 工作流。</Card>
+</Cards>

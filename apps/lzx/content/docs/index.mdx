@@ -1,0 +1,57 @@
+---
+title: LazyCodex
+description: The OmO agent harness packaged for Codex — project memory, planning, execution, and verified completion. LazyVim for Codex.
+---
+
+![LazyCodex](/images/hero.png)
+
+**LazyCodex (LZX)** packages [OmO (oh-my-openagent)](https://github.com/code-yeongyu/oh-my-openagent) as the Codex agent harness for complex codebases. Think LazyVim for lazy.nvim, but for Codex.
+
+OmO gives Codex a full agent harness: discipline agents, parallel execution, multi-model routing, a skills system, and hooks. LazyCodex packages that harness as a repeatable Codex setup you install with one `npx` line — no global install.
+
+> _"LazyVim made Neovim usable for the rest of us. LazyCodex does the same for Codex."_
+
+## What you get
+
+| Feature | Description |
+| --- | --- |
+| **Discipline agents** | Sisyphus orchestrates Hephaestus, Oracle, and Librarian — a full AI dev team. |
+| **Parallel execution** | Multiple agents work simultaneously on independent subtasks. |
+| **Multi-model routing** | The right model per task category, chosen automatically. |
+| **Skills system** | An extensible skill library for specialized work. |
+| **Hooks & lifecycle** | Pre/post hooks for every agent action. |
+| **Zero config** | Sensible defaults out of the box; override when you want. |
+
+## The command pillars
+
+LazyCodex installs three command pillars plus a project-memory command for Codex. Invoke the pillars with the `$command` syntax the installer prints.
+
+| Command | What it does |
+| --- | --- |
+| `/init-deep` | Generates hierarchical `AGENTS.md` project memory. |
+| `$ulw-plan` | Prometheus strategic planner. Writes a plan to `plans/<slug>.md`; never writes product code. |
+| `$start-work` | Executes a plan until every checkbox is done, then prints **ORCHESTRATION COMPLETE**. |
+| `$ulw-loop` | Self-referential loop that runs until Oracle-verified completion. |
+
+A typical flow: run `/init-deep` once for project memory, `$ulw-plan "what to build"` to decide the approach, then `$start-work` to execute it — or reach for `$ulw-loop "task"` when you want the work to keep moving until the result is verified by evidence.
+
+## Why different GPT models appear
+
+OmO does not spend your strongest model on every subtask. It defines task categories and routes each one to the most appropriate model: `quick` lands on a small model like `gpt-5.4-mini`, `ultrabrain` uses a high-reasoning GPT model for hard logic, and agentic coding paths use Codex-tuned GPT models. The point is quota discipline — strong models for deep reasoning, faster models when that is enough.
+
+## Explore the docs
+
+<Cards>
+  <Card title="Getting Started" href="/docs/getting-started" description="Install LazyCodex into Codex and run your first task." />
+  <Card title="Commands" href="/docs/commands" description="The command pillars: ulw-plan, start-work, ulw-loop, init-deep." />
+  <Card title="Concepts" href="/docs/concepts" description="The ultrawork loop, discipline agents, and model routing." />
+  <Card title="Skills" href="/docs/skills" description="review-work, remove-ai-slops, frontend-ui-ux, programming, and more." />
+  <Card title="Use cases & guide" href="/docs/guides" description="Worked examples for everyday tasks." />
+  <Card title="Reference" href="/docs/reference" description="Configuration and CLI." />
+</Cards>
+
+## Next steps
+
+- [Getting Started](/docs/getting-started) — install LazyCodex and run your first task.
+- The underlying engine: [oh-my-openagent (OmO)](https://github.com/code-yeongyu/oh-my-openagent)
+- [LazyCodex on GitHub](https://github.com/code-yeongyu/lazycodex)

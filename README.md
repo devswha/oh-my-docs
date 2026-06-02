@@ -1,11 +1,12 @@
 # oh-my-docs
 
-`oh-my-docs`는 다음 4개 문서 사이트를 한 저장소에서 함께 관리하기 위한 monorepo입니다.
+`oh-my-docs`는 다음 5개 문서 사이트를 한 저장소에서 함께 관리하기 위한 monorepo입니다.
 
 - `apps/codex` — `oh-my-codex-docs`
 - `apps/claudecode` — `oh-my-claudecode-docs`
 - `apps/openagent` — `oh-my-openagent-docs`
 - `apps/gajae-code` — `gajae-code-docs`
+- `apps/lzx` — `lzx-docs`
 
 ## 운영 원칙
 
@@ -29,6 +30,7 @@ npm run dev:codex
 npm run dev:claudecode
 npm run dev:openagent
 npm run dev:gajae-code
+npm run dev:lzx
 npm run build
 npm run lint
 ```

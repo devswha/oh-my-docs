@@ -1,0 +1,56 @@
+---
+title: rules
+description: AGENTS・rules・instruction ファイルから自動注入されるプロジェクト指示。
+---
+
+`rules` スキルは、LazyCodex（LZX）をプロジェクト固有の指示にしっかり固定します。Codex で OmO（oh-my-openagent）プラグインを有効にすると、プロジェクトルールが自動注入されます —— 毎セッション貼り付けなくても、Codex は常に `AGENTS.md`、`CLAUDE.md`、ルールファイルをコンテキストに置いて作業します。
+
+## 一行要約
+
+Codex Rules は自動です。セッション開始ごと、各プロンプトごとに静的なプロジェクト指示を注入し、編集後にはファイル固有のルールを注入します。実行するコマンドはありません —— プラグインを有効にすれば、リポジトリの規約がどこでも Codex に付いてきます。
+
+## 注入される内容
+
+- `SessionStart` と `UserPromptSubmit` での**静的なプロジェクト指示**。
+- デフォルトで Codex `apply_patch` 後の**マッチするファイル固有ルール**。
+
+動的な `PostToolUse` 出力は追加コンテキストとして注入され、プラグインデータセッション単位で重複排除されます。Codex Rules はツール出力を書き換えず、その隣に指示を加えるだけです。
+
+## サポートするプロジェクトソース
+
+| ソース | 備考 |
+|---|---|
+| `AGENTS.md` | 主要なプロジェクトメモリ（`/init-deep` と対）。 |
+| `CLAUDE.md` | Claude スタイル互換の指示。 |
+| `CONTEXT.md` | 一般的なプロジェクトコンテキスト。 |
+| `.sisyphus/rules/**/*.md` | 規律エージェントのルールツリー。 |
+| `.claude/rules/**/*.md` | Claude ルールディレクトリ。 |
+| `.cursor/rules/**/*.md` | Cursor ルール。 |
+| `.github/instructions/**/*.md` | GitHub instruction ファイル。 |
+| `.github/copilot-instructions.md` | Copilot 指示。 |
+
+## 設定
+
+環境変数で挙動を調整します。
+
+| 変数 | 効果 |
+|---|---|
+| `CODEX_RULES_DISABLED=1` | スキルを完全に無効化。 |
+| `CODEX_RULES_MODE=both\|static\|dynamic\|off` | static・dynamic・both・off を選択。 |
+| `CODEX_RULES_MAX_RULE_CHARS=<number>` | 注入される各ルールのサイズを制限。 |
+| `CODEX_RULES_MAX_RESULT_CHARS=<number>` | 注入される結果コンテキストのサイズを制限。 |
+| `CODEX_RULES_ENABLED_SOURCES=AGENTS.md,.sisyphus/rules` | 読み込むソースを限定。 |
+
+レガシーの `PI_RULES_*` 変数は、`pi-rules` から移行するユーザー向けのフォールバックとして受け付けられます。
+
+## `/init-deep` との対
+
+`/init-deep` は階層的な `AGENTS.md` プロジェクトメモリを生成し、`rules` スキルがそのメモリを毎セッション・毎プロンプトで Codex の前に保ちます。メモリを一度生成すれば、以降は `rules` が注入し続けます。
+
+## 関連スキル
+
+<Cards>
+  <Card title="comment-checker" href="/ja/docs/skills/comment-checker">編集系操作後のフィードバック。</Card>
+  <Card title="programming" href="/ja/docs/skills/programming">すべての行に適用される型規律。</Card>
+  <Card title="スキル概要" href="/ja/docs/skills">すべての LazyCodex スキル。</Card>
+</Cards>

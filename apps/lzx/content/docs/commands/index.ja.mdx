@@ -1,0 +1,69 @@
+---
+title: コマンドの柱
+description: 4 つの LazyCodex コマンド — $ulw-plan、$start-work、$ulw-loop、/init-deep — とその組み合わせ方。
+---
+
+LazyCodex は小さく安定したコマンドレイヤーを Codex に導入します。コマンドレイヤーは意図的にシンプルに保ち、専門的な判断は[スキル](/ja/docs/skills)が担います。これらのコマンドは Codex 向けの OmO コマンドとして提供され、インストーラーが表示する `$command` 構文で呼び出します。
+
+## 4 つの柱
+
+| コマンド | 入力 | 役割 |
+| --- | --- | --- |
+| [`$ulw-plan`](/ja/docs/commands/ulw-plan) | `$ulw-plan "what to build"` | Prometheus 戦略プランナー。`plans/<slug>.md` に計画を書きます。製品コードは決して書きません。 |
+| [`$start-work`](/ja/docs/commands/start-work) | `$start-work [plan-name] [--worktree <path>]` | すべてのチェックボックスが完了するまで計画を実行し、**ORCHESTRATION COMPLETE** を出力します。 |
+| [`$ulw-loop`](/ja/docs/commands/ulw-loop) | `$ulw-loop "task" [--completion-promise=TEXT] [--strategy=reset\|continue]` | Oracle が検証した完了まで回る自己参照ループ。ultrawork モードで最大 500 回、通常モードで 100 回。 |
+| [`/init-deep`](/ja/docs/commands/init-deep) | `/init-deep` | 階層的な `AGENTS.md` プロジェクトメモリを生成します。大規模または変更直後のコードベースで実行します。 |
+
+## どう組み合わせるか
+
+自然な流れが 2 つあります。開始時点でどれだけ分かっているかで選びます。
+
+<Steps>
+
+<Step>
+
+### まず計画し、次に実行
+
+実装前に判断が必要な作業では、まず計画し、その計画を `$start-work` に渡します。
+
+```bash
+$ulw-plan "add OAuth login with refresh tokens"
+$start-work
+```
+
+`$ulw-plan` はあなたにインタビューし、コードベースを探索し、製品コードに触れずに `plans/<slug>.md` を書きます。続いて `$start-work` がその計画を、永続的な Boulder 進捗とともにチェックボックス一つずつ完了まで進めます。
+
+</Step>
+
+<Step>
+
+### オープンエンドな作業の検証済み完了
+
+希望的観測の状況報告ではなく、証拠が完了を証明するまで動き続けるべき作業では、ループを回します。
+
+```bash
+$ulw-loop "make the flaky payment tests pass"
+```
+
+エージェントは作業を続けて完了の約束を発しますが、ループは Oracle が結果を検証した後にのみ終わります。検証に失敗すれば継続します。
+
+</Step>
+
+</Steps>
+
+## プロジェクトメモリが先
+
+大規模なコードベースでは、いずれの流れの前にも一度 `/init-deep` を実行してください。複雑なディレクトリにスコアを付け、階層的な `AGENTS.md` を書き出し、以降のすべてのコマンドが十分な文脈から始まるようにします。
+
+```bash
+/init-deep
+```
+
+## 各コマンドを見る
+
+<Cards>
+  <Card title="$ulw-plan" href="/ja/docs/commands/ulw-plan">Prometheus 戦略計画 — アイデアを決定の整った計画へ。</Card>
+  <Card title="$start-work" href="/ja/docs/commands/start-work">すべてのチェックボックスが付くまでの永続的な計画実行。</Card>
+  <Card title="$ulw-loop" href="/ja/docs/commands/ulw-loop">Oracle が検証する完了を備えた自己参照ループ。</Card>
+  <Card title="/init-deep" href="/ja/docs/commands/init-deep">階層的な AGENTS.md プロジェクトメモリ。</Card>
+</Cards>

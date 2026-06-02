@@ -1,0 +1,103 @@
+---
+title: はじめに
+description: 一行の npx コマンドで LazyCodex を Codex に導入し、認証し、init-deep、ulw-plan、start-work、ulw-loop で最初のタスクを実行します。
+---
+
+LazyCodex は一行の `npx` コマンドで OmO エージェントハーネスを Codex に導入します。グローバルインストールは不要です。まずセットアップを終え、最初のタスクを進めます。
+
+<Steps>
+
+<Step>
+
+### 前提条件
+
+LazyCodex は OpenAI Codex 内で動作するため、[OpenAI Codex CLI](https://github.com/openai/codex) がインストールされ正常に動作している必要があります。
+
+</Step>
+
+<Step>
+
+### インストール
+
+一行で済みます。グローバルインストールや `npm i -g` は不要で、常に `npx` を使います。
+
+```bash
+npx lazycodex-ai install
+```
+
+これは Codex プラットフォームを対象とする OmO インストーラーの短縮形です。
+
+```bash
+npx --yes --package oh-my-openagent omo install --platform=codex
+```
+
+完全自律・TUI なしのセットアップには、自律モードのフラグを追加します。
+
+```bash
+npx lazycodex-ai install --no-tui --codex-autonomous
+```
+
+インストーラーは OmO ハーネス（コマンド、スキル、フック、モデルルーティング）をあなたの Codex セットアップに組み込みます。LLM エージェントにインストールとセットアップを任せることを強く推奨します。エージェントがサブスクリプション検出、モデル選択、プロバイダー認証を自動で処理します。
+
+</Step>
+
+<Step>
+
+### 認証
+
+LazyCodex は Codex 内で動作するため、認証は既存の Codex/OpenAI ログインに加え、ルーティングしたい OmO プロバイダーキーで構成されます。インストール TUI が、サブスクリプション検出・モデル選択・プロバイダー認証を含むセットアップを案内します。
+
+プロバイダーキーとルーティングの詳細は[設定](/ja/docs/reference/configuration)を参照してください。
+
+</Step>
+
+<Step>
+
+### 最初のタスクを実行する
+
+まずプロジェクトメモリを作り、それからコマンドの柱を使います。柱コマンドはインストーラーが表示する `$command` 構文で呼び出します。
+
+最初に、エージェントが十分な文脈から始められるよう階層型の `AGENTS.md` プロジェクトメモリを生成します。
+
+```text
+/init-deep
+```
+
+次に作業に合った柱を選びます。
+
+- `$ulw-plan "何を作るか"` — Prometheus が方針を計画し `plans/<slug>.md` に書き出します。プロダクトコードは決して書きません。
+- `$start-work [plan-name] [--worktree <path>]` — すべてのチェックボックスが完了するまで計画を実行し、**ORCHESTRATION COMPLETE** を出力します。
+- `$ulw-loop "タスク" [--completion-promise=TEXT] [--strategy=reset|continue]` — Oracle が検証する完了に達するまで実行される自己参照ループです。
+
+典型的な流れは、先に計画し、それから実行します。
+
+```text
+/init-deep
+$ulw-plan "タスク管理用の REST API を作る"
+$start-work
+```
+
+あるいは、結果が証拠で検証されるまで進め続けたいオープンエンドなタスクなら、ループを直接使います。
+
+```text
+$ulw-loop "失敗しているチェックアウトフローを修正し、端から端まで検証する"
+```
+
+</Step>
+
+</Steps>
+
+## スキル
+
+コマンドの柱に加えて、LazyCodex は専門作業のために OmO のスキルレイヤー（`review-work`、`remove-ai-slops`、`frontend-ui-ux`、`programming`、`LSP`、`rules`、`comment-checker` など）を導入します。コマンドレイヤーはシンプルなまま、スキルが専門家の判断を補います。全ライブラリは[スキル](/ja/docs/skills)を参照してください。
+
+## 次のステップ
+
+<Cards>
+  <Card title="コマンド" href="/ja/docs/commands" description="コマンドの柱：ulw-plan、start-work、ulw-loop、init-deep。" />
+  <Card title="コンセプト" href="/ja/docs/concepts" description="ultrawork ループ、規律エージェント、モデルルーティング。" />
+  <Card title="ユースケース & ガイド" href="/ja/docs/guides" description="日常タスクの実践例。" />
+</Cards>
+
+- 基盤エンジン：[oh-my-openagent (OmO)](https://github.com/code-yeongyu/oh-my-openagent)
+- [GitHub の LazyCodex](https://github.com/code-yeongyu/lazycodex)

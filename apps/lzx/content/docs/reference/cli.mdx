@@ -1,0 +1,86 @@
+---
+title: CLI
+description: The lazycodex-ai npm bin, how it forwards to OmO, the --dry-run flag, and the in-session command pillars.
+---
+
+LazyCodex provides one CLI: the `lazycodex-ai` npm bin. It is a thin forwarder — every invocation expands into an `omo` command run through `npx`. There is no global install; always invoke via `npx`.
+
+## How it forwards to OmO
+
+The bin reads your arguments and forwards them to `oh-my-openagent`. The `install` subcommand is special-cased to pin the Codex platform; everything else passes straight through.
+
+<Tabs items={["install", "other commands"]}>
+
+<Tab value="install">
+
+```bash
+npx lazycodex-ai install
+```
+
+expands to:
+
+```bash
+npx --yes --package oh-my-openagent omo install --platform=codex
+```
+
+Any arguments after `install` are appended verbatim. For example:
+
+```bash
+npx lazycodex-ai install --no-tui --codex-autonomous
+# → npx --yes --package oh-my-openagent omo install --platform=codex --no-tui --codex-autonomous
+```
+
+</Tab>
+
+<Tab value="other commands">
+
+Any first argument other than `install` forwards directly to `omo` with no platform pin added:
+
+```bash
+npx lazycodex-ai <args...>
+# → npx --yes --package oh-my-openagent omo <args...>
+```
+
+</Tab>
+
+</Tabs>
+
+## `--dry-run`
+
+Put `--dry-run` as the **first** argument to print the resolved `npx` command instead of running it, then exit:
+
+```bash
+npx lazycodex-ai --dry-run install --no-tui --codex-autonomous
+```
+
+prints:
+
+```text
+npx --yes --package oh-my-openagent omo install --platform=codex --no-tui --codex-autonomous
+```
+
+`--dry-run` is stripped before forwarding, so the remaining arguments resolve exactly as they would in a real run. Use it to confirm the exact `omo` invocation before executing.
+
+## Exit behavior
+
+The bin runs the resolved command with inherited stdio and exits with that command's status. If `npx` itself fails to spawn, it prints the error and exits non-zero.
+
+## In-session command pillars
+
+Once installed, LazyCodex registers OmO's command pillars inside Codex. These are typed in your Codex session, not on the shell. The installer shows the exact `$command` syntax.
+
+| Command | Type this | What it does |
+| --- | --- | --- |
+| [`$ulw-plan`](/docs/commands/ulw-plan) | `$ulw-plan "what to build"` | Prometheus strategic planner. Writes a plan to `plans/<slug>.md`. Never writes product code. |
+| [`$start-work`](/docs/commands/start-work) | `$start-work [plan-name] [--worktree <path>]` | Executes a plan until every checkbox is done. Prints **ORCHESTRATION COMPLETE**. |
+| [`$ulw-loop`](/docs/commands/ulw-loop) | `$ulw-loop "task" [--completion-promise=TEXT] [--strategy=reset\|continue]` | Self-referential loop until Oracle-verified completion. Caps at 500 iterations in ultrawork mode, 100 in normal mode. |
+| [`/init-deep`](/docs/commands/init-deep) | `/init-deep` | Generates hierarchical `AGENTS.md` project memory. |
+
+See the [Commands](/docs/commands) overview for the full breakdown.
+
+## See also
+
+<Cards>
+  <Card title="Configuration" href="/docs/reference/configuration">Install flags and the Codex platform target.</Card>
+  <Card title="Getting started" href="/docs/getting-started">Install LazyCodex into Codex.</Card>
+</Cards>

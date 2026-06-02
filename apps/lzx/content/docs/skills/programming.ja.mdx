@@ -1,0 +1,105 @@
+---
+title: programming
+description: TypeScript・Rust・Python・Go に共通する厳格な規律 —— 型優先、TDD。
+---
+
+`programming` スキルは、LazyCodex（LZX）が書くすべてのコードに適用する型規律です。Codex が `.py`、`.pyi`、`.rs`、`.ts`、`.tsx`、`.mts`、`.cts`、`.go` ファイルやプロジェクトマニフェストに触れた瞬間に自動で有効化されます。専用コマンドはなく、LazyCodex が Codex にインストールする OmO（oh-my-openagent）プラグインに同梱されています。
+
+## 一行要約
+
+4 言語に共通する 1 つの哲学：**型優先・スタック優先・async 正確・ファイルサイズに正直。** 厳格な型、モダンなツールチェーン、parse-don't-validate、網羅的マッチ、型付きエラー、エスケープハッチ禁止、250 純 LOC 上限、TDD。使い捨てスクリプトも同じ扱いです。
+
+## 言語ゲート
+
+1 行書く前に、スキルはまず言語を識別し、対応するリファレンスを読み込みます。言語別ルールがロードされるまで何も書きません。
+
+| ファイル / 言語 | ツールチェーン |
+|---|---|
+| `.py`、`.pyi`（Python） | uv + basedpyright（`typeCheckingMode = "all"`）+ ruff（`select = ["ALL"]`）+ pytest |
+| `.rs`、`Cargo.toml`（Rust） | cargo + clippy（`pedantic` + `nursery`）+ rustfmt + cargo-nextest + nightly miri |
+| `.ts`、`.tsx`、`.mts`、`.cts`（TypeScript） | Bun + Biome + `tsc --noEmit`（strict + `noUncheckedIndexedAccess`） |
+| `.go`、`go.mod`（Go） | go modules + gofumpt + golangci-lint v2 + nilaway + `go test -race` |
+
+## 共有哲学
+
+すべてのレシピが派生する 6 つの公理です。
+
+1. **型システムは証明システムである。** バグを型エラーとして表現できるなら、必ず型エラーで表現します。
+2. **Parse, don't validate。** 信頼できない入力は境界で一度だけ型付き値にパースし（Pydantic v2 / serde / Zod）、内部では再検証しません。
+3. **1 つの名前 = 1 つの概念。** `UserId` は `string` ではありません。意味の異なるプリミティブごとに `NewType`、newtype タプル struct、branded type を使います。
+4. **常に網羅的 variant マッチ。** `match` + `assert_never`（Python）、`match`（Rust）、`switch` + `assertNever`（TypeScript）、sealed interface + 網羅 linter（Go）。tagged variant への `if`/`elif`/`else` は禁止です。
+5. **フレームワークの保証を信頼し、境界でのみ検証する。** 防御的 null チェックや、例外を投げ得ないコードへの `try/except` は禁止です。
+6. **テスト駆動。** 必要性を証明する失敗テストなしに本番コードは出しません。
+
+## TDD 規律
+
+すべての変更は red → green → refactor の順に従います。
+
+<Steps>
+
+<Step>
+
+### Red
+
+Given / When / Then で振る舞いを名づけた失敗テストを書きます。実行して、正しい理由で失敗するか確認します —— タイプミスや import 不足ではなく、関数がまだ存在しないことが理由であるべきです。
+
+</Step>
+
+<Step>
+
+### Green
+
+テストを通す最小限のコードを書きます。2 つ目のケースは次の red です。
+
+</Step>
+
+<Step>
+
+### Refactor
+
+テストが green の状態で容赦なく再構成します。テストがセーフティネットです。
+
+</Step>
+
+</Steps>
+
+テストピラミッドは 3 段すべてを備えます。高速な **unit** テスト多数（各 < 10ms）、testcontainers で実下流を検証する **integration** テスト一部、実インターフェースを駆動する **E2E** シナリオ少数。E2E カバレッジが 0 の機能は未完成です。mock は最後の手段で、実オブジェクト → インメモリ fake → testcontainers を先に試します。
+
+## 250 純 LOC 上限
+
+純 LOC（空行・コメント除く）が 250 を超えるソースファイルはスタイル嗜好ではなく**欠陥**です。250 LOC ならレビュアーがファイル全体を作業記憶に収め、横断的バグを発見できます。
+
+- **作成**時に 250 LOC を超えるファイル：初回コミット前に責務ごとに分割します。
+- **編集**時に既に 250 LOC を超えたファイルへ追記：触れるユニットを先に独立ファイルへ抽出します。
+- **読む**時に 250 LOC を超えたファイル：smell を明示し、具体的な分割案を示してから続行可否を尋ねます。
+
+禁じられた逃げ：コメントを予算に算入、トークン数で分割（`service-2.ts`）、catch-all ダンプファイル（`utils.py`、`helpers.ts`）、230 LOC で「ほぼ完了」とする。
+
+## 言語横断の鉄則
+
+言語別リファレンスがより厳格でない限り適用されます。
+
+- デフォルトは不変（`frozen=True` / `let` / `readonly` / 値型）。
+- すべての意味単位に branded プリミティブ。
+- エスケープハッチ禁止：`any`/`Any`、`unwrap`/`!`、`# type: ignore`/`@ts-ignore`、数値 `as` ナローイング禁止。
+- 裸のエラー文字列禁止 —— 型付き例外、`thiserror`/`anyhow`、`Error` サブクラス、sentinel + `%w` ラップ。
+- RAII でリソース管理（`with` / `Drop` / `using` / `defer`）。
+- 必須 async ランタイム：anyio（裸 asyncio 禁止）、tokio、`AbortSignal` ベースのプラットフォームネイティブ、`context.Context` + errgroup。
+
+## 書いた後のレビューループ
+
+コードの記述・実質的な編集を終え、完了を宣言する前に実行します。
+
+1. 変更した各ファイルの純 LOC を**測定**します。
+2. **判定**：≤ 200 健全、200–250 警告帯、> 250 欠陥（即リファクタ）。
+3. 単一責務、境界の純度、網羅マッチ、エスケープハッチ、防御層、使い捨て helper、テストカバレッジを**自己レビュー**します。
+
+上限超過または 2 件以上の問題があれば、スキルは `refactor`（安全な codemap 駆動の多段リファクタ）または `remove-ai-slops`（テストを先に固定する分類クリーンアップ）を読み込みます。
+
+## 関連
+
+<Cards>
+  <Card title="lsp" href="/ja/docs/skills/lsp">診断・定義・参照・安全な rename。</Card>
+  <Card title="comment-checker" href="/ja/docs/skills/comment-checker">編集系操作後のフィードバック。</Card>
+  <Card title="スキル概要" href="/ja/docs/skills">すべての LazyCodex スキル。</Card>
+</Cards>

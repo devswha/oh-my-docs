@@ -1,0 +1,42 @@
+---
+title: comment-checker
+description: 편집류 작업 후 주석에 대한 자동 피드백.
+---
+
+`comment-checker` 스킬은 LazyCodex(LZX)가 작성하는 주석을 정직하게 유지합니다. 편집 후 훅이 건드린 주석을 검사하고, 문제가 있으면 Codex에게 차단형(blocking) 피드백을 전달해 다음으로 넘어가기 전에 고치게 합니다. LazyCodex가 Codex에 설치하는 OmO(oh-my-openagent) 플러그인에 포함되어 있습니다.
+
+## 한 줄 요약
+
+`comment-checker`는 편집류 작업 후 자동으로 실행됩니다. 경고를 보고하면 Codex는 차단형 피드백을 받고, 플래그된 주석을 고치거나 그 정당성을 설명한 뒤에야 계속 진행할 수 있습니다. 호출할 명령이나 MCP 도구는 없으며, 그저 실행됩니다.
+
+## 동작 방식
+
+플러그인은 성공한 편집류 호출에 대해 `PostToolUse` 훅을 등록합니다.
+
+- `apply_patch`
+- `write`
+- `edit`
+- `multi_edit`
+- `multiedit`
+
+이 중 하나의 호출 후 체커가 주석을 플래그하면 Codex는 차단형 피드백을 받습니다. 기대는 단순합니다 — 플래그된 주석을 고치거나, 왜 올바른지 설명한 뒤 다음 단계로 넘어갑니다.
+
+## 범위
+
+| 항목 | 동작 |
+|---|---|
+| MCP 도구 | 노출되지 않음 — 호출할 것이 없습니다. |
+| 비편집 도구 | 이 플러그인이 무시합니다. |
+| 체커 바이너리 누락 | 훅 출력을 내지 않아 일반 Codex 작업이 중단 없이 이어집니다. |
+
+## 왜 중요한가
+
+주석 드리프트(아래 코드와 어긋나는 주석)는 서서히 쌓이는 혼란의 전형적 원인입니다. 검사가 주석을 도입한 바로 그 편집에서 발동하므로, 피드백이 나중 리뷰가 아니라 변경이 아직 생생할 때 도착합니다. `programming` 스킬의 작성 후 리뷰 루프와 자연스럽게 짝을 이룹니다.
+
+## 관련 스킬
+
+<Cards>
+  <Card title="programming" href="/ko/docs/skills/programming">모든 줄에 적용되는 타입 규율.</Card>
+  <Card title="rules" href="/ko/docs/skills/rules">모든 세션에 주입되는 프로젝트 지침.</Card>
+  <Card title="스킬 개요" href="/ko/docs/skills">모든 LazyCodex 스킬.</Card>
+</Cards>

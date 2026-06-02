@@ -1,0 +1,72 @@
+---
+title: review-work
+description: 다섯 에이전트가 병렬로 도는 다각도 구현 후 리뷰입니다.
+---
+
+`review-work`는 구현 후 리뷰 오케스트레이터입니다. 의미 있는 구현을 마친 뒤, 다섯 개의 전문 서브 에이전트를 병렬로 띄워 서로 보완하는 각도에서 작업을 검사합니다. 리뷰가 통과하려면 다섯이 모두 통과해야 합니다. 하나라도 실패하면 리뷰는 실패입니다.
+
+"review work", "review my work", "review changes", "QA my work", "verify implementation", "post-implementation review" 같은 표현이 트리거입니다.
+
+## 다섯 에이전트
+
+| # | 에이전트 | 유형 | 답하는 질문 | 레벨 |
+| --- | --- | --- | --- | --- |
+| 1 | 목표·제약 검증자 | Oracle | 규칙 안에서 요청한 그대로 만들었는가? | MAIN |
+| 2 | QA 실행자 | unspecified-high | 실제로 돌렸을 때 동작하는가? | MAIN |
+| 3 | 코드 리뷰어 | Oracle | 코드가 잘 쓰였고 일관적인가? | MAIN |
+| 4 | 보안 감사자 | Oracle | 보안 취약점이 있는가? | SUB |
+| 5 | 컨텍스트 마이너 | unspecified-high | 놓친 맥락은 없는가? | MAIN |
+
+Oracle 에이전트는 파일을 읽거나 명령을 실행할 수 없으므로 diff, 전체 파일 내용, 맥락을 모두 프롬프트로 받습니다. `unspecified-high` 에이전트는 자율적이라 파일을 읽고 명령을 실행하며 도구를 쓰기 때문에, 원본 덩어리 대신 목표와 단서를 받습니다.
+
+## 동작 방식
+
+<Steps>
+
+<Step>
+
+### Phase 0 — 컨텍스트 수집
+
+먼저 입력을 모으되 대부분 대화 기록에서 가져옵니다: 원래의 GOAL, CONSTRAINTS, BACKGROUND. CHANGED_FILES와 DIFF는 git에서 자동 수집하고, 변경된 각 파일의 전체 내용을 읽고, RUN_COMMAND를 `package.json`, `Makefile`, `docker-compose.yml`에서 찾습니다.
+
+```bash
+git diff --name-only HEAD~1   # 또는: git diff --name-only main...HEAD
+git diff HEAD~1               # 또는: git diff main...HEAD
+```
+
+메인 워크트리에서 PR 브랜치를 체크아웃하지 않습니다. 새 git 워크트리(`git worktree add`)를 만들어 그곳에서 작업합니다.
+
+</Step>
+
+<Step>
+
+### Phase 1 — 다섯을 한꺼번에 띄우기
+
+다섯 에이전트를 한 턴에 모두, 각각 백그라운드로 띄웁니다. 순차 실행도, 사이에 기다림도 없습니다. 목표 검증자는 목표를 하위 요구사항으로 쪼개 각각 ACHIEVED / MISSED / PARTIAL로 표시합니다. QA 실행자는 15~30개 시나리오를 브레인스토밍해 보강하고, 작업 목록을 만들어 우선순위대로 실행합니다. 코드 리뷰어는 정확성, 패턴 일관성, 타입 안전성, 성능, 기술 부채를 평가합니다. 보안 감사자는 입력 검증, 인증, 시크릿, 데이터 노출을 점검합니다. 컨텍스트 마이너는 git 이력, GitHub, 커뮤니케이션 채널, 코드 교차 참조를 뒤집니다.
+
+</Step>
+
+<Step>
+
+### Phase 2 — 대기 및 수집
+
+띄운 뒤 턴을 끝냅니다. 에이전트가 끝날 때마다 결과를 수집합니다. 다섯이 모두 끝나기 전에는 최종 보고서를 내지 않습니다.
+
+</Step>
+
+<Step>
+
+### Phase 3 — 판정 전달
+
+다섯 모두 PASS면 REVIEW PASSED, 하나라도 FAIL이면 REVIEW FAILED입니다. 최종 보고서는 영역별로 표를 만들고, 차단 이슈를 모으고, 핵심 발견을 나열하며, 실패 시 무엇을 어떤 순서로 고칠지 정확히 적습니다.
+
+</Step>
+
+</Steps>
+
+## 판정 로직
+
+- 모든 에이전트가 판정과 확신도를 냅니다.
+- 단 한 번의 FAIL이 전체 리뷰를 실패시킵니다.
+- 실패 시 발견 사항은 문제, 파일, 수정안을 짚습니다. 막연한 "X를 개선해 보세요"는 없습니다.
+- 성공 시 보고서는 짧게 유지하고, 차단되지 않는 제안만 적습니다.

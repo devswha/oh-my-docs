@@ -1,0 +1,77 @@
+---
+title: 配置
+description: 安装标志、Codex 平台目标、zero-config 默认值，以及 provider 与模型设置在 OmO 中的位置。
+---
+
+LazyCodex 把配置保持到最小。LazyCodex 直接暴露的旋钮只有安装标志；之后的一切 —— provider、模型、路由、钩子 —— 都在底层的 OmO 引擎中配置。
+
+## 默认 zero-config
+
+LazyCodex 自带合理默认值，安装后即可使用。只有当默认值不适合你的仓库时才需要动配置。无需预先创建独立配置文件 —— 安装后即可开始工作。
+
+```bash
+npx lazycodex-ai install
+```
+
+没有全局安装，始终通过 `npx` 调用。这是 `npx --yes --package oh-my-openagent omo install --platform=codex` 的简写。
+
+## Codex 平台目标
+
+LazyCodex 始终面向 Codex。`--platform=codex` 参数已内置于 `lazycodex-ai` 可执行文件的 `install` 路径，因此框架连接到 [OpenAI Codex CLI](https://github.com/openai/codex) 而非其他平台。你不需要自行传入 `--platform`。
+
+### 前置条件
+
+- [Bun](https://bun.sh)
+- [OpenAI Codex CLI](https://github.com/openai/codex)
+
+## 安装标志
+
+<Tabs items={["交互式", "自主"]}>
+
+<Tab value="交互式">
+
+默认安装程序是交互式（TUI）。它检测订阅、协助选择模型并引导 provider 认证。
+
+```bash
+npx lazycodex-ai install
+```
+
+强烈建议让 LLM 代理运行安装并完成设置 —— 它会自动处理订阅检测、模型选择与 provider 认证。
+
+</Tab>
+
+<Tab value="自主">
+
+要实现完全自主、无提示的设置，请同时加上两个标志：
+
+```bash
+npx lazycodex-ai install --no-tui --codex-autonomous
+```
+
+| 标志 | 作用 |
+| --- | --- |
+| `--no-tui` | 不使用交互式 TUI 运行安装程序。 |
+| `--codex-autonomous` | 将 Codex 配置为自主运行。 |
+
+`install` 之后的任何标志都会原样转发给 `omo install`。
+
+</Tab>
+
+</Tabs>
+
+## provider 与模型设置
+
+provider 与模型配置由 OmO 而非 LazyCodex 负责。安装期间，OmO 会询问你拥有哪些模型订阅，并据此为每个任务类别路由 —— 这就是多模型路由层。
+
+- 安装程序会替你接好 provider 认证。让代理运行是推荐路径。
+- provider 密钥从环境读取。请将所有 `*_API_KEY` 与 OAuth 凭据视为机密 —— 切勿记录或提交。
+- 超出安装范围的更深 provider/模型调优沿用 OmO 约定。其 provider 环境变量与模型解析规则请参阅 OmO 文档。
+
+> 请勿臆造 provider 密钥。使用所选 provider 文档化的密钥，通过环境提供，并让安装程序解析路由。
+
+## 另见
+
+<Cards>
+  <Card title="CLI" href="/zh/docs/reference/cli">`lazycodex-ai` 如何转发到 OmO，以及 `--dry-run`。</Card>
+  <Card title="模型路由" href="/zh/docs/concepts/model-routing">为何按任务类别出现不同的 GPT 模型。</Card>
+</Cards>

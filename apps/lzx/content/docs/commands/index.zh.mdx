@@ -1,0 +1,69 @@
+---
+title: 命令支柱
+description: 四个 LazyCodex 命令 — $ulw-plan、$start-work、$ulw-loop、/init-deep — 及其组合方式。
+---
+
+LazyCodex 在 Codex 中安装一个小而稳定的命令层。命令层刻意保持简单，专业判断交给[技能](/zh/docs/skills)。这些命令以 Codex 的 OmO 命令形式提供，使用安装器显示的 `$command` 语法调用。
+
+## 四大支柱
+
+| 命令 | 输入 | 作用 |
+| --- | --- | --- |
+| [`$ulw-plan`](/zh/docs/commands/ulw-plan) | `$ulw-plan "what to build"` | Prometheus 战略规划器。将计划写入 `plans/<slug>.md`，从不编写产品代码。 |
+| [`$start-work`](/zh/docs/commands/start-work) | `$start-work [plan-name] [--worktree <path>]` | 执行计划直到每个复选框完成，输出 **ORCHESTRATION COMPLETE**。 |
+| [`$ulw-loop`](/zh/docs/commands/ulw-loop) | `$ulw-loop "task" [--completion-promise=TEXT] [--strategy=reset\|continue]` | 自引用循环，运行至 Oracle 验证完成为止。ultrawork 模式上限 500 次，普通模式 100 次。 |
+| [`/init-deep`](/zh/docs/commands/init-deep) | `/init-deep` | 生成分层 `AGENTS.md` 项目记忆。在大型或刚变更的代码库上运行。 |
+
+## 如何组合
+
+有两种自然流程，按照开始时的已知程度选择。
+
+<Steps>
+
+<Step>
+
+### 先规划，再执行
+
+当工作在实现前需要决策时，先规划，再把计划交给 `$start-work`。
+
+```bash
+$ulw-plan "add OAuth login with refresh tokens"
+$start-work
+```
+
+`$ulw-plan` 会访谈你、探索代码库，并在不触碰产品代码的情况下写出 `plans/<slug>.md`。随后 `$start-work` 以持久的 Boulder 进度逐个复选框推进，直到完成。
+
+</Step>
+
+<Step>
+
+### 开放式工作的已验证完成
+
+当工作应持续推进，直到由证据（而非乐观的状态汇报）证明完成时，运行该循环。
+
+```bash
+$ulw-loop "make the flaky payment tests pass"
+```
+
+智能体持续工作并发出完成承诺，但循环只有在 Oracle 验证结果后才结束。验证失败则继续。
+
+</Step>
+
+</Steps>
+
+## 项目记忆先行
+
+对于大型代码库，在任一流程之前先运行一次 `/init-deep`。它为复杂目录评分并写出分层 `AGENTS.md`，让后续每个命令都从充分的上下文开始。
+
+```bash
+/init-deep
+```
+
+## 逐一了解命令
+
+<Cards>
+  <Card title="$ulw-plan" href="/zh/docs/commands/ulw-plan">Prometheus 战略规划 — 把想法变成决策完备的计划。</Card>
+  <Card title="$start-work" href="/zh/docs/commands/start-work">持久的计划执行，直到每个复选框被勾选。</Card>
+  <Card title="$ulw-loop" href="/zh/docs/commands/ulw-loop">带 Oracle 验证完成的自引用循环。</Card>
+  <Card title="/init-deep" href="/zh/docs/commands/init-deep">分层 AGENTS.md 项目记忆。</Card>
+</Cards>

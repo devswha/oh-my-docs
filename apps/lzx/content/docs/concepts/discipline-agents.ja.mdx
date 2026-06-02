@@ -1,0 +1,52 @@
+---
+title: ディシプリンエージェント
+description: Sisyphus が Hephaestus、Oracle、Librarian をオーケストレーションする、Codex 内で並列に動く協調型 AI 開発チーム。
+---
+
+LazyCodex(LZX)は 1 つの巨大なプロンプトとして動くのではなく、Codex に小さな **ディシプリンエージェント** の陣容をインストールします。各エージェントは 1 つの役割に特化しています。Sisyphus が意図を読んで委譲し、専門エージェントがそれぞれのレーンで働き、ループは希望的なステータス報告ではなく証拠で結果が検証されるまで進み続けます。
+
+これらのエージェントは **OmO(oh-my-openagent)** ハーネス由来です。LazyCodex はそのハーネスを Codex 向けにパッケージした薄い配布レイヤー —— 「Codex のための LazyVim」です。以下の役割はこのページの創作ではなく、ハーネスのものです。
+
+## 陣容
+
+<Cards>
+  <Card title="Sisyphus" href="/ja/docs/concepts/discipline-agents">メインオーケストレーター。意図を読み、計画し、委譲し、進捗を追い、仕事を完遂します。</Card>
+  <Card title="Hephaestus" href="/ja/docs/concepts/discipline-agents">自律的なディープワーカー。実装、アーキテクチャ、デバッグ、統合。</Card>
+  <Card title="Oracle" href="/ja/docs/concepts/discipline-agents">読み取り専用の検証とアーキテクチャ/デバッグ相談。書き込みなし。</Card>
+  <Card title="Librarian" href="/ja/docs/concepts/discipline-agents">ドキュメント、リモートリポジトリ、OSS 例を高速・低コストで取得します。</Card>
+</Cards>
+
+## 役割の概観
+
+| エージェント | 役割 | 境界 |
+|---|---|---|
+| **Sisyphus** | オーケストレーター | 意図を読み、作業を分割し、専門エージェントへ委譲し、todo を追い、タスク完了時のみ停止します。 |
+| **Hephaestus** | 実装 | コードを書き、デバッグし、難しいロジックと統合を推論するディープワーカー。 |
+| **Oracle** | 検証・レビュー | アーキテクチャとデバッグの読み取り専用コンサルタント。完了を検証し、書き込み・編集・委譲は行いません。 |
+| **Librarian** | 取得 | 調査専用。ドキュメント、リモートリポジトリ、OSS コードを取得します。書き込み・編集・委譲は行いません。 |
+
+Oracle と Librarian の読み取り専用境界はハーネスの一部です。「賢い」エージェントが誤った役割で危険な作業をするのを防ぎ、取得とレビューがコードベースを黙って変更しないようにします。
+
+## 連携のしかた
+
+委譲するエージェントは Sisyphus だけです。リクエストをユニットに分割し、適切な専門エージェントへ渡します:
+
+- **Hephaestus** は実装と難しい推論のユニットを担います。
+- **Oracle** は結果を検証し、読み取り専用でアーキテクチャとデバッグを相談に応じます。
+- **Librarian** はワーカーが必要とするコンテキスト(ドキュメント、リポジトリ、例)を取得します。
+
+委譲が明示的なため、複数のレーンを同時に走らせられます。
+
+## 並列実行
+
+メインセッションが結果なしで進められる場合、LazyCodex は専門エージェントを並列実行します。独立した調査と自己完結ユニットは同時に走り、結果が次の実装判断をブロックする場合は同期で保ちます。各ユニットは仕事に合うモデルと組み合わされます —— [マルチモデルルーティング](/ja/docs/concepts/model-routing)を参照してください。
+
+## 位置づけ
+
+- コマンドの柱がこれらのエージェントを駆動します: [`$ulw-plan`](/ja/docs/commands/ulw-plan)が計画し、[`$start-work`](/ja/docs/commands/start-work)が計画を実行し、[`$ulw-loop`](/ja/docs/commands/ulw-loop)が Oracle 検証済みの完了までループします。
+- ループを止めるのは検証済みの完了です —— [ultrawork ループ](/ja/docs/concepts/ultrawork)を参照してください。
+
+<Cards>
+  <Card title="マルチモデルルーティング" href="/ja/docs/concepts/model-routing">各ユニットが適切な GPT モデルに到達する仕組み。</Card>
+  <Card title="ultrawork ループ" href="/ja/docs/concepts/ultrawork">完了が検証されるまで回る自己参照ループ。</Card>
+</Cards>
