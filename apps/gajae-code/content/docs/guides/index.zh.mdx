@@ -1,133 +1,194 @@
 ---
-title: 指南
-description: 用 Gajae-Code 循环从头到尾修复一个真实 bug —— deep-interview 厘清、ralplan 评审、ultragoal 推进、必要时 team 并行执行，以及最后拿到的证据。
+title: 用例与指南
+description: 为任务选择最小的工作流 —— 直接编辑、deep-interview、ralplan、ultragoal 或 team —— 并附上最常见 Gajae-Code 任务的示例命令序列。
 ---
 
-本指南用 Gajae-Code 工作循环把一个任务走完整流程：一次具体的 bug 修复。它遵循 README 的操作顺序——用 `deep-interview` 厘清，用 `ralplan` 评审方法，用 `ultragoal` 把工作推进到实现、修订与验证，并在并行 worker 有帮助时加上可选的 `team` 步骤。
+Gajae-Code(`gjc`)刻意保持公开表面精简:四个工作流技能(`deep-interview`、`ralplan`、`team`、`ultragoal`)和四个角色代理(`executor`、`architect`、`planner`、`critic`)。要点是选择最适合任务的最小工作流,然后让它把剩下的工作推进到底。
 
-重点是展示每一步该期待什么、会拿到什么证据。这是操作顺序而非隐藏的自动化：agent 仍会报告改了什么、修订了什么、运行了哪些检查、有哪些证据支撑修复。
+## 选择最适合的最小工作流
 
-## 开始之前
+大多数任务不需要完整循环。任务需要多少,就爬多高:
 
-启动推荐的 tmux 会话。bug 修复通常希望保持主检出干净，因此在隔离的 Git worktree 中运行：
+1. **直接编辑** —— 带有文件路径、函数名或验收标准、清晰且低风险的工作。直接做,无需工作流。
+2. **`deep-interview`** —— 意图、范围或验收标准模糊时使用。在规划或改代码前用苏格拉底式提问消除歧义。
+3. **`ralplan`** —— 能规划,但在方案、顺序或验证上需要达成一致时使用。Planner/Architect/Critic 循环在变更前批评计划。
+4. **`ultragoal`** —— 持久、可审计的多步目标。工作被拆成留存在 `.gjc/` 下的目标账本,并贯穿实现、修订、验证。
+5. **`team`** —— 仅当*已批准*的工作能从并行 tmux worker 中获益时使用。
 
-```sh
-gjc --tmux --worktree <path>
-```
+计划产物在你明确批准执行路径前保持 `pending approval`。`deep-interview` 和 `ralplan` 不会自行启动实现 —— 它们产出规格或计划后即停止。
 
-为一次性或分支专属的工作使用专用路径。循环是 `deep-interview -> ralplan -> ultragoal`，仅当协调的并行 worker 有帮助时再加 `team`。
+| 工作流 | 何时使用 |
+| --- | --- |
+| 直接编辑 | 能精确描述、清晰且低风险的变更。 |
+| `deep-interview` | 意图 / 范围 / 验收标准模糊。 |
+| `ralplan` | 可规划,但方案 / 顺序 / 验证需要共识。 |
+| `ultragoal` | 带持久账本、可审计的持久目标。 |
+| `team` | 能从并行 tmux worker 获益的已批准工作。 |
 
-## 走查
+## 用例
+
+### 修复 bug
+
+这是典型的完整循环:明确、规划、推进、验证。每一步都以证据收尾,而非"写了点代码"。
+
+- **何时使用:** 改代码前需先锁定原因或修复边界的真实缺陷。
+- **技能 / 代理:** `deep-interview` → `ralplan` → `ultragoal`,由 `critic` 审查计划、`executor` 做有界修复;仅并行工作才加 `team`。
 
 <Steps>
 
 <Step>
 
-### 用 `deep-interview` 厘清 bug
+#### 用 `deep-interview` 明确 bug
 
-在任何规划或改动前先消除歧义。运行 `deep-interview` 锁定 bug、受影响的行为、非目标，以及证明修复有效的验收检查。
+在规划前锁定 bug、受影响的行为、非目标和验收检查。
 
 ```text
 /skill:deep-interview clarify the bug, affected behavior, non-goals, and acceptance checks
 ```
 
-**期待：** 一份厘清后的 bug 报告，而非代码改动。产物保持 `pending approval`；`deep-interview` 不会自行开始实现。
+你得到的是一份明确的 bug 报告 —— 一份标记为 `pending approval` 的规格,而非代码变更。
 
 </Step>
 
 <Step>
 
-### 用 `ralplan` 转为评审后的计划
+#### 用 `ralplan` 转为已评审的计划
 
-意图与验收标准清晰后，在变更前构建并评审计划。`ralplan` 把 bug 报告转成修复计划，交给只读的 `critic`，在动代码前抓出薄弱的排序或验证。
+`ralplan` 让明确的报告经过 Planner/Architect/Critic 共识循环,在动代码前抓出薄弱的顺序或单薄的验证。
 
 ```text
 /skill:ralplan turn the clarified bug report into a reviewed fix plan
 ```
 
-**期待：** 一份同样保持 `pending approval` 的评审后修复计划。尚未实现任何内容；满意后再显式批准。
+已评审的计划同样保持 `pending approval`。你需明确批准方案。
 
 </Step>
 
 <Step>
 
-### 用 `ultragoal` 创建持久目标
+#### 用 `ultragoal` 创建持久目标
 
-把批准的计划交给 `ultragoal`，它把工作作为持久目标跟踪，贯穿实现、修订与验证。用 `--brief-file` 传入计划：
+把已批准的计划交给 `ultragoal`,它将工作作为持久目标跟踪。用 `--brief-file` 传入计划:
 
 ```sh
 gjc ultragoal create-goals --brief-file <approved-plan>
 ```
 
-**期待：** 工作被拆分为可审计的目标台账。台账、计划与规格持久保存在 `.gjc/` 下，便于日后审查。
+工作成为 `.gjc/ultragoal/` 下可审计的目标账本。
 
 </Step>
 
 <Step>
 
-### （可选）用 `team` 拆分工作
+#### (可选)用 `team` 拆分工作
 
-仅当任务受益于协调的并行 worker 时才加 `team`。例如把这次修复的实现与验证拆给两个 tmux 支持的 `executor`：
+仅当并行 worker 确实有帮助时,把实现与验证拆给基于 tmux 的 `executor` worker:
 
 ```sh
 gjc team 2:executor "split implementation and verification for this bug fix"
 ```
 
-**期待：** `team` 是可选执行模式，不是必需的交接。单线程修复可跳过；并行 tmux worker 真正有帮助时再用。
+`team` 是可选执行模式,并非必经环节。单线程修复时跳过它。
 
 </Step>
 
 <Step>
 
-### 完成目标并收集证据
+#### 完成目标并收集证据
 
-把目标推进到完成。`ultragoal` 不止步于「写了点代码」，而是推进到最终的证据汇总。
+把目标推进到完成。`ultragoal` 将工作推进到最终的证据摘要。
 
 ```sh
 gjc ultragoal complete-goals
 ```
 
-**期待：** 完成的任务附带运行过的检查及其结果。agent 报告改了什么、修订了什么、运行了哪些检查、有哪些证据支撑修复。
+你拿回:改了什么、发现问题后修订了什么、跑了哪些检查,以及 `.gjc/` 下留存的轨迹。
 
 </Step>
 
 </Steps>
 
-## 完整操作顺序
+供参考,整个流程汇于一处:
 
 ```text
 /skill:deep-interview clarify the bug, affected behavior, non-goals, and acceptance checks
 /skill:ralplan turn the clarified bug report into a reviewed fix plan
 gjc ultragoal create-goals --brief-file <approved-plan>
-# 仅并行工作时可选：
+# Optional only for parallel work:
 gjc team 2:executor "split implementation and verification for this bug fix"
 gjc ultragoal complete-goals
 ```
 
-## 证据是什么样的
+### 构建新功能
 
-完成的 `ultragoal` 不止于 diff。agent 会报告：
+- **何时使用:** 大致知道想要什么,但需求仍带有值得暴露的假设的新能力。
+- **技能 / 代理:** 范围模糊时从 `deep-interview` 起步,再用 `ralplan` 形成共识计划,然后 `ultragoal` 推进;`executor` 实现,`architect` 与 `critic` 审查。
 
-- **改了什么** —— `executor` 做的具体编辑、修复与重构。
-- **发现后修订了什么** —— 验证或评审暴露问题后所做的调整。
-- **运行了哪些检查** —— 计划中的验证步骤及其结果。
-- **有哪些证据支撑修复** —— `.gjc/` 下持久保存、可供日后审计的轨迹。
+当功能较大或需求模糊时,推荐链是明确性 → 可行性 → 持久目标:
 
-## 路由：用合适的最小工作流
+```text
+/skill:deep-interview clarify the feature, scope, non-goals, and acceptance criteria
+/skill:ralplan turn the clarified spec into a reviewed implementation plan
+gjc ultragoal create-goals --brief-file <approved-plan>
+gjc ultragoal complete-goals
+```
 
-这次修复用了完整循环，但多数任务需要更少。选择满足请求的最小工作流：
+若需求已清晰到可直接规划,跳过 `deep-interview`,从 `ralplan` 开始。
 
-1. 清晰、低风险的编辑直接实现。
-2. 意图、范围或验收标准模糊时用 `deep-interview`。
-3. 需求清晰可规划，但架构、排序或验证需要共识时用 `ralplan`。
-4. 工作应拆为带可审计台账的持久目标时用 `ultragoal`。
-5. 批准的工作受益于并行 worker 时用 `team`。
+### 安全地重构或清理
 
-## 继续了解
+- **何时使用:** 想在验证前与主检出隔离的结构性变更。
+- **技能 / 代理:** 隔离的 Git worktree,加上用于方案的 `ralplan` 与跟踪变更的 `ultragoal`;`architect` 只读审查。
+
+在隔离的 Git worktree 中运行会话,使主检出保持干净:
+
+```sh
+gjc --tmux --worktree <path>
+```
+
+为一次性或分支专属工作使用专用路径。在 worktree 内用 `ralplan` 规划,再用 `ultragoal` 跟踪变更。
+
+### 探索陌生的代码库
+
+- **何时使用:** 改动前需先理解系统。
+- **技能 / 代理:** 先用只读的 `architect` 与 `planner`。`architect` 负责架构与代码评审评估,`planner` 负责顺序与验收标准。二者都不修改文件。
+
+先以只读角色摸清系统,待能描述具体变更后再转入 `ralplan`。在有值得批准的计划前,探索保持只读。
+
+### 长时、放手或并行的工作
+
+- **何时使用:** 需要跨越单次推理存活的多步目标,或能在 worker 间干净拆分的工作。
+- **技能 / 代理:** 用 `ultragoal` 提供持久的、领导者所有的账本,`team` 作为可见的 tmux 执行引擎。
+
+`ultragoal` 拥有 `.gjc/ultragoal/goals.json` 和 `.gjc/ultragoal/ledger.jsonl`;`team` 将任务与验证证据返回给领导者。领导者据此打检查点 —— worker 从不自行为 `ultragoal` 打检查点。
+
+```sh
+gjc ultragoal create-goals --brief-file <approved-plan>
+gjc team 2:executor "<task description>"
+gjc ultragoal complete-goals
+```
+
+### 快速回答或小改动
+
+- **何时使用:** 一个问题、一行修复,或任何能精确描述的变更。
+- **技能 / 代理:** 无。直接执行就是对的工具。
+
+无需工作流。带有明确锚点(文件路径、函数名或验收标准)的请求就足以直接处理。只有当歧义或持久性确有必要时,才动用工作流。
+
+## worktree 隔离工作
+
+任何应与主检出隔离的工作 —— 重构、有风险的实验、分支专属任务 —— 都在隔离的 Git worktree 中运行:
+
+```sh
+gjc --tmux --worktree <path>
+```
+
+为一次性或分支专属工作使用专用路径,使主检出保持干净。
+
+## 继续阅读
 
 <Cards>
-  <Card title="核心概念" href="/zh/docs/concepts" />
   <Card title="工作流" href="/zh/docs/workflows" />
-  <Card title="ultragoal" href="/zh/docs/workflows/ultragoal" />
-  <Card title="team" href="/zh/docs/workflows/team" />
+  <Card title="代理" href="/zh/docs/agents" />
+  <Card title="核心概念" href="/zh/docs/concepts" />
 </Cards>

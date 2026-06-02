@@ -3,11 +3,11 @@
   "pages": [
     "index",
     "getting-started",
+    "guides",
     "concepts",
     "workflows",
     "agents",
     "tools",
-    "reference",
-    "guides"
+    "reference"
   ]
 }

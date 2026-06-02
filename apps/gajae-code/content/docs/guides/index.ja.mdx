@@ -1,133 +1,194 @@
 ---
-title: ガイド
-description: Gajae-Code ループで実際のバグを最初から最後まで修正する —— deep-interview で明確化、ralplan で批評、ultragoal で推進、必要なら team で並列実行、そして最後に得られる証拠まで。
+title: ユースケースとガイド
+description: タスクに合う最小のワークフロー —— 直接編集、deep-interview、ralplan、ultragoal、team —— を選び、最も一般的な Gajae-Code タスクごとのコマンド例を添えます。
 ---
 
-このガイドは 1 つのタスクを Gajae-Code の動作ループで最後まで進めます。対象は具体的なバグ修正です。README の操作シーケンスに従います。`deep-interview` で明確化し、`ralplan` でアプローチを批評し、`ultragoal` で実装・改訂・検証まで進め、並列ワーカーが役立つときに任意で `team` ステップを加えます。
+Gajae-Code(`gjc`)は公開表面を意図的に小さく保ちます。4 つのワークフロースキル(`deep-interview`、`ralplan`、`team`、`ultragoal`)と 4 つのロールエージェント(`executor`、`architect`、`planner`、`critic`)だけです。要点は、タスクに合う最小のワークフローを選び、その後はそのワークフローに作業を最後まで運ばせることです。
 
-狙いは各ステップで何を期待し、どんな証拠が返るかを示すことです。これは隠れた自動化ではなく操作シーケンスです。エージェントは何を変え、何を改訂し、どの検査を実行し、どの証拠が修正を裏付けるかを報告します。
+## タスクに合う最小のワークフローを選ぶ
 
-## 始める前に
+ほとんどのタスクに完全なループは不要です。作業が求める分だけ、はしごを登ってください。
 
-推奨の tmux セッションを起動します。バグ修正では通常メインチェックアウトをきれいに保ちたいので、隔離した Git worktree 内で実行します。
+1. **直接編集** —— ファイルパス、関数名、受け入れ基準が明確で低リスクの作業。ワークフロー不要、そのまま実行します。
+2. **`deep-interview`** —— 意図・範囲・受け入れ基準が曖昧なとき。計画やコード変更の前に、ソクラテス式の質問で曖昧さを取り除きます。
+3. **`ralplan`** —— 計画は立てられるが、アプローチ・順序・検証で合意が必要なとき。Planner/Architect/Critic ループが変更前に計画を批評します。
+4. **`ultragoal`** —— 持続的で監査可能な多段階ゴール。作業は `.gjc/` 配下に残るゴール台帳へ分割され、実装・修正・検証を通して進められます。
+5. **`team`** —— *承認済み*の作業が並列 tmux ワーカーで利益を得るときのみ。
 
-```sh
-gjc --tmux --worktree <path>
-```
+計画成果物は、実行パスを明示的に承認するまで `pending approval` のままです。`deep-interview` と `ralplan` は自ら実装を開始しません。仕様や計画を作って停止します。
 
-使い捨てやブランチ専用の作業には専用パスを使います。ループは `deep-interview -> ralplan -> ultragoal` で、`team` は協調並列ワーカーが役立つときのみ加えます。
+| ワークフロー | いつ使うか |
+| --- | --- |
+| 直接編集 | 正確に説明できる、明確で低リスクの変更。 |
+| `deep-interview` | 意図 / 範囲 / 受け入れ基準が曖昧。 |
+| `ralplan` | 計画可能だが、アプローチ / 順序 / 検証に合意が必要。 |
+| `ultragoal` | 持続的な台帳を持つ、持続的で監査可能なゴール。 |
+| `team` | 並列 tmux ワーカーで利益を得る承認済みの作業。 |
 
-## ウォークスルー
+## ユースケース
+
+### バグ修正
+
+典型的な完全ループです。明確化し、計画し、運び、検証します。各ステップは「コードを少し書いた」ではなく証拠で終わります。
+
+- **いつ使うか:** コードに触れる前に原因や修正範囲を確定すべき実際の不具合。
+- **スキル / エージェント:** `deep-interview` → `ralplan` → `ultragoal`。`critic` が計画を確認し、`executor` が範囲を限定した修正を行います。並列作業のときだけ `team` を加えます。
 
 <Steps>
 
 <Step>
 
-### `deep-interview` でバグを明確化
+#### `deep-interview` でバグを明確化する
 
-計画やコード変更の前に曖昧さを取り除くことから始めます。`deep-interview` を実行し、バグ、影響する挙動、非目標、修正が機能することを証明する受け入れ検査を固めます。
+計画に入る前に、バグ、影響を受ける挙動、非目標、受け入れチェックを確定します。
 
 ```text
 /skill:deep-interview clarify the bug, affected behavior, non-goals, and acceptance checks
 ```
 
-**期待すること：** コード変更ではなく明確化されたバグレポート。成果物は `pending approval` のままで、`deep-interview` は自分で実装を始めません。
+得られるのはコード変更ではなく、明確化されたバグレポート —— `pending approval` と記された仕様です。
 
 </Step>
 
 <Step>
 
-### `ralplan` で批評済みの計画へ
+#### `ralplan` でレビュー済みの計画に変える
 
-意図と受け入れ基準が明確になったら、変更前に計画を立て批評します。`ralplan` はバグレポートを修正計画に変え、読み取り専用の `critic` に通して、コードに触れる前に弱いシーケンスや薄い検証を捕まえます。
+`ralplan` は明確化されたレポートを Planner/Architect/Critic 合意ループに通し、コードに触れる前に弱い順序や薄い検証を捕まえます。
 
 ```text
 /skill:ralplan turn the clarified bug report into a reviewed fix plan
 ```
 
-**期待すること：** 同じく `pending approval` のままの批評済み修正計画。まだ何も実装されません。満足したら明示的に承認します。
+レビュー済みの計画も `pending approval` のままです。アプローチを明示的に承認します。
 
 </Step>
 
 <Step>
 
-### `ultragoal` で永続的な目標を作成
+#### `ultragoal` で持続的なゴールを作る
 
-承認済みの計画を `ultragoal` に渡します。`ultragoal` は実装・改訂・検証を通じて作業を永続的な目標として追跡します。計画は `--brief-file` で渡します。
+承認済みの計画を `ultragoal` に渡すと、作業を持続的なゴールとして追跡します。計画は `--brief-file` で渡します。
 
 ```sh
 gjc ultragoal create-goals --brief-file <approved-plan>
 ```
 
-**期待すること：** 作業が監査可能な目標台帳に分割されます。台帳・計画・仕様は `.gjc/` 下に残り、後で確認できます。
+作業は `.gjc/ultragoal/` 配下の監査可能なゴール台帳になります。
 
 </Step>
 
 <Step>
 
-### （任意）`team` で作業を分割
+#### (任意)`team` で作業を分割する
 
-タスクが協調並列ワーカーで有益なときのみ `team` を加えます。例えば修正の実装と検証を tmux 対応の `executor` 2 つに分割します。
+並列ワーカーが本当に役立つときだけ、実装と検証を tmux ベースの `executor` ワーカーに分割します。
 
 ```sh
 gjc team 2:executor "split implementation and verification for this bug fix"
 ```
 
-**期待すること：** `team` は任意の実行モードで、必須の引き継ぎではありません。単一スレッドの修正では省略し、並列 tmux ワーカーが本当に役立つときに使います。
+`team` は任意の実行モードであり、必須の引き継ぎではありません。シングルスレッドの修正では省きます。
 
 </Step>
 
 <Step>
 
-### 目標を完了し証拠を集める
+#### ゴールを完了し証拠を集める
 
-目標を完了まで進めます。`ultragoal` は「コードを書いた」で止まらず、最終的な証拠のまとめまで進めます。
+ゴールを完了まで運びます。`ultragoal` は作業を最終的な証拠サマリーまで運びます。
 
 ```sh
 gjc ultragoal complete-goals
 ```
 
-**期待すること：** 実行した検査とその結果が付いた完了タスク。エージェントは何を変え、何を改訂し、どの検査を実行し、どの証拠が修正を裏付けるかを報告します。
+何を変えたか、発見後に何を修正したか、どの検査を実行したか、そして `.gjc/` 配下に残る痕跡が返ってきます。
 
 </Step>
 
 </Steps>
 
-## 一連の操作シーケンス
+参考までに、全体の流れを 1 ブロックにまとめると次のとおりです。
 
 ```text
 /skill:deep-interview clarify the bug, affected behavior, non-goals, and acceptance checks
 /skill:ralplan turn the clarified bug report into a reviewed fix plan
 gjc ultragoal create-goals --brief-file <approved-plan>
-# 並列作業のときのみ任意：
+# Optional only for parallel work:
 gjc team 2:executor "split implementation and verification for this bug fix"
 gjc ultragoal complete-goals
 ```
 
-## 証拠はどのようなものか
+### 新機能の構築
 
-完了した `ultragoal` は diff で終わりません。エージェントは次を報告します。
+- **いつ使うか:** 欲しいものは大まかに分かるが、要件にまだ表に出すべき前提が残っている新しい能力。
+- **スキル / エージェント:** 範囲が曖昧なら `deep-interview` から始め、合意計画のために `ralplan`、続いて `ultragoal` で運びます。`executor` が実装し、`architect` と `critic` がレビューします。
 
-- **何を変えたか** —— `executor` が行った具体的な編集・修正・リファクタリング。
-- **発見後に何を改訂したか** —— 検証やレビューが問題を明らかにした後の調整。
-- **どの検査を実行したか** —— 計画の検証ステップとその結果。
-- **どの証拠が修正を裏付けるか** —— `.gjc/` 下に残り後で監査できる軌跡。
+機能が大きい、または要件が曖昧なときの推奨チェーンは、明確さ → 実現可能性 → 持続的なゴールです。
 
-## ルーティング：合う最小のワークフローを使う
+```text
+/skill:deep-interview clarify the feature, scope, non-goals, and acceptance criteria
+/skill:ralplan turn the clarified spec into a reviewed implementation plan
+gjc ultragoal create-goals --brief-file <approved-plan>
+gjc ultragoal complete-goals
+```
 
-この修正は完全なループを使いますが、多くのタスクはより少なくて済みます。リクエストを満たす最小のワークフローを選びます。
+要件がすでに直接計画できるほど明確なら、`deep-interview` を省いて `ralplan` から始めます。
 
-1. 明確で低リスクの編集は直接実装。
-2. 意図・範囲・受け入れ基準が曖昧なら `deep-interview`。
-3. 計画できるほど要件は明確だが、アーキテクチャ・シーケンス・検証に合意が必要なら `ralplan`。
-4. 作業を監査可能な台帳付きの永続目標に分けるべきなら `ultragoal`。
-5. 承認済みの作業が並列ワーカーで有益なら `team`。
+### 安全なリファクタリングと整理
 
-## さらに見る
+- **いつ使うか:** 検証まではメインのチェックアウトから切り離しておきたい構造的な変更。
+- **スキル / エージェント:** 隔離された Git worktree に加え、アプローチ用の `ralplan` と変更追跡用の `ultragoal`。`architect` が読み取り専用でレビューします。
+
+メインのチェックアウトを清潔に保つため、隔離された Git worktree 内でセッションを実行します。
+
+```sh
+gjc --tmux --worktree <path>
+```
+
+使い捨てやブランチ固有の作業には専用パスを使ってください。worktree 内で `ralplan` で計画し、`ultragoal` で変更を追跡します。
+
+### 不慣れなコードベースの探索
+
+- **いつ使うか:** 変更する前にシステムを理解する必要があるとき。
+- **スキル / エージェント:** まず読み取り専用の `architect` と `planner`。`architect` はアーキテクチャとコードレビューの評価、`planner` は順序と受け入れ基準を担当します。どちらもファイルを変更しません。
+
+読み取り専用ロールを先頭に立ててシステムを把握し、具体的な変更を説明できるようになったら `ralplan` へ移ります。承認に値する計画ができるまで、探索は読み取り専用に保ちます。
+
+### 長時間・手放し・並列の作業
+
+- **いつ使うか:** 1 回の推論を超えて存続すべき多段階ゴール、またはワーカー間できれいに分割できる作業。
+- **スキル / エージェント:** 持続的でリーダー所有の台帳には `ultragoal`、可視の tmux 実行エンジンとして `team`。
+
+`ultragoal` は `.gjc/ultragoal/goals.json` と `.gjc/ultragoal/ledger.jsonl` を所有します。`team` はタスクと検証の証拠をリーダーに返します。リーダーがその証拠でチェックポイントを打ち、ワーカーが自ら `ultragoal` をチェックポイントすることはありません。
+
+```sh
+gjc ultragoal create-goals --brief-file <approved-plan>
+gjc team 2:executor "<task description>"
+gjc ultragoal complete-goals
+```
+
+### 手早い回答や小さな編集
+
+- **いつ使うか:** 質問、1 行の修正、または正確に説明できるあらゆる変更。
+- **スキル / エージェント:** なし。直接実行が正しいツールです。
+
+ワークフローは不要です。ファイルパス、関数名、受け入れ基準といった明確なアンカーがあるリクエストなら、そのまま実行できます。曖昧さや持続性が本当に必要なときだけ、ワークフローを取り出してください。
+
+## worktree 隔離作業
+
+メインのチェックアウトから切り離すべき作業 —— リファクタリング、リスクのある実験、ブランチ固有のタスク —— は、隔離された Git worktree 内で実行します。
+
+```sh
+gjc --tmux --worktree <path>
+```
+
+メインのチェックアウトを清潔に保つため、使い捨てやブランチ固有の作業には専用パスを使ってください。
+
+## 続けて読む
 
 <Cards>
-  <Card title="コアコンセプト" href="/ja/docs/concepts" />
   <Card title="ワークフロー" href="/ja/docs/workflows" />
-  <Card title="ultragoal" href="/ja/docs/workflows/ultragoal" />
-  <Card title="team" href="/ja/docs/workflows/team" />
+  <Card title="エージェント" href="/ja/docs/agents" />
+  <Card title="コアコンセプト" href="/ja/docs/concepts" />
 </Cards>

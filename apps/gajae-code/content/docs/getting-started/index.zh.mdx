@@ -1,9 +1,9 @@
 ---
 title: 快速开始
-description: 安装 Gajae-Code，启动 gjc 可执行文件，运行 deep-interview → ralplan → ultragoal 循环。
+description: 安装 Gajae-Code，启动 gjc 可执行文件，认证 provider，运行 deep-interview → ralplan → ultragoal 循环。
 ---
 
-让 `gjc` 运行起来，跑通第一个循环。
+让 `gjc` 运行起来，登录模型 provider，跑通第一个循环。
 
 <Steps>
 
@@ -47,6 +47,56 @@ gjc --tmux --worktree <path>
 
 <Step>
 
+### 认证 provider
+
+Gajae-Code 通过模型 provider 工作，所以选择模型前至少要能连上一个 provider。
+
+最简单的方式是 **API 密钥环境变量**。导出所用 provider 的密钥，`gjc` 会自动识别：
+
+| 变量                   | Provider      |
+| ---------------------- | ------------- |
+| `ANTHROPIC_API_KEY`    | Anthropic     |
+| `OPENAI_API_KEY`       | OpenAI        |
+| `GEMINI_API_KEY`       | Google Gemini |
+| `OPENROUTER_API_KEY`   | OpenRouter    |
+| `ZAI_API_KEY`          | z.ai          |
+| `MINIMAX_CODE_API_KEY` | MiniMax Code  |
+
+完整列表见[环境变量](/zh/docs/reference/environment-variables)。
+
+也可用预设**注册自定义 provider**。预设只写入引用文档中环境变量名的 `models.yml` 条目，不存储密钥：
+
+```bash
+gjc setup provider --preset minimax
+gjc setup provider --preset minimax-cn
+gjc setup provider --preset glm
+```
+
+同样的预设可在 TUI 中使用：
+
+```text
+/provider add --preset glm
+/provider add zai
+```
+
+**OAuth provider** 通过浏览器登录而非环境变量。Anthropic、OpenAI Code、Google（Gemini CLI / Antigravity）、GitLab Duo 各自带内置浏览器回调端口；生成的 OAuth 凭据保存在本地 `agent.db`。
+
+`gjc` 解析某 provider 的密钥时按此顺序：
+
+1. CLI `--api-key`
+2. 存储的 API 密钥（`agent.db`）
+3. 存储的 OAuth 凭据（`agent.db`）
+4. 环境变量
+5. `models.yml` 的 `apiKey`
+
+随后在 TUI 用 `/model`、在 CLI 用 `--model` / `--models` 选择模型。详见[模型与凭据](/zh/docs/reference/models-and-credentials)。
+
+> 高级：要将 OAuth 刷新令牌从笔记本移到共享主机，参见[模型与凭据](/zh/docs/reference/models-and-credentials)中的 `gjc auth-broker`。
+
+</Step>
+
+<Step>
+
 ### 运行循环
 
 Gajae-Code 专注于一个有用的循环：
@@ -75,6 +125,19 @@ gjc ultragoal complete-goals
 
 </Steps>
 
+## 技能
+
+Gajae-Code 恰好提供四个工作流技能，没有臃肿的默认技能动物园。每个技能在 GJC 会话中以 `/skill:<name>` 调用。
+
+| 技能             | 作用                                                |
+| ---------------- | --------------------------------------------------- |
+| `deep-interview` | 在规划或代码变更前消除歧义。                        |
+| `ralplan`        | 在变更前构建并评审计划。                            |
+| `team`           | 当多个 worker 有帮助时，可选地协调 tmux 并行执行。  |
+| `ultragoal`      | 经由实现、修订、验证与证据追踪持久 goal。           |
+
+四个内置角色 agent —— `executor`、`architect`、`planner`、`critic` —— 负责执行这些技能。技能详见[工作流](/zh/docs/workflows)，角色详见[Agent](/zh/docs/agents)。
+
 ## 配置
 
 provider 重试预算等设置位于 `~/.gjc/config.yml`（或当前生效的项目/用户设置源）：
@@ -95,6 +158,7 @@ Gajae-Code 有两层重试：会话自动重试（`retry.maxRetries`）在终止
 ## 下一步
 
 <Cards>
+  <Card title="用例与指南" href="/zh/docs/guides" description="日常任务的实战示例。" />
   <Card title="核心概念" href="/zh/docs/concepts" description="工作循环、会话、模型路由与持久验证。" />
   <Card title="工作流" href="/zh/docs/workflows" description="deep-interview、ralplan、team、ultragoal。" />
 </Cards>

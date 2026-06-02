@@ -1,9 +1,9 @@
 ---
 title: はじめに
-description: Gajae-Code をインストールし、gjc バイナリを起動して、deep-interview → ralplan → ultragoal ループを実行します。
+description: Gajae-Code をインストールし、gjc バイナリを起動し、provider を認証して、deep-interview → ralplan → ultragoal ループを実行します。
 ---
 
-`gjc` バイナリを動かし、最初のループを回します。
+`gjc` バイナリを動かし、モデル provider にサインインして、最初のループを回します。
 
 <Steps>
 
@@ -47,6 +47,56 @@ gjc --tmux --worktree <path>
 
 <Step>
 
+### provider を認証する
+
+Gajae-Code はモデル provider 経由で動作するため、モデルを選ぶ前に少なくとも 1 つの provider に到達できる必要があります。
+
+最も簡単なのは **API キーの環境変数**です。使いたい provider のキーを export すれば `gjc` が自動的に解決します：
+
+| 変数                   | Provider      |
+| ---------------------- | ------------- |
+| `ANTHROPIC_API_KEY`    | Anthropic     |
+| `OPENAI_API_KEY`       | OpenAI        |
+| `GEMINI_API_KEY`       | Google Gemini |
+| `OPENROUTER_API_KEY`   | OpenRouter    |
+| `ZAI_API_KEY`          | z.ai          |
+| `MINIMAX_CODE_API_KEY` | MiniMax Code  |
+
+全リストは[環境変数](/ja/docs/reference/environment-variables)を参照してください。
+
+プリセットで**カスタム provider を登録**することもできます。プリセットは文書化された環境変数名を参照する `models.yml` エントリを書き込むだけで、シークレットは保存しません：
+
+```bash
+gjc setup provider --preset minimax
+gjc setup provider --preset minimax-cn
+gjc setup provider --preset glm
+```
+
+同じプリセットは TUI でも使えます：
+
+```text
+/provider add --preset glm
+/provider add zai
+```
+
+**OAuth provider** は環境変数ではなくブラウザでサインインします。Anthropic、OpenAI Code、Google（Gemini CLI / Antigravity）、GitLab Duo はそれぞれ組み込みのブラウザコールバックポートを持ち、発行された OAuth 認証情報はローカルの `agent.db` に保存されます。
+
+`gjc` が provider のキーを解決するときは次の順序です：
+
+1. CLI `--api-key`
+2. 保存された API キー（`agent.db`）
+3. 保存された OAuth 認証情報（`agent.db`）
+4. 環境変数
+5. `models.yml` の `apiKey`
+
+その後、TUI では `/model`、CLI では `--model` / `--models` でモデルを選びます。詳細は[モデルと認証情報](/ja/docs/reference/models-and-credentials)を参照してください。
+
+> 上級者向け：OAuth リフレッシュトークンをラップトップから共有ホストへ移すには、[モデルと認証情報](/ja/docs/reference/models-and-credentials)の `gjc auth-broker` を参照してください。
+
+</Step>
+
+<Step>
+
 ### ループを回す
 
 Gajae-Code は 1 つの有用なループに集中します：
@@ -75,6 +125,19 @@ gjc ultragoal complete-goals
 
 </Steps>
 
+## スキル
+
+Gajae-Code はちょうど 4 つのワークフロースキルを備えます。肥大化したデフォルトスキル動物園はありません。各スキルは GJC セッション内で `/skill:<name>` として呼び出します。
+
+| スキル           | 役割                                                       |
+| ---------------- | ---------------------------------------------------------- |
+| `deep-interview` | 計画やコード変更の前に曖昧さを取り除く。                   |
+| `ralplan`        | 変更前に計画を立て批評する。                               |
+| `team`           | 複数ワーカーが役立つとき、tmux 並列実行を任意で調整する。  |
+| `ultragoal`      | 実装・改訂・検証・証拠を通じて永続的な goal を追跡する。   |
+
+バンドルされた 4 つのロール agent —— `executor`、`architect`、`planner`、`critic` —— がこれらのスキルを実行します。各スキルは[ワークフロー](/ja/docs/workflows)、ロールは[Agent](/ja/docs/agents)を参照してください。
+
 ## 設定
 
 provider のリトライ予算などの設定は `~/.gjc/config.yml`（または有効なプロジェクト/ユーザー設定ソース）にあります：
@@ -95,6 +158,7 @@ Gajae-Code には 2 つのリトライ層があります。セッション自動
 ## 次のステップ
 
 <Cards>
+  <Card title="ユースケースとガイド" href="/ja/docs/guides" description="日常タスクの実践例。" />
   <Card title="コアコンセプト" href="/ja/docs/concepts" description="ワークループ、セッション、モデルルーティング、永続的な検証。" />
   <Card title="ワークフロー" href="/ja/docs/workflows" description="deep-interview、ralplan、team、ultragoal。" />
 </Cards>

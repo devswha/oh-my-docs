@@ -1,9 +1,9 @@
 ---
 title: Getting Started
-description: Install Gajae-Code, launch the gjc binary, and run the deep-interview → ralplan → ultragoal loop.
+description: Install Gajae-Code, launch the gjc binary, authenticate a provider, and run the deep-interview → ralplan → ultragoal loop.
 ---
 
-Get the `gjc` binary running and drive your first loop.
+Get the `gjc` binary running, sign in to a model provider, and drive your first loop.
 
 <Steps>
 
@@ -47,6 +47,56 @@ gjc --tmux --worktree <path>
 
 <Step>
 
+### Authenticate a provider
+
+Gajae-Code routes through model providers, so at least one must be reachable before you can pick a model.
+
+**API-key environment variables** are the simplest path. Export the key for the provider you want and `gjc` resolves it automatically:
+
+| Variable             | Provider   |
+| -------------------- | ---------- |
+| `ANTHROPIC_API_KEY`  | Anthropic  |
+| `OPENAI_API_KEY`     | OpenAI     |
+| `GEMINI_API_KEY`     | Google Gemini |
+| `OPENROUTER_API_KEY` | OpenRouter |
+| `ZAI_API_KEY`        | z.ai       |
+| `MINIMAX_CODE_API_KEY` | MiniMax Code |
+
+See [Environment variables](/docs/reference/environment-variables) for the full list.
+
+**Register a custom provider** with a preset, which writes a `models.yml` entry referencing a documented env var name (it does not store the secret):
+
+```bash
+gjc setup provider --preset minimax
+gjc setup provider --preset minimax-cn
+gjc setup provider --preset glm
+```
+
+The same presets are available inside the TUI:
+
+```text
+/provider add --preset glm
+/provider add zai
+```
+
+**OAuth providers** sign in through your browser instead of an env var. Anthropic, OpenAI Code, Google (Gemini CLI / Antigravity), and GitLab Duo each have a built-in browser callback port; the resulting OAuth credentials are stored locally in `agent.db`.
+
+When `gjc` resolves a key for a provider, it uses this order:
+
+1. CLI `--api-key`
+2. Stored API key (`agent.db`)
+3. Stored OAuth credential (`agent.db`)
+4. Environment variable
+5. `models.yml` `apiKey`
+
+Then pick a model with `/model` in the TUI, or `--model` / `--models` on the CLI. For details, see [Models and credentials](/docs/reference/models-and-credentials).
+
+> Advanced: to move OAuth refresh tokens off your laptop onto a shared host, see `gjc auth-broker` in [Models and credentials](/docs/reference/models-and-credentials).
+
+</Step>
+
+<Step>
+
 ### Run the loop
 
 Gajae-Code focuses on one useful loop:
@@ -75,6 +125,19 @@ gjc ultragoal complete-goals
 
 </Steps>
 
+## Skills
+
+Gajae-Code ships exactly four workflow skills — no sprawling default skill zoo. Invoke each one inside a GJC session as `/skill:<name>`.
+
+| Skill            | What it does                                                                        |
+| ---------------- | ----------------------------------------------------------------------------------- |
+| `deep-interview` | Removes ambiguity before planning or code changes.                                  |
+| `ralplan`        | Builds and critiques a plan before mutation.                                        |
+| `team`           | Optionally coordinates tmux-backed parallel execution when multiple workers help.   |
+| `ultragoal`      | Tracks durable goals through implementation, revisions, verification, and evidence. |
+
+The four bundled role agents — `executor`, `architect`, `planner`, and `critic` — carry these skills out. See [Workflows](/docs/workflows) for each skill and [Agents](/docs/agents) for the roles.
+
 ## Configuration
 
 Provider retry budgets and other settings live in `~/.gjc/config.yml` (or the active project/user settings source):
@@ -95,6 +158,7 @@ Gajae-Code has two retry layers: session auto-retry (`retry.maxRetries`) retries
 ## Next steps
 
 <Cards>
+  <Card title="Use cases & guide" href="/docs/guides" description="Worked examples for everyday tasks." />
   <Card title="Core Concepts" href="/docs/concepts" description="The working loop, sessions, model routing, and durable verification." />
   <Card title="Workflows" href="/docs/workflows" description="deep-interview, ralplan, team, and ultragoal." />
 </Cards>
