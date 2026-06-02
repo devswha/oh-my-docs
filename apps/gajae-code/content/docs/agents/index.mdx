@@ -1,0 +1,33 @@
+---
+title: Agents
+description: The four bundled role agents — executor, architect, planner, and critic — and their boundaries.
+---
+
+Gajae-Code bundles four role agents with deliberately clear boundaries. Two write, two stay read-only.
+
+| Agent       | Role                                               | Mutates? |
+| ----------- | -------------------------------------------------- | -------- |
+| `executor`  | Bounded implementation, fixes, and refactors.      | Yes      |
+| `architect` | Read-only architecture and code-review assessment. | No       |
+| `planner`   | Read-only sequencing and acceptance criteria.      | No       |
+| `critic`    | Read-only plan critique and actionability review.  | No       |
+
+## executor
+
+Does the bounded implementation work: writes code, applies fixes, runs refactors. This is the only role that changes files, and it works against a scope set during planning rather than open-ended.
+
+## architect
+
+A read-only assessment role for architecture and code review. Use it to evaluate a design or an existing codebase without touching files — its output is judgment, not edits.
+
+## planner
+
+A read-only role that sequences the work and defines acceptance criteria. It turns intent into an ordered plan with explicit "done" conditions, which `ralplan` then critiques.
+
+## critic
+
+A read-only role that critiques a plan for soundness and actionability before any mutation. It is the skeptic in the loop: it looks for gaps, risks, and steps that won't actually execute as written.
+
+## How they fit the loop
+
+The role agents map onto the [workflow loop](/docs/workflows): planner and critic shape and pressure-test a plan during `deep-interview` / `ralplan`; executor carries it out under `ultragoal`; architect provides read-only review when a design or change needs an independent assessment. Parallel runs of these roles can be coordinated with `team`.

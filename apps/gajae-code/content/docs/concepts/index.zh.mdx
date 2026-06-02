@@ -1,0 +1,47 @@
+---
+title: 核心概念
+description: 定义 Gajae-Code 行为方式的工作循环、会话与 worktree 隔离、模型路由和持久验证。
+---
+
+Gajae-Code 让公开的智能体表面保持精简，而周边运行时保持可靠。几个概念解释了它的行为方式。
+
+## 工作循环
+
+Gajae-Code 专注于一个方法，而非庞杂的 skill 堆：
+
+```text
+deep-interview -> ralplan -> ultragoal
+                         └─ 当并行 tmux worker 有帮助时可选 team 执行
+```
+
+- **`deep-interview`** — 在规划或改动代码前消除歧义。
+- **`ralplan`** — 在变更前构建并评审计划。
+- **`ultragoal`** — 推进实现、修订、验证与证据汇总。
+- **`team`** — 协调 tmux 并行 worker 的可选执行模式，并非必需步骤。
+
+该顺序描述操作流程，而非隐藏的自动化：智能体仍会报告改了什么、发现问题后修订了什么、运行了哪些检查、有哪些证据支撑结果。
+
+## 会话与 worktree 隔离
+
+每次运行都是带持久状态的会话——历史、模型变更、证据都会记录。会话可切换、fork、resume、导出和共享。
+
+需要更安全的分支级工作时，在隔离的 Git worktree 中运行：
+
+```bash
+gjc --tmux --worktree <path>
+```
+
+## 模型路由
+
+Gajae-Code 保留每个具体 provider 模型，并在其上构建 canonical 层。你可固定精确的 `provider/model`，或选择跨 provider 合并的 canonical id。
+
+- **模型角色**将任务映射到模型：`default`、`smol`、`slow`、`vision`、`plan`、`designer`、`commit`、`task`，可附加 thinking 级别（`:low`、`:medium`、`:high`、`:xhigh`）。
+- 运行时用 TUI 的 `/model`，或 CLI `--model` / `--models`（精确、canonical、模糊或 `openai/*` 之类 glob）选择。
+- 本地运行时（Ollama、llama.cpp、LM Studio）在可达时自动发现。
+- **上下文提升**：上下文溢出时，在回退到 compaction 之前，把小上下文模型切换到同 provider 的更大模型。
+
+`models.yml` 结构、provider 预设和认证见[配置](/zh/docs/reference)。
+
+## 持久验证
+
+循环不止于"写了点代码"。`ultragoal` 跟踪目标，贯穿实现、修订、验证和最终证据汇总，所以完成的任务会附带运行过的检查及其结果。

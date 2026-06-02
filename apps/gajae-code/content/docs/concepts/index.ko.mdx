@@ -1,0 +1,49 @@
+---
+title: 주요 개념
+description: Gajae-Code의 동작을 규정하는 작동 루프, 세션·worktree 격리, 모델 라우팅, 지속 가능한 검증.
+---
+
+Gajae-Code는 공개 에이전트 표면을 작게, 그 주변 런타임을 단단하게 유지합니다. 몇 가지 개념이 동작 방식을 설명합니다.
+
+## 작동 루프
+
+Gajae-Code는 거대한 스킬 더미가 아니라 하나의 방법에 집중합니다:
+
+```text
+deep-interview -> ralplan -> ultragoal
+                         └─ 병렬 tmux 워커가 도움이 될 때만 team 실행
+```
+
+- **`deep-interview`** — 계획이나 코드 변경 전에 모호함을 제거합니다.
+- **`ralplan`** — 변경 전에 계획을 세우고 비평합니다.
+- **`ultragoal`** — 구현·수정·검증·증거 요약까지 작업을 끌고 갑니다.
+- **`team`** — tmux 기반 병렬 워커를 조율하는 선택적 실행 모드입니다. 필수 단계가 아닙니다.
+
+이 순서는 숨은 자동화가 아니라 운영자 흐름을 설명합니다. 에이전트는 무엇을 바꿨고, 발견 후 무엇을 수정했고, 어떤 검사를 돌렸고, 어떤 증거가 결과를 뒷받침하는지 보고합니다.
+
+## 세션과 worktree 격리
+
+각 실행은 지속 상태를 가진 세션입니다 — 히스토리, 모델 변경, 증거가 기록됩니다. 세션은 전환·fork·resume·export·공유할 수 있습니다.
+
+브랜치 단위로 더 안전하게 작업하려면 격리된 Git worktree에서 실행합니다:
+
+```bash
+gjc --tmux --worktree <path>
+```
+
+일회성·브랜치 전용 작업엔 별도 경로를 써서 메인 체크아웃을 깨끗이 유지하세요.
+
+## 모델 라우팅
+
+Gajae-Code는 모든 구체 provider 모델을 유지하고 그 위에 canonical 레이어를 만듭니다. 정확한 `provider/model`을 고정하거나, provider를 넘나들며 합쳐지는 canonical id를 선택할 수 있습니다.
+
+- **모델 역할(role)** 이 작업을 모델에 매핑합니다: `default`, `smol`, `slow`, `vision`, `plan`, `designer`, `commit`, `task`. 각 역할에 thinking 레벨(`:low`, `:medium`, `:high`, `:xhigh`)을 붙일 수 있습니다.
+- 런타임에서 TUI의 `/model`, 또는 CLI `--model` / `--models`(정확/canonical/퍼지/`openai/*` 같은 glob)로 고릅니다.
+- 로컬 런타임(Ollama, llama.cpp, LM Studio)은 접근 가능하면 자동 탐색됩니다.
+- **컨텍스트 승격(context promotion)** — 컨텍스트 초과 오류 시, compaction으로 넘어가기 전에 작은 컨텍스트 모델을 같은 provider의 더 큰 모델로 전환해 복구합니다.
+
+`models.yml` 형식, provider 프리셋, 인증은 [설정](/ko/docs/reference)을 보세요.
+
+## 지속 가능한 검증
+
+루프는 "코드 좀 짰음"에서 멈추지 않습니다. `ultragoal`이 구현·수정·검증·최종 증거 요약까지 목표를 추적하므로, 끝난 작업엔 돌린 검사와 그 결과가 함께 따라옵니다.

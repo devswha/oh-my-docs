@@ -1,0 +1,88 @@
+---
+title: 레퍼런스
+description: 설정 파일, 모델·provider 구성, 재시도 예산, 그리고 런타임에서 Gajae-Code를 제어하는 환경변수.
+---
+
+## 설정 파일
+
+Gajae-Code는 `~/.gjc`에서 설정을 읽습니다 (루트는 `GJC_CONFIG_DIR`로 변경):
+
+| 경로                       | 용도                                    |
+| -------------------------- | --------------------------------------- |
+| `~/.gjc/config.yml`        | 일반 런타임 설정.                       |
+| `~/.gjc/agent/models.yml`  | provider, 모델, 역할, 라우팅.           |
+| `~/.gjc/agent/.env`        | agent 범위 환경변수.                    |
+| `~/.gjc/.env`, `~/.env`    | config 루트·홈 환경변수 폴백.           |
+
+`.env` 해석 순서: 프로세스 env → 프로젝트 `$PWD/.env` → `~/.gjc/agent/.env` → `~/.gjc/.env` → `~/.env` (각 단계는 아직 설정되지 않은 키만 채움).
+
+## 재시도 예산
+
+`config.yml`에 두 재시도 레이어를 설정합니다:
+
+```yaml
+retry:
+  # 스트림 수립 전 provider 전송 재시도.
+  requestMaxRetries: 4
+  # 재생 안전(replay-safe) 스트림 재시도.
+  streamMaxRetries: 100
+  # 세션 레벨 종단 오류 재시도.
+  maxRetries: 3
+  maxDelayMs: 300000
+```
+
+잘못된 인증, 미지원 모델, 잘못된 요청, 컨텍스트 초과, 사용자 중단, 영구 quota 실패는 재시도로 숨기지 않고 즉시 실패합니다.
+
+## 모델·provider
+
+기본 모델 설정은 `~/.gjc/agent/models.yml`입니다. 흔한 provider를 추가하는 가장 빠른 방법은 프리셋입니다:
+
+```bash
+gjc setup provider --preset minimax
+gjc setup provider --preset glm
+```
+
+TUI에서도 동일합니다: `/provider add --preset glm`. 프리셋은 문서화된 env 변수명을 참조하는 `models.yml` 항목만 쓰며, 자격증명을 저장하지 않습니다.
+
+**모델 역할(role)** 은 `modelRoles`에서 작업을 모델에 매핑합니다: `default`, `smol`, `slow`, `vision`, `plan`, `designer`, `commit`, `task`. 역할 값은 정확한 `provider/modelId` 또는 canonical id이며, thinking 접미사(`:low`, `:high`, `:xhigh`)를 붙일 수 있습니다. 런타임에선 `/model`(TUI) 또는 `--model` / `--models`(CLI, `openai/*` 같은 glob 지원)로 고릅니다.
+
+로컬 런타임은 접근 가능하면 자동 탐색됩니다: Ollama(`OLLAMA_BASE_URL`, 기본 `http://127.0.0.1:11434`), llama.cpp(`LLAMA_CPP_BASE_URL`, `:8080`), LM Studio(`LM_STUDIO_BASE_URL`, `:1234/v1`).
+
+## 환경변수
+
+provider별 인증 순서: CLI `--api-key` → 저장된 자격증명 → 저장된 OAuth → 환경변수 → `models.yml`의 `apiKey`.
+
+### provider 자격증명 (주요)
+
+| 변수                                       | provider             |
+| ------------------------------------------ | -------------------- |
+| `ANTHROPIC_API_KEY` / `ANTHROPIC_OAUTH_TOKEN` | Anthropic         |
+| `OPENAI_API_KEY`                           | OpenAI               |
+| `GEMINI_API_KEY`                           | Google Gemini        |
+| `OPENROUTER_API_KEY`                       | OpenRouter           |
+| `ZAI_API_KEY`                              | z.ai (GLM)           |
+| `MINIMAX_CODE_API_KEY` / `MINIMAX_API_KEY` | MiniMax              |
+| `DEEPSEEK_API_KEY`, `XAI_API_KEY`, `GROQ_API_KEY`, `MISTRAL_API_KEY` | DeepSeek / xAI / Groq / Mistral |
+
+이 외에도 많은 provider를 지원합니다(Cerebras, Fireworks, Together, Hugging Face, Bedrock, Azure OpenAI, Vertex, Kimi, Qwen 등). provider별 base URL은 `<PROVIDER>_BASE_URL`로 덮어쓸 수 있습니다(예: `OPENAI_BASE_URL`, `ANTHROPIC_BASE_URL`).
+
+### 웹 검색
+
+`EXA_API_KEY`, `BRAVE_API_KEY`, `PERPLEXITY_API_KEY`, `TAVILY_API_KEY`, `KAGI_API_KEY`, `JINA_API_KEY` 등으로 해당 `web_search` provider를 켭니다.
+
+### 저장소·동작
+
+| 변수                   | 효과                                                  |
+| ---------------------- | ----------------------------------------------------- |
+| `GJC_CONFIG_DIR`       | 홈 아래 config 루트 디렉터리명 (기본 `.gjc`).         |
+| `GJC_CODING_AGENT_DIR` | agent 디렉터리 전체 override.                         |
+| `GJC_NO_PTY`           | bash 도구의 대화형 PTY 경로 비활성화.                 |
+| `GJC_NOTIFICATIONS`    | `off`/`0`/`false`면 데스크톱 알림 끔.                 |
+| `GJC_NO_TITLE`         | 자동 세션 제목 생성 끔.                               |
+| `GJC_EDIT_VARIANT`     | edit 도구 variant 강제(`patch`, `replace`, `hashline` 등). |
+
+모든 `*_API_KEY`, `*_TOKEN`, 클라우드 자격증명 변수는 비밀로 다루세요 — 로깅·커밋 금지.
+
+## 테마·키바인딩
+
+기본 다크 TUI는 GJC red-claw 테마입니다. 사용자가 명시한 테마 설정이 우선합니다. 키바인딩은 설정 가능하며, 현재 바인딩은 업스트림 `docs/keybindings.md`를 보세요.

@@ -1,0 +1,47 @@
+---
+title: コアコンセプト
+description: Gajae-Code の動作を定義するワークループ、セッションと worktree の隔離、モデルルーティング、永続的な検証。
+---
+
+Gajae-Code は公開エージェントの表面を小さく、その周囲のランタイムを信頼できるものに保ちます。いくつかの概念がその挙動を説明します。
+
+## ワークループ
+
+Gajae-Code は肥大した skill 群ではなく、1 つの方法に集中します：
+
+```text
+deep-interview -> ralplan -> ultragoal
+                         └─ 並列 tmux ワーカーが役立つ場合は team 実行を選択
+```
+
+- **`deep-interview`** — 計画やコード変更の前に曖昧さを取り除きます。
+- **`ralplan`** — 変更前に計画を立て批評します。
+- **`ultragoal`** — 実装・改訂・検証・証拠のまとめまで進めます。
+- **`team`** — tmux ベースの並列ワーカーを調整する任意の実行モードで、必須ではありません。
+
+この順序は隠れた自動化ではなく操作の流れを説明します。エージェントは何を変え、発見後に何を改訂し、どの検査を実行し、どの証拠が結果を裏付けるかを報告します。
+
+## セッションと worktree の隔離
+
+各実行は永続状態を持つセッションです — 履歴、モデル変更、証拠が記録されます。セッションは切り替え・fork・resume・エクスポート・共有できます。
+
+ブランチ単位で安全に作業するには、隔離された Git worktree で実行します：
+
+```bash
+gjc --tmux --worktree <path>
+```
+
+## モデルルーティング
+
+Gajae-Code はすべての具体的な provider モデルを保持し、その上に canonical 層を構築します。正確な `provider/model` を固定することも、provider をまたいで統合される canonical id を選ぶこともできます。
+
+- **モデルロール**がジョブをモデルに対応付けます：`default`、`smol`、`slow`、`vision`、`plan`、`designer`、`commit`、`task`。各ロールに thinking レベル（`:low`、`:medium`、`:high`、`:xhigh`）を付けられます。
+- 実行時は TUI の `/model`、または CLI の `--model` / `--models`（厳密・canonical・あいまい・`openai/*` のような glob）で選択します。
+- ローカルランタイム（Ollama、llama.cpp、LM Studio）は到達可能なら自動検出されます。
+- **コンテキストプロモーション**：コンテキスト超過時、compaction にフォールバックする前に小コンテキストモデルを同 provider の大きいモデルへ切り替えます。
+
+`models.yml` の形式、provider プリセット、認証は[リファレンス](/ja/docs/reference)を参照してください。
+
+## 永続的な検証
+
+ループは「コードを書いた」で止まりません。`ultragoal` が実装・改訂・検証・最終的な証拠のまとめまで目標を追跡するため、完了したタスクには実行された検査とその結果が伴います。

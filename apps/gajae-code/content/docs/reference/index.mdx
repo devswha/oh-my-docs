@@ -1,0 +1,88 @@
+---
+title: Reference
+description: Configuration files, model and provider setup, retry budgets, and the environment variables that control Gajae-Code at runtime.
+---
+
+## Configuration files
+
+Gajae-Code reads configuration from `~/.gjc` (override the root with `GJC_CONFIG_DIR`):
+
+| Path                       | Purpose                                            |
+| -------------------------- | -------------------------------------------------- |
+| `~/.gjc/config.yml`        | General runtime settings.                          |
+| `~/.gjc/agent/models.yml`  | Providers, models, roles, and routing.             |
+| `~/.gjc/agent/.env`        | Agent-scoped environment variables.                |
+| `~/.gjc/.env`, `~/.env`    | Config-root and home environment fallbacks.        |
+
+`.env` resolution order is: process env → project `$PWD/.env` → `~/.gjc/agent/.env` → `~/.gjc/.env` → `~/.env` (each only fills keys not already set).
+
+## Retry budgets
+
+Two retry layers are configured in `config.yml`:
+
+```yaml
+retry:
+  # Provider transport retries before a stream is established.
+  requestMaxRetries: 4
+  # Replay-safe stream retries.
+  streamMaxRetries: 100
+  # Session-level terminal-error retries.
+  maxRetries: 3
+  maxDelayMs: 300000
+```
+
+Invalid auth, unsupported models, malformed requests, context overflow, user aborts, and permanent quota failures stay fail-fast rather than being hidden by retries.
+
+## Models and providers
+
+The default model config is `~/.gjc/agent/models.yml`. The fastest way to add a common provider is a preset:
+
+```bash
+gjc setup provider --preset minimax
+gjc setup provider --preset glm
+```
+
+The same is available in the TUI: `/provider add --preset glm`. Presets only write `models.yml` entries that reference documented env var names — they do not store credentials.
+
+**Model roles** map jobs to models in `modelRoles`: `default`, `smol`, `slow`, `vision`, `plan`, `designer`, `commit`, `task`. A role value can be an exact `provider/modelId` or a canonical id, optionally with a thinking suffix (`:low`, `:high`, `:xhigh`). Select at runtime with `/model` (TUI) or `--model` / `--models` (CLI; supports globs like `openai/*`).
+
+Local runtimes are auto-discovered when reachable: Ollama (`OLLAMA_BASE_URL`, default `http://127.0.0.1:11434`), llama.cpp (`LLAMA_CPP_BASE_URL`, `:8080`), LM Studio (`LM_STUDIO_BASE_URL`, `:1234/v1`).
+
+## Environment variables
+
+Auth resolution order per provider: CLI `--api-key` → stored credential → stored OAuth → environment variable → `models.yml` `apiKey`.
+
+### Provider credentials (common)
+
+| Variable                                  | Provider             |
+| ----------------------------------------- | -------------------- |
+| `ANTHROPIC_API_KEY` / `ANTHROPIC_OAUTH_TOKEN` | Anthropic        |
+| `OPENAI_API_KEY`                          | OpenAI               |
+| `GEMINI_API_KEY`                          | Google Gemini        |
+| `OPENROUTER_API_KEY`                      | OpenRouter           |
+| `ZAI_API_KEY`                             | z.ai (GLM)           |
+| `MINIMAX_CODE_API_KEY` / `MINIMAX_API_KEY`| MiniMax              |
+| `DEEPSEEK_API_KEY`, `XAI_API_KEY`, `GROQ_API_KEY`, `MISTRAL_API_KEY` | DeepSeek / xAI / Groq / Mistral |
+
+Many more providers are supported (Cerebras, Fireworks, Together, Hugging Face, Bedrock, Azure OpenAI, Vertex, Kimi, Qwen, and others). Base URLs can be overridden per provider with `<PROVIDER>_BASE_URL` (e.g. `OPENAI_BASE_URL`, `ANTHROPIC_BASE_URL`).
+
+### Web search
+
+`EXA_API_KEY`, `BRAVE_API_KEY`, `PERPLEXITY_API_KEY`, `TAVILY_API_KEY`, `KAGI_API_KEY`, `JINA_API_KEY`, and others enable the corresponding `web_search` providers.
+
+### Storage and behavior
+
+| Variable               | Effect                                                       |
+| ---------------------- | ------------------------------------------------------------ |
+| `GJC_CONFIG_DIR`       | Config root dirname under home (default `.gjc`).             |
+| `GJC_CODING_AGENT_DIR` | Full override for the agent directory.                       |
+| `GJC_NO_PTY`           | Disables the interactive PTY path for the bash tool.         |
+| `GJC_NOTIFICATIONS`    | `off`/`0`/`false` suppresses desktop notifications.          |
+| `GJC_NO_TITLE`         | Disables auto session-title generation.                      |
+| `GJC_EDIT_VARIANT`     | Forces an edit-tool variant (`patch`, `replace`, `hashline`, …). |
+
+Treat all `*_API_KEY`, `*_TOKEN`, and cloud credential variables as secrets — never log or commit them.
+
+## Theme and keybindings
+
+The default dark TUI is the GJC red-claw theme; explicit user theme settings still win. Keybindings are configurable — see the upstream `docs/keybindings.md` for the current bindings reference.

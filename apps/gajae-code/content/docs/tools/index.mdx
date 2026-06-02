@@ -1,0 +1,69 @@
+---
+title: Tools
+description: The tool surface Gajae-Code agents use — files, search, runtime, web, session, and media — grouped by family.
+---
+
+Gajae-Code agents act through a focused tool surface. The tools are grouped by family below; names match the upstream `docs/tools/` reference.
+
+## Files
+
+| Tool       | What it does                                  |
+| ---------- | --------------------------------------------- |
+| `read`     | Read file contents.                           |
+| `write`    | Create or overwrite a file.                   |
+| `edit`     | Apply a scoped edit (multiple edit variants). |
+| `ast-edit` | Structural, AST-aware edits.                  |
+
+## Search and navigation
+
+| Tool              | What it does                                |
+| ----------------- | ------------------------------------------- |
+| `find`            | Locate files by name/path.                  |
+| `search`          | Search file contents.                       |
+| `search_tool_bm25`| Ranked content search.                      |
+| `ast-grep`        | Structural code search by AST pattern.      |
+| `lsp`             | Language-server diagnostics and navigation. |
+| `resolve`         | Resolve symbols / tool runtime resolution.  |
+
+## Runtime and execution
+
+| Tool          | What it does                                       |
+| ------------- | -------------------------------------------------- |
+| `bash`        | Run shell commands (interactive PTY where enabled).|
+| `eval`        | Evaluate code (JavaScript and/or Python backends). |
+| `python-repl` | Persistent Python REPL / kernel.                   |
+| `debug`       | Debugging support.                                 |
+| `ssh`         | Run commands over SSH.                             |
+| `job`         | Manage background jobs.                            |
+
+## Web and external
+
+| Tool         | What it does                                  |
+| ------------ | --------------------------------------------- |
+| `web_search` | Search the web (multiple search providers).   |
+| `browser`    | Drive a real browser.                         |
+| `github`     | Interact with GitHub.                         |
+
+## Session and memory
+
+| Tool         | What it does                                       |
+| ------------ | -------------------------------------------------- |
+| `task`       | Spawn and coordinate subagents.                    |
+| `todo_write` | Track and update a todo list.                      |
+| `checkpoint` | Snapshot session state.                            |
+| `rewind`     | Roll back to an earlier point.                     |
+| `recall`     | Retrieve stored memory.                            |
+| `retain`     | Persist memory for later recall.                   |
+| `reflect`    | Reflective reasoning step.                         |
+
+## Media and misc
+
+| Tool             | What it does                          |
+| ---------------- | ------------------------------------- |
+| `render_mermaid` | Render a Mermaid diagram.             |
+| `inspect_image`  | Inspect an image.                     |
+| `calc`           | Calculator.                           |
+| `recipe`         | Reusable task recipes.                |
+| `ask`            | Ask the user a question.              |
+
+Some tools depend on configuration or credentials (for example `web_search` providers and `browser` need their respective setup). See [Reference](/docs/reference) for the environment variables that enable them.

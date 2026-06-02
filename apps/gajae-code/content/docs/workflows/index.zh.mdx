@@ -1,0 +1,59 @@
+---
+title: 工作流
+description: 四个默认工作流 skill —— deep-interview、ralplan、team、ultragoal —— 以及把它们串起来的操作顺序。
+---
+
+Gajae-Code 提供四个默认工作流 skill。在 GJC 会话中用 `/skill:<name>` 调用。
+
+| Skill            | 作用                                       |
+| ---------------- | ------------------------------------------ |
+| `deep-interview` | 在规划或改动代码前消除歧义。               |
+| `ralplan`        | 在变更前构建并评审计划。                   |
+| `team`           | 必要时协调 tmux 并行执行。                 |
+| `ultragoal`      | 跟踪目标，贯穿实现、修订与证据。           |
+
+## deep-interview
+
+在计划或变更前厘清意图：真正的 bug 或功能、影响范围、非目标、验收标准。请求模糊或影响范围不清时从这里开始。
+
+```text
+/skill:deep-interview clarify the bug, affected behavior, non-goals, and acceptance checks
+```
+
+## ralplan
+
+把厘清后的请求转为评审过的计划，并在任何变更前评审该计划。
+
+```text
+/skill:ralplan turn the clarified bug report into a reviewed fix plan
+```
+
+## ultragoal
+
+把批准的计划推进到实现、依据发现的修订、验证和最终证据汇总。用 CLI 驱动：
+
+```bash
+gjc ultragoal create-goals --brief-file <approved-plan>
+gjc ultragoal complete-goals
+```
+
+## team（可选）
+
+协调 tmux 并行 worker——仅在任务确实受益于跨 pane 拆分时使用。它是执行模式，不是必需步骤。
+
+```bash
+gjc team 2:executor "split implementation and verification for this bug fix"
+```
+
+## 完整流程
+
+```text
+/skill:deep-interview clarify the bug, affected behavior, non-goals, and acceptance checks
+/skill:ralplan turn the clarified bug report into a reviewed fix plan
+gjc ultragoal create-goals --brief-file <approved-plan>
+# 仅并行工作时可选：
+gjc team 2:executor "split implementation and verification for this bug fix"
+gjc ultragoal complete-goals
+```
+
+这描述的是操作顺序，而非隐藏的自动化：智能体仍会报告改了什么、修订了什么、运行了哪些检查、有哪些证据支撑修复。

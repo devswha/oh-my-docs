@@ -2,6 +2,11 @@
   "title": "Gajae-Code Docs",
   "pages": [
     "index",
-    "getting-started"
+    "getting-started",
+    "concepts",
+    "workflows",
+    "agents",
+    "tools",
+    "reference"
   ]
 }

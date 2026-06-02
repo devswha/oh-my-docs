@@ -1,0 +1,85 @@
+---
+title: リファレンス
+description: 設定ファイル、モデルと provider の設定、リトライ予算、そして実行時に Gajae-Code を制御する環境変数。
+---
+
+## 設定ファイル
+
+Gajae-Code は `~/.gjc` から設定を読み込みます（ルートは `GJC_CONFIG_DIR` で変更）：
+
+| パス                       | 用途                                |
+| -------------------------- | ----------------------------------- |
+| `~/.gjc/config.yml`        | 一般的なランタイム設定。            |
+| `~/.gjc/agent/models.yml`  | provider、モデル、ロール、ルーティング。|
+| `~/.gjc/agent/.env`        | agent スコープの環境変数。          |
+| `~/.gjc/.env`、`~/.env`    | 設定ルート・home の環境フォールバック。|
+
+`.env` の解決順：プロセス env → プロジェクト `$PWD/.env` → `~/.gjc/agent/.env` → `~/.gjc/.env` → `~/.env`（各段は未設定のキーのみ埋める）。
+
+## リトライ予算
+
+`config.yml` で 2 つのリトライ層を設定します：
+
+```yaml
+retry:
+  requestMaxRetries: 4
+  streamMaxRetries: 100
+  maxRetries: 3
+  maxDelayMs: 300000
+```
+
+無効な認証、未対応モデル、不正なリクエスト、コンテキスト超過、ユーザー中断、恒久的なクォータ失敗は、リトライで隠さず即座に失敗します。
+
+## モデルと provider
+
+デフォルトのモデル設定は `~/.gjc/agent/models.yml` です。一般的な provider を追加する最速の方法はプリセットです：
+
+```bash
+gjc setup provider --preset minimax
+gjc setup provider --preset glm
+```
+
+TUI でも同様です：`/provider add --preset glm`。プリセットは文書化された env 変数名を参照する `models.yml` エントリのみを書き込み、資格情報は保存しません。
+
+**モデルロール**は `modelRoles` でジョブをモデルに対応付けます：`default`、`smol`、`slow`、`vision`、`plan`、`designer`、`commit`、`task`。ロール値は正確な `provider/modelId` または canonical id で、thinking サフィックス（`:low`、`:high`、`:xhigh`）を付けられます。実行時は `/model`（TUI）または `--model` / `--models`（CLI、`openai/*` のような glob 対応）で選択します。
+
+ローカルランタイムは到達可能なら自動検出されます：Ollama（`OLLAMA_BASE_URL`、既定 `http://127.0.0.1:11434`）、llama.cpp（`LLAMA_CPP_BASE_URL`、`:8080`）、LM Studio（`LM_STUDIO_BASE_URL`、`:1234/v1`）。
+
+## 環境変数
+
+provider ごとの認証順：CLI `--api-key` → 保存済み資格情報 → 保存済み OAuth → 環境変数 → `models.yml` の `apiKey`。
+
+### provider 資格情報（主要）
+
+| 変数                                       | provider             |
+| ------------------------------------------ | -------------------- |
+| `ANTHROPIC_API_KEY` / `ANTHROPIC_OAUTH_TOKEN` | Anthropic         |
+| `OPENAI_API_KEY`                           | OpenAI               |
+| `GEMINI_API_KEY`                           | Google Gemini        |
+| `OPENROUTER_API_KEY`                       | OpenRouter           |
+| `ZAI_API_KEY`                              | z.ai (GLM)           |
+| `MINIMAX_CODE_API_KEY` / `MINIMAX_API_KEY` | MiniMax              |
+| `DEEPSEEK_API_KEY`、`XAI_API_KEY`、`GROQ_API_KEY`、`MISTRAL_API_KEY` | DeepSeek / xAI / Groq / Mistral |
+
+ほかにも多くの provider に対応しています（Cerebras、Fireworks、Together、Hugging Face、Bedrock、Azure OpenAI、Vertex、Kimi、Qwen など）。base URL は `<PROVIDER>_BASE_URL` で provider ごとに上書きできます（例：`OPENAI_BASE_URL`、`ANTHROPIC_BASE_URL`）。
+
+### Web 検索
+
+`EXA_API_KEY`、`BRAVE_API_KEY`、`PERPLEXITY_API_KEY`、`TAVILY_API_KEY`、`KAGI_API_KEY`、`JINA_API_KEY` などで対応する `web_search` provider を有効化します。
+
+### ストレージと挙動
+
+| 変数                   | 効果                                          |
+| ---------------------- | --------------------------------------------- |
+| `GJC_CONFIG_DIR`       | home 下の設定ルートディレクトリ名（既定 `.gjc`）。|
+| `GJC_CODING_AGENT_DIR` | agent ディレクトリの完全上書き。              |
+| `GJC_NO_PTY`           | bash ツールの対話 PTY パスを無効化。          |
+| `GJC_NOTIFICATIONS`    | `off`/`0`/`false` でデスクトップ通知を抑制。  |
+| `GJC_NO_TITLE`         | 自動セッションタイトル生成を無効化。          |
+| `GJC_EDIT_VARIANT`     | edit ツール variant を強制（`patch`、`replace`、`hashline` など）。|
+
+すべての `*_API_KEY`、`*_TOKEN`、クラウド資格情報変数は秘密として扱ってください — ログや commit に残さないこと。
+
+## テーマとキーバインド
+
+デフォルトのダーク TUI は GJC red-claw テーマです。ユーザーが明示したテーマ設定が優先されます。キーバインドは設定可能で、現在のバインドは上流 `docs/keybindings.md` を参照してください。

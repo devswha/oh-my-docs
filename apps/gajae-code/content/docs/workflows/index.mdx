@@ -1,0 +1,61 @@
+---
+title: Workflows
+description: The four default workflow skills — deep-interview, ralplan, team, and ultragoal — and the operator sequence that ties them together.
+---
+
+Gajae-Code ships four default workflow skills. Invoke them inside a GJC session with `/skill:<name>`.
+
+| Skill            | What it does                                                          |
+| ---------------- | -------------------------------------------------------------------- |
+| `deep-interview` | Removes ambiguity before planning or code changes.                   |
+| `ralplan`        | Builds and critiques a plan before mutation.                         |
+| `team`           | Optionally coordinates tmux-backed parallel execution.               |
+| `ultragoal`      | Tracks durable goals through implementation, revision, and evidence. |
+
+## deep-interview
+
+Clarifies intent before any plan or change: the real bug or feature, affected behavior, non-goals, and acceptance checks. Start here when the request is vague or the blast radius is unclear.
+
+```text
+/skill:deep-interview clarify the bug, affected behavior, non-goals, and acceptance checks
+```
+
+## ralplan
+
+Turns a clarified request into a reviewed plan, and critiques that plan before any mutation. It is the gate between "we understand the problem" and "we start changing files."
+
+```text
+/skill:ralplan turn the clarified bug report into a reviewed fix plan
+```
+
+## ultragoal
+
+Carries an approved plan through implementation, revision after findings, verification, and a final evidence summary. Drive it from the CLI:
+
+```bash
+gjc ultragoal create-goals --brief-file <approved-plan>
+gjc ultragoal complete-goals
+```
+
+## team (optional)
+
+Coordinates tmux-backed parallel workers — use it only when the task genuinely benefits from splitting work across panes. It is an execution mode, not a required handoff step.
+
+```bash
+gjc team 2:executor "split implementation and verification for this bug fix"
+```
+
+## A full pass
+
+A concrete bug-fix pass ties the loop together:
+
+```text
+/skill:deep-interview clarify the bug, affected behavior, non-goals, and acceptance checks
+/skill:ralplan turn the clarified bug report into a reviewed fix plan
+gjc ultragoal create-goals --brief-file <approved-plan>
+# Optional only for parallel work:
+gjc team 2:executor "split implementation and verification for this bug fix"
+gjc ultragoal complete-goals
+```
+
+This describes the operator sequence, not hidden automation: the agent still reports what it changed, what it revised after findings, what checks ran, and what evidence supports the fix.

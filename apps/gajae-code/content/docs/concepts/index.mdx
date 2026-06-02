@@ -1,0 +1,49 @@
+---
+title: Core Concepts
+description: The working loop, session and worktree isolation, model routing, and durable verification that define how Gajae-Code operates.
+---
+
+Gajae-Code keeps the public agent surface small and the runtime around it dependable. A few ideas explain how it behaves.
+
+## The working loop
+
+Gajae-Code focuses on one method rather than a large skill zoo:
+
+```text
+deep-interview -> ralplan -> ultragoal
+                         └─ optional team execution when parallel tmux workers help
+```
+
+- **`deep-interview`** removes ambiguity before any planning or code change.
+- **`ralplan`** builds and critiques a plan before mutation.
+- **`ultragoal`** carries the work through implementation, revision, verification, and an evidence summary.
+- **`team`** is an optional execution mode that coordinates tmux-backed parallel workers — not a required handoff.
+
+The sequence describes the operator flow, not hidden automation: the agent still reports what it changed, what it revised after findings, what checks ran, and what evidence supports the result.
+
+## Sessions and worktree isolation
+
+Each run is a session with durable state — history, model changes, and evidence are recorded. You can switch, fork, resume, export, and share sessions.
+
+For safer, branch-local work, run inside an isolated Git worktree:
+
+```bash
+gjc --tmux --worktree <path>
+```
+
+Use a dedicated path for throwaway or branch-specific work so the main checkout stays clean.
+
+## Model routing
+
+Gajae-Code keeps every concrete provider model and builds a canonical layer above them, so you can pin an exact `provider/model` or select a canonical id that coalesces across providers.
+
+- **Model roles** map jobs to models: `default`, `smol`, `slow`, `vision`, `plan`, `designer`, `commit`, `task`. Each role can append a thinking level (`:low`, `:medium`, `:high`, `:xhigh`).
+- Pick models at runtime with `/model` in the TUI, or `--model` / `--models` on the CLI (exact, canonical, fuzzy, or glob like `openai/*`).
+- Local runtimes (Ollama, llama.cpp, LM Studio) are discovered automatically when reachable.
+- **Context promotion** recovers from context-overflow errors by switching a small-context model to a larger-context sibling before falling back to compaction.
+
+See [Configuration](/docs/reference) for the `models.yml` shape, provider presets, and auth.
+
+## Durable verification
+
+The loop does not stop at "wrote some code." `ultragoal` tracks goals through implementation, revision, verification, and a final evidence summary, so a finished task comes with the checks that ran and what they showed.

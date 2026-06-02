@@ -1,0 +1,59 @@
+---
+title: ワークフロー
+description: 4 つのデフォルトワークフロースキル — deep-interview、ralplan、team、ultragoal — とそれらをつなぐ操作シーケンス。
+---
+
+Gajae-Code は 4 つのデフォルトワークフロースキルを提供します。GJC セッション内で `/skill:<name>` で呼び出します。
+
+| スキル           | 役割                                       |
+| ---------------- | ------------------------------------------ |
+| `deep-interview` | 計画やコード変更の前に曖昧さを取り除く。   |
+| `ralplan`        | 変更前に計画を立て批評する。               |
+| `team`           | 必要時に tmux 並列実行を調整する。         |
+| `ultragoal`      | 目標を実装・改訂・証拠まで追跡する。       |
+
+## deep-interview
+
+計画や変更の前に意図を明確化します：本当のバグや機能、影響範囲、非目標、受け入れ基準。要求が曖昧、または影響範囲が不明なときはここから始めます。
+
+```text
+/skill:deep-interview clarify the bug, affected behavior, non-goals, and acceptance checks
+```
+
+## ralplan
+
+明確化した要求を批評済みの計画に変え、変更前にその計画を批評します。
+
+```text
+/skill:ralplan turn the clarified bug report into a reviewed fix plan
+```
+
+## ultragoal
+
+承認された計画を実装・発見に基づく改訂・検証・最終的な証拠のまとめまで進めます。CLI で駆動します：
+
+```bash
+gjc ultragoal create-goals --brief-file <approved-plan>
+gjc ultragoal complete-goals
+```
+
+## team（任意）
+
+tmux 並列ワーカーを調整します — タスクがパネル分割で本当に有益な場合のみ使います。必須の手順ではなく実行モードです。
+
+```bash
+gjc team 2:executor "split implementation and verification for this bug fix"
+```
+
+## 一連の流れ
+
+```text
+/skill:deep-interview clarify the bug, affected behavior, non-goals, and acceptance checks
+/skill:ralplan turn the clarified bug report into a reviewed fix plan
+gjc ultragoal create-goals --brief-file <approved-plan>
+# 並列作業のときのみ任意：
+gjc team 2:executor "split implementation and verification for this bug fix"
+gjc ultragoal complete-goals
+```
+
+これは隠れた自動化ではなく操作シーケンスを説明します。エージェントは何を変え、何を改訂し、どの検査を実行し、どの証拠が修正を裏付けるかを報告します。
