@@ -9,7 +9,7 @@ This repository was initialized as a monorepo for three previously separate docu
 | `apps/codex` | `/home/devswha/workspace/oh-my-codex-docs` | `4a70e78ca29f93bfbed9653c324f60352530f29c` | imported from committed `HEAD` |
 | `apps/claudecode` | `/home/devswha/workspace/oh-my-claudecode-docs` | `b5955764b99e07d9f00008c462b2252b662edc65` | imported from committed `HEAD`; local uncommitted/generated files were intentionally excluded |
 | `apps/openagent` | `/home/devswha/workspace/oh-my-openagent-docs` | `e2668564936c9744d26d700014169565a6663ef5` | imported from committed `HEAD` |
-| `apps/gajae-code` | `https://github.com/devswha/gajae-code-docs` | _(none yet)_ | scaffolded from `apps/openagent` template; content reset to a starter set; docs repo created empty, first subtree split/push pending |
+| `apps/gajae-code` | `https://github.com/devswha/gajae-code-docs` | `1053e346084b288afe8599907f8d5eac22eda7aa` | scaffolded from `apps/openagent` template; first `git subtree split` pushed to `gajae-code-docs@main`; Vercel project git-connected (auto-deploy on push) |
 
 The imports use `git subtree` without `--squash`, so source commit history remains available in this monorepo.
 
