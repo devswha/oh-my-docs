@@ -1,7 +1,6 @@
 {
   "title": "도구",
   "pages": [
-    "index",
     "files",
     "search",
     "runtime",

@@ -1,7 +1,6 @@
 {
   "title": "에이전트",
   "pages": [
-    "index",
     "executor",
     "architect",
     "planner",

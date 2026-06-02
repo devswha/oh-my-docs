@@ -1,7 +1,6 @@
 {
   "title": "주요 개념",
   "pages": [
-    "index",
     "sessions",
     "models-and-providers",
     "context-and-compaction",

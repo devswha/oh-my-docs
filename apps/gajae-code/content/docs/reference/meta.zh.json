@@ -1,7 +1,6 @@
 {
   "title": "参考",
   "pages": [
-    "index",
     "configuration",
     "models-and-credentials",
     "environment-variables",

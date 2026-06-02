@@ -1,7 +1,6 @@
 {
   "title": "エージェント",
   "pages": [
-    "index",
     "executor",
     "architect",
     "planner",

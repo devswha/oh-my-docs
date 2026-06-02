@@ -1,7 +1,6 @@
 {
   "title": "Core Concepts",
   "pages": [
-    "index",
     "sessions",
     "models-and-providers",
     "context-and-compaction",

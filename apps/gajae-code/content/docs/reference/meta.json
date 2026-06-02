@@ -1,7 +1,6 @@
 {
   "title": "Reference",
   "pages": [
-    "index",
     "configuration",
     "models-and-credentials",
     "environment-variables",

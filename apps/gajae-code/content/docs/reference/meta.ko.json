@@ -1,7 +1,6 @@
 {
   "title": "레퍼런스",
   "pages": [
-    "index",
     "configuration",
     "models-and-credentials",
     "environment-variables",
