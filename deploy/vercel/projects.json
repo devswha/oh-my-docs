@@ -28,6 +28,15 @@
       "orgId": "team_66lsrwOyA36bLnIH2eoEXqry",
       "sourceRepo": "/home/devswha/workspace/oh-my-openagent-docs",
       "sourceRef": "e2668564936c9744d26d700014169565a6663ef5"
+    },
+    "gajae-code": {
+      "path": "apps/gajae-code",
+      "rootDirectory": "apps/gajae-code",
+      "projectName": "gajae-code-docs",
+      "projectId": "prj_C2DDDPCeAONOtKdAf4UFGP8QJuvb",
+      "orgId": "team_66lsrwOyA36bLnIH2eoEXqry",
+      "sourceRepo": "/home/devswha/workspace/gajae-code-docs",
+      "sourceRef": ""
     }
   }
 }

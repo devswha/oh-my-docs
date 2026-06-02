@@ -1,0 +1,83 @@
+---
+title: はじめに
+description: Gajae-Code をインストールし、gjc バイナリを起動して、deep-interview → ralplan → ultragoal ループを実行します。
+---
+
+`gjc` バイナリを動かし、最初のループを回します。
+
+<Steps>
+
+<Step>
+
+### インストール
+
+推奨ランタイムは Bun です：
+
+```bash
+bun install -g gajae-code
+```
+
+`gjc` バイナリがインストールされます。scoped パッケージ `@gajae-code/coding-agent` も利用できます。
+
+</Step>
+
+<Step>
+
+### 起動
+
+推奨の tmux ベース環境で起動します：
+
+```bash
+gjc --tmux
+```
+
+`gjc` だけなら tmux セッションを作成・接続せずに直接起動します：
+
+```bash
+gjc
+```
+
+ブランチ単位で安全に作業したい場合は、隔離された Git worktree で実行します：
+
+```bash
+gjc --tmux --worktree <path>
+```
+
+</Step>
+
+<Step>
+
+### ループを回す
+
+Gajae-Code は 1 つの有用なループに集中します：
+
+```text
+deep-interview -> ralplan -> ultragoal
+```
+
+- `deep-interview` — 意図、影響範囲、非目標、受け入れ基準を明確化。
+- `ralplan` — 変更前に計画を立て批評。
+- `$ultragoal` — 実装・改訂・検証・証拠のまとめまで進める。
+
+並列 tmux ワーカーが役立つ場合のみ `$team` を加えます。
+
+</Step>
+
+</Steps>
+
+## 設定
+
+provider のリトライ予算などの設定は `~/.gjc/config.yml` にあります：
+
+```yaml
+retry:
+  requestMaxRetries: 4
+  streamMaxRetries: 100
+  maxRetries: 3
+  maxDelayMs: 300000
+```
+
+## 次のステップ
+
+- ソースプロジェクトと完全なリファレンス：[Yeachan-Heo/gajae-code](https://github.com/Yeachan-Heo/gajae-code)
+- コミュニティ：[Discord](https://discord.gg/sj4exxQ9v)

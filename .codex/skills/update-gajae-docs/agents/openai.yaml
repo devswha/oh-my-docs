@@ -1,0 +1,4 @@
+interface:
+  display_name: "Update Gajae-Code Docs"
+  short_description: "Refresh Gajae-Code (gjc) docs from latest upstream"
+  default_prompt: "Use $update-gajae-docs to refresh the Gajae-Code docs from the latest Yeachan-Heo/gajae-code upstream repository."

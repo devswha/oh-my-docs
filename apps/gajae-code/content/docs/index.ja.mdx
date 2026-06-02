@@ -1,0 +1,38 @@
+---
+title: Gajae-Code
+description: 明確なインタビュー、堅牢な計画、tmux ネイティブ実行、永続的な検証のための red-claw コーディングエージェント harness。
+---
+
+![Gajae-Code](/images/hero.png)
+
+**red-claw コーディングエージェント harness (`gjc`)。** 明確なインタビュー、堅牢な計画、tmux ネイティブ実行、永続的な検証。
+
+> 注意：Gajae-Code は実験的な初期ベータプロジェクトです。粗い部分があるため、重要な作業に使う前に出力を確認してください。
+
+Gajae-Code は公開エージェントの表面を意図的に小さく保ちつつ、その周囲のランタイムを信頼できるものにします。1 つの有用なループに集中します：
+
+```text
+deep-interview -> ralplan -> ultragoal
+                         └─ 並列 tmux ワーカーが役立つ場合は team 実行を選択
+```
+
+`deep-interview` で意図を明確にし、`ralplan` で方針を批評し、`$ultragoal` で実装・改訂・検証・証拠のまとめまで進めます。並列ワーカーが有益な場合のみ `$team` を加えます。
+
+## インストール
+
+```bash
+bun install -g gajae-code
+```
+
+このパッケージは `gjc` バイナリをインストールします。scoped パッケージ `@gajae-code/coding-agent` でも入手できます。
+
+## ワークフロー
+
+4 つのデフォルトワークフロースキル：`deep-interview`、`ralplan`、`team`、`ultragoal`。
+
+4 つの組み込みロールエージェント：`executor`、`architect`、`planner`、`critic`。
+
+## 次のステップ
+
+- [はじめに](/ja/docs/getting-started) — インストール、起動、最初のループ。
+- ソースプロジェクト：[Yeachan-Heo/gajae-code](https://github.com/Yeachan-Heo/gajae-code)

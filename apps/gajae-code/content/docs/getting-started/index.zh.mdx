@@ -1,0 +1,83 @@
+---
+title: 快速开始
+description: 安装 Gajae-Code，启动 gjc 可执行文件，运行 deep-interview → ralplan → ultragoal 循环。
+---
+
+让 `gjc` 运行起来，跑通第一个循环。
+
+<Steps>
+
+<Step>
+
+### 安装
+
+推荐使用 Bun：
+
+```bash
+bun install -g gajae-code
+```
+
+这会安装 `gjc` 可执行文件，也可使用 scoped 包 `@gajae-code/coding-agent`。
+
+</Step>
+
+<Step>
+
+### 启动
+
+启动推荐的 tmux 体验：
+
+```bash
+gjc --tmux
+```
+
+直接运行 `gjc` 则不创建或附加 tmux 会话：
+
+```bash
+gjc
+```
+
+在隔离的 Git worktree 中运行可获得更安全的分支级工作区：
+
+```bash
+gjc --tmux --worktree <path>
+```
+
+</Step>
+
+<Step>
+
+### 运行循环
+
+Gajae-Code 专注于一个有用的循环：
+
+```text
+deep-interview -> ralplan -> ultragoal
+```
+
+- `deep-interview` — 厘清意图、影响范围、非目标与验收标准。
+- `ralplan` — 在变更前构建并评审计划。
+- `$ultragoal` — 推进实现、修订、验证与证据汇总。
+
+只有在并行 tmux worker 有帮助时才加 `$team`。
+
+</Step>
+
+</Steps>
+
+## 配置
+
+provider 重试预算等设置位于 `~/.gjc/config.yml`：
+
+```yaml
+retry:
+  requestMaxRetries: 4
+  streamMaxRetries: 100
+  maxRetries: 3
+  maxDelayMs: 300000
+```
+
+## 下一步
+
+- 源项目与完整参考：[Yeachan-Heo/gajae-code](https://github.com/Yeachan-Heo/gajae-code)
+- 社区：[Discord](https://discord.gg/sj4exxQ9v)

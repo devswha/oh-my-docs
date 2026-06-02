@@ -2,7 +2,7 @@
   "name": "oh-my-docs",
   "version": "0.1.0",
   "private": true,
-  "description": "Monorepo for managing Oh My Codex, Oh My Claude Code, and Oh My OpenAgent documentation together.",
+  "description": "Monorepo for managing Oh My Codex, Oh My Claude Code, Oh My OpenAgent, and Gajae-Code documentation together.",
   "workspaces": [
     "apps/*"
   ],
@@ -10,15 +10,18 @@
     "dev:codex": "npm --prefix apps/codex run dev",
     "dev:claudecode": "npm --prefix apps/claudecode run dev",
     "dev:openagent": "npm --prefix apps/openagent run dev",
-    "build": "npm run build:codex && npm run build:claudecode && npm run build:openagent",
+    "dev:gajae-code": "npm --prefix apps/gajae-code run dev",
+    "build": "npm run build:codex && npm run build:claudecode && npm run build:openagent && npm run build:gajae-code",
     "build:codex": "npm --prefix apps/codex run build",
     "build:claudecode": "npm --prefix apps/claudecode run build",
     "build:openagent": "npm --prefix apps/openagent run build",
-    "lint": "npm run lint:codex && npm run lint:claudecode && npm run lint:openagent",
+    "build:gajae-code": "npm --prefix apps/gajae-code run build",
+    "lint": "npm run lint:codex && npm run lint:claudecode && npm run lint:openagent && npm run lint:gajae-code",
     "lint:codex": "npm --prefix apps/codex run lint",
     "lint:claudecode": "npm --prefix apps/claudecode run lint",
     "lint:openagent": "npm --prefix apps/openagent run lint",
-    "install:all": "npm install --prefix apps/codex && npm install --prefix apps/claudecode && npm install --prefix apps/openagent",
+    "lint:gajae-code": "npm --prefix apps/gajae-code run lint",
+    "install:all": "npm install --prefix apps/codex && npm install --prefix apps/claudecode && npm install --prefix apps/openagent && npm install --prefix apps/gajae-code",
     "status": "git status --short --branch",
     "vercel:sync-links": "node scripts/vercel-sync-links.mjs",
     "vercel:configure:dry": "node scripts/vercel-configure-projects.mjs --dry-run",
@@ -26,9 +29,11 @@
     "vercel:deploy:codex": "node scripts/vercel-deploy.mjs codex",
     "vercel:deploy:claudecode": "node scripts/vercel-deploy.mjs claudecode",
     "vercel:deploy:openagent": "node scripts/vercel-deploy.mjs openagent",
+    "vercel:deploy:gajae-code": "node scripts/vercel-deploy.mjs gajae-code",
     "vercel:deploy:all": "node scripts/vercel-deploy.mjs all",
     "vercel:deploy:codex:prod": "node scripts/vercel-deploy.mjs codex --prod",
     "vercel:deploy:claudecode:prod": "node scripts/vercel-deploy.mjs claudecode --prod",
-    "vercel:deploy:openagent:prod": "node scripts/vercel-deploy.mjs openagent --prod"
+    "vercel:deploy:openagent:prod": "node scripts/vercel-deploy.mjs openagent --prod",
+    "vercel:deploy:gajae-code:prod": "node scripts/vercel-deploy.mjs gajae-code --prod"
   }
 }

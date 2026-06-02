@@ -1,10 +1,11 @@
 # oh-my-docs
 
-`oh-my-docs`는 다음 3개 문서 사이트를 한 저장소에서 함께 관리하기 위한 monorepo입니다.
+`oh-my-docs`는 다음 4개 문서 사이트를 한 저장소에서 함께 관리하기 위한 monorepo입니다.
 
 - `apps/codex` — `oh-my-codex-docs`
 - `apps/claudecode` — `oh-my-claudecode-docs`
 - `apps/openagent` — `oh-my-openagent-docs`
+- `apps/gajae-code` — `gajae-code-docs`
 
 ## 운영 원칙
 
@@ -27,6 +28,7 @@ Vercel 프로젝트 매핑과 배포 스크립트는 [`deploy/vercel/`](./deploy
 npm run dev:codex
 npm run dev:claudecode
 npm run dev:openagent
+npm run dev:gajae-code
 npm run build
 npm run lint
 ```

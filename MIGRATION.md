@@ -9,6 +9,7 @@ This repository was initialized as a monorepo for three previously separate docu
 | `apps/codex` | `/home/devswha/workspace/oh-my-codex-docs` | `4a70e78ca29f93bfbed9653c324f60352530f29c` | imported from committed `HEAD` |
 | `apps/claudecode` | `/home/devswha/workspace/oh-my-claudecode-docs` | `b5955764b99e07d9f00008c462b2252b662edc65` | imported from committed `HEAD`; local uncommitted/generated files were intentionally excluded |
 | `apps/openagent` | `/home/devswha/workspace/oh-my-openagent-docs` | `e2668564936c9744d26d700014169565a6663ef5` | imported from committed `HEAD` |
+| `apps/gajae-code` | `https://github.com/devswha/gajae-code-docs` | _(none yet)_ | scaffolded from `apps/openagent` template; content reset to a starter set; docs repo created empty, first subtree split/push pending |
 
 The imports use `git subtree` without `--squash`, so source commit history remains available in this monorepo.
 
@@ -19,6 +20,7 @@ apps/
   codex/       # oh-my-codex-docs
   claudecode/  # oh-my-claudecode-docs
   openagent/   # oh-my-openagent-docs
+  gajae-code/  # gajae-code-docs
 ```
 
 Keep product-specific docs, routes, public assets, and deployment configuration inside the matching `apps/*` directory. Extract shared tooling only when all three apps can use it without changing behavior.
@@ -31,7 +33,10 @@ To pull later changes from a source repo into the matching subtree:
 git subtree pull --prefix=apps/codex /home/devswha/workspace/oh-my-codex-docs <ref>
 git subtree pull --prefix=apps/claudecode /home/devswha/workspace/oh-my-claudecode-docs <ref>
 git subtree pull --prefix=apps/openagent /home/devswha/workspace/oh-my-openagent-docs <ref>
+git subtree pull --prefix=apps/gajae-code /home/devswha/workspace/gajae-code-docs <ref>
 ```
+
+> Note: `apps/gajae-code` was scaffolded in this monorepo (not imported from a docs repo). Its `devswha/gajae-code-docs` deploy repo starts empty, so the first sync is a `git subtree split` + push (below) rather than a pull.
 
 To split an app subtree back out for upstream synchronization:
 
@@ -39,6 +44,7 @@ To split an app subtree back out for upstream synchronization:
 git subtree split --prefix=apps/codex -b split/codex
 git subtree split --prefix=apps/claudecode -b split/claudecode
 git subtree split --prefix=apps/openagent -b split/openagent
+git subtree split --prefix=apps/gajae-code -b split/gajae-code
 ```
 
 ## Validation checklist

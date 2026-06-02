@@ -1,0 +1,38 @@
+---
+title: Gajae-Code
+description: 一个 red-claw 编码智能体 harness，用于清晰的访谈、稳健的计划、tmux 原生执行和持久的验证。
+---
+
+![Gajae-Code](/images/hero.png)
+
+**red-claw 编码智能体 harness (`gjc`)。** 清晰的访谈、稳健的计划、tmux 原生执行、持久的验证。
+
+> 说明：Gajae-Code 是实验性的早期 beta 项目。可能存在粗糙之处，重要工作前请先核实输出。
+
+Gajae-Code 刻意保持较小的公开智能体表面，同时让周边运行时更可靠。它专注于一个有用的循环：
+
+```text
+deep-interview -> ralplan -> ultragoal
+                         └─ 当并行 tmux worker 有帮助时可选 team 执行
+```
+
+用 `deep-interview` 厘清意图，用 `ralplan` 评审方案，用 `$ultragoal` 推进实现、修订、验证与证据汇总。只有在并行 worker 有收益时才加 `$team`。
+
+## 安装
+
+```bash
+bun install -g gajae-code
+```
+
+该包会安装 `gjc` 可执行文件，也可通过 scoped 包 `@gajae-code/coding-agent` 获取。
+
+## 工作流
+
+四个默认工作流 skill：`deep-interview`、`ralplan`、`team`、`ultragoal`。
+
+四个内置角色智能体：`executor`、`architect`、`planner`、`critic`。
+
+## 下一步
+
+- [快速开始](/zh/docs/getting-started) — 安装、启动并运行第一个循环。
+- 源项目：[Yeachan-Heo/gajae-code](https://github.com/Yeachan-Heo/gajae-code)

@@ -13,7 +13,7 @@ const flags = new Set(args.filter((arg) => arg.startsWith('-')));
 const target = args.find((arg) => !arg.startsWith('-'));
 
 if (!target) {
-  console.error('Usage: node scripts/vercel-deploy.mjs <codex|claudecode|openagent|all> [--prod] [--prebuilt] [--yes] [--dry-run]');
+  console.error('Usage: node scripts/vercel-deploy.mjs <codex|claudecode|openagent|gajae-code|all> [--prod] [--prebuilt] [--yes] [--dry-run]');
   process.exit(1);
 }
 
