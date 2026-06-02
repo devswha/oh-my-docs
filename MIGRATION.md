@@ -10,7 +10,7 @@ This repository was initialized as a monorepo for three previously separate docu
 | `apps/claudecode` | `/home/devswha/workspace/oh-my-claudecode-docs` | `b5955764b99e07d9f00008c462b2252b662edc65` | imported from committed `HEAD`; local uncommitted/generated files were intentionally excluded |
 | `apps/openagent` | `/home/devswha/workspace/oh-my-openagent-docs` | `e2668564936c9744d26d700014169565a6663ef5` | imported from committed `HEAD` |
 | `apps/gajae-code` | `https://github.com/devswha/gajae-code-docs` | `3b92c585d4c4752ab9f2a29ef2292313c45c36d5` | scaffolded from `apps/openagent` template; `git subtree split` pushed to `gajae-code-docs@main`; Vercel project git-connected (auto-deploy on push) |
-| `apps/lzx` | `https://github.com/devswha/lzx-docs` | `(pending first push)` | scaffolded from `apps/gajae-code` template; documents upstream `code-yeongyu/lazycodex` (LazyCodex / LZX); `git subtree split` pushed to `lzx-docs@main`; Vercel project git-connected (auto-deploy on push) |
+| `apps/lzx` | `https://github.com/devswha/lzx-docs` | `ba57a343300be5671a9daf5793c1b5ee5700b6aa` | scaffolded from `apps/gajae-code` template; documents upstream `code-yeongyu/lazycodex` (LazyCodex / LZX); `git subtree split` pushed to `lzx-docs@main`; Vercel project git-connected (auto-deploy on push); domain `lzx.vibetip.help` |
 
 The imports use `git subtree` without `--squash`, so source commit history remains available in this monorepo.
 
