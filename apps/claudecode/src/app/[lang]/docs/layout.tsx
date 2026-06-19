@@ -18,6 +18,14 @@ export default async function Layout({
     ({ en: 'Support', ko: '지원', ja: 'サポート', zh: '支持' } as const)[
       lang as 'en' | 'ko' | 'ja' | 'zh'
     ] ?? 'Support';
+  const patinaLabel =
+    ({ en: 'Star Patina on GitHub', ko: 'GitHub에서 Patina에 Star', ja: 'GitHub で Patina に Star', zh: '在 GitHub 上 Star Patina' } as const)[
+      lang as 'en' | 'ko' | 'ja' | 'zh'
+    ] ?? 'Star Patina on GitHub';
+  const patinaTitle =
+    ({ en: 'Patina — open-source AI text humanizer', ko: 'Patina — 오픈소스 AI 텍스트 휴머나이저', ja: 'Patina — オープンソースの AI テキストヒューマナイザー', zh: 'Patina — 开源 AI 文本人性化工具' } as const)[
+      lang as 'en' | 'ko' | 'ja' | 'zh'
+    ] ?? 'Patina — open-source AI text humanizer';
   const langPrefix = lang === i18n.defaultLanguage ? '' : `/${lang}`;
 
   return (
@@ -44,6 +52,21 @@ export default async function Layout({
       }}
       sidebar={{
         defaultOpenLevel: 1,
+        footer: (
+          <a
+            key="patina-cta"
+            href="https://github.com/devswha/patina"
+            target="_blank"
+            rel="noopener noreferrer"
+            title={patinaTitle}
+            className="mt-2 flex items-center gap-1.5 border-t px-1.5 pt-2 text-xs text-fd-muted-foreground transition-colors duration-100 hover:text-fd-accent-foreground"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="size-3.5 text-amber-500">
+              <path d="M12 2.6l2.82 5.72 6.31.92-4.57 4.45 1.08 6.29L12 17.97l-5.64 2.96 1.08-6.29-4.57-4.45 6.31-.92z" />
+            </svg>
+            <span className="truncate">{patinaLabel}</span>
+          </a>
+        ),
       }}
       i18n={i18n}
       links={[

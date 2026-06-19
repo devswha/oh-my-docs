@@ -23,6 +23,14 @@ export default async function Layout({
     ({ en: 'Choose language', ko: '언어 선택', ja: '言語を選択', zh: '选择语言' } as const)[
       lang as 'en' | 'ko' | 'ja' | 'zh'
     ] ?? 'Choose language';
+  const patinaLabel =
+    ({ en: 'Crafted with Patina', ko: 'Patina로 다듬은 문서', ja: 'Patina で整えたドキュメント', zh: '由 Patina 打磨' } as const)[
+      lang as 'en' | 'ko' | 'ja' | 'zh'
+    ] ?? 'Crafted with Patina';
+  const patinaTitle =
+    ({ en: 'Star Patina on GitHub', ko: 'GitHub에서 Patina에 ⭐ 남기기', ja: 'GitHub で Patina に ⭐ を', zh: '在 GitHub 上给 Patina 点 ⭐' } as const)[
+      lang as 'en' | 'ko' | 'ja' | 'zh'
+    ] ?? 'Star Patina on GitHub';
   const langPrefix = lang === i18n.defaultLanguage ? '' : `/${lang}`;
 
   return (
@@ -32,7 +40,7 @@ export default async function Layout({
         title: (
           <div key="docs-nav-title" className="flex items-center gap-2">
             <Image
-              src="/icon.svg"
+              src="/icon.png"
               alt="LazyCodex"
               width={28}
               height={28}
@@ -55,6 +63,8 @@ export default async function Layout({
             supportHref={`${langPrefix}/docs/support`}
             supportLabel={supportLabel}
             languageLabel={languageLabel}
+            patinaLabel={patinaLabel}
+            patinaTitle={patinaTitle}
           />
         ),
       }}

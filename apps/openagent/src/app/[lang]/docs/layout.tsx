@@ -23,6 +23,14 @@ export default async function Layout({
     ({ en: 'Choose language', ko: '언어 선택', ja: '言語を選択', zh: '选择语言' } as const)[
       lang as 'en' | 'ko' | 'ja' | 'zh'
     ] ?? 'Choose language';
+  const patinaLabel =
+    ({ en: 'Crafted with Patina', ko: 'Patina로 다듬은 문서', ja: 'Patina で整えたドキュメント', zh: '由 Patina 打磨' } as const)[
+      lang as 'en' | 'ko' | 'ja' | 'zh'
+    ] ?? 'Crafted with Patina';
+  const patinaTitle =
+    ({ en: 'Patina — open-source AI text humanizer', ko: 'Patina — 오픈소스 AI 텍스트 휴머나이저', ja: 'Patina — オープンソースの AI テキストヒューマナイザー', zh: 'Patina — 开源 AI 文本人性化工具' } as const)[
+      lang as 'en' | 'ko' | 'ja' | 'zh'
+    ] ?? 'Patina — open-source AI text humanizer';
   const langPrefix = lang === i18n.defaultLanguage ? '' : `/${lang}`;
 
   return (
@@ -55,6 +63,8 @@ export default async function Layout({
             supportHref={`${langPrefix}/docs/support`}
             supportLabel={supportLabel}
             languageLabel={languageLabel}
+            patinaLabel={patinaLabel}
+            patinaTitle={patinaTitle}
           />
         ),
       }}

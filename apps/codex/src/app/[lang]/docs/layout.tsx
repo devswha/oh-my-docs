@@ -23,6 +23,14 @@ export default async function Layout({
     ({ en: 'Choose language', ko: '언어 선택', ja: '言語を選択', zh: '选择语言' } as const)[
       lang as 'en' | 'ko' | 'ja' | 'zh'
     ] ?? 'Choose language';
+  const patinaLabel =
+    ({ en: 'Star Patina on GitHub', ko: 'GitHub에서 Patina에 Star', ja: 'GitHub で Patina に Star', zh: '在 GitHub 上 Star Patina' } as const)[
+      lang as 'en' | 'ko' | 'ja' | 'zh'
+    ] ?? 'Star Patina on GitHub';
+  const patinaTitle =
+    ({ en: 'Patina — open-source AI text humanizer', ko: 'Patina — 오픈소스 AI 텍스트 휴머나이저', ja: 'Patina — オープンソースの AI テキストヒューマナイザー', zh: 'Patina — 开源 AI 文本人性化工具' } as const)[
+      lang as 'en' | 'ko' | 'ja' | 'zh'
+    ] ?? 'Patina — open-source AI text humanizer';
   const langPrefix = lang === i18n.defaultLanguage ? '' : `/${lang}`;
 
   return (
@@ -56,6 +64,8 @@ export default async function Layout({
             supportHref={`${langPrefix}/docs/support`}
             supportLabel={supportLabel}
             languageLabel={languageLabel}
+            patinaLabel={patinaLabel}
+            patinaTitle={patinaTitle}
           />
         ),
       }}
@@ -69,6 +79,10 @@ export default async function Layout({
           text: 'GitHub',
           url: 'https://github.com/Yeachan-Heo/oh-my-codex',
           external: true,
+        },
+        {
+          text: 'For non-developers',
+          url: `${langPrefix}/for-everyone`,
         },
       ]}
     >
