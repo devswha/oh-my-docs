@@ -1,0 +1,92 @@
+---
+title: Status line & usage HUD
+description: Configure the gjc status-line HUD through statusLine in config.yml, enable the 5h/7d Anthropic usage segment, and read live limits with the /usage command.
+---
+
+Gajae-Code (`gjc`) shows a configurable status-line HUD at the bottom of the TUI. Configure it with the `statusLine` block in `~/.gjc/config.yml`; there is **no dedicated slash command or skill** for editing it. Use a preset, or set `preset: custom` and choose the segments yourself.
+
+## Presets
+
+`statusLine.preset` selects one of the built-in layouts:
+
+| Preset    | Notes                                                            |
+| --------- | --------------------------------------------------------------- |
+| `default` | Balanced layout (model, mode, git, pr, path / session, token rate, context, cost). |
+| `minimal` | Path, git, and a short right side.                              |
+| `compact` | Like default, with fewer indicators.                            |
+| `full`    | Everything, with powerline separators and Nerd Font icons.       |
+| `nerd`    | `full` plus extra segments and Nerd Font glyphs.                 |
+| `ascii`   | No Nerd Font dependency.                                        |
+| `custom`  | Your own `leftSegments` / `rightSegments` (see below).           |
+
+Named presets come with their own segment lists. `statusLine.leftSegments` and `statusLine.rightSegments` are used only when `preset: custom`; every other preset ignores them.
+
+## Segments
+
+| Segment | Shows |
+| --- | --- |
+| `gajae` | The `GJC` accent badge. |
+| `model` | Active model (and thinking level). |
+| `mode` | Plan / goal mode indicator. |
+| `path` | Working directory (abbreviated). |
+| `git` | Branch plus staged/unstaged/untracked counts. |
+| `pr` | Linked pull-request number. |
+| `subagents` | Count of running subagents. |
+| `usage` | Anthropic 5h + 7d usage windows (see below). |
+| `token_in` · `token_out` · `token_total` | Session token counts. |
+| `token_rate` | Tokens per second. |
+| `cache_read` · `cache_write` | Cache token counts. |
+| `cost` | Session cost / premium requests. |
+| `context_pct` · `context_total` | Context-window usage. |
+| `time` · `time_spent` | Clock and elapsed session time. |
+| `session` · `session_name` | Session id / name. |
+| `hostname` | Host name. |
+
+Other settings: `statusLine.separator` (for example, `slash`, `powerline`, `ascii`), `statusLine.sessionAccent`, `statusLine.showSkillHud` (workflow skill bar), `statusLine.showHookStatus`, and per-segment `statusLine.segmentOptions`.
+
+## The `usage` segment (5h / 7d)
+
+The `usage` segment shows Anthropic's rolling usage windows in the HUD:
+
+```text
+5h 42% (1h 20m) · 7d 63% (2d 4h)
+```
+
+- **Windows.** `5h` is the 5-hour window; `7d` is the 7-day (weekly) window. Each one shows the used percentage and time until reset.
+- **Color thresholds.** Used % renders muted below 50%, **warning at ≥50%**, and **error at ≥80%**.
+- **Reset format.** The 5-hour window counts down in minutes (`45m`, `1h 20m`); the 7-day window counts down in hours (`12h`, `2d 4h`).
+- **Data source.** Values come from Anthropic's OAuth usage endpoint, so the segment appears only with **Claude OAuth / subscription** auth. It stays hidden with API-key auth or non-Anthropic providers. Data is cached with a ~5-minute TTL.
+
+### Enable it in the HUD
+
+The `usage` segment is not included in any built-in preset, so use the `custom` preset and list it explicitly. This config keeps the `default` layout and adds `usage` to the right side:
+
+```yaml
+statusLine:
+  preset: custom
+  separator: slash
+  leftSegments:
+    - model
+    - mode
+    - git
+    - pr
+    - path
+  rightSegments:
+    - usage
+    - session_name
+    - token_rate
+    - context_pct
+    - cost
+```
+
+## The `/usage` command
+
+Run `/usage` inside a `gjc` session to see current usage limits. When the provider reports limits, the command prints the label, **percentage left**, an ASCII usage bar, and `resets in <duration>` for each provider and window. If no provider limits are available, it falls back to local session counts: input, output, and cache tokens, premium requests, and cost.
+
+## Related pages
+
+<Cards>
+  <Card title="Configuration" href="/docs/reference/configuration" />
+  <Card title="Theme" href="/docs/reference/theme" />
+  <Card title="Models & credentials" href="/docs/reference/models-and-credentials" />
+</Cards>

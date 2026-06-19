@@ -37,7 +37,7 @@ gjc --tmux
 gjc
 ```
 
-브랜치 단위로 더 안전하게 작업하려면 격리된 Git worktree에서 실행하세요. 일회성·브랜치 전용 작업엔 별도 경로를 써서 메인 체크아웃을 깨끗이 유지합니다.
+브랜치 단위로 더 안전하게 작업하려면 격리된 Git worktree에서 실행하세요. 일회성·브랜치 전용 작업에는 별도 경로를 써서 메인 체크아웃을 깨끗이 유지합니다.
 
 ```bash
 gjc --tmux --worktree <path>
@@ -49,7 +49,7 @@ gjc --tmux --worktree <path>
 
 ### 프로바이더 인증
 
-Gajae-Code는 모델 프로바이더를 통해 동작하므로, 모델을 고르기 전에 적어도 하나의 프로바이더에 닿을 수 있어야 합니다.
+모델을 고르기 전에 적어도 하나의 프로바이더에 연결해야 합니다.
 
 가장 간단한 방법은 **API 키 환경 변수**입니다. 쓰려는 프로바이더의 키를 export 하면 `gjc`가 자동으로 인식합니다.
 
@@ -79,7 +79,7 @@ gjc setup provider --preset glm
 /provider add zai
 ```
 
-**OAuth 프로바이더**는 환경 변수 대신 브라우저로 로그인합니다. Anthropic, OpenAI Code, Google(Gemini CLI / Antigravity), GitLab Duo는 각각 내장된 브라우저 콜백 포트를 가지며, 발급된 OAuth 자격 증명은 로컬 `agent.db`에 저장됩니다.
+**OAuth 프로바이더**는 환경 변수 대신 브라우저로 로그인합니다. Anthropic, OpenAI Code, Google(Gemini CLI / Antigravity), GitLab Duo에는 각각 내장된 브라우저 콜백 포트가 있습니다. 발급된 OAuth 자격 증명은 로컬 `agent.db`에 저장됩니다.
 
 `gjc`가 프로바이더의 키를 해석할 때는 다음 순서를 따릅니다.
 
@@ -110,7 +110,9 @@ deep-interview -> ralplan -> ultragoal
 - `ralplan` — 변경 전에 계획을 세우고 비평합니다.
 - `$ultragoal` — 구현·수정·검증·증거 요약까지 작업을 끌고 갑니다.
 
-병렬 tmux 워커가 도움이 될 때만 `$team`을 더하세요. `team`은 tmux 세션 안(`$TMUX` 설정)에서만 동작합니다 — 먼저 셸에서 `gjc` CLI를 실행하세요. 예: `gjc --tmux`. 구체적인 버그 수정 흐름은 이런 모습입니다.
+병렬 tmux 워커가 도움이 될 때만 `$team`을 더하세요. `team`은 tmux 세션 안(`$TMUX` 설정)에서만 동작합니다. 먼저 셸에서 `gjc` CLI를 실행하세요(예: `gjc --tmux`).
+
+구체적인 버그 수정 흐름은 이런 모습입니다.
 
 ```text
 /skill:deep-interview clarify the bug, affected behavior, non-goals, and acceptance checks
@@ -153,7 +155,19 @@ retry:
   maxDelayMs: 300000
 ```
 
-Gajae-Code에는 재시도 계층이 둘 있습니다. 세션 자동 재시도(`retry.maxRetries`)는 터미널 일시 오류 이후 실패한 어시스턴트 턴을 다시 시도하고, provider 재시도 예산(`requestMaxRetries`, `streamMaxRetries`)은 그 터미널 오류가 세션에 도달하기 전 provider 전송 계층 내부의 재시도를 제어합니다. 잘못된 인증, 미지원 모델/provider, 잘못된 요청, 컨텍스트 초과, 사용자 중단, 영구 쿼터 실패는 재시도 루프에 가려지지 않고 즉시 실패(fail-fast)합니다.
+Gajae-Code에는 재시도 계층이 둘 있습니다.
+
+- **세션 자동 재시도**(`retry.maxRetries`): 터미널 일시 오류 이후 실패한 어시스턴트 턴을 다시 시도합니다.
+- **provider 재시도 예산**(`requestMaxRetries`, `streamMaxRetries`): 터미널 오류가 세션에 도달하기 전, provider 전송 계층 내부의 재시도를 제어합니다.
+
+다음 경우는 재시도 루프를 거치지 않고 즉시 실패(fail-fast)합니다:
+
+- 잘못된 인증
+- 미지원 모델/provider
+- 잘못된 요청
+- 컨텍스트 초과
+- 사용자 중단
+- 영구 쿼터 실패
 
 ## 다음 단계
 

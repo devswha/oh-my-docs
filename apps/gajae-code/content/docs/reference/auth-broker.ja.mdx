@@ -1,0 +1,131 @@
+---
+title: 認証ブローカー
+description: gjc auth-broker で OAuth リフレッシュトークンを開発マシンから共有ブローカーホストへ移し、GJC_AUTH_BROKER_URL でクライアントを向けます。
+---
+
+`gjc auth-broker` は、1 つ以上の Gajae-Code クライアント向けに正規（canonical）の認証情報ボールトを保持する小さな HTTP サービスを起動します。OAuth リフレッシュトークンとプロバイダー API キーはブローカーホスト一箇所に保管し、トークンのリフレッシュはサーバー側で処理します。クライアントにはリフレッシュトークンをセンチネル値に差し替えた**編集済みスナップショット**を返すだけ——長命トークンをあちこちにコピーせずに、ノート PC・CI ランナー・コンテナの認証情報を切り離せます。
+
+ブローカーは**オプトイン**です。`GJC_AUTH_BROKER_URL`（または `config.yml` の `auth.broker.url`）が設定されている場合にのみクライアントが使用します。未設定なら、`gjc` は[モデルと認証情報](/ja/docs/reference/models-and-credentials)の説明どおりローカル SQLite ストアから認証情報を解決します。
+
+## いつ使うか
+
+- OAuth リフレッシュトークンを各マシンではなく一箇所だけに保存したいとき。
+- 長命リフレッシュトークンを決して見てはならないコンテナ化・CI エージェントを運用するとき。
+- 一台のホストが OAuth リフレッシュを実行し、ウィジェット／クライアントに集計使用量を公開してほしいとき。
+
+ループバックや単一ノート PC 用途ではブローカーは不要です。
+
+## CLI
+
+```text
+gjc auth-broker serve     [--bind=host:port]                    # ブローカー起動
+gjc auth-broker token     [--regenerate] [--json]               # ベアラートークンの表示・ローテーション
+gjc auth-broker login     <provider> [--via=user@host] [--dry-run]
+gjc auth-broker logout    <provider>
+gjc auth-broker import    <file|dir> [--provider=<id>] [--include-disabled] [--dry-run] [--json]
+gjc auth-broker migrate   --from-local [--dry-run] [--json]
+gjc auth-broker status    [--json]
+```
+
+| サブコマンド | 目的 |
+| ------------ | ---- |
+| `serve`    | agent DB パスのローカル SQLite ストアを開き、HTTP リスナーをバインドします（既定 `127.0.0.1:8765`）。初回起動時に `<config-dir>/auth-broker.token`（親 `0700` 内の `0600`）へベアラートークンを書き込みます。バックグラウンドリフレッシャーが、有効期限まで `refreshSkewMs`（既定 5 分）以内の OAuth 認証情報を `refreshIntervalMs`（既定 60 秒）ごとにリフレッシュします。 |
+| `token`    | キャッシュ済みベアラートークンを表示、または `--regenerate` でローテーションします。 |
+| `login`    | プロバイダーの OAuth フローを実行します。`--via=user@host` を使うと OAuth コールバックポートを SSH でトンネルし、ブラウザはローカルで開きつつ認証情報はブローカーホストに書き込みます。 |
+| `logout`   | `<provider>` のすべての認証情報行を削除します。 |
+| `import`   | CLIProxyAPI 形式の JSON 認証情報をローカルストアに取り込み、ソースの `type` を gjc プロバイダーへマッピングします。 |
+| `migrate`  | ローカル SQLite ストアと env 由来の認証情報を走査し、設定済みブローカーへ冪等にアップロードします。 |
+| `status`   | 設定済みのリモートブローカーへヘルスピングします。 |
+
+### SSH 経由のリモートログイン
+
+`gjc auth-broker login <provider> --via=user@host` は次と同等です。
+
+```sh
+ssh -L <callback-port>:127.0.0.1:<callback-port> user@host \
+  gjc auth-broker login <provider>
+```
+
+OAuth リダイレクトはローカルブラウザに届き、認証情報はブローカーに書き込まれます。組み込みコールバックポート:
+
+| プロバイダー | コールバックポート |
+| ------------ | ------------------ |
+| `anthropic` | `54545` |
+| `openai-code` | `1455` |
+| `google-gemini-cli` | `8085` |
+| `google-antigravity` | `51121` |
+| `gitlab-duo` | `8080` |
+
+## エンドポイント
+
+`/v1/healthz` を除くすべてのエンドポイントは `Authorization: Bearer <token>` を要求します。サーバーはメモリ内のトークン許可リストと照合します。
+
+| メソッド | パス | 認証 | 目的 |
+| -------- | ---- | ---- | ---- |
+| `GET`  | `/v1/healthz` | なし | 生存確認 + バージョン |
+| `GET`  | `/v1/snapshot` | bearer | 編集済みスナップショット（リフレッシュトークンをセンチネルに置換） |
+| `POST` | `/v1/credential` | bearer | OAuth または API キー認証情報を 1 件 upsert |
+| `POST` | `/v1/credential/:id/refresh` | bearer | OAuth 認証情報を 1 件強制リフレッシュ |
+| `POST` | `/v1/credential/:id/disable` | bearer | 原因を記録して認証情報を 1 件無効化 |
+| `GET`  | `/v1/usage` | bearer | 認証情報横断の使用量集計 |
+
+ブローカーはリフレッシュトークンの**唯一の書き込み手**です。クライアントは `refresh` フィールドが編集されたスナップショットを読み込み、アクセストークンの期限切れ時に `POST /v1/credential/:id/refresh` を呼び、ブローカーがサーバー側でリフレッシュします。リモートストアはそれを通じたローカル書き込み経路をすべて拒否し、`gjc auth-broker login` / `gjc auth-broker logout` を案内します。
+
+### バックグラウンドリフレッシャー
+
+リフレッシャーは `refreshIntervalMs` の周期でアクティブな OAuth 認証情報を巡回し、有効期限まで `refreshSkewMs` 以内のものをリフレッシュします。リフレッシュは認証情報 id ごとにシングルフライトで、失敗を2種類に分けて扱います。
+
+- **確定的失敗**（`invalid_grant`、`invalid_token`、`revoked`、未認可リフレッシュトークン、本物の 401/403）— 原因を記録して認証情報を無効化します。次のスナップショット取得時にクライアントが削除を検知できます。
+- **一時的失敗**（タイムアウト / `ECONNREFUSED` / fetch 失敗）— 次のスイープのためそのまま残します。
+
+## クライアント設定
+
+クライアント（[`gjc auth-gateway`](/ja/docs/reference/auth-broker#認証ゲートウェイ) を含む）は、次が設定されるとブローカーモードに入ります。
+
+| 変数 | 目的 | 必要なとき |
+| ---- | ---- | ---------- |
+| `GJC_AUTH_BROKER_URL` | ブローカーのベース URL（例 `https://broker.tailnet:8765`）。設定するとローカル SQLite ストアをバイパスします。 | クライアントがブローカー経由で認証情報を解決すべき場合は常に。 |
+| `GJC_AUTH_BROKER_TOKEN` | `/v1/healthz` を除くすべてのブローカーエンドポイント用ベアラートークン。 | `GJC_AUTH_BROKER_URL` が設定され、`auth.broker.token` や `<config-dir>/auth-broker.token` にトークンが見つからない場合。 |
+
+解決順序:
+
+<Steps>
+  <Step>`GJC_AUTH_BROKER_URL` env、なければ `config.yml` の `auth.broker.url`（`$ENV_NAME` 間接参照あり）。</Step>
+  <Step>`GJC_AUTH_BROKER_TOKEN` env、なければ `config.yml` の `auth.broker.token`、なければ `<config-dir>/auth-broker.token`。</Step>
+  <Step>URL は設定済みだがトークンを解決できない → トークンファイルパスを指すハードエラー。</Step>
+</Steps>
+
+同等の `config.yml` キー（env が常に優先。両方とも設定 UI から隠されます）:
+
+```yaml
+auth:
+  broker:
+    url: https://broker.tailnet:8765   # または $GJC_AUTH_BROKER_URL
+    token: $GJC_AUTH_BROKER_TOKEN      # リテラルトークンまたは $ENV_NAME
+```
+
+`<config-dir>` は `~/.gjc/` に解決されます（`GJC_CONFIG_DIR` を尊重）。
+
+## 認証ゲートウェイ
+
+`gjc auth-gateway serve` は、ブローカーとセットで使うフォワードプロキシです。`GJC_AUTH_BROKER_URL` が必要で、起動時にスナップショットを取得します。OpenAI Chat Completions・Anthropic Messages・OpenAI Responses のリクエストを受け付け、ブローカーが解決したアクセストークンを差し込んで実プロバイダーへ転送します。コンテナ化 gjc・IDE プラグイン・使用量ウィジェットなど未認証クライアントは、アクセストークンを一切受け取りません。
+
+```text
+gjc auth-gateway serve   [--bind=host:port] [--no-auth]
+gjc auth-gateway token   [--regenerate] [--json]
+gjc auth-gateway status  [--json]
+```
+
+既定バインドは `127.0.0.1:4000`、ゲートウェイトークンは `<config-dir>/auth-gateway.token` にあります（`--no-auth` はループバック専用でベアラーチェックを無効化）。受信 wire 形式がモデルのネイティブ API と一致する場合は、ボディをバイト単位で転送しながらクライアント認証情報をブローカー解決トークンに差し替えます。形式が異なれば gjc のコンテキストパイプラインで変換・再エンコードします。
+
+## セキュリティ
+
+オペレーター・ブローカー・ゲートウェイ・クライアント間のトランスポートセキュリティはオペレーターの責任です — Tailscale、WireGuard、または TLS リバースプロキシでブローカーを前面に置いてください。`GJC_AUTH_BROKER_TOKEN`、トークンファイル、すべてのリフレッシュトークンを秘密として扱い、決してログ出力やコミットをしないでください。
+
+## 関連ページ
+
+<Cards>
+  <Card title="モデルと認証情報" href="/ja/docs/reference/models-and-credentials" />
+  <Card title="環境変数" href="/ja/docs/reference/environment-variables" />
+  <Card title="設定" href="/ja/docs/reference/configuration" />
+</Cards>

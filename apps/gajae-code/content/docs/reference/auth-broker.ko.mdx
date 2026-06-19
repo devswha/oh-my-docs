@@ -1,0 +1,131 @@
+---
+title: 인증 브로커
+description: gjc auth-broker로 개발 머신에 있던 OAuth 리프레시 토큰을 공유 브로커 호스트로 옮기고, GJC_AUTH_BROKER_URL로 클라이언트를 연결하십시오.
+---
+
+`gjc auth-broker`는 하나 이상의 Gajae-Code 클라이언트가 함께 쓰는 기준(canonical) 자격 증명 저장소를 작은 HTTP 서비스로 실행합니다. OAuth 리프레시 토큰과 프로바이더 API 키는 브로커 호스트 한 곳에만 둡니다. 토큰 갱신도 서버에서만 처리합니다. 다른 클라이언트에는 리프레시 토큰을 센티넬 값으로 가린 **편집된 스냅샷**을 보냅니다. 오래 유지되는 토큰을 여러 곳에 복사하지 않아도 노트북, CI 러너, 컨테이너의 자격 증명을 분리할 수 있습니다.
+
+브로커는 **옵트인** 방식입니다. `GJC_AUTH_BROKER_URL` 또는 `config.yml`의 `auth.broker.url`을 설정한 클라이언트만 브로커를 사용합니다. 설정하지 않으면 `gjc`는 [모델·자격증명](/ko/docs/reference/models-and-credentials)에서 설명한 대로 로컬 SQLite 저장소에서 자격 증명을 해석합니다.
+
+## 언제 사용하나
+
+- OAuth 리프레시 토큰을 여러 머신이 아니라 한 곳에만 저장해야 할 때 사용합니다.
+- 오래 유지되는 리프레시 토큰을 보면 안 되는 컨테이너화·CI 에이전트를 운영할 때 사용합니다.
+- 한 호스트가 OAuth 갱신을 맡고, 위젯·클라이언트에는 집계 사용량만 보여 주게 해야 할 때 사용합니다.
+
+루프백이나 단일 노트북에서만 쓴다면 브로커가 필요하지 않습니다.
+
+## CLI
+
+```text
+gjc auth-broker serve     [--bind=host:port]                    # 브로커 부팅
+gjc auth-broker token     [--regenerate] [--json]               # 베어러 토큰 출력 또는 회전
+gjc auth-broker login     <provider> [--via=user@host] [--dry-run]
+gjc auth-broker logout    <provider>
+gjc auth-broker import    <file|dir> [--provider=<id>] [--include-disabled] [--dry-run] [--json]
+gjc auth-broker migrate   --from-local [--dry-run] [--json]
+gjc auth-broker status    [--json]
+```
+
+| 서브커맨드 | 목적 |
+| ---------- | ---- |
+| `serve`    | 에이전트 DB 경로에 있는 로컬 SQLite 저장소를 열고 HTTP 리스너를 바인딩합니다(기본값 `127.0.0.1:8765`). 처음 시작할 때 `<config-dir>/auth-broker.token`에 베어러 토큰을 씁니다. 부모 디렉터리는 `0700`, 토큰 파일은 `0600` 권한을 사용합니다. 백그라운드 리프레셔는 만료까지 `refreshSkewMs`(기본 5분) 이내로 남은 OAuth 자격 증명을 `refreshIntervalMs`(기본 60초)마다 갱신합니다. |
+| `token`    | 캐시된 베어러 토큰을 출력하거나 `--regenerate`로 새 토큰으로 바꿉니다. |
+| `login`    | 프로바이더 OAuth 플로우를 실행합니다. `--via=user@host`를 쓰면 OAuth 콜백 포트를 SSH로 터널링합니다. 브라우저는 로컬에서 열리지만 자격 증명은 브로커 호스트에 기록됩니다. |
+| `logout`   | `<provider>`에 속한 모든 자격 증명 행을 삭제합니다. |
+| `import`   | CLIProxyAPI 스타일 JSON 자격 증명을 로컬 저장소로 가져오고, 소스 `type`을 gjc 프로바이더에 매핑합니다. |
+| `migrate`  | 로컬 SQLite 저장소와 env에서 파생한 자격 증명을 훑어 설정된 브로커에 멱등하게 업로드합니다. |
+| `status`   | 설정된 원격 브로커에 헬스 핑을 보냅니다. |
+
+### SSH를 통한 원격 로그인
+
+`gjc auth-broker login <provider> --via=user@host`는 다음처럼 동작합니다.
+
+```sh
+ssh -L <callback-port>:127.0.0.1:<callback-port> user@host \
+  gjc auth-broker login <provider>
+```
+
+OAuth 리디렉트는 로컬 브라우저로 들어옵니다. 자격 증명은 브로커에 기록됩니다. 내장 콜백 포트는 다음과 같습니다.
+
+| 프로바이더 | 콜백 포트 |
+| ---------- | --------- |
+| `anthropic` | `54545` |
+| `openai-code` | `1455` |
+| `google-gemini-cli` | `8085` |
+| `google-antigravity` | `51121` |
+| `gitlab-duo` | `8080` |
+
+## 엔드포인트
+
+`/v1/healthz`를 제외한 모든 엔드포인트는 `Authorization: Bearer <token>`을 요구합니다. 서버는 이 값을 인메모리 토큰 허용 목록과 대조합니다.
+
+| 메서드 | 경로 | 인증 | 목적 |
+| ------ | ---- | ---- | ---- |
+| `GET`  | `/v1/healthz` | 없음 | 라이브니스 + 버전 |
+| `GET`  | `/v1/snapshot` | bearer | 편집된 스냅샷(리프레시 토큰을 센티넬로 대체함) |
+| `POST` | `/v1/credential` | bearer | OAuth 또는 API 키 자격 증명 하나 업서트 |
+| `POST` | `/v1/credential/:id/refresh` | bearer | OAuth 자격 증명 하나 강제 갱신 |
+| `POST` | `/v1/credential/:id/disable` | bearer | 원인을 기록하고 자격 증명 하나 비활성화 |
+| `GET`  | `/v1/usage` | bearer | 자격 증명 전체 사용량 집계 |
+
+브로커만 리프레시 토큰을 쓸 수 있습니다. 클라이언트는 `refresh` 필드가 가려진 스냅샷을 로드합니다. 액세스 토큰이 만료되면 클라이언트가 `POST /v1/credential/:id/refresh`를 호출합니다. 브로커가 서버에서 토큰을 갱신합니다. 원격 저장소는 이 흐름에서 로컬 쓰기를 모두 거부합니다. `gjc auth-broker login` 또는 `gjc auth-broker logout`을 안내합니다.
+
+### 백그라운드 리프레셔
+
+리프레셔는 `refreshIntervalMs` 주기로 활성 OAuth 자격 증명을 훑습니다. 만료까지 `refreshSkewMs` 이내로 남은 항목을 갱신합니다. 갱신은 자격 증명 id별 단일 실행(single-flight)으로 처리합니다. 실패는 다음처럼 나눕니다.
+
+- **확정 실패**(`invalid_grant`, `invalid_token`, `revoked`, 미인가 리프레시 토큰, 실제 401/403) — 원인을 기록하고 자격 증명을 비활성화합니다. 다음 스냅샷 풀부터 클라이언트에 삭제가 반영됩니다.
+- **일시 실패**(타임아웃 / `ECONNREFUSED` / fetch 실패) — 다음 스윕에서 다시 시도할 수 있도록 그대로 둡니다.
+
+## 클라이언트 설정
+
+클라이언트([`gjc auth-gateway`](/ko/docs/reference/auth-broker#인증-게이트웨이) 포함)는 다음 값이 설정되면 브로커 모드로 들어갑니다.
+
+| 변수 | 목적 | 필요 시점 |
+| ---- | ---- | --------- |
+| `GJC_AUTH_BROKER_URL` | 브로커 베이스 URL(예: `https://broker.tailnet:8765`). 설정하면 로컬 SQLite 저장소를 우회합니다. | 클라이언트가 브로커를 통해 자격 증명을 해석해야 할 때마다 필요합니다. |
+| `GJC_AUTH_BROKER_TOKEN` | `/v1/healthz`를 제외한 모든 브로커 엔드포인트용 베어러 토큰입니다. | `GJC_AUTH_BROKER_URL`이 설정되어 있고, `auth.broker.token`이나 `<config-dir>/auth-broker.token`에서 토큰을 찾을 수 없을 때 필요합니다. |
+
+해석 순서는 다음과 같습니다.
+
+<Steps>
+  <Step>먼저 `GJC_AUTH_BROKER_URL` env를 읽고, 없으면 `config.yml`의 `auth.broker.url`을 읽습니다(`$ENV_NAME` 간접 참조 지원).</Step>
+  <Step>그다음 `GJC_AUTH_BROKER_TOKEN` env를 읽고, 없으면 `config.yml`의 `auth.broker.token`, 그마저 없으면 `<config-dir>/auth-broker.token`을 읽습니다.</Step>
+  <Step>URL은 설정됐지만 토큰을 해석할 수 없으면, 토큰 파일 경로를 가리키는 하드 에러를 냅니다.</Step>
+</Steps>
+
+동등한 `config.yml` 키는 다음과 같습니다. env가 항상 우선합니다. 두 값 모두 설정 UI에는 표시하지 않습니다.
+
+```yaml
+auth:
+  broker:
+    url: https://broker.tailnet:8765   # 또는 $GJC_AUTH_BROKER_URL
+    token: $GJC_AUTH_BROKER_TOKEN      # 리터럴 토큰 또는 $ENV_NAME
+```
+
+`<config-dir>`는 `~/.gjc/`로 해석됩니다(`GJC_CONFIG_DIR` 존중).
+
+## 인증 게이트웨이
+
+`gjc auth-gateway serve`는 함께 쓰는 포워드 프록시입니다. 게이트웨이 자체도 브로커 클라이언트이므로 `GJC_AUTH_BROKER_URL`이 필요합니다. 시작할 때 스냅샷을 가져옵니다. OpenAI Chat Completions, Anthropic Messages, OpenAI Responses 요청을 받으면 브로커가 해석한 액세스 토큰을 주입한 뒤 실제 프로바이더로 전달합니다. 미인증 클라이언트(컨테이너화 gjc, IDE 플러그인, 사용량 위젯)는 액세스 토큰을 볼 수 없습니다.
+
+```text
+gjc auth-gateway serve   [--bind=host:port] [--no-auth]
+gjc auth-gateway token   [--regenerate] [--json]
+gjc auth-gateway status  [--json]
+```
+
+기본 바인드는 `127.0.0.1:4000`입니다. 게이트웨이 토큰은 `<config-dir>/auth-gateway.token`에 저장됩니다. `--no-auth`는 루프백 전용 옵션으로, 베어러 검사를 끕니다. 들어온 요청의 와이어 포맷이 모델의 네이티브 API와 일치하면 본문을 바이트 그대로 전달하되 클라이언트 자격 증명을 브로커가 해석한 토큰으로 바꿉니다. 일치하지 않으면 gjc의 컨텍스트 파이프라인에서 변환한 뒤 다시 인코딩합니다.
+
+## 보안
+
+운영자·브로커·게이트웨이·클라이언트 사이의 전송 보안은 운영자가 책임져야 합니다. Tailscale, WireGuard 또는 TLS 리버스 프록시로 브로커를 보호하십시오. `GJC_AUTH_BROKER_TOKEN`, 토큰 파일, 모든 리프레시 토큰은 비밀로 다루고, 로그에 남기거나 커밋하지 마십시오.
+
+## 관련 페이지
+
+<Cards>
+  <Card title="모델·자격증명" href="/ko/docs/reference/models-and-credentials" />
+  <Card title="환경 변수" href="/ko/docs/reference/environment-variables" />
+  <Card title="설정" href="/ko/docs/reference/configuration" />
+</Cards>

@@ -1,0 +1,131 @@
+---
+title: Auth broker
+description: Run gjc auth-broker to keep OAuth refresh tokens on a shared broker host instead of developer machines, then point clients to it with GJC_AUTH_BROKER_URL.
+---
+
+`gjc auth-broker` runs a small HTTP service that owns the credential vault for one or more Gajae-Code clients. It keeps OAuth refresh tokens and provider API keys on one broker host, refreshes tokens on the server, and gives other clients a **redacted snapshot** where refresh tokens are replaced with a sentinel. Use it when you need credentials off laptops, CI runners, and containers without copying long-lived tokens around.
+
+The broker is **opt-in**. Clients use it only when `GJC_AUTH_BROKER_URL` (or `auth.broker.url` in `config.yml`) is set. If it is unset, `gjc` reads credentials from the local SQLite store as described in [Models & credentials](/docs/reference/models-and-credentials).
+
+## When to use it
+
+- You want OAuth refresh tokens stored in one place, not on every machine.
+- You run containerized or CI agents that should never receive a long-lived refresh token.
+- You want one host to handle OAuth refreshes and report aggregate usage to widgets and clients.
+
+For loopback or single-laptop use, you do not need the broker.
+
+## CLI
+
+```text
+gjc auth-broker serve     [--bind=host:port]                    # boot the broker
+gjc auth-broker token     [--regenerate] [--json]               # print or rotate the bearer token
+gjc auth-broker login     <provider> [--via=user@host] [--dry-run]
+gjc auth-broker logout    <provider>
+gjc auth-broker import    <file|dir> [--provider=<id>] [--include-disabled] [--dry-run] [--json]
+gjc auth-broker migrate   --from-local [--dry-run] [--json]
+gjc auth-broker status    [--json]
+```
+
+| Subcommand | Purpose |
+| ---------- | ------- |
+| `serve`    | Open the local SQLite store at the agent DB path and bind an HTTP listener (default `127.0.0.1:8765`). On first start, write a bearer token to `<config-dir>/auth-broker.token` (`0600` in a `0700` parent dir). A background job runs every `refreshIntervalMs` (default 60 s) and refreshes any credential within `refreshSkewMs` (default 5 min) of expiry. |
+| `token`    | Print the cached bearer token, or rotate it with `--regenerate`. |
+| `login`    | Run a provider OAuth flow. With `--via=user@host`, it tunnels the OAuth callback port over SSH so the browser opens locally but the credential is written on the broker host. |
+| `logout`   | Delete every credential row for `<provider>`. |
+| `import`   | Import CLIProxyAPI-style JSON credentials into the local store, mapping the source `type` to a gjc provider. |
+| `migrate`  | Walk the local SQLite store and env-derived credentials, then upload them idempotently to the configured broker. |
+| `status`   | Health-ping the configured remote broker. |
+
+### Remote login over SSH
+
+`gjc auth-broker login <provider> --via=user@host` runs the equivalent of:
+
+```sh
+ssh -L <callback-port>:127.0.0.1:<callback-port> user@host \
+  gjc auth-broker login <provider>
+```
+
+The OAuth redirect opens in your local browser, while the credential is written on the broker. Built-in callback ports:
+
+| Provider | Callback port |
+| -------- | ------------- |
+| `anthropic` | `54545` |
+| `openai-code` | `1455` |
+| `google-gemini-cli` | `8085` |
+| `google-antigravity` | `51121` |
+| `gitlab-duo` | `8080` |
+
+## Endpoints
+
+Every endpoint except `/v1/healthz` requires `Authorization: Bearer <token>`. The server checks the token against an in-memory allow-list.
+
+| Method | Path | Auth | Purpose |
+| ------ | ---- | ---- | ------- |
+| `GET`  | `/v1/healthz` | none | Liveness + version |
+| `GET`  | `/v1/snapshot` | bearer | Redacted snapshot (refresh tokens replaced by a sentinel) |
+| `POST` | `/v1/credential` | bearer | Upsert one OAuth or API-key credential |
+| `POST` | `/v1/credential/:id/refresh` | bearer | Force-refresh one OAuth credential |
+| `POST` | `/v1/credential/:id/disable` | bearer | Disable one credential with a recorded cause |
+| `GET`  | `/v1/usage` | bearer | Aggregate usage reports across credentials |
+
+The broker is the **only writer** for refresh tokens. Clients load a snapshot whose `refresh` fields are redacted. When an access token expires, the client calls `POST /v1/credential/:id/refresh`, and the broker refreshes the credential server-side. A remote store rejects any local write path and points you to `gjc auth-broker login` / `gjc auth-broker logout`.
+
+### Background refresher
+
+The refresher sweeps active OAuth credentials every `refreshIntervalMs` and refreshes any credential within `refreshSkewMs` of expiry. Refreshes are single-flighted per credential id. The refresher treats failures in two groups:
+
+- **Definitive failures** (`invalid_grant`, `invalid_token`, `revoked`, unauthorized refresh-token, real 401/403) - the credential is disabled with a recorded cause, so the next snapshot pull removes it cleanly from clients.
+- **Transient failures** (timeout / `ECONNREFUSED` / fetch failed) - the credential is left in place for the next sweep.
+
+## Client configuration
+
+A client, including [`gjc auth-gateway`](/docs/reference/auth-broker#auth-gateway), enters broker mode when these values are set:
+
+| Variable | Purpose | Required when |
+| -------- | ------- | ------------- |
+| `GJC_AUTH_BROKER_URL` | Base URL of the broker, e.g. `https://broker.tailnet:8765`. Setting this bypasses the local SQLite store. | Any time a client should resolve credentials through the broker. |
+| `GJC_AUTH_BROKER_TOKEN` | Bearer token for every broker endpoint except `/v1/healthz`. | When `GJC_AUTH_BROKER_URL` is set and no token is found in `auth.broker.token` or `<config-dir>/auth-broker.token`. |
+
+Resolution order:
+
+<Steps>
+  <Step>`GJC_AUTH_BROKER_URL` env, else `auth.broker.url` from `config.yml` (with `$ENV_NAME` indirection).</Step>
+  <Step>`GJC_AUTH_BROKER_TOKEN` env, else `auth.broker.token` from `config.yml`, else `<config-dir>/auth-broker.token`.</Step>
+  <Step>URL set but no token resolvable -> hard error pointing at the token file path.</Step>
+</Steps>
+
+Equivalent `config.yml` keys (env always wins; both are hidden from the settings UI):
+
+```yaml
+auth:
+  broker:
+    url: https://broker.tailnet:8765   # or $GJC_AUTH_BROKER_URL
+    token: $GJC_AUTH_BROKER_TOKEN      # literal token or $ENV_NAME
+```
+
+`<config-dir>` resolves to `~/.gjc/` (respecting `GJC_CONFIG_DIR`).
+
+## Auth gateway
+
+`gjc auth-gateway serve` is the matching forward proxy. The gateway is a broker client, so it requires `GJC_AUTH_BROKER_URL`. At boot, it pulls a snapshot. It then accepts OpenAI Chat Completions, Anthropic Messages, and OpenAI Responses requests, injects the broker-resolved access token, and forwards the request to the real provider. Unauthenticated clients (containerized gjc, IDE plugins, usage widgets) never see the access token.
+
+```text
+gjc auth-gateway serve   [--bind=host:port] [--no-auth]
+gjc auth-gateway token   [--regenerate] [--json]
+gjc auth-gateway status  [--json]
+```
+
+Default bind is `127.0.0.1:4000`; the gateway token lives at `<config-dir>/auth-gateway.token`. `--no-auth` disables the bearer check for loopback-only use. When the inbound wire format matches the model's native API, the gateway forwards the body byte-for-byte and swaps the client credential for the broker-resolved token. Otherwise, it translates through gjc's context pipeline and re-encodes the request.
+
+## Security
+
+Transport security between operator, broker, gateway, and clients is up to the operator. Put the broker behind Tailscale, WireGuard, or a TLS reverse proxy. Treat `GJC_AUTH_BROKER_TOKEN`, the token files, and every refresh token as secrets; never log or commit them.
+
+## Related pages
+
+<Cards>
+  <Card title="Models & credentials" href="/docs/reference/models-and-credentials" />
+  <Card title="Environment variables" href="/docs/reference/environment-variables" />
+  <Card title="Configuration" href="/docs/reference/configuration" />
+</Cards>

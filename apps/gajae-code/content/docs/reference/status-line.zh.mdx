@@ -1,0 +1,92 @@
+---
+title: 状态栏与用量 HUD
+description: 通过 config.yml 的 statusLine 配置 gjc 状态栏 HUD，启用 5h/7d Anthropic 用量段，并用 /usage 查看实时额度。
+---
+
+Gajae-Code（`gjc`）在 TUI 底部渲染一个可配置的状态栏 HUD。它完全通过 `~/.gjc/config.yml` 中的 `statusLine` 块配置——**没有专门的斜杠命令或技能**来编辑它。选择一个预设，或切到 `custom` 自定义段。
+
+## 预设
+
+`statusLine.preset` 选择内置的段布局：
+
+| 预设      | 说明                                                            |
+| --------- | --------------------------------------------------------------- |
+| `default` | 平衡布局（model、mode、git、pr、path / session、token rate、context、cost）。 |
+| `minimal` | path、git 加简短右侧。                                          |
+| `compact` | 类似 default 但指标更少。                                       |
+| `full`    | 全部，powerline 分隔符，Nerd Font 图标。                        |
+| `nerd`    | `full` 加额外段与 Nerd Font 字形。                              |
+| `ascii`   | 不依赖 Nerd Font。                                              |
+| `custom`  | 你自己的 `leftSegments` / `rightSegments`（见下）。            |
+
+命名预设定义各自的段列表。`statusLine.leftSegments` 与 `statusLine.rightSegments` **仅在 `preset: custom` 时生效**；命名预设下会被忽略。
+
+## 段
+
+| 段 | 显示 |
+| --- | --- |
+| `gajae` | `GJC` 强调徽标。 |
+| `model` | 活动模型（及 thinking 级别）。 |
+| `mode` | Plan / goal 模式指示。 |
+| `path` | 工作目录（缩写）。 |
+| `git` | 分支加 staged/unstaged/untracked 计数。 |
+| `pr` | 关联的 PR 编号。 |
+| `subagents` | 运行中的子代理数。 |
+| `usage` | Anthropic 5h + 7d 用量窗口（见下）。 |
+| `token_in` · `token_out` · `token_total` | 会话 token 计数。 |
+| `token_rate` | 每秒 token。 |
+| `cache_read` · `cache_write` | 缓存 token 计数。 |
+| `cost` | 会话成本 / premium 请求。 |
+| `context_pct` · `context_total` | 上下文窗口用量。 |
+| `time` · `time_spent` | 时钟与已用会话时间。 |
+| `session` · `session_name` | 会话 id / 名称。 |
+| `hostname` | 主机名。 |
+
+其他开关：`statusLine.separator`（如 `slash`、`powerline`、`ascii`）、`statusLine.sessionAccent`、`statusLine.showSkillHud`（工作流技能条）、`statusLine.showHookStatus`，以及按段的 `statusLine.segmentOptions`。
+
+## `usage` 段（5h / 7d）
+
+`usage` 段把 Anthropic 滚动用量窗口直接显示在 HUD 上：
+
+```text
+5h 42% (1h 20m) · 7d 63% (2d 4h)
+```
+
+- **窗口。** `5h` 是 5 小时窗口，`7d` 是 7 天（每周）窗口。各自显示已用百分比与重置剩余时间。
+- **颜色阈值。** 已用 % 在 50% 以下为 muted，**≥50% 为 warning**，**≥80% 为 error**。
+- **重置格式。** 5 小时窗口以分钟倒计时（`45m`、`1h 20m`），7 天窗口以小时倒计时（`12h`、`2d 4h`）。
+- **数据来源。** 数值来自 Anthropic OAuth 用量端点，因此该段仅在 **Claude OAuth / 订阅** 认证下填充。API 密钥认证或非 Anthropic 提供商下会隐藏。数据以约 5 分钟 TTL 缓存。
+
+### 在 HUD 中启用
+
+`usage` 段**不属于任何内置预设**，所以必须使用 `custom` 预设并显式列出。下例沿用 `default` 布局并在右侧加上 `usage`：
+
+```yaml
+statusLine:
+  preset: custom
+  separator: slash
+  leftSegments:
+    - model
+    - mode
+    - git
+    - pr
+    - path
+  rightSegments:
+    - usage
+    - session_name
+    - token_rate
+    - context_pct
+    - cost
+```
+
+## `/usage` 命令
+
+要看详细用量时，在 `gjc` 会话中运行 `/usage`。当提供商报告额度时，它按提供商和窗口打印标签、**剩余百分比**、ASCII 用量条以及 `resets in <时长>`。若无提供商额度，则回退到本地会话计数——input、output、缓存 token，premium 请求与成本。
+
+## 相关页面
+
+<Cards>
+  <Card title="配置" href="/zh/docs/reference/configuration" />
+  <Card title="主题" href="/zh/docs/reference/theme" />
+  <Card title="模型与凭据" href="/zh/docs/reference/models-and-credentials" />
+</Cards>

@@ -1,0 +1,98 @@
+---
+title: 상태줄과 사용량 HUD
+description: config.yml의 statusLine으로 gjc 상태줄 HUD를 설정하고, 5h/7d Anthropic 사용량 세그먼트를 켠 뒤 /usage로 실시간 한도를 확인하는 방법입니다.
+---
+
+Gajae-Code(`gjc`)는 TUI 하단에 상태줄 HUD를 표시합니다. 상태줄은 `~/.gjc/config.yml`의 `statusLine` 블록에서 설정합니다. **편집 전용 슬래시 명령이나 스킬은 없습니다.** 프리셋을 선택하거나 `custom`으로 바꾼 뒤 세그먼트를 직접 지정할 수 있습니다.
+
+## 프리셋
+
+`statusLine.preset`은 내장 세그먼트 레이아웃을 선택합니다.
+
+| 프리셋    | 비고                                                            |
+| --------- | --------------------------------------------------------------- |
+| `default` | 균형 잡힌 레이아웃(model, mode, git, pr, path / session, token rate, context, cost)입니다. |
+| `minimal` | path, git과 짧은 오른쪽 영역을 표시합니다.                     |
+| `compact` | default와 비슷하지만 지표 수가 적습니다.                        |
+| `full`    | 모든 세그먼트, powerline 구분자, Nerd Font 아이콘을 표시합니다. |
+| `nerd`    | `full`에 추가 세그먼트와 Nerd Font 글리프를 더합니다.           |
+| `ascii`   | Nerd Font에 의존하지 않습니다.                                  |
+| `custom`  | `leftSegments` / `rightSegments`를 직접 지정합니다(아래 참조).  |
+
+명명된 프리셋은 각자 세그먼트 목록을 가지고 있습니다. `statusLine.leftSegments`와 `statusLine.rightSegments`는 **`preset: custom`일 때만 적용**됩니다. 명명된 프리셋에서는 무시됩니다.
+
+## 세그먼트
+
+| 세그먼트 | 표시 내용 |
+| --- | --- |
+| `gajae` | `GJC` 액센트 배지입니다. |
+| `model` | 활성 모델과 thinking 레벨입니다. |
+| `mode` | Plan / goal 모드입니다. |
+| `path` | 축약된 작업 디렉터리입니다. |
+| `git` | 브랜치 + staged/unstaged/untracked 개수입니다. |
+| `pr` | 연결된 풀 리퀘스트 번호입니다. |
+| `subagents` | 실행 중인 서브에이전트 수입니다. |
+| `usage` | Anthropic 5h + 7d 사용량 윈도우입니다(아래 참조). |
+| `token_in` · `token_out` · `token_total` | 세션 토큰 집계입니다. |
+| `token_rate` | 초당 토큰 수입니다. |
+| `cache_read` · `cache_write` | 캐시 토큰 집계입니다. |
+| `cost` | 세션 비용 / 프리미엄 요청입니다. |
+| `context_pct` · `context_total` | 컨텍스트 윈도우 사용량입니다. |
+| `time` · `time_spent` | 시계와 세션 경과 시간입니다. |
+| `session` · `session_name` | 세션 id / 이름입니다. |
+| `hostname` | 호스트 이름입니다. |
+
+기타 옵션:
+
+- `statusLine.separator` — 구분자 스타일 (예: `slash`, `powerline`, `ascii`).
+- `statusLine.sessionAccent` — 세션 액센트 색.
+- `statusLine.showSkillHud` — 워크플로 스킬 바 표시.
+- `statusLine.showHookStatus` — 훅 상태 표시.
+- `statusLine.segmentOptions` — 세그먼트별 옵션.
+
+## `usage` 세그먼트 (5h / 7d)
+
+`usage` 세그먼트는 Anthropic 롤링 사용량 윈도우를 HUD에 바로 표시합니다.
+
+```text
+5h 42% (1h 20m) · 7d 63% (2d 4h)
+```
+
+- **윈도우.** `5h`는 5시간 윈도우, `7d`는 7일(주간) 윈도우입니다. 각각 사용 비율과 리셋까지 남은 시간을 표시합니다.
+- **색상 임계값.** 50% 미만은 muted, **50% 이상은 warning**, **80% 이상은 error** 색으로 표시됩니다.
+- **리셋 포맷.** 5시간 윈도우는 분 단위(`45m`, `1h 20m`), 7일 윈도우는 시간 단위(`12h`, `2d 4h`)로 카운트다운합니다.
+- **데이터 출처.** Anthropic OAuth usage 엔드포인트에서 값을 가져오기 때문에 **Claude OAuth / 구독** 인증에서만 채워집니다. API 키 인증이나 비-Anthropic 프로바이더에서는 숨겨집니다. 캐시 TTL은 약 5분입니다.
+
+### HUD에 켜기
+
+`usage` 세그먼트는 **기본 프리셋에는 포함되어 있지 않습니다**. `custom` 프리셋을 사용하고 세그먼트 목록에 직접 넣어야 합니다. 아래는 `default` 레이아웃에 오른쪽 `usage`를 추가한 예입니다.
+
+```yaml
+statusLine:
+  preset: custom
+  separator: slash
+  leftSegments:
+    - model
+    - mode
+    - git
+    - pr
+    - path
+  rightSegments:
+    - usage
+    - session_name
+    - token_rate
+    - context_pct
+    - cost
+```
+
+## `/usage` 명령
+
+`gjc` 세션 안에서 `/usage`를 실행하면 사용량을 바로 확인할 수 있습니다. 프로바이더가 한도를 제공하는 경우 프로바이더·윈도우별 라벨, **남은 비율**, 아스키 사용량 막대, `resets in <기간>`을 출력합니다. 한도 정보가 없으면 로컬 세션 집계(input·output·캐시 토큰, 프리미엄 요청, 비용)를 보여줍니다.
+
+## 관련 문서
+
+<Cards>
+  <Card title="설정" href="/ko/docs/reference/configuration" />
+  <Card title="테마" href="/ko/docs/reference/theme" />
+  <Card title="모델과 자격증명" href="/ko/docs/reference/models-and-credentials" />
+</Cards>

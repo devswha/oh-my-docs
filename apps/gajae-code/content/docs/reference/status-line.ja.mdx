@@ -1,0 +1,92 @@
+---
+title: ステータスライン & 使用量 HUD
+description: ~/.gjc/config.yml の statusLine ブロックで gjc の HUD を設定する方法。Anthropic の 5h/7d 使用量セグメントの有効化手順と /usage コマンドの詳細。
+---
+
+Gajae-Code（`gjc`）は TUI 下部にステータスライン HUD を描画します。設定はすべて `~/.gjc/config.yml` の `statusLine` ブロックで行い、**編集用の専用スラッシュコマンドやスキルはありません**。プリセットを選ぶか、`custom` に切り替えて自分でセグメントを指定します。
+
+## プリセット
+
+`statusLine.preset` が組み込みのセグメントレイアウトを選びます。
+
+| プリセット | 備考                                                            |
+| ---------- | --------------------------------------------------------------- |
+| `default`  | バランスの取れたレイアウト（model、mode、git、pr、path / session、token rate、context、cost）。 |
+| `minimal`  | path、git と短い右側。                                          |
+| `compact`  | default に近いが指標が少ない。                                  |
+| `full`     | 全部、powerline 区切り、Nerd Font アイコン。                    |
+| `nerd`     | `full` に追加セグメントと Nerd Font グリフ。                    |
+| `ascii`    | Nerd Font 依存なし。                                            |
+| `custom`   | 自分の `leftSegments` / `rightSegments`（下記参照）。          |
+
+名前付きプリセットは各自のセグメントリストを定義します。`statusLine.leftSegments` と `statusLine.rightSegments` は **`preset: custom` のときのみ有効**で、名前付きプリセットでは無視されます。
+
+## セグメント
+
+| セグメント | 表示内容 |
+| --- | --- |
+| `gajae` | `GJC` アクセントバッジ。 |
+| `model` | アクティブなモデル（と thinking レベル）。 |
+| `mode` | Plan / goal モード表示。 |
+| `path` | 作業ディレクトリ（短縮）。 |
+| `git` | ブランチ + staged/unstaged/untracked 件数。 |
+| `pr` | リンクされた PR 番号。 |
+| `subagents` | 実行中サブエージェント数。 |
+| `usage` | Anthropic 5h + 7d 使用量ウィンドウ（下記参照）。 |
+| `token_in` · `token_out` · `token_total` | セッションのトークン集計。 |
+| `token_rate` | 毎秒トークン。 |
+| `cache_read` · `cache_write` | キャッシュトークン集計。 |
+| `cost` | セッションコスト / premium リクエスト。 |
+| `context_pct` · `context_total` | コンテキストウィンドウ使用量。 |
+| `time` · `time_spent` | 時計と経過セッション時間。 |
+| `session` · `session_name` | セッション id / 名前。 |
+| `hostname` | ホスト名。 |
+
+その他のつまみ：`statusLine.separator`（例：`slash`、`powerline`、`ascii`）、`statusLine.sessionAccent`、`statusLine.showSkillHud`（ワークフロースキルバー）、`statusLine.showHookStatus`、そしてセグメント別の `statusLine.segmentOptions`。
+
+## `usage` セグメント（5h / 7d）
+
+`usage` セグメントは Anthropic のローリング使用量ウィンドウを HUD に直接表示します。
+
+```text
+5h 42% (1h 20m) · 7d 63% (2d 4h)
+```
+
+- ウィンドウ：`5h` は 5 時間ウィンドウ、`7d` は 7 日（週次）ウィンドウ。使用率とリセットまでの残り時間を表示します。
+- 色のしきい値：50% 未満で muted、50% 以上で warning、80% 以上で error に色が変わります。
+- リセット書式：5 時間ウィンドウは分単位（`45m`、`1h 20m`）、7 日ウィンドウは時間単位（`12h`、`2d 4h`）でカウントダウンします。
+- データ出所：Anthropic の OAuth 使用量エンドポイントを参照するため、**Claude OAuth / サブスクリプション**認証でのみ表示されます。API キー認証や非 Anthropic プロバイダーでは非表示。データは約 5 分の TTL でキャッシュされます。
+
+### HUD で有効化する
+
+`usage` セグメントは**どの標準プリセットにも含まれていない**ため、`custom` プリセットを使い明示的に列挙する必要があります。次の例は `default` レイアウトを踏襲しつつ右側に `usage` を加えています。
+
+```yaml
+statusLine:
+  preset: custom
+  separator: slash
+  leftSegments:
+    - model
+    - mode
+    - git
+    - pr
+    - path
+  rightSegments:
+    - usage
+    - session_name
+    - token_rate
+    - context_pct
+    - cost
+```
+
+## `/usage` コマンド
+
+その場での内訳が欲しいときは `gjc` セッション内で `/usage` を実行します。プロバイダーが使用上限を報告する場合は、ウィンドウごとにラベル・残り割合・ASCII 使用量バー・`resets in <期間>` を出力します。上限情報がなければ、ローカルのセッション集計 — input・output・キャッシュトークン、premium リクエスト、コスト — を表示します。
+
+## 関連ページ
+
+<Cards>
+  <Card title="設定" href="/ja/docs/reference/configuration" />
+  <Card title="テーマ" href="/ja/docs/reference/theme" />
+  <Card title="モデル & 資格情報" href="/ja/docs/reference/models-and-credentials" />
+</Cards>

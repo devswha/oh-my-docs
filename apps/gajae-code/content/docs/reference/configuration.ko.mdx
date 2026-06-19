@@ -79,7 +79,11 @@ retry:
 | `GJC_EDIT_VARIANT` | 유효할 때 edit 도구 variant 강제: `patch`, `replace`, `hashline`, `atom`, `vim`, `apply_patch`.   |
 | `GJC_TIMING`       | 설정 시 계층적 타이밍 스팬 트리를 **stderr**로 출력. `GJC_TIMING=x`는 대화형 모드에서 출력 직후 코드 0으로 종료(콜드 스타트만 측정); `GJC_TIMING=full`은 상위 N개가 아닌 모든 모듈 로드 항목을 나열. |
 
-대화형 모드에서 `GJC_TIMING`은 agent 준비 후(TUI 시작 전) 한 번 출력하고, print 모드에선 전체 프롬프트 배치 완료 후 출력하며, 각 사용자 메시지는 자체 `print:prompt:initial` / `print:prompt:next` 스팬으로 감싸집니다.
+`GJC_TIMING` 출력 시점은 모드에 따라 다릅니다.
+
+- 대화형 모드: agent 준비 후(TUI 시작 전) 한 번 출력합니다.
+- print 모드: 전체 프롬프트 배치 완료 후 출력합니다.
+- 각 사용자 메시지는 자체 `print:prompt:initial` / `print:prompt:next` 스팬으로 감싸집니다.
 
 ## 함께 보기
 

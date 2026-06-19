@@ -3,11 +3,11 @@ title: 런타임·실행
 description: Gajae-Code 에이전트가 명령과 코드를 실행하게 해주는 bash, eval, python-repl, debug, ssh, job 도구.
 ---
 
-런타임 도구는 Gajae-Code 에이전트가 실제로 무언가를 실행하는 방법입니다 — 셸 명령, 즉석 코드, 디버그 세션, 원격 명령, 백그라운드 작업. 아래 각 도구는 업스트림 `docs/tools/` 레퍼런스에 대응하며, 플래그·환경변수·한도는 소스 그대로입니다.
+런타임 도구는 Gajae-Code 에이전트가 실제로 무언가를 실행하는 방법입니다. 셸 명령, 즉석 코드, 디버그 세션, 원격 명령, 백그라운드 작업을 다룹니다. 아래 각 도구는 업스트림 `docs/tools/` 레퍼런스에 대응하며, 플래그·환경변수·한도는 소스 그대로입니다.
 
 ## bash
 
-`bash`는 세션 워크스페이스에서 셸 명령을 실행합니다. 출력(stdout·stderr 병합)은 텍스트로 돌아오고, 0이 아닌 종료 코드는 성공이 아니라 오류로 표면화됩니다.
+`bash`는 세션 워크스페이스에서 셸 명령을 실행합니다. 출력(stdout·stderr 병합)은 텍스트로 돌아옵니다. 0이 아닌 종료 코드는 오류로 표면화됩니다.
 
 ### 입력
 
@@ -100,10 +100,10 @@ GJC_NO_PTY=1 gjc --tmux
 | `1` / `py`      | Python 백엔드만.      |
 | `mix` / `both`  | 둘 다.                |
 
-요청한 백엔드가 비활성이거나 사용 불가면 그 셀은 `ToolError`를 던집니다. Python 사전 점검은 실패해도 `eval.js`가 켜져 있으면 `eval`은 계속 사용 가능하며, 셀이 명시적으로 Python을 요청하지 않는 한 JavaScript로 디스패치합니다.
+요청한 백엔드가 비활성이거나 사용 불가면 그 셀은 `ToolError`를 던집니다. Python 사전 점검이 실패해도 `eval.js`가 켜져 있으면 `eval`은 계속 사용 가능합니다. 셀이 명시적으로 Python을 요청하지 않는 한 JavaScript로 디스패치합니다.
 
-- **JavaScript**는 지속 `vm.Context`에서 돕니다. 최상위 `await`와 단독 `return`을 지원하고, 정적/동적 `import`는 세션 cwd 기준으로 해석되도록 재작성되며 로컬 import는 셀 간 캐시 무효화됩니다. 프렐류드 전역에는 `display`, `read`, `write`, `append`, `env`, 그리고 임의 세션 도구 호출용 `tool.<name>(args)` 프록시가 있습니다.
-- **Python**은 NDJSON으로 통신하는 장수 `python3` 서브프로세스 안에서 돕니다(Jupyter·추가 pip 의존성 없음, Python 3.8+면 충분). 최상위 `await`가 동작하고, 리치 `display()` 출력(pandas, matplotlib, PIL)은 이미지/JSON/markdown으로 보존됩니다.
+- **JavaScript**는 지속 `vm.Context`에서 돕니다. 최상위 `await`와 단독 `return`을 지원합니다. 정적/동적 `import`는 세션 cwd 기준으로 해석되도록 재작성됩니다. 로컬 import는 셀 간 캐시 무효화됩니다. 프렐류드 전역에는 `display`, `read`, `write`, `append`, `env`, 그리고 임의 세션 도구 호출용 `tool.<name>(args)` 프록시가 있습니다.
+- **Python**은 NDJSON으로 통신하는 장수 `python3` 서브프로세스 안에서 돕니다. Jupyter나 추가 pip 의존성 없이 Python 3.8+면 충분합니다. 최상위 `await`가 동작합니다. 리치 `display()` 출력(pandas, matplotlib, PIL)은 이미지/JSON/markdown으로 보존됩니다.
 
 ### 한도
 
@@ -116,7 +116,7 @@ GJC_NO_PTY=1 gjc --tmux
 `eval` 뒤의 Python 백엔드는 Python 커널 런타임으로 깊이 문서화되어 있습니다. 운영 메모 몇 가지:
 
 - **매직** — IPython 스타일 매직은 일반 Python으로 재작성됩니다: `%pip`, `%cd`, `%pwd`, `%ls`, `%env`, `%time`/`%timeit`, `%who`/`%whos`, `%reset`, `%load`, `%run`, `%%bash`/`%%sh`, `%%capture`, `%%writefile`, `!cmd`.
-- **세션 vs 호출별 커널** — `python.kernelMode = "session"`(기본)은 세션 파일 + cwd로 키된 보존 커널을 재사용하고, `"per-call"`은 요청마다 새 서브프로세스를 띄운 뒤 종료합니다.
+- **세션 vs 호출별 커널** — `python.kernelMode = "session"`(기본)은 세션 파일·cwd로 키된 보존 커널을 재사용합니다. `"per-call"`은 요청마다 새 서브프로세스를 띄운 뒤 종료합니다.
 - **환경** — 러너 환경은 필터링됩니다(허용 목록 + `LC_`/`XDG_`/`GJC_` 접두사, API 키 제거). 런타임 해석은 활성/탐지된 venv, 그다음 `~/.gjc/python-env`의 관리 venv, 그다음 `PATH`의 `python`/`python3` 순입니다.
 - **stdin 미지원** — `input()`은 취소까지 블록됩니다. 데이터는 프로그램적으로 전달하세요.
 - **Matplotlib** — `MPLBACKEND=Agg`가 설정되어 figure가 오프스크린으로 렌더되고, 셀 후 각 figure가 PNG로 캡처됩니다.
@@ -170,4 +170,10 @@ GJC_NO_PTY=1 gjc --tmux
 
 ---
 
-여러 런타임 도구는 설정에 의존합니다: `debug`는 `debug.enabled`가 필요하고, `eval`은 `GJC_PY`로 모양이 잡히며, 백그라운드 작업은 async 지원이 필요합니다. 토글 전체 목록은 [환경 변수](/ko/docs/reference/environment-variables)를 보세요.
+여러 런타임 도구는 설정에 의존합니다.
+
+- `debug`는 `debug.enabled`가 필요합니다.
+- `eval`은 `GJC_PY`로 백엔드가 결정됩니다.
+- 백그라운드 작업은 async 지원이 필요합니다.
+
+토글 전체 목록은 [환경 변수](/ko/docs/reference/environment-variables)를 보세요.

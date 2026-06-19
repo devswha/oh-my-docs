@@ -41,16 +41,16 @@ Gajae-Code 에이전트는 집중되고 이름이 붙은 도구 표면을 통해
 
 ## 공통 규칙
 
-도구 표면 전반에 반복되는 패턴이 몇 가지 있습니다.
+도구 표면 전반에 반복되는 패턴이 있습니다.
 
-- **내부 URL.** 내용 도구(`read`, `search`, `ast-grep`)는 라우터가 백킹 리소스로 해석할 수 있을 때 `agent://`, `artifact://`, `memory://`, `gjc://`, `rule://`, `issue://`, `pr://` 같은 내부 URL을 받습니다. 내부 URL에는 glob을 쓸 수 없습니다.
+- **내부 URL.** 내용 도구(`read`, `search`, `ast-grep`)는 `agent://`, `artifact://`, `memory://`, `gjc://`, `rule://`, `issue://`, `pr://` 같은 내부 URL을 받습니다. 라우터가 백킹 리소스로 해석할 수 있을 때만 동작합니다. 내부 URL에는 glob을 쓸 수 없습니다.
 - **해시라인 앵커.** `read`, `search`, `ast-grep`는 `LINEhh|text` 앵커(예: `41th|def alpha():`)를 냅니다. `edit`는 `|` 왼쪽의 `LINEhh` 토큰만 소비합니다. `:raw` 읽기와 불변 리소스에서는 앵커가 억제됩니다.
 - **미리보기 후 resolve.** 일부 도구(특히 `ast-edit`)는 먼저 미리보기를 하고 강제 `resolve` 동작을 예약합니다. `resolve(action: "apply", ...)`를 호출하기 전엔 아무것도 기록되지 않습니다.
 - **한도와 절단.** 출력은 바이트·줄 단위로 제한됩니다(`search`는 처음 `100`개 매치, `ast-grep`는 기본 `50`개). 결과에는 한도나 절단 도달 여부가 표시됩니다.
 
 ## 설정·자격증명이 필요한 도구
 
-일부 도구는 백엔드가 설정돼야 동작합니다. 이를 켜는 키·환경변수·자격증명은 [레퍼런스](/ko/docs/reference)를 보세요.
+일부 도구는 백엔드가 설정돼야 동작합니다. 켜는 키·환경변수·자격증명은 [레퍼런스](/ko/docs/reference)를 보세요.
 
 - `web_search`와 `browser`는 provider 설정에 의존합니다.
 - `github`는 `gh` CLI와 그 캐시를 씁니다.

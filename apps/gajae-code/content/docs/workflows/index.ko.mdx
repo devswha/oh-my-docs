@@ -3,7 +3,7 @@ title: 워크플로우
 description: 기본 워크플로우 스킬 네 가지 — deep-interview, ralplan, team, ultragoal — 와 이를 엮는 운영 시퀀스.
 ---
 
-Gajae-Code는 공개 에이전트 표면을 의도적으로 작게 유지합니다. 거대한 스킬 더미 대신 기본 워크플로우 스킬 네 가지를 제공하고, 이 하나의 방법을 더 잘 다듬는 식으로 발전합니다. 스킬은 GJC 세션 안에서 `/skill:<name>`으로 실행합니다.
+Gajae-Code는 공개 에이전트 표면을 의도적으로 작게 유지합니다. 거대한 스킬 더미 대신 기본 워크플로우 스킬 네 가지를 제공합니다. 이 방법 하나를 더 잘 다듬는 식으로 발전합니다. 스킬은 GJC 세션 안에서 `/skill:<name>`으로 실행합니다.
 
 ## 워크플로우 스킬 네 가지
 
@@ -23,7 +23,12 @@ deep-interview -> ralplan -> ultragoal
                          └─ 병렬 tmux 워커가 도움이 될 때만 team 실행
 ```
 
-`deep-interview`로 의도를 명확히 하고, `ralplan`으로 접근을 비평하고, `ultragoal`로 구현·수정·검증·증거 요약까지 작업을 끌고 갑니다. `team`은 조율된 병렬 워커가 이득일 때만 추가합니다 — 필수 단계가 아니라 선택적 실행 모드입니다.
+각 스킬의 역할:
+
+- `deep-interview` — 의도를 명확히 합니다.
+- `ralplan` — 접근을 비평합니다.
+- `ultragoal` — 구현·수정·검증·증거 요약까지 끌고 갑니다.
+- `team` — 조율된 병렬 워커가 이득일 때만 추가합니다. 필수 단계가 아니라 선택적 실행 모드입니다.
 
 <Cards>
   <Card title="deep-interview" href="/ko/docs/workflows/deep-interview">
@@ -53,7 +58,12 @@ gjc team 2:executor "split implementation and verification for this bug fix"
 gjc ultragoal complete-goals
 ```
 
-이는 숨은 자동화가 아니라 운영자 시퀀스를 설명합니다. 에이전트는 무엇을 바꿨고, 발견 후 무엇을 수정했고, 어떤 검사를 돌렸고, 어떤 증거가 수정을 뒷받침하는지 보고합니다.
+이는 숨은 자동화가 아니라 운영자 시퀀스를 설명합니다. 에이전트는 다음을 보고합니다:
+
+- 무엇을 바꿨는지
+- 발견 후 무엇을 수정했는지
+- 어떤 검사를 돌렸는지
+- 어떤 증거가 수정을 뒷받침하는지
 
 ## 스킬 뒤의 에이전트
 

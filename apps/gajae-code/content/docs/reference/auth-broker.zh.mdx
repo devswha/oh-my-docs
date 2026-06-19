@@ -1,0 +1,131 @@
+---
+title: 认证代理
+description: 用 gjc auth-broker 把 OAuth 刷新令牌从开发机移到共享代理主机，并用 GJC_AUTH_BROKER_URL 指向它。
+---
+
+`gjc auth-broker` 运行一个小型 HTTP 服务，为一个或多个 Gajae-Code 客户端保管规范（canonical）凭证库。它把 OAuth 刷新令牌和提供方 API 密钥保存在单一代理主机上，在服务端执行令牌刷新，并向其他所有客户端提供一份**脱敏快照**——其中刷新令牌被替换为哨兵值。这样无需到处复制长期令牌，就能把凭证从笔记本、CI 运行器和容器中剥离。
+
+代理是**可选启用**的：仅当设置了 `GJC_AUTH_BROKER_URL`（或 `config.yml` 中的 `auth.broker.url`）时客户端才会使用。未设置时，`gjc` 会按[模型与凭据](/zh/docs/reference/models-and-credentials)所述从本地 SQLite 库解析凭证。
+
+## 何时使用
+
+- 你希望 OAuth 刷新令牌只存在一处，而非每台机器。
+- 你运行的容器化或 CI 代理绝不应看到长期刷新令牌。
+- 你希望由一台主机执行 OAuth 刷新并向小部件/客户端暴露聚合用量。
+
+回环和单机用途完全不需要代理。
+
+## CLI
+
+```text
+gjc auth-broker serve     [--bind=host:port]                    # 启动代理
+gjc auth-broker token     [--regenerate] [--json]               # 打印或轮换 bearer 令牌
+gjc auth-broker login     <provider> [--via=user@host] [--dry-run]
+gjc auth-broker logout    <provider>
+gjc auth-broker import    <file|dir> [--provider=<id>] [--include-disabled] [--dry-run] [--json]
+gjc auth-broker migrate   --from-local [--dry-run] [--json]
+gjc auth-broker status    [--json]
+```
+
+| 子命令 | 用途 |
+| ------ | ---- |
+| `serve`    | 在 agent DB 路径打开本地 SQLite 库并绑定 HTTP 监听（默认 `127.0.0.1:8765`）。首次启动会把 bearer 令牌写入 `<config-dir>/auth-broker.token`（父目录 `0700` 内 `0600`）。后台刷新器每 `refreshIntervalMs`（默认 60 秒）刷新距到期不足 `refreshSkewMs`（默认 5 分钟）的 OAuth 凭证。 |
+| `token`    | 打印缓存的 bearer 令牌，或用 `--regenerate` 轮换。 |
+| `login`    | 运行提供方 OAuth 流程。使用 `--via=user@host` 会通过 SSH 隧道转发 OAuth 回调端口，使浏览器在本地打开而凭证写在代理主机上。 |
+| `logout`   | 删除 `<provider>` 的所有凭证行。 |
+| `import`   | 把 CLIProxyAPI 风格的 JSON 凭证导入本地库，并将源 `type` 映射到 gjc 提供方。 |
+| `migrate`  | 遍历本地 SQLite 库及环境派生凭证，幂等地上传到所配置的代理。 |
+| `status`   | 向所配置的远程代理发送健康探测。 |
+
+### 通过 SSH 远程登录
+
+`gjc auth-broker login <provider> --via=user@host` 等价于：
+
+```sh
+ssh -L <callback-port>:127.0.0.1:<callback-port> user@host \
+  gjc auth-broker login <provider>
+```
+
+OAuth 重定向进入本地浏览器，而凭证写在代理上。内置回调端口：
+
+| 提供方 | 回调端口 |
+| ------ | -------- |
+| `anthropic` | `54545` |
+| `openai-code` | `1455` |
+| `google-gemini-cli` | `8085` |
+| `google-antigravity` | `51121` |
+| `gitlab-duo` | `8080` |
+
+## 端点
+
+除 `/v1/healthz` 外，所有端点都要求 `Authorization: Bearer <token>`。服务端与内存中的令牌白名单比较。
+
+| 方法 | 路径 | 认证 | 用途 |
+| ---- | ---- | ---- | ---- |
+| `GET`  | `/v1/healthz` | 无 | 存活 + 版本 |
+| `GET`  | `/v1/snapshot` | bearer | 脱敏快照（刷新令牌替换为哨兵） |
+| `POST` | `/v1/credential` | bearer | upsert 一条 OAuth 或 API 密钥凭证 |
+| `POST` | `/v1/credential/:id/refresh` | bearer | 强制刷新一条 OAuth 凭证 |
+| `POST` | `/v1/credential/:id/disable` | bearer | 记录原因并禁用一条凭证 |
+| `GET`  | `/v1/usage` | bearer | 跨凭证聚合用量报告 |
+
+代理是刷新令牌的**唯一写入者**。客户端加载 `refresh` 字段被脱敏的快照；访问令牌到期时客户端调用 `POST /v1/credential/:id/refresh`，由代理在服务端刷新。远程库会拒绝任何经其写入的本地代码路径，并提示 `gjc auth-broker login` / `gjc auth-broker logout`。
+
+### 后台刷新器
+
+刷新器按 `refreshIntervalMs` 周期扫描活跃 OAuth 凭证，刷新距到期不足 `refreshSkewMs` 的那些。刷新按凭证 id 单飞（single-flight），并区分：
+
+- **确定性失败**（`invalid_grant`、`invalid_token`、`revoked`、未授权刷新令牌、真实 401/403）——记录原因并禁用该凭证，使下次快照拉取时客户端干净地反映删除。
+- **瞬时失败**（超时 / `ECONNREFUSED` / fetch 失败）——保留以待下次扫描。
+
+## 客户端配置
+
+客户端（含 [`gjc auth-gateway`](/zh/docs/reference/auth-broker#认证网关)）在设置以下项后进入代理模式：
+
+| 变量 | 用途 | 必需时机 |
+| ---- | ---- | -------- |
+| `GJC_AUTH_BROKER_URL` | 代理基础 URL，例如 `https://broker.tailnet:8765`。设置后绕过本地 SQLite 库。 | 任何客户端需通过代理解析凭证时。 |
+| `GJC_AUTH_BROKER_TOKEN` | 除 `/v1/healthz` 外所有代理端点的 bearer 令牌。 | 设置了 `GJC_AUTH_BROKER_URL` 且在 `auth.broker.token` 或 `<config-dir>/auth-broker.token` 中找不到令牌时。 |
+
+解析顺序：
+
+<Steps>
+  <Step>`GJC_AUTH_BROKER_URL` 环境变量，否则 `config.yml` 的 `auth.broker.url`（支持 `$ENV_NAME` 间接）。</Step>
+  <Step>`GJC_AUTH_BROKER_TOKEN` 环境变量，否则 `config.yml` 的 `auth.broker.token`，否则 `<config-dir>/auth-broker.token`。</Step>
+  <Step>设置了 URL 但无法解析令牌 → 指向令牌文件路径的硬错误。</Step>
+</Steps>
+
+等价的 `config.yml` 键（环境变量始终优先；两者都对设置 UI 隐藏）：
+
+```yaml
+auth:
+  broker:
+    url: https://broker.tailnet:8765   # 或 $GJC_AUTH_BROKER_URL
+    token: $GJC_AUTH_BROKER_TOKEN      # 字面令牌或 $ENV_NAME
+```
+
+`<config-dir>` 解析为 `~/.gjc/`（遵循 `GJC_CONFIG_DIR`）。
+
+## 认证网关
+
+`gjc auth-gateway serve` 是配套的前向代理。它是一个代理客户端（需要 `GJC_AUTH_BROKER_URL`），启动时先拉取快照，然后接收 OpenAI Chat Completions、Anthropic Messages 和 OpenAI Responses 请求，把代理解析出的访问令牌注入后转发到真实提供方。容器化 gjc、IDE 插件、用量小部件这类未认证客户端始终看不到访问令牌。
+
+```text
+gjc auth-gateway serve   [--bind=host:port] [--no-auth]
+gjc auth-gateway token   [--regenerate] [--json]
+gjc auth-gateway status  [--json]
+```
+
+默认绑定 `127.0.0.1:4000`；网关令牌位于 `<config-dir>/auth-gateway.token`（`--no-auth` 关闭 bearer 校验，仅供回环使用）。当入站 wire 格式与模型原生 API 匹配时，按字节转发请求体并把客户端凭证换成代理解析的令牌；否则经 gjc 的上下文流水线翻译并重新编码。
+
+## 安全
+
+运营者、代理、网关与客户端之间的传输安全由运营者负责——用 Tailscale、WireGuard 或 TLS 反向代理为代理设防。把 `GJC_AUTH_BROKER_TOKEN`、令牌文件和所有刷新令牌视为机密，切勿记录或提交。
+
+## 相关页面
+
+<Cards>
+  <Card title="模型与凭据" href="/zh/docs/reference/models-and-credentials" />
+  <Card title="环境变量" href="/zh/docs/reference/environment-variables" />
+  <Card title="配置" href="/zh/docs/reference/configuration" />
+</Cards>
