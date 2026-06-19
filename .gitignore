@@ -1,6 +1,7 @@
 # Root-local agent/runtime state
 /.omx/
 /.omc/
+/.gjc/
 
 # Dependencies and framework outputs
 node_modules/
@@ -24,6 +25,24 @@ build/
 *.tsbuildinfo
 **/*.tsbuildinfo
 
+# Local doc-audit cache (scraped upstream HTML)
+**/.wiki-cache/
+
+# docs-accuracy-review skill: generated audit reports (per app)
+apps/*/docs-accuracy-report.md
+
 # OS/editor noise
 .DS_Store
 *.swp
+
+# For-everyone images: keep only wired + licensed assets in the repo.
+# Everything below stays local (unverified-license memes + scratch iterations).
+apps/codex/public/images/for-everyone/cat_*
+apps/codex/public/images/for-everyone/meme_*
+apps/codex/public/images/for-everyone/hero-chat-ais.svg
+apps/codex/public/images/for-everyone/sections/comparison-*
+apps/codex/public/images/for-everyone/sections/omx-helper*
+apps/codex/public/images/for-everyone/sections/index-cli-intro-ai.png
+apps/codex/public/images/for-everyone/sections/omx-vs-chat.png
+apps/codex/public/images/for-everyone/sections/omx-vs-chat-v2.png
+apps/codex/public/images/for-everyone/sections/omx-vs-chat-v3.png
