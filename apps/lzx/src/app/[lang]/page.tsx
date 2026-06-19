@@ -93,7 +93,7 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
               <div className="space-y-2 text-lg text-fd-muted-foreground">{t.desc.map((line) => <p key={line}>{line}</p>)}</div>
             </div>
             <div className="flex flex-wrap gap-3">
-              <Link href={`${prefix}/docs/getting-started`} className="rounded-full bg-fd-primary px-5 py-3 font-semibold text-fd-primary-foreground">{t.getStarted}</Link>
+              <Link href={`${prefix}/docs/installation`} className="rounded-full bg-fd-primary px-5 py-3 font-semibold text-fd-primary-foreground">{t.getStarted}</Link>
               <Link href={`${prefix}/docs`} className="rounded-full border border-fd-border px-5 py-3 font-semibold">{t.docs}</Link>
             </div>
             <div className="max-w-xl"><CopyInstallCommand command={INSTALL_COMMAND} label={t.install} /></div>

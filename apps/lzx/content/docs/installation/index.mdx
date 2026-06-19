@@ -1,0 +1,93 @@
+---
+title: Installation
+description: "Install LazyCodex into Codex: prerequisites, the one-line npx install, and signing in to Codex."
+---
+
+LazyCodex adds the OmO agent harness to Codex with one `npx` command. No global install. Install the prerequisites, run the command, then make sure Codex is signed in.
+
+<Steps>
+
+<Step>
+
+### Prerequisites
+
+- [Bun](https://bun.sh)
+- [OpenAI Codex](https://github.com/openai/codex): the **Codex app** (recommended) or the **Codex CLI**
+
+LazyCodex runs inside OpenAI Codex, so Codex needs to be installed and signed in first. Choose the Codex surface you want to use:
+
+<Callout title="Recommended: use the Codex app">
+Both surfaces work. The Codex app is easier for LazyCodex because the install and every `$command` workflow happen in one GUI.
+</Callout>
+
+<Tabs items={["Codex app (recommended)", "Codex CLI"]}>
+
+<Tab value="Codex app (recommended)">
+
+Install the **OpenAI Codex app**, sign in, and open your project. Since LazyCodex runs inside Codex, the app gives you a GUI for the install and every `$command` after it.
+
+Continue to **Install** below.
+
+</Tab>
+
+<Tab value="Codex CLI">
+
+Install the [OpenAI Codex CLI](https://github.com/openai/codex), then confirm that it launches and that you are signed in. LazyCodex runs inside Codex, so the CLI needs to work before you install LazyCodex.
+
+Continue to **Install** below.
+
+</Tab>
+
+</Tabs>
+
+</Step>
+
+<Step>
+
+### Install
+
+Run one command. Do not install it globally with `npm i -g`.
+
+```bash
+npx lazycodex-ai install
+```
+
+That command is shorthand for the OmO installer targeting Codex:
+
+```bash
+npx --yes --package oh-my-openagent omo install --platform=codex
+```
+
+For a fully autonomous setup without the TUI, use:
+
+```bash
+npx lazycodex-ai install --no-tui --codex-autonomous
+```
+
+The installer adds the OmO harness to your Codex setup: commands, skills, hooks, and model routing.
+
+I recommend letting an LLM agent run the install for you. It can detect your subscription, pick the right model, and handle provider authentication without making you step through each prompt manually.
+
+If setup feels fiddly, open Codex, paste in the [lazycodex.ai](https://lazycodex.ai) link, and ask it to install LazyCodex. The agent can read the docs and walk through the setup.
+
+<Callout title="Setup help" icon={<svg role="img" viewBox="0 0 24 24" width={20} height={20} fill="#5865F2" xmlns="http://www.w3.org/2000/svg"><path d="M20.317 4.3698a19.7913 19.7913 0 0 0-4.8851-1.5152.0741.0741 0 0 0-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 0 0-.0785-.037 19.7363 19.7363 0 0 0-4.8852 1.515.0699.0699 0 0 0-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 0 0 .0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 0 0 .0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 0 0-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 0 1-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 0 1 .0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 0 1 .0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 0 1-.0066.1276 12.2986 12.2986 0 0 1-1.873.8914.0766.0766 0 0 0-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 0 0 .0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 0 0 .0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 0 0-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>}>
+Join the [LazyCodex Discord](https://discord.gg/6ztZB9jvWq) and ask **Jabdori** for setup help.
+</Callout>
+
+</Step>
+
+<Step>
+
+### Authenticate
+
+You authenticate **Codex itself**, not LazyCodex.
+
+With the **Codex CLI**, sign-in happens during Codex setup and Codex prompts you on first run. With the **Codex app**, sign in through the app UI. LazyCodex does not have a separate login command.
+
+After Codex is signed in, `npx lazycodex-ai install` handles OmO setup automatically: subscription detection and model routing.
+
+For provider and routing details, see [Configuration](/docs/reference/configuration).
+
+</Step>
+
+</Steps>

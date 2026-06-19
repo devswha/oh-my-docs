@@ -31,6 +31,7 @@ const config = {
   allowedDevOrigins: [
     '100.123.228.51',
     'home-server',
+    'home-server.tail1e211e.ts.net',
     '192.168.0.61',
   ],
   async headers() {
