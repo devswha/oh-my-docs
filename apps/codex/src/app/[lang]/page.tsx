@@ -335,7 +335,10 @@ export default async function HomePage({
       }}
       i18n={i18n}
       githubUrl="https://github.com/Yeachan-Heo/oh-my-codex"
-      links={[{ text: 'Docs', url: `${lp}/docs` }]}
+      links={[
+        { text: 'Docs', url: `${lp}/docs` },
+        { text: 'For non-developers', url: `${lp}/for-everyone` },
+      ]}
     >
       {/* ── Hero ── */}
       <section className="relative flex min-h-[85vh] flex-col items-center justify-center px-6 py-28 text-center">

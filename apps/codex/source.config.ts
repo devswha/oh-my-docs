@@ -5,4 +5,9 @@ export const docs = defineDocs({
   docs: { files: ['**/*.mdx'] },
 });
 
+export const forEveryone = defineDocs({
+  dir: 'content/for-everyone',
+  docs: { files: ['**/*.mdx'] },
+});
+
 export default defineConfig();

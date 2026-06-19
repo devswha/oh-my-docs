@@ -1,0 +1,65 @@
+---
+title: AI 3대장. 그리고 CLI.
+description: 애네 차이점이 뭐임?
+---
+
+<img
+  src="/images/for-everyone/hero-chat-vs-cli.svg"
+  alt="ChatGPT, Claude, Gemini (chat AIs) vs Codex, Claude Code, Gemini CLI (CLI coding agents)"
+  style={{ width: '100%', height: 'auto', borderRadius: '8px', margin: '1rem 0' }}
+/>
+
+ChatGPT, Claude, Gemini는 다들 한 번씩 들어보셨을 거예요.
+
+그런데 Codex, Claude Code, Gemini CLI는 좀 낯설지요? 같은 회사가 만든 건데 형태가 영 다르거든요.
+
+## 그래서 CLI가 뭐냐면
+
+<img
+  src="/images/for-everyone/sections/index-cli-intro.svg"
+  alt="CLI 소개 — 섹션 배너"
+  style={{ width: '100%', height: 'auto', borderRadius: '8px', margin: '0.5rem 0 1.5rem' }}
+/>
+
+검은 화면에 명령어 치는 그거 있잖아요. 마우스로 클릭하는 대신 글자를 두드려서 컴퓨터한테 일을 시키는 거예요. 영화에서 해커들이 쓰는 그 화면이라고 보면 돼요.
+
+개발자가 평소에 파일 만들고 서버 접속할 때 쓰는 통로인데, AI가 이 위에서 돌아가면 마우스로 사람이 하던 일을 AI가 대신 해 줄 수 있게 돼요.
+
+## 한눈에 비교
+
+<img
+  src="/images/for-everyone/sections/index-comparison.svg"
+  alt="챗 AI와 CLI 코딩 AI 한눈에 비교 — 섹션 배너"
+  style={{ width: '100%', height: 'auto', borderRadius: '8px', margin: '0.5rem 0 1.5rem' }}
+/>
+
+| | 챗 AI | CLI 코딩 AI |
+|---|---|---|
+| 대표 | ChatGPT, Claude, Gemini | Codex, Claude Code, Gemini CLI |
+| 어디서 쓰나 | 웹/앱 채팅창 | 내 컴퓨터 터미널 |
+| 코드는 어떻게? | 텍스트로 답해 줌, 내가 복붙 | 파일을 직접 수정 |
+| 명령 실행은? | 못 함 | 직접 함 |
+| 내 프로젝트 맥락 | 매번 설명해야 함 | 폴더를 직접 봄 |
+| 잘못 갔을 때 | 복붙 단계에서 거름 | 자동으로 멀리 가버림 |
+
+## 같은 부탁을 둘에게 해보면
+
+이런 부탁을 한다고 쳐 볼게요.
+
+> "회원가입에 비밀번호 표시 토글 추가해 줘."
+
+ChatGPT한테 부탁하면 일단 코드 예시를 텍스트로 답해 줘요. 그러면 코드 편집기(VS Code 같은 거)를 열고 회원가입 화면 코드 어디 있는지 직접 찾아서 복붙하고, 빌드(코드를 실제 동작하는 형태로 묶는 과정)를 돌려 보고, 안 되면 다시 가서 물어봐야 해요.
+
+Codex CLI는 좀 다르게 움직여요. 회원가입 화면 코드를 직접 찾아서 수정하고, 빌드랑 테스트도 본인이 실행해 봐요. 실패하면 결과를 읽고 알아서 다시 시도해요.
+
+같은 부탁이지만 손이 거의 안 가요. 대신 방향만 어긋나면 자동으로 엉뚱한 데까지 멀리 가버리는 위험이 따라와요.
+
+## OMX는 이 중 어느 쪽?
+
+OMX는 Codex CLI 위에서 돌아가는 매니저예요. CLI 코딩 AI가 자동으로 일하다가 길을 잃기 쉬운 지점에 사람이 끼어들 타이밍을 만들어 주는 역할이지요.
+
+<Cards>
+  <Card title="OMX가 뭘 해 주는데?" href="/ko/for-everyone/omx">
+    Codex 혼자선 헛돌기 쉬운 지점, OMX가 거기서 뭘 해 주는지.
+  </Card>
+</Cards>

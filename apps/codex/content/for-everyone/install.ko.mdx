@@ -1,0 +1,112 @@
+---
+title: 설치 따라하기
+description: 터미널 여는 법부터 OMX 첫 명령까지, 한 줄씩
+---
+
+터미널 한 번도 안 켜 보신 분 기준이에요. 명령어가 낯설면 한 줄씩 따라 해도 돼요.
+
+## 사전 준비
+
+| 항목 | 내용 |
+|---|---|
+| 운영체제 | macOS / Linux / Windows + WSL(윈도우 안에서 리눅스를 돌리는 환경) |
+| 시간 | 처음이면 약 30분 |
+| 계정 | OpenAI 계정 (Codex CLI 로그인용. 사용 비용은 별도) |
+| 인터넷 | 안정적인 회선 |
+
+## 터미널이 뭐예요?
+
+검은 화면에 명령어 치는 프로그램이에요. 마우스로 클릭하는 대신 글자를 타이핑하고 엔터를 누르면 컴퓨터가 그 명령을 실행해요.
+
+운영체제별로 여는 법:
+
+- macOS: `Cmd + Space` 누르고 "Terminal" 입력
+- Windows: 시작 메뉴에서 "PowerShell" 또는 WSL의 "Ubuntu"
+- Linux: `Ctrl + Alt + T`
+
+창이 열리면 깜빡이는 커서가 보여요. 거기에 명령을 입력하면 돼요.
+
+<Callout type="info">
+이 문서 안의 회색 상자(코드 블록)에 있는 글자는 그대로 타이핑하거나 복사해서 붙여 넣으면 돼요. 입력한 다음엔 항상 엔터.
+</Callout>
+
+## 1. Node.js 깔려 있는지 확인
+
+Node.js는 자바스크립트를 컴퓨터에서 실행해 주는 프로그램이에요. Codex CLI와 OMX 둘 다 이걸 위에서 돌리니까 먼저 깔려 있는지부터 봐요.
+
+```bash
+node --version
+```
+
+`v22.10.0` 같은 숫자가 나오면 다음 단계로 가요. `command not found`가 나오면 Node.js가 아직 없는 상태예요. [nodejs.org](https://nodejs.org)에서 LTS 버전(장기 지원 버전, Long Term Support)을 받아서 설치하고, 터미널을 새로 열고 다시 확인해 보세요.
+
+<Callout type="warn">
+Node.js 버전이 v20 미만이면 일부 기능이 안 될 수 있어요. v22 이상을 추천드려요.
+</Callout>
+
+## 2. Codex CLI 설치 + 로그인
+
+```bash
+npm install -g @openai/codex
+codex login
+```
+
+`codex login`을 누르면 OpenAI 계정 로그인 안내가 브라우저에서 열려요. 로그인을 끝내고 터미널로 돌아오세요.
+
+확인:
+
+```bash
+codex login status
+```
+
+`Logged in as ...` 비슷한 메시지가 나오면 성공이에요.
+
+## 3. OMX 설치
+
+```bash
+npm install -g oh-my-codex
+omx setup
+```
+
+`omx setup` 명령이 사용자 홈 디렉터리에 OMX 설정 폴더를 만들고, 기본 훅과 스킬, 에이전트 프롬프트를 깔고, Codex CLI 연결까지 확인해 줘요.
+
+## 4. 동작 확인
+
+```bash
+omx doctor
+```
+
+녹색 OK 표시가 줄줄이 나오면 성공이에요. 빨간 X가 보이면 메시지에 적힌 안내대로 다시 시도해 보세요.
+
+## 5. 첫 세션
+
+```bash
+omx --madmax --high
+```
+
+이 명령을 치면 OMX가 켜지고, 자연어로 부탁할 수 있는 입력칸이 떠요. 거기에 이렇게 적어 보세요.
+
+```text
+$deep-interview "내 블로그 회원가입에 비밀번호 표시 토글 추가"
+```
+
+`$deep-interview`는 OMX 안의 인터뷰 도구예요. 부탁이 모호하면 OMX가 먼저 질문을 던지면서 진짜 원하는 게 뭔지 같이 정리해 주죠.
+
+<Callout type="warn">
+`--madmax`는 Codex의 승인 단계와 안전장치(샌드박싱) 일부를 우회해요. 회사 코드나 익숙하지 않은 프로젝트 폴더에선 쓰지 마세요. 처음엔 개인 폴더에서 시도해 보는 걸 추천드려요.
+</Callout>
+
+## 문제 생겼을 때
+
+터미널에 이런 메시지가 보이면 이렇게 해 보세요.
+
+| 이런 메시지가 보일 때 | 해결 |
+|---|---|
+| `command not found: npm` | Node.js가 안 깔린 상태. 1번 단계로 |
+| `EACCES: permission denied` | `sudo` 붙이지 말고 [nvm](https://github.com/nvm-sh/nvm)으로 Node 다시 까는 게 안전해요 |
+| `codex login`이 브라우저를 못 열 때 | 출력된 URL을 직접 복사해서 주소창에 붙여 넣으세요 |
+| `omx doctor`에서 빨간색 | 메시지에 나온 명령(예: `omx setup --repair`) 그대로 따라 하면 대부분 풀려요 |
+
+## 다음 단계
+
+명령별로 큰 그림을 보고 싶으면 [기본 빠른 시작](/ko/docs/getting-started). 더 깊은 워크플로우는 [사용 사례](/ko/docs/guides).
