@@ -3,7 +3,7 @@ title: Use Cases & Guide
 description: Pick the right command for the job — plan-first work, verified open-ended loops, codebase onboarding, worktree-isolated execution, and post-implementation review.
 ---
 
-LazyCodex (LZX) keeps a small public surface: four command pillars (`$ulw-plan`, `$start-work`, `$ulw-loop`, plus `/init-deep`) and a set of skills layered on top. The skill is picking the command that matches the shape of the work, then letting it carry the task to verified completion.
+LazyCodex (LZX) keeps a small public surface: four command pillars (`$ulw-plan`, `$start-work`, `$ulw-loop`, plus `$init-deep`) and a set of skills layered on top. The skill is picking the command that matches the shape of the work, then letting it carry the task to verified completion.
 
 LazyCodex packages [OmO (oh-my-openagent)](https://github.com/code-yeongyu/oh-my-openagent) as the Codex agent harness — LazyVim for Codex. Sisyphus orchestrates Hephaestus, Oracle, and Librarian underneath; you just choose the entry point.
 
@@ -16,7 +16,7 @@ Most tasks need less than the full loop. Match the command to what the work actu
 | Decisions before code | `$ulw-plan` | Prometheus turns a fuzzy idea into a decision-complete plan at `plans/<slug>.md`. |
 | Execute an approved plan | `$start-work` | Runs the checklist with durable Boulder progress until every checkbox is done. |
 | Open-ended, must be verified | `$ulw-loop` | Keeps moving until an Oracle verifies the result by evidence. |
-| First contact with a big repo | `/init-deep` | Generates hierarchical `AGENTS.md` project memory before any edits. |
+| First contact with a big repo | `$init-deep` | Generates hierarchical `AGENTS.md` project memory before any edits. |
 
 `$ulw-plan` never writes product code — it ends with a plan you hand to `$start-work`. Use `$ulw-loop` when you want progress measured by verification, not by a hopeful status update.
 
@@ -86,12 +86,12 @@ Use `--strategy=reset` to start the context fresh each iteration, or `--strategy
 ### Onboard a large codebase
 
 - **When to use:** the repository is too large or too old to explain from memory, and future agents need landmarks before they edit.
-- **Commands:** `/init-deep`.
+- **Commands:** `$init-deep`.
 
-`/init-deep` scores complex directories and writes hierarchical `AGENTS.md` context near the code that needs it, so every later run starts with project memory instead of guessing.
+`$init-deep` scores complex directories and writes hierarchical `AGENTS.md` context near the code that needs it, so every later run starts with project memory instead of guessing.
 
 ```bash
-/init-deep
+$init-deep
 ```
 
 Run it again when the shape of the codebase changes.
@@ -123,7 +123,7 @@ After implementation, run the `review-work` skill for a multi-angle post-impleme
   <Card title="$ulw-plan" href="/docs/commands/ulw-plan" />
   <Card title="$start-work" href="/docs/commands/start-work" />
   <Card title="$ulw-loop" href="/docs/commands/ulw-loop" />
-  <Card title="/init-deep" href="/docs/commands/init-deep" />
+  <Card title="$init-deep" href="/docs/commands/init-deep" />
   <Card title="Skills" href="/docs/skills" />
   <Card title="review-work" href="/docs/skills/review-work" />
 </Cards>

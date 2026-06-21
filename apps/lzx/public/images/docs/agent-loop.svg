@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 380" role="img" aria-labelledby="title desc">
+  <title id="title">LazyCodex agent loop</title>
+  <desc id="desc">A restrained workflow diagram showing context, plan, execute, verify, and evidence as a continuous loop.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+    </marker>
+    <style>
+      .panel{fill:#f8fafc;stroke:#e2e8f0;stroke-width:1}
+      .node{fill:#ffffff;stroke:#cbd5e1;stroke-width:1.5}
+      .node-accent{fill:#eef2ff;stroke:#818cf8;stroke-width:1.5}
+      .line{fill:none;stroke:#64748b;stroke-width:2;marker-end:url(#arrow)}
+      .ghost{fill:none;stroke:#cbd5e1;stroke-width:1.5;stroke-dasharray:5 7}
+      .label{fill:#0f172a;font:700 17px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+      .caption{fill:#475569;font:500 12px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+      .mono{fill:#3730a3;font:600 12px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+      @media (prefers-color-scheme: dark){
+        .panel{fill:#0f172a;stroke:#263244}
+        .node{fill:#111827;stroke:#334155}
+        .node-accent{fill:#1e1b4b;stroke:#818cf8}
+        .line{stroke:#94a3b8}
+        .ghost{stroke:#334155}
+        .label{fill:#f8fafc}
+        .caption{fill:#cbd5e1}
+        .mono{fill:#c4b5fd}
+      }
+    </style>
+  </defs>
+
+  <rect class="panel" x="16" y="16" width="928" height="348" rx="14"/>
+
+  <path class="ghost" d="M 196 180 C 234 88 354 58 480 58 C 606 58 726 88 764 180"/>
+  <path class="ghost" d="M 764 220 C 726 312 606 342 480 342 C 354 342 234 312 196 220"/>
+
+  <g transform="translate(80 132)">
+    <rect class="node" width="156" height="96" rx="10"/>
+    <text class="label" x="78" y="38" text-anchor="middle">Context</text>
+    <text class="caption" x="78" y="61" text-anchor="middle">repo memory</text>
+    <text class="mono" x="78" y="79" text-anchor="middle">AGENTS.md</text>
+  </g>
+
+  <g transform="translate(304 56)">
+    <rect class="node" width="156" height="96" rx="10"/>
+    <text class="label" x="78" y="38" text-anchor="middle">Plan</text>
+    <text class="caption" x="78" y="61" text-anchor="middle">scope and steps</text>
+    <text class="mono" x="78" y="79" text-anchor="middle">$ulw-plan</text>
+  </g>
+
+  <g transform="translate(500 56)">
+    <rect class="node-accent" width="156" height="96" rx="10"/>
+    <text class="label" x="78" y="38" text-anchor="middle">Execute</text>
+    <text class="caption" x="78" y="61" text-anchor="middle">parallel agents</text>
+    <text class="mono" x="78" y="79" text-anchor="middle">$start-work</text>
+  </g>
+
+  <g transform="translate(724 132)">
+    <rect class="node" width="156" height="96" rx="10"/>
+    <text class="label" x="78" y="38" text-anchor="middle">Verify</text>
+    <text class="caption" x="78" y="61" text-anchor="middle">tests and QA</text>
+    <text class="mono" x="78" y="79" text-anchor="middle">Oracle pass</text>
+  </g>
+
+  <g transform="translate(402 246)">
+    <rect class="node" width="156" height="96" rx="10"/>
+    <text class="label" x="78" y="38" text-anchor="middle">Evidence</text>
+    <text class="caption" x="78" y="61" text-anchor="middle">captured proof</text>
+    <text class="mono" x="78" y="79" text-anchor="middle">artifact path</text>
+  </g>
+
+  <path class="line" d="M 236 164 C 260 114 284 104 304 104"/>
+  <path class="line" d="M 460 104 H 500"/>
+  <path class="line" d="M 656 104 C 686 106 716 124 724 160"/>
+  <path class="line" d="M 764 228 C 736 286 630 294 558 294"/>
+  <path class="line" d="M 402 294 C 290 294 202 260 164 228"/>
+</svg>

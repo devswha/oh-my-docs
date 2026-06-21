@@ -3,7 +3,7 @@ title: 유스케이스 & 가이드
 description: 작업에 맞는 커맨드 고르기 — 계획 우선 작업, 검증된 오픈엔드 루프, 코드베이스 온보딩, 워크트리 격리 실행, 구현 후 리뷰.
 ---
 
-LazyCodex(LZX)는 공개 표면을 작게 유지합니다. 네 개의 커맨드 기둥(`$ulw-plan`, `$start-work`, `$ulw-loop`, 그리고 `/init-deep`)과 그 위에 얹히는 스킬들이 전부입니다. 핵심은 작업의 모양에 맞는 커맨드를 고르고, 그 커맨드가 검증된 완료까지 일을 끌고 가도록 맡기는 것입니다.
+LazyCodex(LZX)는 공개 표면을 작게 유지합니다. 네 개의 커맨드 기둥(`$ulw-plan`, `$start-work`, `$ulw-loop`, 그리고 `$init-deep`)과 그 위에 얹히는 스킬들이 전부입니다. 핵심은 작업의 모양에 맞는 커맨드를 고르고, 그 커맨드가 검증된 완료까지 일을 끌고 가도록 맡기는 것입니다.
 
 LazyCodex는 [OmO(oh-my-openagent)](https://github.com/code-yeongyu/oh-my-openagent)를 Codex 에이전트 하니스로 패키징한 것입니다 — Codex를 위한 LazyVim이라고 보시면 됩니다. 아래에서는 Sisyphus가 Hephaestus, Oracle, Librarian을 오케스트레이션하고, 사용자는 진입점만 고르면 됩니다.
 
@@ -16,7 +16,7 @@ LazyCodex는 [OmO(oh-my-openagent)](https://github.com/code-yeongyu/oh-my-openag
 | 코드 작성 전 의사결정 | `$ulw-plan` | Prometheus가 모호한 아이디어를 `plans/<slug>.md`의 의사결정 완료 계획으로 바꿉니다. |
 | 승인된 계획 실행 | `$start-work` | 모든 체크박스가 끝날 때까지 내구성 있는 Boulder 진행으로 체크리스트를 실행합니다. |
 | 오픈엔드, 반드시 검증 | `$ulw-loop` | Oracle이 증거로 결과를 검증할 때까지 계속 진행합니다. |
-| 큰 저장소와의 첫 접촉 | `/init-deep` | 편집 전에 계층적 `AGENTS.md` 프로젝트 메모리를 생성합니다. |
+| 큰 저장소와의 첫 접촉 | `$init-deep` | 편집 전에 계층적 `AGENTS.md` 프로젝트 메모리를 생성합니다. |
 
 `$ulw-plan`은 절대 제품 코드를 작성하지 않습니다 — `$start-work`에 넘길 계획으로 끝납니다. 진행을 희망 섞인 상태 보고가 아니라 검증으로 측정하고 싶을 때 `$ulw-loop`을 사용하세요.
 
@@ -86,12 +86,12 @@ $ulw-loop "CI에서 불안정한 체크아웃 테스트를 통과시키기" --co
 ### 대규모 코드베이스 온보딩
 
 - **언제 쓰나:** 저장소가 기억만으로 설명하기에 너무 크거나 오래되어, 이후 에이전트가 편집 전에 이정표를 필요로 할 때.
-- **커맨드:** `/init-deep`.
+- **커맨드:** `$init-deep`.
 
-`/init-deep`은 복잡한 디렉터리를 점수화하고 필요한 코드 근처에 계층적 `AGENTS.md` 컨텍스트를 작성합니다. 이후의 모든 실행이 추측 대신 프로젝트 메모리로 시작합니다.
+`$init-deep`은 복잡한 디렉터리를 점수화하고 필요한 코드 근처에 계층적 `AGENTS.md` 컨텍스트를 작성합니다. 이후의 모든 실행이 추측 대신 프로젝트 메모리로 시작합니다.
 
 ```bash
-/init-deep
+$init-deep
 ```
 
 코드베이스의 모양이 바뀌면 다시 실행하세요.
@@ -123,7 +123,7 @@ $start-work refactor-payments --worktree /home/you/wt-refactor-payments
   <Card title="$ulw-plan" href="/ko/docs/commands/ulw-plan" />
   <Card title="$start-work" href="/ko/docs/commands/start-work" />
   <Card title="$ulw-loop" href="/ko/docs/commands/ulw-loop" />
-  <Card title="/init-deep" href="/ko/docs/commands/init-deep" />
+  <Card title="$init-deep" href="/ko/docs/commands/init-deep" />
   <Card title="스킬" href="/ko/docs/skills" />
   <Card title="review-work" href="/ko/docs/skills/review-work" />
 </Cards>

@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 300" role="img" aria-labelledby="title desc">
+  <title id="title">LazyCodex model routing</title>
+  <desc id="desc">A model routing diagram that sends light and quick tasks to one lane and deep reasoning tasks to another lane.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+    </marker>
+    <style>
+      .panel{fill:#f8fafc;stroke:#e2e8f0;stroke-width:1}
+      .box{fill:#ffffff;stroke:#cbd5e1;stroke-width:1.5}
+      .lane-light{fill:#f1f5f9;stroke:#cbd5e1;stroke-width:1.5}
+      .lane-deep{fill:#eef2ff;stroke:#818cf8;stroke-width:1.5}
+      .route{fill:none;stroke:#64748b;stroke-width:2;marker-end:url(#arrow)}
+      .route-deep{fill:none;stroke:#4f46e5;stroke-width:2.4;marker-end:url(#arrow)}
+      .label{fill:#0f172a;font:700 17px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+      .caption{fill:#475569;font:500 12px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+      .mono{fill:#3730a3;font:600 12px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+      @media (prefers-color-scheme: dark){
+        .panel{fill:#0f172a;stroke:#263244}
+        .box{fill:#111827;stroke:#334155}
+        .lane-light{fill:#162033;stroke:#334155}
+        .lane-deep{fill:#1e1b4b;stroke:#818cf8}
+        .route{stroke:#94a3b8}
+        .route-deep{stroke:#818cf8}
+        .label{fill:#f8fafc}
+        .caption{fill:#cbd5e1}
+        .mono{fill:#c4b5fd}
+      }
+    </style>
+  </defs>
+
+  <rect class="panel" x="16" y="16" width="928" height="268" rx="14"/>
+
+  <g transform="translate(62 96)">
+    <rect class="box" width="176" height="108" rx="10"/>
+    <text class="label" x="88" y="39" text-anchor="middle">Incoming task</text>
+    <text class="caption" x="88" y="64" text-anchor="middle">classify scope</text>
+    <text class="caption" x="88" y="84" text-anchor="middle">choose effort</text>
+  </g>
+
+  <g transform="translate(358 44)">
+    <rect class="lane-light" width="244" height="94" rx="12"/>
+    <text class="label" x="122" y="35" text-anchor="middle">Light / quick lane</text>
+    <text class="caption" x="122" y="60" text-anchor="middle">lookup, edits, short checks</text>
+    <text class="mono" x="122" y="78" text-anchor="middle">quick model</text>
+  </g>
+
+  <g transform="translate(358 170)">
+    <rect class="lane-deep" width="244" height="94" rx="12"/>
+    <text class="label" x="122" y="35" text-anchor="middle">Deep reasoning lane</text>
+    <text class="caption" x="122" y="60" text-anchor="middle">planning, bugs, broad QA</text>
+    <text class="mono" x="122" y="78" text-anchor="middle">reasoning model</text>
+  </g>
+
+  <g transform="translate(732 96)">
+    <rect class="box" width="176" height="108" rx="10"/>
+    <text class="label" x="88" y="39" text-anchor="middle">Agent output</text>
+    <text class="caption" x="88" y="64" text-anchor="middle">code path stays</text>
+    <text class="caption" x="88" y="84" text-anchor="middle">task-appropriate</text>
+  </g>
+
+  <path class="route" d="M 238 128 C 278 108 310 91 358 91"/>
+  <path class="route-deep" d="M 238 172 C 278 194 310 217 358 217"/>
+  <path class="route" d="M 602 91 C 652 98 690 114 732 134"/>
+  <path class="route-deep" d="M 602 217 C 652 202 690 182 732 166"/>
+</svg>

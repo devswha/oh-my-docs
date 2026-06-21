@@ -3,7 +3,7 @@ title: ユースケースとガイド
 description: タスクに合ったコマンドを選ぶ — 計画優先の作業、検証付きのオープンエンドループ、コードベースのオンボーディング、ワークツリー隔離実行、実装後レビュー。
 ---
 
-LazyCodex(LZX)は公開表面を小さく保ちます。4 つのコマンド柱(`$ulw-plan`、`$start-work`、`$ulw-loop`、そして `/init-deep`)と、その上に重なるスキルがすべてです。コツは作業の形に合うコマンドを選び、検証済みの完了までそのコマンドにタスクを運ばせることです。
+LazyCodex(LZX)は公開表面を小さく保ちます。4 つのコマンド柱(`$ulw-plan`、`$start-work`、`$ulw-loop`、そして `$init-deep`)と、その上に重なるスキルがすべてです。コツは作業の形に合うコマンドを選び、検証済みの完了までそのコマンドにタスクを運ばせることです。
 
 LazyCodex は [OmO(oh-my-openagent)](https://github.com/code-yeongyu/oh-my-openagent) を Codex のエージェントハーネスとしてパッケージ化したものです — Codex 版の LazyVim と考えてください。内部では Sisyphus が Hephaestus、Oracle、Librarian をオーケストレーションし、ユーザーは入口を選ぶだけです。
 
@@ -16,7 +16,7 @@ LazyCodex は [OmO(oh-my-openagent)](https://github.com/code-yeongyu/oh-my-opena
 | コード前の意思決定 | `$ulw-plan` | Prometheus が曖昧な発想を `plans/<slug>.md` の意思決定完了プランに変えます。 |
 | 承認済みプランの実行 | `$start-work` | 全チェックボックスが終わるまで耐久性のある Boulder 進捗でチェックリストを実行します。 |
 | オープンエンド、要検証 | `$ulw-loop` | Oracle が証拠で結果を検証するまで進み続けます。 |
-| 大規模リポジトリへの初接触 | `/init-deep` | 編集前に階層的な `AGENTS.md` プロジェクトメモリを生成します。 |
+| 大規模リポジトリへの初接触 | `$init-deep` | 編集前に階層的な `AGENTS.md` プロジェクトメモリを生成します。 |
 
 `$ulw-plan` は製品コードを書きません — `$start-work` に渡すプランで終わります。希望的な状況報告ではなく検証で進捗を測りたいときは `$ulw-loop` を使ってください。
 
@@ -86,12 +86,12 @@ $ulw-loop "CI で不安定なチェックアウトテストを通す" --completi
 ### 大規模コードベースのオンボーディング
 
 - **いつ使うか:** リポジトリが記憶だけで説明するには大きすぎる・古すぎて、以降のエージェントが編集前に目印を必要とするとき。
-- **コマンド:** `/init-deep`。
+- **コマンド:** `$init-deep`。
 
-`/init-deep` は複雑なディレクトリをスコアリングし、必要なコードの近くに階層的な `AGENTS.md` コンテキストを書き込みます。これにより以降のすべての実行が推測ではなくプロジェクトメモリから始まります。
+`$init-deep` は複雑なディレクトリをスコアリングし、必要なコードの近くに階層的な `AGENTS.md` コンテキストを書き込みます。これにより以降のすべての実行が推測ではなくプロジェクトメモリから始まります。
 
 ```bash
-/init-deep
+$init-deep
 ```
 
 コードベースの形が変わったら再実行してください。
@@ -123,7 +123,7 @@ $start-work refactor-payments --worktree /home/you/wt-refactor-payments
   <Card title="$ulw-plan" href="/ja/docs/commands/ulw-plan" />
   <Card title="$start-work" href="/ja/docs/commands/start-work" />
   <Card title="$ulw-loop" href="/ja/docs/commands/ulw-loop" />
-  <Card title="/init-deep" href="/ja/docs/commands/init-deep" />
+  <Card title="$init-deep" href="/ja/docs/commands/init-deep" />
   <Card title="スキル" href="/ja/docs/skills" />
   <Card title="review-work" href="/ja/docs/skills/review-work" />
 </Cards>

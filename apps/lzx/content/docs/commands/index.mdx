@@ -1,6 +1,6 @@
 ---
 title: Command Pillars
-description: The four LazyCodex commands — $ulw-plan, $start-work, $ulw-loop, and /init-deep — and how they compose.
+description: The four LazyCodex commands — $ulw-plan, $start-work, $ulw-loop, and $init-deep — and how they compose.
 ---
 
 LazyCodex installs a small, stable command layer into Codex. The command layer stays simple on purpose; specialist judgment lives in the [skills](/docs/skills). These commands ship as OmO commands for Codex — invoke them with the `$command` syntax shown by the installer.
@@ -12,7 +12,7 @@ LazyCodex installs a small, stable command layer into Codex. The command layer s
 | [`$ulw-plan`](/docs/commands/ulw-plan) | `$ulw-plan "what to build"` | Prometheus strategic planner. Writes a plan to `plans/<slug>.md`. Never writes product code. |
 | [`$start-work`](/docs/commands/start-work) | `$start-work [plan-name] [--worktree <path>]` | Executes a plan until every checkbox is done. Prints **ORCHESTRATION COMPLETE**. |
 | [`$ulw-loop`](/docs/commands/ulw-loop) | `$ulw-loop "task" [--completion-promise=TEXT] [--strategy=reset\|continue]` | Self-referential loop that runs until Oracle-verified completion. Caps at 500 iterations in ultrawork mode, 100 in normal mode. |
-| [`/init-deep`](/docs/commands/init-deep) | `/init-deep` | Generates hierarchical `AGENTS.md` project memory. Run it on a large or freshly changed codebase. |
+| [`$init-deep`](/docs/commands/init-deep) | `$init-deep` | Generates hierarchical `AGENTS.md` project memory. Run it on a large or freshly changed codebase. |
 
 ## How they compose
 
@@ -53,10 +53,10 @@ The agent works continuously and emits a completion promise, but the loop ends o
 
 ## Project memory comes first
 
-For a large codebase, run `/init-deep` once before either flow. It scores complex directories and writes hierarchical `AGENTS.md` files so every later command starts with full context.
+For a large codebase, run `$init-deep` once before either flow. It scores complex directories and writes hierarchical `AGENTS.md` files so every later command starts with full context.
 
 ```bash
-/init-deep
+$init-deep
 ```
 
 ## Explore each command
@@ -65,5 +65,5 @@ For a large codebase, run `/init-deep` once before either flow. It scores comple
   <Card title="$ulw-plan" href="/docs/commands/ulw-plan">Prometheus strategic planning — turn an idea into a decision-complete plan.</Card>
   <Card title="$start-work" href="/docs/commands/start-work">Durable plan execution until every checkbox is checked.</Card>
   <Card title="$ulw-loop" href="/docs/commands/ulw-loop">Self-referential loop with Oracle-verified completion.</Card>
-  <Card title="/init-deep" href="/docs/commands/init-deep">Hierarchical AGENTS.md project memory.</Card>
+  <Card title="$init-deep" href="/docs/commands/init-deep">Hierarchical AGENTS.md project memory.</Card>
 </Cards>

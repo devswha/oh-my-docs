@@ -1,9 +1,9 @@
 ---
-title: /init-deep
+title: $init-deep
 description: Generates hierarchical AGENTS.md project memory so future agents start with full context.
 ---
 
-`/init-deep` builds project memory for LazyCodex. It generates hierarchical `AGENTS.md` files across the repository so that every future agent run starts with the context it needs, right next to the code it is about to edit.
+`$init-deep` builds project memory for LazyCodex. It generates hierarchical `AGENTS.md` files across the repository so that every future agent run starts with the context it needs, right next to the code it is about to edit.
 
 Run it when the repository is too large to explain from memory.
 
@@ -15,7 +15,7 @@ Run it when the repository is too large to explain from memory.
 
 ### Score complex directories
 
-`/init-deep` walks the codebase and scores directories by complexity, finding the parts of the tree that actually need written guidance.
+`$init-deep` walks the codebase and scores directories by complexity, finding the parts of the tree that actually need written guidance.
 
 </Step>
 
@@ -39,16 +39,16 @@ The result is a hierarchy of `AGENTS.md` files that give future agents landmarks
 
 ## When to run it
 
-- **First time in a codebase.** Before you ask LazyCodex to do real work in an unfamiliar or large repository, run `/init-deep` so the agents start with full context.
-- **The repository is too large to explain from memory.** When you cannot summarize the project in a sentence, let `/init-deep` write the map for you.
+- **First time in a codebase.** Before you ask LazyCodex to do real work in an unfamiliar or large repository, run `$init-deep` so the agents start with full context.
+- **The repository is too large to explain from memory.** When you cannot summarize the project in a sentence, let `$init-deep` write the map for you.
 
 ## When to re-run it
 
-Re-run `/init-deep` when the **shape of the codebase changes** — new top-level areas, a significant refactor, or a reorganization that makes the existing `AGENTS.md` landmarks stale. Keeping the memory current keeps every later run grounded.
+Re-run `$init-deep` when the **shape of the codebase changes** — new top-level areas, a significant refactor, or a reorganization that makes the existing `AGENTS.md` landmarks stale. Keeping the memory current keeps every later run grounded.
 
 ## Where it fits
 
-`/init-deep` is the memory step. Once the map exists, the command pillars do the work:
+`$init-deep` is the memory step. Once the map exists, the command pillars do the work:
 
 - `$ulw-plan` decides what to build before any code changes.
 - `$start-work` executes a plan to the last checkbox.

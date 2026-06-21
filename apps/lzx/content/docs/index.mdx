@@ -28,12 +28,12 @@ LazyCodex installs three command pillars plus a project-memory command for Codex
 
 | Command | What it does |
 | --- | --- |
-| `/init-deep` | Generates hierarchical `AGENTS.md` project memory. |
+| `$init-deep` | Generates hierarchical `AGENTS.md` project memory. |
 | `$ulw-plan` | Prometheus strategic planner. Writes a plan to `plans/<slug>.md`; never writes product code. |
 | `$start-work` | Executes a plan until every checkbox is done, then prints **ORCHESTRATION COMPLETE**. |
 | `$ulw-loop` | Self-referential loop that runs until Oracle-verified completion. |
 
-A typical flow: run `/init-deep` once for project memory, `$ulw-plan "what to build"` to decide the approach, then `$start-work` to execute it — or reach for `$ulw-loop "task"` when you want the work to keep moving until the result is verified by evidence.
+A typical flow: run `$init-deep` once for project memory, `$ulw-plan "what to build"` to decide the approach, then `$start-work` to execute it — or reach for `$ulw-loop "task"` when you want the work to keep moving until the result is verified by evidence.
 
 ## Why different GPT models appear
 

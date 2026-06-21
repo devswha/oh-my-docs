@@ -28,12 +28,12 @@ LazyCodex 为 Codex 安装三个命令支柱以及一个项目记忆命令。支
 
 | 命令 | 作用 |
 | --- | --- |
-| `/init-deep` | 生成分层的 `AGENTS.md` 项目记忆。 |
+| `$init-deep` | 生成分层的 `AGENTS.md` 项目记忆。 |
 | `$ulw-plan` | Prometheus 战略规划器。将计划写入 `plans/<slug>.md`，绝不编写产品代码。 |
 | `$start-work` | 执行计划直至所有复选框完成，然后打印 **ORCHESTRATION COMPLETE**。 |
 | `$ulw-loop` | 自引用循环，运行直至 Oracle 验证完成。 |
 
-典型流程：先运行一次 `/init-deep` 建立项目记忆，用 `$ulw-plan "要构建什么"` 确定方案，再用 `$start-work` 执行；当你希望工作持续推进直到结果被证据验证时，则使用 `$ulw-loop "任务"`。
+典型流程：先运行一次 `$init-deep` 建立项目记忆，用 `$ulw-plan "要构建什么"` 确定方案，再用 `$start-work` 执行；当你希望工作持续推进直到结果被证据验证时，则使用 `$ulw-loop "任务"`。
 
 ## 为什么会出现不同的 GPT 模型
 

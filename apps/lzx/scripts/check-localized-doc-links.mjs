@@ -47,7 +47,7 @@ function routeForDocFile(fileUrl, docsDir) {
   const docsPath = fileURLToPath(docsDir);
   const filePath = fileURLToPath(fileUrl);
   const relativePath = relative(docsPath, filePath);
-  const parts = relativePath.split('/');
+  const parts = relativePath.split(/[\\/]/);
   const fileName = parts.pop();
   let locale = 'en';
   let stem = fileName.replace(/\.mdx$/, '');

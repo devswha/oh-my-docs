@@ -6,6 +6,12 @@ import { i18n } from '@/lib/i18n';
 import { LZX_VERSION } from '@/lib/version';
 import { DocsSidebarFooter } from '@/components/docs-sidebar-footer';
 
+const docsI18n = {
+  defaultLanguage: i18n.defaultLanguage,
+  languages: i18n.languages,
+  hideLocale: i18n.hideLocale,
+};
+
 export default async function Layout({
   params,
   children,
@@ -68,7 +74,7 @@ export default async function Layout({
           />
         ),
       }}
-      i18n={i18n}
+      i18n={docsI18n}
       slots={{ languageSelect: false, themeSwitch: false }}
       links={[
         {

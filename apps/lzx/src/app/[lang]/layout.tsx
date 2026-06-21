@@ -5,7 +5,6 @@ import { i18n } from '@/lib/i18n';
 import type { ReactNode } from 'react';
 
 const { provider } = defineI18nUI(i18n, {
-  translations: {
     en: {
       displayName: 'English',
     },
@@ -33,7 +32,6 @@ const { provider } = defineI18nUI(i18n, {
       previousPage: '前へ',
       nextPage: '次へ',
     },
-  },
 });
 
 export function generateStaticParams() {

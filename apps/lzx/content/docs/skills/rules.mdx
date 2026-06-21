@@ -20,7 +20,7 @@ Dynamic `PostToolUse` output is injected as additional context and is deduplicat
 
 | Source | Notes |
 |---|---|
-| `AGENTS.md` | Primary project memory (pairs with `/init-deep`). |
+| `AGENTS.md` | Primary project memory (pairs with `$init-deep`). |
 | `CLAUDE.md` | Compatible Claude-style instructions. |
 | `CONTEXT.md` | General project context. |
 | `.sisyphus/rules/**/*.md` | Discipline-agent rule tree. |
@@ -43,9 +43,9 @@ Tune behavior with environment variables:
 
 The legacy `PI_RULES_*` variables are accepted as fallbacks for users migrating from `pi-rules`.
 
-## Pairs with `/init-deep`
+## Pairs with `$init-deep`
 
-`/init-deep` generates hierarchical `AGENTS.md` project memory, and the `rules` skill is what then keeps that memory in front of Codex on every session and prompt. Generate the memory once, and `rules` injects it from then on.
+`$init-deep` generates hierarchical `AGENTS.md` project memory, and the `rules` skill is what then keeps that memory in front of Codex on every session and prompt. Generate the memory once, and `rules` injects it from then on.
 
 ## Related skills
 
