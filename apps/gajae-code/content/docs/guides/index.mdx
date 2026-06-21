@@ -143,10 +143,10 @@ If the requirements are already clear enough to plan directly, skip `deep-interv
 Run the session inside an isolated Git worktree so the main checkout stays clean:
 
 ```sh
-gjc --tmux --worktree <path>
+gjc --tmux --worktree my-refactor-branch
 ```
 
-Use a dedicated path for throwaway or branch-specific work. From inside the worktree, plan with `ralplan`, then track the change with `ultragoal`.
+The `--worktree` value is a branch-like name for a GJC-managed sibling worktree, not a filesystem path. For an existing worktree directory, `cd` into it first and run `gjc --tmux`. From inside the worktree, plan with `ralplan`, then track the change with `ultragoal`.
 
 ### Explore an unfamiliar codebase
 
@@ -180,15 +180,15 @@ No workflow is needed. A clear, anchored request — a file path, function name,
 For anything that should stay off the main checkout — refactors, risky experiments, branch-specific tasks — run inside an isolated Git worktree:
 
 ```sh
-gjc --tmux --worktree <path>
+gjc --tmux --worktree my-task-branch
 ```
 
-Use a dedicated path for throwaway or branch-specific work so the main checkout stays clean.
+Use a branch-like name for GJC-managed worktrees. If you already have a path, enter that directory first and launch `gjc --tmux`.
 
 ## Keep going
 
 <Cards>
-  <Card title="Workflows" href="/docs/workflows" />
-  <Card title="Agents" href="/docs/agents" />
+  <Card title="Workflows" href="/docs/commands" />
+  <Card title="Agents" href="/docs/skills" />
   <Card title="Core Concepts" href="/docs/concepts" />
 </Cards>

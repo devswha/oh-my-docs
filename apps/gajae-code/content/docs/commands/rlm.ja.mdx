@@ -1,0 +1,48 @@
+---
+title: rlm
+description: 制限された Python、read、web_search ツールセットでノートブック形式の調査を行う research/REPL モード。
+---
+
+`rlm` は opt-in の research/REPL モードです。通常の coding-agent ループで直接変更するより、探索・出典付き調査・反復分析が必要なときに使います。
+
+![ノートブック形式の research mode を表す Gajae-Code 科学者マスコット](/images/docs/commands-rlm.png)
+
+```bash
+gjc rlm
+```
+
+## 何をするか
+
+`rlm` は agent ループ上でノートブック形式の研究セッションを実行します。共有の永続 Python カーネルと、制限された research ツールセットに基づきます:
+
+- `python`
+- `read`
+- `web_search`
+- `search_tool_bm25`
+- 調査コマンド用 read-only `bash` (`grep`, `rg`, `tree`, `ls`, `pwd`, `wc`, `du`, `file`, `stat`)
+- `goal`
+- `complete_research`
+
+実行内容は次に集約されます:
+
+```text
+.gjc/_session-<gjcSessionId>/rlm/<rlmSessionId>/notebook.ipynb
+```
+
+終了時には次のレポートを合成します:
+
+```text
+.gjc/_session-<gjcSessionId>/rlm/<rlmSessionId>/report.md
+```
+
+## 使いどころ
+
+出典比較、小さな Python 検証、中間セルの保存、最終レポートが必要な調査には `rlm` を使います。実装、レビュー、`deep-interview` / `ralplan` / `team` / `ultragoal` の実行は通常の `gjc` ループに残すのが適しています。
+
+## 関連
+
+<Cards>
+  <Card title="ランタイムツール" href="/ja/docs/reference/tools/runtime" />
+  <Card title="ワークフロー" href="/ja/docs/commands" />
+  <Card title="ユースケース" href="/ja/docs/guides" />
+</Cards>

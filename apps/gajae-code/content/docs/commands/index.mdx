@@ -1,0 +1,70 @@
+---
+title: Commands
+description: The command surface for deep-interview, ralplan, rlm, team, and ultragoal.
+---
+
+Gajae-Code keeps the public agent surface intentionally small. Instead of a sprawling skill zoo, it ships four default workflow skills and improves by making this one method better. Invoke a skill inside a GJC session with `/skill:<name>`.
+
+## The four workflow skills
+
+| Skill                                              | What it does                                                                                        |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| [`deep-interview`](/docs/commands/deep-interview) | Removes ambiguity before planning or code changes.                                                  |
+| [`ralplan`](/docs/commands/ralplan)               | Builds and critiques a plan before mutation.                                                        |
+| [`team`](/docs/commands/team)                     | Optionally coordinates tmux-backed parallel execution when the work benefits from multiple workers. |
+| [`ultragoal`](/docs/commands/ultragoal)           | Tracks durable goals through implementation, revisions, verification, and evidence summaries.       |
+
+`rlm` is separate from the four default workflow skills: start it with `gjc rlm` when you want a research/REPL session instead of the normal coding-agent loop.
+
+## The working loop
+
+The skills compose into one useful loop:
+
+```text
+deep-interview -> ralplan -> ultragoal
+                         └─ optional team execution when parallel tmux workers help
+```
+
+Use `deep-interview` to clarify intent, `ralplan` to critique the approach, and `ultragoal` to carry the work through implementation, revision, verification, and an evidence summary. Add `team` only when the task benefits from coordinated parallel workers — `team` is an optional execution mode, not a required handoff step.
+
+<Cards>
+  <Card title="deep-interview" href="/docs/commands/deep-interview">
+    Clarify the real bug or feature, affected behavior, non-goals, and acceptance checks.
+  </Card>
+  <Card title="ralplan" href="/docs/commands/ralplan">
+    Build and critique a plan — the gate before any file mutation.
+  </Card>
+  <Card title="rlm" href="/docs/commands/rlm">
+    Run notebook-style research with gated Python, read, and web search.
+  </Card>
+  <Card title="team" href="/docs/commands/team">
+    Coordinate tmux-backed parallel workers when splitting work pays off.
+  </Card>
+  <Card title="ultragoal" href="/docs/commands/ultragoal">
+    Drive durable goals through implementation, verification, and evidence.
+  </Card>
+</Cards>
+
+## A full operator pass
+
+A concrete bug-fix pass ties the loop together:
+
+```text
+/skill:deep-interview clarify the bug, affected behavior, non-goals, and acceptance checks
+/skill:ralplan turn the clarified bug report into a reviewed fix plan
+gjc ultragoal create-goals --brief-file <approved-plan>
+# Optional only for parallel work:
+gjc team 2:executor "split implementation and verification for this bug fix"
+gjc ultragoal complete-goals
+```
+
+This describes the operator sequence, not hidden automation: the agent still reports what it changed, what it revised after findings, what checks ran, and what evidence supports the fix.
+
+## The agents behind the skills
+
+The workflow skills lean on four bundled role [agents](/docs/skills):
+
+- [`executor`](/docs/skills/executor) — bounded implementation, fixes, and refactors.
+- [`architect`](/docs/skills/architect) — read-only architecture and code-review assessment.
+- [`planner`](/docs/skills/planner) — read-only sequencing and acceptance criteria.
+- [`critic`](/docs/skills/critic) — read-only plan critique and actionability review.

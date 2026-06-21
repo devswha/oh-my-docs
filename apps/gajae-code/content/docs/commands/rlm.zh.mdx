@@ -1,0 +1,48 @@
+---
+title: rlm
+description: 使用受限的 Python、read、web_search 工具集进行笔记本式调查的 research/REPL 模式。
+---
+
+`rlm` 是一个 opt-in research/REPL 模式。需要探索、基于来源的研究或迭代分析，而不是在普通 coding-agent 循环中直接改代码时使用它。
+
+![表示 notebook-style research mode 的 Gajae-Code 科学家 mascot](/images/docs/commands-rlm.png)
+
+```bash
+gjc rlm
+```
+
+## 它做什么
+
+`rlm` 在 agent 循环上运行笔记本式研究会话。它基于共享的持久 Python kernel 和受限 research 工具集:
+
+- `python`
+- `read`
+- `web_search`
+- `search_tool_bm25`
+- 用于调查命令的 read-only `bash`（`grep`, `rg`, `tree`, `ls`, `pwd`, `wc`, `du`, `file`, `stat`）
+- `goal`
+- `complete_research`
+
+运行内容汇总到:
+
+```text
+.gjc/_session-<gjcSessionId>/rlm/<rlmSessionId>/notebook.ipynb
+```
+
+退出时会合成:
+
+```text
+.gjc/_session-<gjcSessionId>/rlm/<rlmSessionId>/report.md
+```
+
+## 何时使用
+
+需要比较来源、运行小型 Python 探针、保留中间 cell 并留下报告时，使用 `rlm`。实现、审查以及通过 `deep-interview`、`ralplan`、`team`、`ultragoal` 执行工作时，继续使用普通 `gjc` 循环。
+
+## 相关
+
+<Cards>
+  <Card title="运行时工具" href="/zh/docs/reference/tools/runtime" />
+  <Card title="工作流" href="/zh/docs/commands" />
+  <Card title="使用案例" href="/zh/docs/guides" />
+</Cards>

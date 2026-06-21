@@ -1,64 +1,64 @@
 ---
 title: review-work
-description: 5 つの並列エージェントが行う多角的な実装後レビュー。
+description: 五つの agent が並列で動く、多角的な実装後レビューです。
 ---
 
-`review-work` は実装後レビューのオーケストレーターです。重要な実装を終えたあと、5 つの専門サブエージェントを並列で起動し、補完的な角度から作業を検査します。レビューが合格するには 5 つすべてが合格する必要があります。1 つでも失敗すればレビューは失敗です。
+`review-work` は実装後レビューのオーケストレーターです。意味のある実装を終えた後、五つの専門 sub-agent を並列で起動し、互いに補完する角度から作業を検査します。レビューは五つすべてが通った場合だけ PASS です。一つでも失敗すればレビュー全体は失敗です。
 
-トリガーには "review work"、"review my work"、"review changes"、"QA my work"、"verify implementation"、"post-implementation review" などの語句が含まれます。
+トリガーは "review work"、"review my work"、"review changes"、"QA my work"、"verify implementation"、"check my work"、"validate changes"、"post-implementation review" などです。
 
-## 5 つのエージェント
+## 五つのレビュー Lane
 
-| # | エージェント | 種別 | 答える問い | レベル |
-| --- | --- | --- | --- | --- |
-| 1 | 目標・制約の検証者 | Oracle | ルールの範囲で求められた通りに作ったか？ | MAIN |
-| 2 | QA 実行者 | unspecified-high | 実際に動かして機能するか？ | MAIN |
-| 3 | コードレビュアー | Oracle | コードはよく書かれ一貫しているか？ | MAIN |
-| 4 | セキュリティ監査者 | Oracle | セキュリティ脆弱性はあるか？ | SUB |
-| 5 | コンテキストマイナー | unspecified-high | 見落とした文脈はないか？ | MAIN |
+| # | Lane | 答える問い | Codex での実行 |
+| --- | --- | --- | --- |
+| 1 | 目標・制約の検証 | 依頼されたものを正確に作ったか？ | Self-contained reviewer sub-agent。 |
+| 2 | QA 実行 | 実際の画面や表面で動くか？ | Hands-on QA sub-agent。 |
+| 3 | コード品質 | コードは一貫していて保守可能か？ | `lazycodex-code-reviewer` または reviewer sub-agent。 |
+| 4 | セキュリティ | 入力、認証、シークレット、データ露出のリスクはないか？ | Security-focused reviewer sub-agent。 |
+| 5 | コンテキスト調査 | git 履歴、issue、周辺文脈から見落としはないか？ | Context-mining sub-agent。 |
 
-Oracle エージェントはファイルを読んだりコマンドを実行したりできないため、diff、ファイル全文、文脈をすべてプロンプトで受け取ります。`unspecified-high` エージェントは自律的で、ファイルを読み、コマンドを実行し、ツールを使うため、生のダンプではなく目標と手がかりを受け取ります。
+元の Skill には OpenCode 風の例が一部残っていますが、Codex ではそれをそのまま呼びません。`multi_agent_v1.spawn_agent` で役割を説明する自己完結メッセージを送り、利用可能な場合は `lazycodex-code-reviewer`、`lazycodex-qa-executor`、`lazycodex-gate-reviewer` などのインストール済みロールを使います。
 
-## 実行の流れ
+## 動き方
 
 <Steps>
 
 <Step>
 
-### フェーズ 0 — コンテキスト収集
+### Phase 0 — コンテキスト収集
 
-まず入力を集めますが、多くは会話履歴から取得します: 元の GOAL、CONSTRAINTS、BACKGROUND。CHANGED_FILES と DIFF は git から自動収集し、変更された各ファイルの全文を読み、RUN_COMMAND を `package.json`、`Makefile`、`docker-compose.yml` から検出します。
+まず入力を集めます。多くは会話履歴から取得します: 元の GOAL、CONSTRAINTS、BACKGROUND。CHANGED_FILES と DIFF は git から自動収集します。変更された各ファイルの全文を読み、`package.json`、`Makefile`、`docker-compose.yml` から RUN_COMMAND を探します。
 
 ```bash
 git diff --name-only HEAD~1   # または: git diff --name-only main...HEAD
 git diff HEAD~1               # または: git diff main...HEAD
 ```
 
-メインワークツリーで PR ブランチをチェックアウトしないでください。新しい git ワークツリー（`git worktree add`）を作り、そこで作業します。
+メイン worktree で PR ブランチを checkout しません。`git worktree add` で新しい git worktree を作り、そこで作業します。
 
 </Step>
 
 <Step>
 
-### フェーズ 1 — 5 つを一度に起動
+### Phase 1 — 五つの Lane を一度に起動する
 
-5 つのエージェントを 1 ターンで、それぞれバックグラウンドで起動します。逐次起動も、間の待機もありません。目標検証者は目標をサブ要件に分解し、各々を ACHIEVED / MISSED / PARTIAL で印を付けます。QA 実行者は 15〜30 のシナリオをブレインストームして補強し、タスク一覧を作って優先順に実行します。コードレビュアーは正確性、パターン一貫性、型安全性、性能、技術的負債を評価します。セキュリティ監査者は入力検証、認証、シークレット、データ露出を点検します。コンテキストマイナーは git 履歴、GitHub、コミュニケーションチャネル、コードの相互参照を掘り起こします。
-
-</Step>
-
-<Step>
-
-### フェーズ 2 — 待機と収集
-
-起動後はターンを終えます。各エージェントが完了するたびに結論を収集します。5 つすべてが完了するまで最終レポートは出しません。
+五つの lane を一つの turn ですべて、各々バックグラウンドで起動します。順番に実行したり、途中で待ったりしません。目標検証者は要件充足を確認し、QA 実行者は実シナリオを動かし、コードレビュアーとセキュリティ監査者は diff と関連ファイルを確認します。コンテキスト調査者は git 履歴、GitHub、周辺文脈、コードの相互参照を見ます。
 
 </Step>
 
 <Step>
 
-### フェーズ 3 — 判定の提示
+### Phase 2 — 待機と収集
 
-5 つすべて PASS なら REVIEW PASSED、いずれか FAIL なら REVIEW FAILED です。最終レポートは領域ごとに表化し、ブロッキング課題を集約し、主要な所見を列挙し、失敗時には何をどの順で直すかを正確に記します。
+起動後に turn を終えます。agent が終わるたびに結果を収集します。五つすべてが終わるまでは最終報告を出しません。
+
+</Step>
+
+<Step>
+
+### Phase 3 — 判定を伝える
+
+五つすべてが PASS なら REVIEW PASSED、一つでも FAIL なら REVIEW FAILED です。最終報告では lane ごとの表、ブロッキング issue、主要な発見、失敗時には何をどの順で直すかを明確に書きます。
 
 </Step>
 
@@ -66,7 +66,8 @@ git diff HEAD~1               # または: git diff main...HEAD
 
 ## 判定ロジック
 
-- すべてのエージェントが判定と確信度を返します。
-- 1 つの FAIL がレビュー全体を失敗させます。
-- 失敗時の所見は、問題・ファイル・修正案を指し示します。曖昧な「X を改善検討」はありません。
-- 成功時はレポートを短く保ち、ブロッキングでない提案のみ記します。
+- すべての agent が判定と信頼度を出します。
+- 一つの FAIL でレビュー全体が失敗します。
+- timeout、空応答、ack-only、明示的な `BLOCKED:` は PASS ではありません。
+- 失敗時の発見事項は、問題、ファイル、修正案を指摘します。曖昧な「X を改善してください」では足りません。
+- 成功時の報告は短く保ち、ブロックしない提案だけを書きます。

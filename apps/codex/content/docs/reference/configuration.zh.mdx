@@ -9,17 +9,35 @@ OMX 从 `~/.codex/`（用户全局）和 `.codex/`（项目范围）两处读取
 
 | 字段 | 类型 | 说明 |
 |---|---|---|
-| `model` | string | 默认模型（例：`"gpt-4.1"`、`"o3"`） |
-| `codex_hooks` | bool | 启用 OMX 钩子管道。设为 `true` 时 skills、team、OpenClaw 生效。 |
+| `model` | string | 默认 Codex 模型。在当前 OMX routing 中参与 frontier/default lane。 |
+| `[features].hooks` | bool | setup-owned fallback hooks 的稳定 Codex native hook flag。legacy `codex_hooks` 仅用于迁移。 |
+| `[features].plugin_hooks` | bool | 支持 plugin-scoped hooks 的 Codex plugin install flag。 |
+| `[features].goals` | bool | 启用 goal-oriented workflows 使用的 Codex goal integration。 |
 | `custom-prompts` | string | 用于扩展或替换 OMX 默认提示词的目录路径 |
-| `approval_policy` | string | 工具调用审批策略：`"suggest"`、`"auto-edit"`、`"full-auto"` |
+| `approval_policy` | string | Codex approval policy。autonomous launch 可以有意选择 dangerous/no-prompt execution boundary。 |
 
 ```toml
-model = "gpt-4.1"
-codex_hooks = true
+model = "gpt-5.5"
 custom-prompts = "~/.codex/prompts"
-approval_policy = "auto-edit"
+approval_policy = "never"
+
+[features]
+hooks = true
+goals = true
 ```
+
+## `.omx-config.json`
+
+不是 Codex root TOML key 的 OMX-owned routing/feature config 放在 `.omx-config.json`。
+
+| Key | Purpose |
+|---|---|
+| `agentModels` | Per-agent model overrides，例如 `{ "planner": "gpt-5.5" }`。优先于 built-in role pins。 |
+| `agentReasoning` | Per-agent reasoning overrides：`low`、`medium`、`high`、`xhigh`。 |
+| `env` | fallback env values，例如 `OMX_DEFAULT_FRONTIER_MODEL`、`OMX_DEFAULT_STANDARD_MODEL`、`OMX_DEFAULT_SPARK_MODEL`。真实 shell env 优先。 |
+| `models` | Mode defaults，例如 `default`、`team`、`autopilot`、`team_low_complexity`。 |
+
+`agentModels.planner` 对 Autopilot/Ralplan planning 很重要：当 main/default lane 是 cheap/mini 时，OMX 可将 initial planning draft 路由到 dedicated planner role。用 `omx team status <team> --model-inspect` 查看 team model routing。
 
 ## `.codex/hooks.json`
 
@@ -41,8 +59,9 @@ approval_policy = "auto-edit"
 
 | 标志 | 说明 |
 |---|---|
-| `--madmax` | 最大并行模式。自动启动完整 team pipeline。 |
-| `--high` | 高推理强度。使用最高 tier 模型。 |
+| `--madmax` | high-autonomy execution boundary 的 dangerous bypass shorthand。它不是启动完整 Team pipeline。 |
+| `--high` | high reasoning-effort shorthand，不是 model-tier selector。 |
+| `--xhigh` | 支持时使用 extra-high reasoning。 |
 | `--skip-git-repo-check` | 在 git 仓库外运行时忽略报错。 |
 | `--spark` | 将 team worker 路由到轻量 spark tier。 |
 | `--madmax-spark` | 同时应用 `--madmax` 与 spark worker 路由。 |

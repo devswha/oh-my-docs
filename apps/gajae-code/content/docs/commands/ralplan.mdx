@@ -1,0 +1,45 @@
+---
+title: ralplan
+description: Builds and critiques a plan before any mutation — the gate between understanding the problem and changing files.
+---
+
+`ralplan` is the middle step of the [working loop](/docs/commands). It builds a plan from a clarified request and critiques that plan before any file is mutated. It is the gate between "we understand the problem" and "we start changing files."
+
+## What it does
+
+`ralplan` does two things in one skill:
+
+1. **Builds a plan** — turns a clarified request (ideally the output of [`deep-interview`](/docs/commands/deep-interview)) into a concrete, reviewable plan: sequencing, the changes to make, and the acceptance criteria to check against.
+2. **Critiques the plan** — reviews that plan for gaps, risky assumptions, and actionability before any mutation begins.
+
+The critique is the point: catching a weak plan here is far cheaper than discovering it mid-implementation.
+
+## Usage
+
+Invoke it inside a GJC session with `/skill:<name>`:
+
+```text
+/skill:ralplan turn the clarified bug report into a reviewed fix plan
+```
+
+Hand it a clarified problem statement; it returns a reviewed plan you can approve and feed forward into execution.
+
+## The gate before mutation
+
+```text
+deep-interview -> ralplan -> ultragoal
+```
+
+Nothing downstream should mutate files until `ralplan` has produced a plan you accept. The approved plan becomes the brief that [`ultragoal`](/docs/commands/ultragoal) carries through implementation, revision, and verification:
+
+```bash
+gjc ultragoal create-goals --brief-file <approved-plan>
+```
+
+## The agents involved
+
+`ralplan` draws on the read-only role [agents](/docs/skills) so that planning and critique stay separate from execution:
+
+- [`planner`](/docs/skills/planner) — read-only sequencing and acceptance criteria.
+- [`critic`](/docs/skills/critic) — read-only plan critique and actionability review.
+- [`architect`](/docs/skills/architect) — read-only architecture and code-review assessment when the plan touches structure.

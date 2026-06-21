@@ -1,0 +1,62 @@
+---
+title: Computer use
+description: 通过 Gajae-Code 原生、supervisor 管控的 computer 工具，实验性控制 Apple Silicon macOS 截屏与输入。
+---
+
+`computer` 是面向 Apple Silicon macOS 的实验性桌面控制工具。它会控制真实桌面，因此仅在任务确实需要截屏或输入控制时使用。
+
+![表示 desktop-control computer use 的 Gajae-Code operator mascot](/images/docs/reference-tools-computer-use.png)
+
+## 可用条件
+
+在受支持主机上，它默认可调用且 discoverable:
+
+1. Apple Silicon macOS (`process.platform === "darwin"` and `process.arch === "arm64"`)。
+2. `computer.alwaysOn` 未显式设为 `false`，或 `computer.enabled` 为 `true`。
+
+禁用或不受支持时，所有动作都会返回 `COMPUTER_DISABLED` 且不捕获任何内容。原生执行由 supervisor 管控；supervisor 状态异常、缺权限、显示过期、取消或 suspend 都会以 `COMPUTER_*` 代码 fail closed。
+
+## 动作
+
+动作对象使用严格的 snake_case 判别 schema。camelCase 字段会被拒绝。
+
+| 动作 | 必填字段 | 可选字段 |
+| --- | --- | --- |
+| `screenshot` | 无 | `timeout`, `include_screenshot` |
+| `click` | `x`, `y` | `button`, `timeout`, `include_screenshot` |
+| `double_click` | `x`, `y` | `button`, `timeout`, `include_screenshot` |
+| `move` | `x`, `y` | `button`, `timeout`, `include_screenshot` |
+| `drag` | `x`, `y`, `to_x`, `to_y` | `button`, `timeout`, `include_screenshot` |
+| `scroll` | `x`, `y`, `scroll_x`, `scroll_y` | `timeout`, `include_screenshot` |
+| `type` | `text` | `timeout`, `include_screenshot` |
+| `keypress` | `keys` | `timeout`, `include_screenshot` |
+| `wait` | `ms` | `timeout`, `include_screenshot` |
+| `batch` | `actions` | `timeout`, `include_screenshot` |
+
+`button` 是 `left`, `right`, `middle` 之一。
+
+## 坐标契约
+
+`x`, `y`, `to_x`, `to_y` 是最新截图坐标系中的像素。它们不是 CSS 像素，也不是归一化比例。原生代码会在输入前验证显示是否新鲜以及坐标是否有效；无效坐标会返回 `COMPUTER_COORD_INVALID` 或 `COMPUTER_DISPLAY_STALE`。
+
+## 错误
+
+稳定错误码包括:
+
+- `COMPUTER_DISABLED`
+- `COMPUTER_SUSPENDED`
+- `COMPUTER_SUPERVISOR_NOT_LIVE`
+- `COMPUTER_PERMISSION_REQUIRED`
+- `COMPUTER_DISPLAY_STALE`
+- `COMPUTER_COORD_INVALID`
+- `COMPUTER_CANCELLED`
+
+TUI 渲染器只显示有限的动作元数据、坐标、截图尺寸、supervisor 状态和错误码。它不会渲染原始截图 base64。
+
+## 相关
+
+<Cards>
+  <Card title="运行时工具" href="/zh/docs/reference/tools/runtime" />
+  <Card title="媒体工具" href="/zh/docs/reference/tools/media" />
+  <Card title="配置" href="/zh/docs/reference/configuration" />
+</Cards>

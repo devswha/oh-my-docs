@@ -1,0 +1,64 @@
+---
+title: Tools
+description: The tool surface Gajae-Code agents use — files, search, runtime, computer-use, web, session, and media — grouped by family.
+---
+
+Gajae-Code agents act through a focused, named tool surface. Every tool maps to an upstream entry in `docs/tools/`, so names, flags, and behavior stay verbatim. The families below link to the deeper per-tool pages.
+
+## Tool families
+
+<Cards>
+  <Card title="Files" href="/docs/reference/tools/files">
+    `read`, `write`, `edit` (multiple edit variants), and `ast-edit` for structural rewrites.
+  </Card>
+  <Card title="Search and navigation" href="/docs/reference/tools/search">
+    `find`, `search`, `search_tool_bm25`, `ast-grep`, `lsp`, and `resolve`.
+  </Card>
+  <Card title="Runtime and execution" href="/docs/reference/tools/runtime">
+    `bash`, `eval`, `python-repl`, `debug`, `ssh`, and background `job` control.
+  </Card>
+  <Card title="Computer use" href="/docs/reference/tools/computer-use">
+    Experimental Apple Silicon macOS screenshot and mouse/keyboard control.
+  </Card>
+  <Card title="Web and external" href="/docs/reference/tools/web">
+    `web_search`, `browser`, and `github`.
+  </Card>
+  <Card title="Session and memory" href="/docs/reference/tools/session-and-memory">
+    `task`, `todo_write`, `checkpoint`, `rewind`, `recall`, `retain`, `reflect`.
+  </Card>
+  <Card title="Media and misc" href="/docs/reference/tools/media">
+    `render_mermaid`, `inspect_image`, `calc`, `recipe`, `ask`.
+  </Card>
+</Cards>
+
+## At a glance
+
+| Family | Tools | Page |
+| --- | --- | --- |
+| Files | `read` · `write` · `edit` · `ast-edit` | [Files](/docs/reference/tools/files) |
+| Search & navigation | `find` · `search` · `search_tool_bm25` · `ast-grep` · `lsp` · `resolve` | [Search](/docs/reference/tools/search) |
+| Runtime & execution | `bash` · `eval` · `python-repl` · `debug` · `ssh` · `job` | [Runtime](/docs/reference/tools/runtime) |
+| Computer use | `computer` | [Computer use](/docs/reference/tools/computer-use) |
+| Web & external | `web_search` · `browser` · `github` | [Web](/docs/reference/tools/web) |
+| Session & memory | `task` · `todo_write` · `checkpoint` · `rewind` · `recall` · `retain` · `reflect` | [Session & memory](/docs/reference/tools/session-and-memory) |
+| Media & misc | `render_mermaid` · `inspect_image` · `calc` · `recipe` · `ask` | [Media](/docs/reference/tools/media) |
+
+## Common conventions
+
+A few patterns recur across the tool surface:
+
+- **Internal URLs.** Content tools (`read`, `search`, `ast-grep`) accept internal URLs such as `agent://`, `artifact://`, `memory://`, `gjc://`, `rule://`, `issue://`, and `pr://` when the router resolves them to a backing resource. Globs are not allowed on internal URLs.
+- **Hashline anchors.** `read`, `search`, and `ast-grep` emit `LINEhh|text` anchors (for example `41th|def alpha():`). `edit` consumes only the `LINEhh` token left of the `|`. Anchors are suppressed for `:raw` reads and immutable resources.
+- **Preview then resolve.** Some tools (notably `ast-edit`) preview first and stage a forced `resolve` action; nothing is written until you `resolve(action: "apply", ...)`.
+- **Limits and truncation.** Output is byte/line capped (search shows the first `100` matches, `ast-grep` defaults to `50`); the result reports when a limit or truncation was reached.
+
+## Tools that need config or credentials
+
+Some tools only work once their backend is configured. See [Reference](/docs/reference) for the keys, environment variables, and credentials that enable them.
+
+- `web_search` and `browser` depend on provider setup.
+- `computer` is callable by default on Apple Silicon macOS, supervisor-gated, and can be disabled with `computer.alwaysOn=false`.
+- `github` uses the `gh` CLI and its caches.
+- `lsp` is gated on `lsp.enabled` and discovers or configures language servers per project.
+- `search_tool_bm25` only appears when `tools.discoveryMode !== "off"`.
+- The active `edit` variant is selected by `GJC_EDIT_VARIANT`; `ast-edit` file scope by `GJC_MAX_AST_FILES`.

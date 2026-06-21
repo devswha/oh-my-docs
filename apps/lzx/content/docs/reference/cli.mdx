@@ -1,15 +1,15 @@
 ---
 title: CLI
-description: The lazycodex-ai npm bin, how it forwards to OmO, the --dry-run flag, and the in-session command pillars.
+description: The lazycodex-ai npm bin, install, doctor, dry-run, and marketplace alternative.
 ---
 
-LazyCodex provides one CLI: the `lazycodex-ai` npm bin. It is a thin forwarder — every invocation expands into an `omo` command run through `npx`. There is no global install; always invoke via `npx`.
+LazyCodex provides one CLI: the `lazycodex-ai` npm bin. It installs and diagnoses the OmO-based Codex light setup. There is no global install; always invoke it through `npx`.
 
-## How it forwards to OmO
+## Forwarding to OmO
 
-The bin reads your arguments and forwards them to `oh-my-openagent`. The `install` subcommand is special-cased to pin the Codex platform; everything else passes straight through.
+The bin reads arguments and forwards them to `oh-my-openagent`. The `install` subcommand is special-cased to pin the Codex platform; everything else passes through.
 
-<Tabs items={["install", "other commands"]}>
+<Tabs items={["install", "other"]}>
 
 <Tab value="install">
 
@@ -23,22 +23,22 @@ expands to:
 npx --yes --package oh-my-openagent omo install --platform=codex
 ```
 
-Any arguments after `install` are appended verbatim. For example:
+All arguments after `install` are appended unchanged. Example:
 
 ```bash
 npx lazycodex-ai install --no-tui --codex-autonomous
-# → npx --yes --package oh-my-openagent omo install --platform=codex --no-tui --codex-autonomous
+# -> npx --yes --package oh-my-openagent omo install --platform=codex --no-tui --codex-autonomous
 ```
 
 </Tab>
 
-<Tab value="other commands">
+<Tab value="other">
 
-Any first argument other than `install` forwards directly to `omo` with no platform pin added:
+Any first argument other than `install` is forwarded directly to `omo` without platform pinning:
 
 ```bash
 npx lazycodex-ai <args...>
-# → npx --yes --package oh-my-openagent omo <args...>
+# -> npx --yes --package oh-my-openagent omo <args...>
 ```
 
 </Tab>
@@ -47,13 +47,13 @@ npx lazycodex-ai <args...>
 
 ## `--dry-run`
 
-Put `--dry-run` as the **first** argument to print the resolved `npx` command instead of running it, then exit:
+Put `--dry-run` as the **first** argument to print the resolved `npx` command instead of running it:
 
 ```bash
 npx lazycodex-ai --dry-run install --no-tui --codex-autonomous
 ```
 
-prints:
+Output:
 
 ```text
 npx --yes --package oh-my-openagent omo install --platform=codex --no-tui --codex-autonomous
@@ -61,26 +61,43 @@ npx --yes --package oh-my-openagent omo install --platform=codex --no-tui --code
 
 `--dry-run` is stripped before forwarding, so the remaining arguments resolve exactly as they would in a real run. Use it to confirm the exact `omo` invocation before executing.
 
-## Exit behavior
+## `doctor`
 
-The bin runs the resolved command with inherited stdio and exits with that command's status. If `npx` itself fails to spawn, it prints the error and exits non-zero.
+```bash
+npx lazycodex-ai doctor
+```
 
-## In-session command pillars
+Prints a health report explaining what is configured, what is missing, and why. It checks plugin cache, hooks, MCP Servers, Agent Roles, and Codex config state. Run it first when hooks are pending, skills are not loading, or routing looks wrong.
 
-Once installed, LazyCodex registers OmO's command pillars inside Codex. These are typed in your Codex session, not on the shell. The installer shows the exact `$command` syntax.
+## Marketplace Alternative
 
-| Command | Type this | What it does |
-| --- | --- | --- |
-| [`$ulw-plan`](/docs/commands/ulw-plan) | `$ulw-plan "what to build"` | Prometheus strategic planner. Writes a plan to `plans/<slug>.md`. Never writes product code. |
-| [`$start-work`](/docs/commands/start-work) | `$start-work [plan-name] [--worktree <path>]` | Executes a plan until every checkbox is done. Prints **ORCHESTRATION COMPLETE**. |
-| [`$ulw-loop`](/docs/commands/ulw-loop) | `$ulw-loop "task" [--completion-promise=TEXT] [--strategy=reset\|continue]` | Self-referential loop until Oracle-verified completion. Caps at 500 iterations in ultrawork mode, 100 in normal mode. |
-| [`$init-deep`](/docs/commands/init-deep) | `$init-deep` | Generates hierarchical `AGENTS.md` project memory. |
+The `npx` install is the primary path. As an additive experimental path, you can install the plugin from Codex.
 
-See the [Commands](/docs/commands) overview for the full breakdown.
+```bash
+codex plugin marketplace add https://github.com/code-yeongyu/lazycodex
+codex plugin add omo@sisyphuslabs
+```
 
-## See also
+Approve the omo hooks in the next Codex startup review. The first approved session runs background bootstrap and tells you to restart when it completes. Upgrade with:
+
+```bash
+codex plugin marketplace upgrade sisyphuslabs
+```
+
+After upgrade, plugin files changed, so trust hashes must be re-approved and hooks appear as **Modified**. Approve them again; the next session runs bootstrap for the new version.
+
+## Exit Behavior
+
+The bin spawns the resolved command with inherited stdio and exits with that command's status code. If spawning `npx` itself fails, it prints the error and exits non-zero.
+
+## In-session Commands
+
+Once installed, LazyCodex registers OmO commands inside Codex. These are not shell commands; they are `$command` entries typed in the Codex composer. Syntax and usage flow live in [Commands](/docs/commands).
+
+## Related
 
 <Cards>
-  <Card title="Configuration" href="/docs/reference/configuration">Install flags and the Codex platform target.</Card>
-  <Card title="Getting started" href="/docs/getting-started">Install LazyCodex into Codex.</Card>
+  <Card title="Configuration" href="/docs/reference/configuration">Install flags and Codex platform target.</Card>
+  <Card title="Getting Started" href="/docs/getting-started">Install LazyCodex into Codex.</Card>
+  <Card title="Commands" href="/docs/commands">The `$command` flow inside a Codex session.</Card>
 </Cards>

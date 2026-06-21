@@ -28,13 +28,20 @@ Install and configure oh-my-openagent by following the instructions here:
 https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/refs/heads/dev/docs/guide/installation.md
 ```
 
-If you prefer to run it yourself, use Bun (do not use npm, yarn, or pnpm):
+If you prefer to run it yourself, choose the edition:
 
 ```bash
+# Ultimate / OpenCode
 bunx oh-my-openagent install
+
+# Light / Codex CLI
+npx lazycodex-ai install
+
+# Both
+bunx oh-my-openagent install --platform=both
 ```
 
-The installer asks which model subscriptions you have and routes each agent accordingly.
+Ultimate uses Bun and asks which model subscriptions you have. Light uses Node/npm through `lazycodex-ai`, writes managed Codex plugin state under `~/.codex/`, and does not require Bun.
 
 </Step>
 
@@ -140,7 +147,7 @@ OmO pairs each agent with a model that fits its job. Sisyphus wants long-rule di
 - **Hash-anchored edits** — `LINE#ID` content hashes validate every change. Zero stale-line errors.
 - **LSP + AST-Grep** — workspace rename, pre-build diagnostics, AST-aware rewrites. IDE precision for agents.
 - **Persistent execution** — Ralph loops, todo enforcement, runtime fallback. Doesn't stop until verified.
-- **Built-in MCPs** — Exa (web search), Context7 (official docs), Grep.app (GitHub search). Always on.
+- **Built-in MCPs** — Ultimate uses OpenCode MCP surfaces such as Exa, Context7, and Grep.app; Codex Light adds plugin-scoped `grep_app`, `context7`, `codegraph`, `git_bash`, and `lsp`.
 - **Tmux integration** — interactive REPLs, debuggers, TUIs. Live, not screenshotted.
 - **Claude Code compatible** — your existing hooks, commands, skills, MCPs, and plugins all work here.
 

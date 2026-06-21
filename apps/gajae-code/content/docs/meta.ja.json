@@ -3,11 +3,11 @@
   "pages": [
     "index",
     "getting-started",
-    "guides",
+    "recommended-environment",
+    "faq",
     "concepts",
-    "workflows",
-    "agents",
-    "tools",
+    "commands",
+    "skills",
     "reference"
   ]
 }

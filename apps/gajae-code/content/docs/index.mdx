@@ -29,51 +29,32 @@ deep-interview -> ralplan -> ultragoal
 
 The sequence describes the operator flow, not hidden automation: the agent still reports what it changed, what it revised after findings, what checks ran, and what evidence supports the result.
 
-## Install
+## Remember this first
 
-```bash
-bun install -g gajae-code
-```
+At first, you only need four steps.
 
-The package installs the `gjc` binary. The scoped package is also available as `@gajae-code/coding-agent`. Then start the recommended tmux-backed experience:
+1. Prepare Bun, Git, tmux, and provider credentials.
+2. Launch with `gjc --tmux`.
+3. Clarify and plan with `deep-interview` and `ralplan`.
+4. Carry the work with `ultragoal`; add `team` only when parallel tmux workers help.
 
-```bash
-gjc --tmux
-```
-
-## Workflow surface
-
-Gajae-Code ships four default workflow skills:
-
-| Skill            | What it does                                                          |
-| ---------------- | -------------------------------------------------------------------- |
-| `deep-interview` | Removes ambiguity before planning or code changes.                   |
-| `ralplan`        | Builds and critiques a plan before mutation.                         |
-| `team`           | Optionally coordinates tmux-backed parallel execution.               |
-| `ultragoal`      | Tracks durable goals through implementation, revision, and evidence. |
-
-And four bundled role agents:
-
-| Agent       | What it does                                       |
-| ----------- | -------------------------------------------------- |
-| `executor`  | Bounded implementation, fixes, and refactors.      |
-| `architect` | Read-only architecture and code-review assessment. |
-| `planner`   | Read-only sequencing and acceptance criteria.      |
-| `critic`    | Read-only plan critique and actionability review.  |
+For research instead of mutation, start `gjc rlm`.
 
 ## Explore the docs
 
 <Cards>
   <Card title="Getting Started" href="/docs/getting-started" description="Install, launch gjc, and run your first loop." />
+  <Card title="Recommended Environment" href="/docs/recommended-environment" description="Bun, Git, tmux, provider credentials, and OS notes." />
+  <Card title="FAQ" href="/docs/faq" description="Short answers for setup, first use, rlm, team, and computer-use." />
   <Card title="Core Concepts" href="/docs/concepts" description="The working loop, sessions, model routing, and verification." />
-  <Card title="Workflows" href="/docs/workflows" description="deep-interview, ralplan, team, and ultragoal." />
-  <Card title="Agents" href="/docs/agents" description="executor, architect, planner, and critic." />
-  <Card title="Tools" href="/docs/tools" description="Files, search, runtime, web, session, and media tools." />
+  <Card title="Commands" href="/docs/commands" description="deep-interview, ralplan, rlm, team, and ultragoal." />
+  <Card title="Skills" href="/docs/skills" description="executor, architect, planner, and critic role agents." />
   <Card title="Reference" href="/docs/reference" description="Configuration, models, credentials, keybindings, and theme." />
 </Cards>
 
 ## Next steps
 
 - [Getting Started](/docs/getting-started) — install, launch, and run the first loop.
+- [Recommended Environment](/docs/recommended-environment) — check the local setup before installing.
 - Source project: [Yeachan-Heo/gajae-code](https://github.com/Yeachan-Heo/gajae-code)
 - Community: [Discord](https://discord.gg/sj4exxQ9v)

@@ -1,6 +1,6 @@
 ---
 title: Skills
-description: Introduces all 37 OMC skills organized into workflow and utility categories.
+description: Introduces all 38 documented OMC skills organized into workflow and utility categories.
 ---
 
 ## What are Skills?
@@ -8,7 +8,7 @@ description: Introduces all 37 OMC skills organized into workflow and utility ca
 Skills are commands invoked with the format `/oh-my-claudecode:skill-name`.
 They can also be activated via magic keywords, so you can use them in conversation without memorizing the command name.
 
-> **Count note:** OMC ships **37 built-in skills**. 36 are user-callable via slash command or magic keyword; 1 (`omc-reference`) is auto-loaded internally and has `user-invocable: false`.
+> **Count note:** OMC's upstream reference documents **38 total skills**. The upstream source tree currently contains 40 `skills/*/SKILL.md` directories; internal/non-user-facing entries are not all exposed as docs pages.
 
 ## Workflow Skills
 
@@ -18,6 +18,7 @@ Execution mode skills that automate tasks.
 |-------|-------------|----------------|
 | [autopilot](/docs/skills/workflow/autopilot) | Autonomous full pipeline from idea to working code | `autopilot`, `build me`, `I want a` |
 | [ralph](/docs/skills/workflow/ralph) | Self-referential loop that repeats until completion | `ralph`, `don't stop` |
+| [ultragoal](/docs/skills/workflow/ultragoal) | Durable multi-goal ledger paired with Claude `/goal` handoffs | - |
 | [ultrawork](/docs/skills/workflow/ultrawork) | Maximum parallel agent execution | `ultrawork`, `ulw` |
 | [ultraqa](/docs/skills/workflow/ultraqa) | QA cycling: test, verify, fix, repeat | - |
 | [team](/docs/skills/workflow/team) | N Claude agent coordination pipeline | - |

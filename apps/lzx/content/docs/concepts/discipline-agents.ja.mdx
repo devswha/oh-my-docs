@@ -1,54 +1,56 @@
 ---
-title: ディシプリンエージェント
-description: Sisyphus が Hephaestus、Oracle、Librarian をオーケストレーションする、Codex 内で並列に動く協調型 AI 開発チーム。
+title: Agent Roles
+description: Selectable Codex roles and the verification-first work loop.
 ---
 
-LazyCodex(LZX)は 1 つの巨大なプロンプトとして動くのではなく、Codex に小さな **ディシプリンエージェント** の陣容をインストールします。各エージェントは 1 つの役割に特化しています。Sisyphus が意図を読んで委譲し、専門エージェントがそれぞれのレーンで働き、ループは希望的なステータス報告ではなく証拠で結果が検証されるまで進み続けます。
+LazyCodex (LZX) は OmO の agent harness を Codex で使えるようにパッケージします。ユーザーは通常 `$init-deep`、`$ulw-plan`、`$start-work`、`$ulw-loop` のような Commands だけ覚えれば十分です。内部では Codex の multi-agent tools と選択可能な roles を使い、探索、計画、レビュー、QA を分けます。
 
-これらのエージェントは **OmO(oh-my-openagent)** ハーネス由来です。LazyCodex はそのハーネスを Codex 向けにパッケージした薄い配布レイヤー —— 「Codex のための LazyVim」です。
+`4.12.1` 時点でインストールされる roles には `explorer`、`librarian`、`plan`、`momus`、`metis`、`lazycodex-executor`、`lazycodex-code-reviewer`、`lazycodex-qa-executor`、`lazycodex-gate-reviewer`、`lazycodex-clone-fidelity-reviewer` が含まれます。Codex build が `agent_type` を公開していれば直接指定し、公開していなければ message 内に role を説明する形へ fallback します。
 
-> **役割の詳細の出どころ。** LazyCodex README はこれらのエージェントを*名前で挙げる*だけです —— 「Sisyphus が Hephaestus、Oracle、Librarian をオーケストレーションする」。以下の役割ごとの挙動とツール境界は、LazyCodex README ではなく基盤の **OmO** エンジンが定義します。権威ある出典は OmO エージェントドキュメントを参照してください。
+## Parent Session Ownership
 
-## 陣容
+roles が増えても、完了判断を子エージェントへ丸ごと渡すわけではありません。親 Codex session は goal、constraints、final judgment を持ち続けます。子エージェントは地形を読む、ギャップを探す、レビューや QA を助けるために使います。
 
-<Cards>
-  <Card title="Sisyphus" href="/ja/docs/concepts/discipline-agents">メインオーケストレーター。意図を読み、計画し、委譲し、進捗を追い、仕事を完遂します。</Card>
-  <Card title="Hephaestus" href="/ja/docs/concepts/discipline-agents">自律的なディープワーカー。実装、アーキテクチャ、デバッグ、統合。</Card>
-  <Card title="Oracle" href="/ja/docs/concepts/discipline-agents">読み取り専用の検証とアーキテクチャ/デバッグ相談。書き込みなし。</Card>
-  <Card title="Librarian" href="/ja/docs/concepts/discipline-agents">ドキュメント、リモートリポジトリ、OSS 例を高速・低コストで取得します。</Card>
-</Cards>
+| Role | 主な用途 |
+| --- | --- |
+| `explorer` | コードベース構造、呼び出しフロー、テスト位置などの内部コンテキスト探索 |
+| `librarian` | 外部ドキュメント、ライブラリ契約、最新 API 調査 |
+| `plan` | 計画草案と作業分解 |
+| `momus` / `metis` | 欠けた判断、エッジケース、リスクのレビュー |
+| `lazycodex-executor` | 計画内の特定作業単位の実行 |
+| `lazycodex-code-reviewer` | 実装後のコード品質レビュー |
+| `lazycodex-qa-executor` | 実際の表面に対する QA |
+| `lazycodex-gate-reviewer` | 完了前の検証ゲート |
+| `lazycodex-clone-fidelity-reviewer` | clone・sync 作業の fidelity review |
 
-## 役割の概観
+## Execution Loop
 
-| エージェント | 役割 | 境界 |
-|---|---|---|
-| **Sisyphus** | オーケストレーター | 意図を読み、作業を分割し、専門エージェントへ委譲し、todo を追い、タスク完了時のみ停止します。 |
-| **Hephaestus** | 実装 | コードを書き、デバッグし、難しいロジックと統合を推論するディープワーカー。 |
-| **Oracle** | 検証・レビュー | アーキテクチャとデバッグの読み取り専用コンサルタント。完了を検証し、書き込み・編集・委譲は行いません。 |
-| **Librarian** | 取得 | 調査専用。ドキュメント、リモートリポジトリ、OSS コードを取得します。書き込み・編集・委譲は行いません。 |
+roles がどう分かれていても、作業単位の基本ループは同じです。
 
-Oracle と Librarian の読み取り専用境界はハーネスの一部です。「賢い」エージェントが誤った役割で危険な作業をするのを防ぎ、取得とレビューがコードベースを黙って変更しないようにします。
+1. **Explore**: 地形を把握します。推測せずツールでコードを読み、必要なら読み取り専用の子エージェントを並列に起動します。
+2. **Plan**: 経路を決めます。変更ファイル、具体的な変更、依存関係を active plan に記録します。
+3. **Implement**: 精密に作ります。新規なら別の形にしたくなる場合でも、既存コードベースのスタイルに合わせます。
+4. **Verify**: 動作を証明します。診断、関連テスト、ビルド確認を可能な限り並列で実行します。
+5. **Manual QA**: 実際の表面で結果を確認し、最終メッセージを書きます。
 
-## 連携のしかた
+## Non-goals
 
-Sisyphus は入口となるオーケストレーターです。意図を読み、リクエストをユニットに分割し、適切な専門エージェントへ渡します。
+- **子エージェントの自己報告を信じません。** 完了判断は独立検証で行います。
+- **コードを求められたのに提案だけで終わりません。** 明示的に計画やブレストを求められた場合を除き、実装します。
+- **読んでいないコードを推測しません。** 探索は安く、仮定は高くつきます。
+- **ターン末に作業を曖昧に残しません。** 各計画ステップは完了、理由付きブロック、理由付き削除のいずれかに整理されます。
 
-- **Hephaestus** は実装と難しい推論のユニットを担います。
-- **Oracle** は結果を検証し、読み取り専用でアーキテクチャとデバッグを相談に応じます。
-- **Librarian** はワーカーが必要とするコンテキスト(ドキュメント、リポジトリ、例)を取得します。
+## Orchestration and Delegation
 
-Oracle と Librarian は委譲しません —— 設計上、ツールアクセスが読み取り専用です。委譲が明示的なため、複数のレーンを同時に走らせられます。
+LazyCodex は Codex 内の子エージェント role を使います。並列探索には読み取り専用 role を、レビューや QA には専用 review role を使えます。ただし最終報告は親 session が集めた証拠を基準にまとめます。
 
-## 並列実行
+## Boulder State
 
-メインセッションが結果なしで進められる場合、LazyCodex は専門エージェントを並列実行します。独立した調査と自己完結ユニットは同時に走り、結果が次の実装判断をブロックする場合は同期で保ちます。各ユニットは仕事に合うモデルと組み合わされます —— [マルチモデルルーティング](/ja/docs/concepts/model-routing)を参照してください。
+`$start-work` は `.omo/boulder.json` で進捗状態を残し、Stop-hook continuation で計画実行を続けます。これはユーザーに見える中核動作です。すべてのチェックボックスが終わると **ORCHESTRATION COMPLETE** を出力します。
 
-## 位置づけ
+## Related Docs
 
-- コマンドの柱がこれらのエージェントを駆動します: [`$ulw-plan`](/ja/docs/commands/ulw-plan)が計画し、[`$start-work`](/ja/docs/commands/start-work)が計画を実行し、[`$ulw-loop`](/ja/docs/commands/ulw-loop)が Oracle 検証済みの完了までループします。
-- ループを止めるのは検証済みの完了です —— [ultrawork ループ](/ja/docs/concepts/ultrawork)を参照してください。
-
-<Cards>
-  <Card title="マルチモデルルーティング" href="/ja/docs/concepts/model-routing">各ユニットが適切な GPT モデルに到達する仕組み。</Card>
-  <Card title="ultrawork ループ" href="/ja/docs/concepts/ultrawork">完了が検証されるまで回る自己参照ループ。</Card>
-</Cards>
+- [`$ulw-plan`](/ja/docs/commands/ulw-plan): 実装前に計画し、`.omo/plans/<slug>.md` を書きます。
+- [`$start-work`](/ja/docs/commands/start-work): durable Boulder progress で計画を実行します。
+- [`$ulw-loop`](/ja/docs/commands/ulw-loop): 証拠が検証されるまでループを続けます。
+- [Hooks & Lifecycle](/ja/docs/concepts/hooks-lifecycle): Stop-hook continuation と evidence gates が長い作業をどう進めるか。

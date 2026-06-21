@@ -1,0 +1,41 @@
+---
+title: 推奨環境
+description: 最初の gjc セッション前に整える shell、Bun、tmux、Git、provider、OS 環境。
+---
+
+Gajae-Code はターミナル優先の coding-agent harness です。インストール前に、shell で Bun を実行できること、対象リポジトリが Git 管理下にあること、少なくとも 1 つの model provider を認証できることを確認してください。
+
+## OS
+
+| OS | 推奨 | メモ |
+| --- | --- | --- |
+| macOS | 推奨 | ローカル開発に向いています。Apple Silicon macOS は実験的な `computer-use` ツールの対応ホストでもあります。 |
+| Linux | 推奨 | tmux ベースの terminal session、CI に近い shell、remote development によく合います。 |
+| Windows | 可能なら WSL2 | 一部の terminal flow は native Windows でも動きますが、tmux と shell の挙動は WSL2 の方が安定しやすいです。 |
+
+## インストール前の確認
+
+| 確認 | 推奨状態 |
+| --- | --- |
+| Bun | `PATH` にあり、文書化された install command `bun install -g gajae-code` を実行できる。 |
+| Git | diff、worktree、checkpoint を確認できるよう Git リポジトリで開始する。 |
+| tmux | 推奨の `gjc --tmux` 体験や `team` を使うならインストールする。 |
+| Provider 認証 | model を選ぶ前に API key、OAuth credential、provider preset のいずれかを用意する。 |
+| Secrets | key は shell、`~/.gjc/agent/.env`、または private env file に置き、commit しない。 |
+
+まず基本ツールを確認します。
+
+```bash
+bun --version
+git --version
+tmux -V
+```
+
+## 作者の主観的なおすすめ
+
+- **Git checkout から始める。** Gajae-Code は実際の diff を読み、危険な作業を隔離できるときに最も役立ちます。
+- **最初は `gjc --tmux` を使う。** tmux path は team execution と long-running work に安定した terminal surface を与えます。
+- **provider を 1 つ明確に設定する。** model routing を試す前に provider key を 1 つ export するか preset を 1 つ追加してください。
+- **Windows 中心なら WSL2 を使う。** tmux、shell path、project file behavior が文書化された flow に近くなります。
+
+最初の実行は[はじめに](/ja/docs/getting-started)へ進んでください。

@@ -2,8 +2,12 @@
   "title": "快速开始",
   "pages": [
     "[Prerequisites](/zh/docs/getting-started#prerequisites)",
+    "[Pick an Edition](/zh/docs/getting-started#pick-an-edition)",
     "[Install](/zh/docs/getting-started#install)",
+    "[Non-Interactive Install](/zh/docs/getting-started#ultimate-non-interactive-install)",
+    "[Authenticate Providers](/zh/docs/getting-started#authenticate-providers)",
     "[Verify](/zh/docs/getting-started#verify)",
-    "[First Task](/zh/docs/getting-started#first-task)"
+    "[First Task](/zh/docs/getting-started#first-task)",
+    "[Telemetry](/zh/docs/getting-started#telemetry)"
   ]
 }

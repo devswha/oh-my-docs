@@ -1,54 +1,56 @@
 ---
-title: 纪律智能体
-description: Sisyphus 编排 Hephaestus、Oracle、Librarian —— 一支在 Codex 内并行运行的协作式 AI 开发团队。
+title: Agent Roles
+description: Selectable Codex roles and the verification-first work loop.
 ---
 
-LazyCodex(LZX)不是一个庞大的提示词，而是在 Codex 中安装一小批 **纪律智能体**，每个只负责一件事。Sisyphus 读取你的意图并分派，专家在各自的车道工作，循环持续推进，直到结果由证据验证，而非乐观的状态汇报。
+LazyCodex (LZX) 将 OmO agent harness 打包给 Codex 使用。用户通常只需要记住 `$init-deep`、`$ulw-plan`、`$start-work`、`$ulw-loop` 这些命令。内部则通过 Codex multi-agent 工具和可选角色，把探索、规划、评审、QA 分开。
 
-这些智能体来自 **OmO(oh-my-openagent)** 框架。LazyCodex 是把该框架打包给 Codex 的薄分发层 —— "Codex 版 LazyVim"。
+以 `4.12.1` 为准，安装的角色包括 `explorer`、`librarian`、`plan`、`momus`、`metis`、`lazycodex-executor`、`lazycodex-code-reviewer`、`lazycodex-qa-executor`、`lazycodex-gate-reviewer`、`lazycodex-clone-fidelity-reviewer`。如果 Codex build 暴露 `agent_type`，就可以直接指定这些角色；否则会在消息里描述角色作为 fallback。
 
-> **角色细节的来源。** LazyCodex README 只*列出*这些智能体的名字 —— "Sisyphus 编排 Hephaestus、Oracle、Librarian"。下列各角色的行为与工具边界由底层的 **OmO** 引擎定义，而非 LazyCodex README。权威来源请参阅 OmO 智能体文档。
+## Parent Session Ownership
 
-## 团队成员
+即使角色很多，完成判断也不会整体交给子智能体。父 Codex 会话始终拥有目标、约束和最终判断。子智能体用于读地形、找缺口、评审或辅助 QA。
 
-<Cards>
-  <Card title="Sisyphus" href="/zh/docs/concepts/discipline-agents">主编排者。读取意图、规划、分派、跟踪进度，把工作做完。</Card>
-  <Card title="Hephaestus" href="/zh/docs/concepts/discipline-agents">自主深度工作者。实现、架构、调试与综合。</Card>
-  <Card title="Oracle" href="/zh/docs/concepts/discipline-agents">只读验证与架构/调试咨询。不写入。</Card>
-  <Card title="Librarian" href="/zh/docs/concepts/discipline-agents">快速、低成本地检索文档、远程仓库与 OSS 示例。</Card>
-</Cards>
+| 角色 | 主要用途 |
+| --- | --- |
+| `explorer` | 代码库结构、调用流、测试位置等内部上下文探索 |
+| `librarian` | 外部文档、库契约、最新 API 调研 |
+| `plan` | 计划草案和工作拆分 |
+| `momus` / `metis` | 缺失决策、边界情况、风险评审 |
+| `lazycodex-executor` | 执行计划中的特定工作单元 |
+| `lazycodex-code-reviewer` | 实现后的代码质量评审 |
+| `lazycodex-qa-executor` | 面向真实表面的 QA |
+| `lazycodex-gate-reviewer` | 完成前验证门 |
+| `lazycodex-clone-fidelity-reviewer` | clone 或同步任务的 fidelity review |
 
-## 角色一览
+## Execution Loop
 
-| 智能体 | 角色 | 边界 |
-|---|---|---|
-| **Sisyphus** | 编排者 | 读取意图、拆分工作、分派给专家、跟踪 todo，仅在任务完成时停止。 |
-| **Hephaestus** | 实现 | 编写代码、调试、推理硬逻辑与综合的深度工作者。 |
-| **Oracle** | 验证与评审 | 架构与调试的只读顾问。验证完成度；不写入、不编辑、不分派。 |
-| **Librarian** | 检索 | 仅研究。拉取文档、远程仓库与 OSS 代码。不写入、不编辑、不分派。 |
+无论角色如何拆分，一个工作单元的基本循环相同。
 
-Oracle 与 Librarian 的只读边界是框架的一部分，防止"聪明"的智能体在错误角色里做危险操作 —— 检索与评审绝不会悄悄改动你的代码库。
+1. **Explore**：绘制地形。用工具读代码，不靠猜测；有需要时并行启动只读子智能体。
+2. **Plan**：选择路径。把要改的文件、具体变更和依赖记录到活动计划中。
+3. **Implement**：精确实现。即使新项目会写成另一种样子，也要贴合现有代码库风格。
+4. **Verify**：证明可用。尽可能并行运行诊断、相关测试和构建检查。
+5. **Manual QA**：检查真实表面，然后写最终消息。
 
-## 如何协作
+## Non-goals
 
-Sisyphus 是入口编排者：读取意图，把请求拆成单元，交给合适的专家。
+- **不相信子智能体的自我报告。** 完成判断依赖独立验证。
+- **用户要代码时，不只停在建议。** 除非用户明确要计划或头脑风暴，否则会实现。
+- **不猜没读过的代码。** 探索便宜，假设昂贵。
+- **不在 turn 末留下模糊工作。** 每个计划步骤都会整理为完成、有理由的阻塞，或有理由的移除。
 
-- **Hephaestus** 承担实现与硬推理单元。
-- **Oracle** 验证结果，并以只读方式就架构和调试提供咨询。
-- **Librarian** 检索工作者所需的上下文(文档、仓库、示例)。
+## Orchestration and Delegation
 
-Oracle 与 Librarian 不进行分派 —— 它们的工具访问按设计为只读。由于分派是显式的，多条车道可同时运行。
+LazyCodex 使用 Codex 内的子智能体角色。并行探索可使用只读角色，评审或 QA 可使用专门的 reviewer 角色。但最终报告仍以父会话收集的证据为准。
 
-## 并行执行
+## Boulder State
 
-当主会话无需结果即可继续时，LazyCodex 会并行运行专家。独立研究与自包含单元同时进行；当结果会阻塞下一个实现决策时则保持同步。每个单元都搭配适合其工作的模型 —— 见[多模型路由](/zh/docs/concepts/model-routing)。
+`$start-work` 使用 `.omo/boulder.json` 保存进度，并通过 Stop-hook continuation 继续计划执行。这是用户能看到的核心持久行为。所有复选框完成后会输出 **ORCHESTRATION COMPLETE**。
 
-## 它的位置
+## Related Docs
 
-- 命令支柱驱动这些智能体：[`$ulw-plan`](/zh/docs/commands/ulw-plan) 做规划，[`$start-work`](/zh/docs/commands/start-work) 执行计划，[`$ulw-loop`](/zh/docs/commands/ulw-loop) 循环至 Oracle 验证完成。
-- 让循环停下的，是经过验证的完成 —— 见 [ultrawork 循环](/zh/docs/concepts/ultrawork)。
-
-<Cards>
-  <Card title="多模型路由" href="/zh/docs/concepts/model-routing">每个单元如何落到合适的 GPT 模型。</Card>
-  <Card title="ultrawork 循环" href="/zh/docs/concepts/ultrawork">直到完成被验证的自引用循环。</Card>
-</Cards>
+- [`$ulw-plan`](/zh/docs/commands/ulw-plan)：实现前规划并写入 `.omo/plans/<slug>.md`。
+- [`$start-work`](/zh/docs/commands/start-work)：用 durable Boulder progress 执行计划。
+- [`$ulw-loop`](/zh/docs/commands/ulw-loop)：持续循环直到证据被验证。
+- [Hooks & Lifecycle](/zh/docs/concepts/hooks-lifecycle)：Stop-hook continuation 与证据门如何推动长任务。

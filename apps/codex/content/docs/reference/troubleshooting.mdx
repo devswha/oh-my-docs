@@ -1,0 +1,46 @@
+---
+title: "Troubleshooting"
+description: "Execution-readiness checks for OMX installs that look healthy but still fail at runtime"
+---
+
+Use this page when `omx setup` or `omx doctor` looks green, but a real Codex request still fails.
+
+## Install Health vs Execution Health
+
+`omx doctor` checks OMX's local install surface: prompts, skills, config files, hooks, AGENTS scaffolding, and runtime prerequisites. It does not prove that the active Codex profile can authenticate and complete a model request.
+
+Run a real smoke test from the same shell, `HOME`, `CODEX_HOME`, and project directory you will use for OMX:
+
+```bash
+codex login status
+omx exec --skip-git-repo-check -C . "Reply with exactly OMX-EXEC-OK"
+```
+
+Treat the results separately:
+
+| Check | What it proves |
+|---|---|
+| `omx doctor` green | Local OMX wiring looks sane. |
+| `codex login status` green | The active Codex profile can see login state. |
+| `omx exec ...` returns `OMX-EXEC-OK` | Auth, provider routing, execution, and current-directory assumptions work together. |
+
+## Common Failure Modes
+
+| Symptom | Check |
+|---|---|
+| `401 Unauthorized`, missing bearer auth, or wrong API key | Confirm the same `HOME`/`CODEX_HOME` is used by the shell that launches OMX. |
+| Proxy or gateway auth fails | Verify `openai_base_url` exists in the active `~/.codex/config.toml` when you use a local OpenAI-compatible proxy. |
+| `AGENTS.md` exists but doctor says the OMX contract is missing | Run `omx setup --scope user --merge-agents`, or project scope with `--scope project`. |
+| `.omx/` or `.beads/` writes fail | Check for root-owned, owner-mismatched, or non-writable files. `omx doctor --force` repairs only when the repo root is owned by the invoking user. |
+| Team resume or `doctor --team` references dead tmux state | Inspect `omx team status <team>` and `tmux ls`; if abandoned, run `omx team shutdown <team> --force --confirm-issues`, then `omx cancel`. |
+| Shift+Enter submits inside tmux | Check `tmux show -gv extended-keys`, `tmux info | grep extkeys`, `tmux show -gv terminal-features`, `TERM`, and `TERM_PROGRAM`. |
+
+## Deprecated Explore Surface
+
+`omx explore` is hard-deprecated. Use normal Codex repository inspection tools/subagents for read-only lookup, or `omx sparkshell -- <command>` for explicit shell-native read-only evidence and tmux-pane summaries.
+
+## Related
+
+- [Quick Commands](/docs/reference/quick-commands)
+- [Configuration](/docs/reference/configuration)
+- [Codex Native Hooks](/docs/hooks/codex-native-hooks)

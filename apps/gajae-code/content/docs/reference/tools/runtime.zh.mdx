@@ -1,0 +1,69 @@
+---
+title: 运行时与执行
+description: 让 Gajae-Code 智能体运行命令和代码的 bash、eval、python-repl、debug、ssh、job 工具。
+---
+
+运行时工具是 Gajae-Code 智能体实际执行操作的方式 —— shell 命令、即席代码、调试会话、远程命令、后台作业。下面每个工具对应上游 `docs/tools/` 参考；标志、环境变量与上限均与源码一致。
+
+## bash
+
+`bash` 在会话工作区运行 shell 命令。输出（stdout 与 stderr 合并）作为文本返回；非零退出码会作为错误而非成功暴露。
+
+| 字段      | 类型                     | 说明                                                              |
+| --------- | ------------------------ | ----------------------------------------------------------------- |
+| `command` | `string`                 | shell 命令文本。未给 `cwd` 时，前导 `cd <path> && ...` 会改写为 `cwd`。 |
+| `env`     | `Record<string, string>` | 额外环境变量。键须匹配 `^[A-Za-z_][A-Za-z0-9_]*$`。                |
+| `timeout` | `number`                 | 超时（秒）。默认 `300`，钳制到 `1..3600`。                        |
+| `cwd`     | `string`                 | 工作目录，相对会话 cwd 解析；须存在且为目录。                     |
+| `pty`     | `boolean`                | 请求 PTY 模式。默认 `false`。                                     |
+| `async`   | `boolean`                | 后台执行。仅在启用 async 作业时可用；立即返回 job id。            |
+
+**PTY 模式与 `GJC_NO_PTY`**：仅当 `pty: true`、工具上下文有 UI、且 `GJC_NO_PTY !== "1"` 三者同时成立时使用交互式 PTY 控制台叠层。设 `GJC_NO_PTY=1` 在各处强制非 PTY，工具静默回退到非交互执行器。
+
+```bash
+GJC_NO_PTY=1 gjc --tmux
+```
+
+模式：前台非 PTY（默认）；前台 PTY（交互，`Esc` 关闭）；显式后台作业（`async: true`）；自动后台（`bash.autoBackground.enabled`，默认阈值 `60s`）。
+
+**拦截器**（`bashInterceptor.enabled`）将常见 shell 误用引导到更合适的工具：`cat`/`head`/`tail` → `read`；`grep`/`rg` → `search`；`find`/`fd` → `find`；`sed -i` 等 → `edit`；带重定向的 `echo`/`cat <<` → `write`。仅当建议工具在会话中可用时触发。
+
+上限：默认超时 `300s`，钳制 `1..3600s`；内存输出尾部上限 `50KB`，超出后完整输出溢出到 `artifact://<id>`。
+
+## eval
+
+`eval` 在持久的、基于单元格的运行时中执行 Python 或 JavaScript 代码。状态按语言在单元格间与工具调用间保留。优先于 `python -c`、`bun -e`、`node -e`：可获得持久状态、结构化 `display()` 输出、图像/JSON 捕获与正确的取消处理。
+
+唯一参数 `cells` 是有序数组。每个单元格：`language`（`"py"` → Python 内核，`"js"` → 持久 JavaScript VM）、`code`、可选 `title`、`timeout`（钳制 `1..600`，默认 `30`）、`reset`（按语言重置内核）。
+
+**后端选择按单元格显式**，无自动检测或回退。两个后端默认开启（`eval.py` / `eval.js`）。`GJC_PY` 覆盖暴露的后端：
+
+| `GJC_PY`       | 效果              |
+| -------------- | ----------------- |
+| `0` / `bash`   | 仅 JavaScript。   |
+| `1` / `py`     | 仅 Python。       |
+| `mix` / `both` | 两者皆有。        |
+
+JavaScript 在持久 `vm.Context` 中运行，支持顶层 `await` 与裸 `return`，本地 import 在单元格间失效缓存；全局含 `display`、`read`、`write` 与 `tool.<name>(args)` 代理。Python 在通过 NDJSON 通信的长存 `python3` 子进程中运行（无需 Jupyter，Python 3.8+ 即可），保留 pandas/matplotlib/PIL 等富 `display()` 输出。
+
+上限：单元格超时默认 `30s`、钳制 `1..600s`；输出截断窗 `50KB`、行上限 `3000`；Python 保留内核空闲超时 `5 分钟`、至多 `4` 个会话。
+
+## python-repl
+
+`eval` 背后的 Python 后端。**魔法命令**（重写为普通 Python）：`%pip`、`%cd`、`%pwd`、`%ls`、`%env`、`%time`/`%timeit`、`%reset`、`%load`、`%run`、`%%bash`、`%%capture`、`%%writefile`、`!cmd`。**内核模式**：`python.kernelMode = "session"`（默认，复用按会话文件+cwd 键控的内核）或 `"per-call"`（每次请求新子进程）。运行时解析优先活动/检测的 venv，其次 `~/.gjc/python-env` 托管 venv，再 `PATH` 上的 `python`/`python3`。**不支持 stdin**；`MPLBACKEND=Agg` 使图离屏渲染。环境变量：`GJC_PY`、`GJC_PYTHON_SKIP_CHECK=1`、`GJC_PYTHON_INTEGRATION=1`、`GJC_PYTHON_IPC_TRACE=1`。`gjc setup python --check` 报告解析的解释器。
+
+## debug
+
+`debug` 驱动一个 DAP 会话，仅当 `debug.enabled` 为真时暴露，同时只允许一个活动会话。`action` 选择操作：`launch`（需 `program`）、`attach`（需 `pid` 或 `port`）、`terminate`、`sessions`；断点 `set_breakpoint`/`remove_breakpoint` 及指令/数据断点；步进 `continue`/`step_over`/`step_in`/`step_out`/`pause`；检查 `stack_trace`/`threads`/`scopes`/`variables`/`evaluate`/`modules`/`disassemble`/`read_memory` 等。适配器按扩展名/根标记自动选择（内置 `gdb`、`lldb-dap`、`debugpy`、`dlv` 等），或用 `adapter` 强制。每请求 `timeout` 默认 `30s`，钳制 `5..300`。
+
+## ssh
+
+`ssh` 在已发现的 SSH 主机上运行**一条**远程命令。字段：`host`（已发现配置的**名称键**，非任意主机/IP）、`command`、可选 `cwd`、`timeout`（默认 `60`，钳制 `1..3600`）。主机发现仅基于 JSON —— **不读** `~/.ssh/config`；从 `.gjc/ssh.json`（项目）、`~/.gjc/agent/ssh.json`（用户）、再仓库根 `ssh.json`/`.ssh.json` 加载。命令无 PTY 运行；始终设 `StrictHostKeyChecking=accept-new` 与 `BatchMode=yes`，复用主连接（`ControlPersist=3600`）。
+
+## job
+
+`job` 等待或取消由 `bash`（`async: true` 或自动后台）和 async 任务产生的后台作业，仅在启用后台作业时暴露。字段：`poll`（要监视的 job id，省略且无 `cancel` 则监视全部运行中）、`cancel`、`list`（只读快照）。`job` 等待监视中**第一个**运行作业结束，其余报于 `## Still Running`，需再次调用。轮询等待来自 `async.pollWaitDuration`（`5s`/`10s`/`30s`/`1m`/`5m`，默认 `30s`）。作业记录完成后保留 `5 分钟`再清除。
+
+---
+
+部分运行时工具依赖配置：`debug` 需 `debug.enabled`，`eval` 由 `GJC_PY` 塑形，后台作业需 async 支持。完整开关见[环境变量](/zh/docs/reference/environment-variables)。

@@ -1,0 +1,65 @@
+---
+title: CLI
+description: Common gjc command shapes for launch, provider setup, research, team execution, and ultragoal.
+---
+
+This page is a compact command reference. Use [Getting Started](/docs/getting-started) for the first run and [Commands](/docs/commands) for the workflow meaning behind each command.
+
+## Launch
+
+| Command | Use |
+| --- | --- |
+| `gjc --tmux` | Start the recommended tmux-backed interactive session. |
+| `gjc` | Start directly without creating or attaching a tmux session. |
+| `gjc --tmux --worktree my-task-branch` | Create or use a GJC-managed sibling Git worktree for a branch-like task name. |
+| `gjc @screenshot.png "What should I change?"` | Start with an image input. |
+
+`--worktree` is not a filesystem path. If you already have a worktree directory, `cd` into it and run `gjc --tmux` there.
+
+## Provider setup
+
+```bash
+gjc setup provider --preset minimax
+gjc setup provider --preset minimax-cn
+gjc setup provider --preset glm
+```
+
+Inside the TUI, use:
+
+```text
+/provider add --preset glm
+/provider add zai
+```
+
+Choose a model with `/model` in the TUI, or with `--model` / `--models` on the CLI.
+
+## Workflow commands
+
+```text
+/skill:deep-interview clarify the bug, affected behavior, non-goals, and acceptance checks
+/skill:ralplan turn the clarified bug report into a reviewed fix plan
+gjc ultragoal create-goals --brief-file <approved-plan>
+gjc ultragoal complete-goals
+```
+
+Use `team` only when parallel tmux workers help:
+
+```bash
+gjc team 2:executor "split implementation and verification for this bug fix"
+```
+
+## Research mode
+
+```bash
+gjc rlm
+```
+
+`rlm` opens a notebook-style research/REPL loop and writes artifacts under `.gjc/_session-<gjcSessionId>/rlm/<rlmSessionId>/`.
+
+## Auth broker
+
+```bash
+gjc auth-broker
+```
+
+Use the broker only when you intentionally want OAuth refresh tokens served from a shared host instead of staying only on the local machine.

@@ -1,45 +1,161 @@
 ---
-title: Getting Started
-description: Install Oh My OpenAgent and verify your first OpenCode session.
+title: はじめに
+description: OmO editionを選び、providerを設定し、doctorで確認して最初のulwを実行します。
 ---
+
+OmOは同じupstream製品から2つのeditionとして配布されています。OpenCodeのフルharnessが必要なら**Ultimate**、Codex CLIのplugin bundleが必要ならLazyCodexが入れる**Light**を使います。
 
 ## Prerequisites
 
-- OpenCode installed and available as `opencode`
-- Provider access for the models you want to use: Claude, OpenAI, Gemini, GitHub Copilot, OpenCode Go, OpenCode Zen, Kimi for Coding, or Z.ai
-- macOS, Linux, WSL, or Windows x64 for the shipped binaries
+| Item | Requirement |
+|---|---|
+| Harness | UltimateはOpenCode、LightはOpenAI Codex CLI、または両方。 |
+| Runtime | Ultimateは`bunx`。Codex Lightは`npx lazycodex-ai install`。 |
+| Providers | Ultimateでは手元のproviderを選びます: Claude、OpenAI/ChatGPT、Gemini、GitHub Copilot、OpenCode Go/Zen、Kimi for Coding、Z.ai、Vercel AI Gateway。Lightはprovider subscriptionを質問しません。 |
+| OS | macOS ARM64/x64、Linux x64/ARM64（musl/Alpine含む）、Windows x64。 |
+
+## Pick an Edition
+
+| You want | Run | What lands on disk |
+|---|---|---|
+| Ultimate for OpenCode | `bunx oh-my-openagent install` | OpenCode plugin登録、agent/model config、provider auth案内。 |
+| Light for Codex CLI | `npx lazycodex-ai install` | 管理下の`~/.codex/plugins/cache/sisyphuslabs/omo/`、Codex marketplace/plugin config、任意のautonomous Codex権限、component CLI、plugin-scoped MCP。 |
+| Both | `bunx oh-my-openagent install --platform=both` | 両方のinstall path。 |
+
+`lazycodex-ai`はCodex Light editionのサポート済みnpm installerです。Codex marketplace名ではありません。Codex上ではmarketplace `sisyphuslabs`、plugin `omo@sisyphuslabs`として見えます。
 
 ## Install
 
-For humans, the easiest path is to ask your coding agent to follow the upstream installation guide. For manual setup, run the installer:
+<Steps>
+
+<Step>
+
+### Ultimate: OpenCode
 
 ```bash
 bunx oh-my-openagent install
 ```
 
-For non-interactive setup, pass your subscriptions explicitly:
+installerはモデルsubscriptionを質問し、OpenCode pluginを登録し、configを書き、選択したproviderのauth hintを出します。rename移行中のためlegacy package/CLI名`oh-my-opencode`も動きますが、新しいdocs/configでは`oh-my-openagent`を優先してください。
+
+</Step>
+
+<Step>
+
+### Ultimate: Non-Interactive Install
+
+agentにセットアップを任せるときはflagsを直接渡します。
 
 ```bash
-bunx oh-my-openagent install --no-tui --claude=yes --openai=yes --gemini=no --copilot=no
+bunx oh-my-openagent install --no-tui \
+  --claude=yes \
+  --openai=yes \
+  --gemini=no \
+  --copilot=no
 ```
 
-Useful flags include `--claude=yes|no|max20`, `--openai=yes|no`, `--gemini=yes|no`, `--copilot=yes|no`, `--opencode-go=yes|no`, `--opencode-zen=yes|no`, `--zai-coding-plan=yes|no`, `--kimi-for-coding=yes|no`, and `--vercel-ai-gateway=yes|no`.
+| Flag | Meaning |
+|---|---|
+| `--claude=no\|yes\|max20` | Claude subscription。`max20`はClaude Max 20x。 |
+| `--openai=no\|yes` | OracleなどGPT-backed agents用のChatGPT/OpenAI。 |
+| `--gemini=no\|yes` | Gemini。 |
+| `--copilot=no\|yes` | GitHub Copilot。 |
+| `--opencode-go=no\|yes` | OpenCode Go（GLM/Kimi/MiniMax）。 |
+| `--opencode-zen=no\|yes` | `opencode/` model catalog。 |
+| `--zai-coding-plan=no\|yes` | Z.ai Coding Plan。 |
+| `--kimi-for-coding=no\|yes` | Kimi for Coding。 |
+| `--vercel-ai-gateway=no\|yes` | Vercel AI Gateway。 |
+| `--skip-auth` | auth hintsをスキップ。 |
+
+Provider selectionはagentごとです。OmOは単一のglobal priorityでは動きません。
+
+</Step>
+
+<Step>
+
+### Light: Codex CLI
+
+```bash
+npx lazycodex-ai install
+# non-interactive recommended mode:
+npx lazycodex-ai install --no-tui --codex-autonomous
+```
+
+`--codex-autonomous`はCodexをagent的な自律実行向けに設定します: `approval_policy = "never"`、`sandbox_mode = "danger-full-access"`、`network_access = "enabled"`。これらのpermission設定を触らせたくない場合は`--no-codex-autonomous`を使います。
+
+</Step>
+
+<Step>
+
+### Codex Marketplace Path
+
+marketplace pathは実験的な追加経路です。主なサポート済みLight installerは引き続き`npx lazycodex-ai install`です。
+
+```bash
+codex plugin marketplace add https://github.com/code-yeongyu/lazycodex
+codex plugin add omo@sisyphuslabs
+```
+
+Codexを再起動し、新しいhooksを確認してapproveします。background bootstrap noticeが完了したら、もう一度再起動します。
+
+</Step>
+
+<Step>
+
+### Authenticate Providers
+
+```bash
+opencode auth login
+```
+
+これはUltimate/OpenCode用の手順です。Gemini Antigravity OAuthにはupstream `opencode-antigravity-auth` pluginを使います。GitHub Copilot、Z.ai、OpenCode Go、OpenCode Zen、Kimiはinstaller flagsに応じてdefaultsが設定されます。
+
+</Step>
+
+<Step>
 
 ## Verify
 
 ```bash
 opencode --version
 bunx oh-my-openagent doctor
+npx lazycodex-ai doctor
 ```
 
-`doctor` checks system setup, plugin registration, tools, and model resolution. If you see a legacy package warning, update your OpenCode plugin entry from `oh-my-opencode` to `oh-my-openagent`.
+前2つはUltimate用、`npx lazycodex-ai doctor`はLight用です。`doctor`はsystem、config、tools、modelsを確認します。legacy package warningが出る場合はOpenCode plugin entryを`oh-my-opencode`から`oh-my-openagent`へ更新してください。
 
-## First Task
+</Step>
 
-Start OpenCode and type:
+<Step>
 
-```text
-ultrawork
+### First Task
+
+OpenCode sessionで入力します。
+
+```bash
+ulw fix the failing login flow and verify it in the browser
 ```
 
-Use `ulw` as the short form. For precise multi-step work, enter Prometheus planning mode with Tab or `@plan`, then run `/start-work`.
+精度を優先するなら、先にplanを固めます。
+
+```bash
+@plan refactor the auth module without behavior changes
+/start-work
+```
+
+Codex Lightを入れた後は、Codex内で`ultrawork`、`$ulw-loop`、または`omo@sisyphuslabs` marketplace bundleが入れたCodex plugin skillsを使います。
+
+</Step>
+
+</Steps>
+
+## Telemetry
+
+anonymous active-install telemetryはデフォルトONです。1台あたりUTC 1日に最大1回、hashed installation idだけを送り、PostHog person profileは作りません。無効化するには次のいずれかを設定します。
+
+```bash
+OMO_SEND_ANONYMOUS_TELEMETRY=0
+OMO_DISABLE_POSTHOG=1
+OMO_CODEX_SEND_ANONYMOUS_TELEMETRY=0
+OMO_CODEX_DISABLE_POSTHOG=1
+```

@@ -19,10 +19,9 @@ Checks the OMX installation, dependencies, environment variables, and agent conn
 ```bash
 $doctor
 $doctor --verbose
-$doctor --fix
 ```
 
-`--fix` automatically resolves issues that can be fixed. For issues that can't be fixed automatically, it explains the steps to resolve them.
+Use `--verbose` when you need the full diagnostic output before filing an issue.
 
 ## Checks
 
@@ -41,7 +40,7 @@ $doctor --fix
 - `WARN` — working but not on the recommended configuration
 - `ERROR` — needs immediate attention
 
-If there are `ERROR` entries, try `$doctor --fix` first. If it doesn't resolve, attach the output and file an issue.
+If there are `ERROR` entries, attach the output and file an issue with the relevant install and environment details.
 
 ## Related docs
 

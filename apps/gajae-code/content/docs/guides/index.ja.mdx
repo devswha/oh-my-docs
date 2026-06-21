@@ -143,10 +143,10 @@ gjc ultragoal complete-goals
 メインのチェックアウトを清潔に保つため、隔離された Git worktree 内でセッションを実行します。
 
 ```sh
-gjc --tmux --worktree <path>
+gjc --tmux --worktree my-refactor-branch
 ```
 
-使い捨てやブランチ固有の作業には専用パスを使ってください。worktree 内で `ralplan` で計画し、`ultragoal` で変更を追跡します。
+`--worktree` の値は GJC が管理する sibling worktree の branch-like 名です。既存の worktree パスがある場合は、そのディレクトリに移動して `gjc --tmux` を実行します。worktree 内で `ralplan` で計画し、`ultragoal` で変更を追跡します。
 
 ### 不慣れなコードベースの探索
 
@@ -180,15 +180,15 @@ gjc ultragoal complete-goals
 メインのチェックアウトから切り離すべき作業 —— リファクタリング、リスクのある実験、ブランチ固有のタスク —— は、隔離された Git worktree 内で実行します。
 
 ```sh
-gjc --tmux --worktree <path>
+gjc --tmux --worktree my-task-branch
 ```
 
-メインのチェックアウトを清潔に保つため、使い捨てやブランチ固有の作業には専用パスを使ってください。
+GJC 管理の worktree には branch-like 名を使います。既存のパスがある場合は、その中で `gjc --tmux` を起動します。
 
 ## 続けて読む
 
 <Cards>
-  <Card title="ワークフロー" href="/ja/docs/workflows" />
-  <Card title="エージェント" href="/ja/docs/agents" />
+  <Card title="ワークフロー" href="/ja/docs/commands" />
+  <Card title="エージェント" href="/ja/docs/skills" />
   <Card title="コアコンセプト" href="/ja/docs/concepts" />
 </Cards>

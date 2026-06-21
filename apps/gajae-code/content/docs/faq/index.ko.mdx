@@ -1,0 +1,57 @@
+---
+title: FAQ
+description: Gajae-Code 설치, gjc, tmux, provider, commands, rlm, team, computer-use, 한계에 대한 짧은 답변.
+---
+
+막힌 지점에 맞는 섹션부터 보세요. **설치와 환경**은 setup, **첫 사용**은 첫 command 선택, **실행과 한계**는 긴 세션에 대한 답입니다.
+
+## 설치와 환경
+
+<section className="not-prose my-6 divide-y divide-fd-border rounded-lg border border-fd-border bg-fd-card">
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>Gajae-Code가 뭔가요?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">Gajae-Code는 <code>gjc</code> 코딩 에이전트 하네스입니다. 작은 공개 workflow 표면을 session, tmux, model routing, tools, evidence로 감싼 형태입니다.</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>어떻게 설치하나요?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground"><code>bun install -g gajae-code</code>를 사용합니다. 이 패키지가 <code>gjc</code> 바이너리를 설치합니다. scoped package <code>@gajae-code/coding-agent</code>도 사용할 수 있습니다.</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>tmux가 꼭 필요한가요?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">bare <code>gjc</code>에는 필수는 아니지만 권장 경로는 <code>gjc --tmux</code>입니다. <code>team</code> command는 tmux session을 기대합니다.</p>
+  </details>
+</section>
+
+## 첫 사용
+
+<section className="not-prose my-6 divide-y divide-fd-border rounded-lg border border-fd-border bg-fd-card">
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>처음 배울 흐름은 무엇인가요?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">루프부터 익히세요. <code>deep-interview</code>로 명확히 하고, <code>ralplan</code>으로 검토된 계획을 만들고, <code>ultragoal</code>로 지속 실행과 증거까지 갑니다.</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>rlm은 언제 쓰나요?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">코드 변경이 아니라 탐색 research가 목적이면 <code>gjc rlm</code>을 사용합니다. notebook과 report artifact는 <code>.gjc/_session-&lt;gjcSessionId&gt;/rlm/&lt;rlmSessionId&gt;/</code> 아래에 기록됩니다.</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>team은 필수인가요?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">아닙니다. <code>team</code>은 병렬 tmux worker가 실제로 도움이 될 때만 쓰는 선택지입니다. 단일 흐름 작업은 일반 루프에 두면 됩니다.</p>
+  </details>
+</section>
+
+## 실행과 한계
+
+<section className="not-prose my-6 divide-y divide-fd-border rounded-lg border border-fd-border bg-fd-card">
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>provider 자격 증명은 어떤 순서로 해석되나요?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground"><code>gjc</code>는 CLI API key, 저장된 API key, 저장된 OAuth credential, 환경 변수, <code>models.yml</code> <code>apiKey</code> 순서로 확인합니다. secret은 commit된 파일에 넣지 마세요.</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>computer-use에는 무엇이 필요한가요?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">실험적 computer tool은 지원되는 Apple Silicon macOS host에서 기본 사용 가능하며 supervisor로 게이트됩니다. <code>computer.alwaysOn=false</code>로 끌 수 있습니다.</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>command 상세는 어디서 보나요?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">workflow command는 <a href="/ko/docs/commands">Commands</a>, launch/setup/research/team/ultragoal 명령 형태는 <a href="/ko/docs/reference/cli">CLI Reference</a>를 보세요.</p>
+  </details>
+</section>

@@ -55,7 +55,9 @@ export default async function Layout({
             />
             <div className="flex flex-col">
               <span>LazyCodex</span>
-              <span className="text-xs text-fd-muted-foreground">v{LZX_VERSION}</span>
+              <span className="text-xs text-fd-muted-foreground">
+                v{LZX_VERSION}
+              </span>
             </div>
           </div>
         ),

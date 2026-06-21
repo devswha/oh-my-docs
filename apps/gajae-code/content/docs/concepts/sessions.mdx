@@ -117,13 +117,13 @@ In-memory sessions (`--no-session`) cannot be exported, shared, or forked. `/dum
 
 ## Worktree isolation
 
-For branch-local or throwaway work, run inside an isolated Git worktree so your main checkout stays clean:
+For branch-local or throwaway work, run inside an isolated Git worktree so your main checkout stays clean. `--worktree` takes an optional branch-like name and creates a GJC-managed sibling worktree; it is not a filesystem path:
 
 ```bash
-gjc --tmux --worktree <path>
+gjc --tmux --worktree my-task-branch
 ```
 
-Because each working directory has its own session scope, a worktree run gets its own session namespace as well. Use a dedicated path for experiments, then discard the worktree when you are done.
+If you already created a worktree directory, `cd` into it and launch `gjc --tmux` there. Because each working directory has its own session scope, a worktree run gets its own session namespace as well.
 
 ## Related
 

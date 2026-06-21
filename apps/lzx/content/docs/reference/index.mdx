@@ -1,34 +1,34 @@
 ---
 title: Reference
-description: Configuration and CLI reference for LazyCodex — a thin layer over OmO that deep config follows.
+description: LazyCodex CLI and configuration reference.
 ---
 
-This section is the runtime reference for LazyCodex (LZX). LazyCodex is a thin distribution layer that packages [OmO (oh-my-openagent)](https://github.com/code-yeongyu/oh-my-openagent) as the Codex agent harness. Everything you run through LazyCodex forwards to OmO, so deep configuration follows OmO conventions.
+This section is the LazyCodex (LZX) runtime reference. LazyCodex is a thin distribution that packages [OmO (oh-my-openagent)](https://github.com/code-yeongyu/oh-my-openagent) for Codex. Deep workflows run on top of the OmO plugin's Skills, hooks, MCP Servers, and model profiles.
 
-## What LazyCodex owns
+## What LazyCodex Owns
 
-LazyCodex itself is small. It provides one thing: the `lazycodex-ai` npm bin, invoked with `npx`, that installs and drives OmO targeting the Codex platform.
+LazyCodex itself is small. It provides one thing: the `lazycodex-ai` npm bin, invoked through `npx`, that installs and drives OmO for the Codex platform.
 
 ```bash
 npx lazycodex-ai install
 ```
 
-That is shorthand for `npx --yes --package oh-my-openagent omo install --platform=codex`. There is no global install — always invoke via `npx`. The harness ships with zero-config defaults you can override later.
+This is shorthand for `npx --yes --package oh-my-openagent omo install --platform=codex`. There is no global install; always invoke it with `npx`. The Codex light setup comes with zero-config defaults that can be overridden later.
 
-## What OmO owns
+## What OmO Owns
 
-Once installed, the underlying OmO engine owns the rest: discipline agents (Sisyphus, Hephaestus, Oracle, Librarian), parallel execution, multi-model routing, skills, hooks, and verified completion. When you need to tune providers, models, or behavior beyond the install flags, you are configuring OmO.
+After installation, the OmO-based setup owns the rest: Agent Roles, parallel exploration, model routing, Skills, hooks, and verified completion. If you tune provider, model, or behavior beyond install flags, you are effectively configuring OmO.
 
-## In this section
+## Pages
 
 <Cards>
-  <Card title="Configuration" href="/docs/reference/configuration">Install flags, the Codex platform target, zero-config defaults, and provider/model setup.</Card>
-  <Card title="CLI" href="/docs/reference/cli">The `lazycodex-ai` bin, how it forwards to OmO, `--dry-run`, and the in-session command pillars.</Card>
+  <Card title="Configuration" href="/docs/reference/configuration">Install flags, Codex target, zero-config defaults, and provider/model setup.</Card>
+  <Card title="CLI" href="/docs/reference/cli">The `lazycodex-ai` bin, how it forwards to OmO, `--dry-run`, and in-session Commands.</Card>
 </Cards>
 
-## Quick map
+## Quick Links
 
-- **[Configuration](/docs/reference/configuration)** — `--no-tui`, `--codex-autonomous`, the Codex platform target, and where provider/model setup lives in OmO.
-- **[CLI](/docs/reference/cli)** — exactly how `npx lazycodex-ai` expands into an `omo` invocation, plus the `$ulw-plan` / `$start-work` / `$ulw-loop` command pillars.
+- **[Configuration](/docs/reference/configuration)**: `--no-tui`, `--codex-autonomous`, Codex target, and where provider/model setup lives in OmO.
+- **[CLI](/docs/reference/cli)**: how `npx lazycodex-ai` expands into an `omo` call, plus `$ulw-plan` / `$start-work` / `$ulw-loop` Commands.
 
-Treat every provider `*_API_KEY` and OAuth credential as a secret — never log or commit them.
+Treat every provider `*_API_KEY` and OAuth credential as secret: never log or commit them.

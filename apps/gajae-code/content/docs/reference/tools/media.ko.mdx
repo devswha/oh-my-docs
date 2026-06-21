@@ -1,0 +1,116 @@
+---
+title: 미디어 & 기타 도구
+description: 다이어그램, 이미지 분석, 산술, 프로젝트 태스크 러너, 대화형 프롬프트 — render_mermaid, inspect_image, calc, recipe, ask.
+---
+
+다이어그램, 비전, 수학, 태스크 러너, 사용자에게 질문하기를 다루는 몇 가지 도구입니다. 이름은 업스트림 `docs/tools/` 레퍼런스와 동일합니다.
+
+## `render_mermaid`
+
+Mermaid 소스를 터미널 친화적인 ASCII/유니코드 텍스트로 변환합니다. 이름과 달리 텍스트만 생성합니다. PNG, SVG, 브라우저, Mermaid CLI는 관여하지 않습니다. 렌더링은 `beautiful-mermaid`로 인프로세스에서 이루어집니다.
+
+| 필드 | 타입 | 필수 | 설명 |
+| --- | --- | --- | --- |
+| `mermaid` | `string` | 예 | Mermaid 소스 텍스트(예: `graph TD; A-->B`). |
+| `config` | `object` | 아니오 | 사용 전에 정리되는 선택적 렌더러 옵션. |
+
+`config` 필드:
+
+| 필드 | 타입 | 설명 |
+| --- | --- | --- |
+| `useAscii` | `boolean` | `true`면 순수 ASCII, 아니면 유니코드 박스 드로잉 출력. |
+| `paddingX` | `number` | 가로 간격. 내림 후 `>= 0`으로 클램프. |
+| `paddingY` | `number` | 세로 간격. 내림 후 `>= 0`으로 클램프. |
+| `boxBorderPadding` | `number` | 박스 안쪽 패딩. 내림 후 `>= 0`으로 클램프. |
+
+렌더된 텍스트는 인라인으로 반환됩니다. 지속 세션에서는 전체 텍스트가 `<id>.render_mermaid.log` 아티팩트로도 저장됩니다. 결과에는 `Saved artifact: artifact://<id>` 줄이 추가됩니다. 잘못된 Mermaid 구문은 부분 출력을 반환하지 않고 호출을 실패시킵니다. `renderMermaid.enabled`로 게이트됩니다.
+
+## `inspect_image`
+
+로컬 이미지 파일을 비전 가능 모델에 보내 텍스트 분석을 반환합니다.
+
+| 필드 | 타입 | 필수 | 설명 |
+| --- | --- | --- | --- |
+| `path` | `string` | 예 | 세션 cwd 기준으로 해석되는 이미지 경로. |
+| `question` | `string` | 예 | 이미지와 함께 보내는 프롬프트. |
+
+모델은 `pi/vision`, `pi/default`, 활성 모델, 첫 번째 사용 가능 모델 순으로 시도됩니다. 선택된 모델은 이미지 입력을 지원해야 합니다. 지원 형식은 확장자가 아니라 파일 **내용**으로 감지됩니다: PNG, JPEG, GIF, WEBP. `20 MiB`(`MAX_IMAGE_INPUT_BYTES`)를 넘는 파일은 모델 호출 전에 거부됩니다.
+
+`images.autoResize`가 켜져 있으면 큰 이미지는 500 KiB 목표(기본 최대 `1568x1568`)로 다운스케일·재인코딩됩니다. 리사이즈 실패 시 조용히 원본 바이트를 유지합니다. `images.blockImages`가 설정되면 도구가 전면 차단됩니다.
+
+결과는 모델의 텍스트 분석과, 선택된 `model`·해석된 `imagePath`·실제로 보낸 `mimeType`를 담은 `details`입니다.
+
+## `calc`
+
+하나 이상의 산술 식을 평가하고 형식화된 숫자 결과를 반환합니다.
+
+| 필드 | 타입 | 필수 | 설명 |
+| --- | --- | --- | --- |
+| `calculations` | `Calculation[]` | 예 | 순서대로 평가되는 식 묶음. |
+
+각 `Calculation`:
+
+| 필드 | 타입 | 필수 | 설명 |
+| --- | --- | --- | --- |
+| `expression` | `string` | 예 | 산술 식 문자열. |
+| `prefix` | `string` | 예 | 렌더된 값 앞에 그대로 붙음. |
+| `suffix` | `string` | 예 | 렌더된 값 뒤에 그대로 붙음. |
+
+지원 연산자는 `+`, `-`, `*`, `/`, `%`, `**`(오른쪽 결합)입니다. 숫자 리터럴은 소수(`.5` 같은 선행 점 형식 포함), 과학적 표기(`1e10`), 16진(`0x...`), 2진(`0b...`), 8진(`0o...`)을 포함합니다. 함수, 식별자, 단위, 상수는 **없습니다** — 스키마 예시에도 불구하고 `sqrt(16)`은 파싱되지 않습니다. 결과는 유한해야 합니다. 평가 오류는 배치 전체를 중단시킵니다.
+
+## `recipe`
+
+감지된 프로젝트 태스크 러너가 노출하는 태스크를 실행합니다. 태스크가 있는 러너가 하나 이상 감지될 때만 도구가 나타납니다.
+
+| 필드 | 타입 | 필수 | 설명 |
+| --- | --- | --- | --- |
+| `op` | `string` | 예 | 태스크 선택자와 뒤따르는 인수. 첫 토큰이 태스크를 고르고, 나머지는 명령에 그대로 덧붙습니다. |
+
+예: `test`, `build --release`, `pkg-a/test`, `crate/bin/server`, `pkg:test --watch`.
+
+### 지원 러너
+
+| 러너 id | 감지 기준 |
+| --- | --- |
+| `just` | `PATH`의 `just` + justfile. |
+| `pkg` | 루트 `package.json`(루트 및 워크스페이스 스크립트). |
+| `cargo` | `PATH`의 `cargo` + `Cargo.toml`. |
+| `make` | `PATH`의 `make` + makefile. |
+| `task` | `PATH`의 `task` + Taskfile. |
+
+### 해석 규칙
+
+- 한정되지 않은 태스크 이름(`test`)은 정확히 한 러너가 소유할 때만 성공합니다. 모호하면 `<runner-id>:<task>`를 쓰라는 힌트와 함께 거부됩니다.
+- 명시적 접두(`pkg:test`)는 한 러너를 대상으로 하며, 접미는 그 러너의 태스크와 일치해야 합니다.
+- 네임스페이스 태스크 이름은 `/`를 씁니다(예: `pkg-a/test`). `/`는 이름의 일부이지 구분자가 아닙니다.
+
+실행은 `bash`에 위임되므로 출력, 절단, cwd 처리가 `bash` 도구와 동일합니다. recipe는 자체 타임아웃을 두지 않아 bash 기본 `300`초 타임아웃이 적용됩니다. `recipe.enabled`로 게이트됩니다. 도구 설명은 러너당 최대 20개 태스크를 나열합니다.
+
+## `ask`
+
+대화형 사용자에게 하나 이상의 선택 또는 자유 응답을 요청합니다. 세션에 UI가 있을 때만 등록되며, 헤드리스 세션에서는 보이지 않습니다.
+
+| 필드 | 타입 | 필수 | 설명 |
+| --- | --- | --- | --- |
+| `questions` | `Question[]` | 예 | 하나 이상의 질문(비어 있으면 안 됨). |
+
+각 `Question`:
+
+| 필드 | 타입 | 필수 | 설명 |
+| --- | --- | --- | --- |
+| `id` | `string` | 예 | 다중 질문 결과용 안정적 식별자. |
+| `question` | `string` | 예 | 사용자에게 보이는 프롬프트 텍스트. |
+| `options` | `{ label: string }[]` | 예 | 명시적 옵션. UI가 항상 `Other (type your own)`를 추가하므로 포함하지 마세요. |
+| `multi` | `boolean` | 아니오 | 다중 선택 활성화. 기본 `false`. |
+| `recommended` | `number` | 아니오 | 0 기반 권장 옵션 인덱스(UI 힌트, 잘못된 인덱스는 무시). |
+
+`ask.notify`가 `off`가 아니면 터미널 알림(`Waiting for input`)이 전송됩니다. 입력 전에 타임아웃이 발생하면 권장 옵션(없으면 첫 옵션)이 자동 선택됩니다. `ask.timeout` 기본값은 `30`초입니다. `0`으로 설정하거나 플랜 모드에서는 비활성화됩니다. 타임아웃은 옵션 선택기에만 적용됩니다 — 사용자가 `Other`를 고르면 에디터에는 타임아웃이 없습니다. 취소나 헤드리스 사용은 결과를 반환하는 대신 예외를 던집니다.
+
+## 관련 문서
+
+<Cards>
+  <Card title="도구 개요" href="/ko/docs/reference/tools" />
+  <Card title="런타임 도구" href="/ko/docs/reference/tools/runtime" />
+  <Card title="파일 도구" href="/ko/docs/reference/tools/files" />
+  <Card title="구성" href="/ko/docs/reference/configuration" />
+</Cards>

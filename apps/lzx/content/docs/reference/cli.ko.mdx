@@ -1,15 +1,15 @@
 ---
 title: CLI
-description: lazycodex-ai npm bin, OmO로 전달되는 방식, --dry-run 플래그, 그리고 세션 내 커맨드 기둥.
+description: The lazycodex-ai npm bin, install, doctor, dry-run, and marketplace alternative.
 ---
 
-LazyCodex가 제공하는 CLI는 하나, `lazycodex-ai` npm bin입니다. 이것은 얇은 포워더로, 모든 호출은 `npx`로 실행되는 `omo` 커맨드로 확장됩니다. 전역 설치는 없습니다 — 항상 `npx`로 호출합니다.
+LazyCodex가 제공하는 CLI는 하나, `lazycodex-ai` npm bin입니다. OmO 기반 Codex light 설정을 설치하고 진단합니다. 전역 설치는 없습니다 — 항상 `npx`로 호출합니다.
 
-## OmO로 전달되는 방식
+## Forwarding to OmO
 
 bin은 인자를 읽어 `oh-my-openagent`로 전달합니다. `install` 서브커맨드는 Codex 플랫폼을 고정하도록 특별 처리되고, 나머지는 그대로 통과합니다.
 
-<Tabs items={["install", "기타 커맨드"]}>
+<Tabs items={["install", "other"]}>
 
 <Tab value="install">
 
@@ -32,7 +32,7 @@ npx lazycodex-ai install --no-tui --codex-autonomous
 
 </Tab>
 
-<Tab value="기타 커맨드">
+<Tab value="other">
 
 `install`이 아닌 첫 인자는 플랫폼 고정 없이 `omo`로 바로 전달됩니다:
 
@@ -61,26 +61,43 @@ npx --yes --package oh-my-openagent omo install --platform=codex --no-tui --code
 
 `--dry-run`은 전달 전에 제거되므로, 남은 인자는 실제 실행과 정확히 동일하게 해석됩니다. 실행 전에 정확한 `omo` 호출을 확인할 때 사용하세요.
 
-## 종료 동작
+## `doctor`
+
+```bash
+npx lazycodex-ai doctor
+```
+
+무엇이 설정되었고, 무엇이 빠졌고, 왜 그런지 보여 주는 health report를 출력합니다. 플러그인 캐시, hooks, MCP Servers, Agent Roles, Codex config state를 확인하므로 훅이 pending 상태이거나 스킬이 로드되지 않거나 라우팅이 이상할 때 먼저 실행하세요.
+
+## Marketplace Alternative
+
+`npx` 설치가 기본 경로입니다. 추가적인 실험적 경로로 Codex에서 플러그인을 설치할 수 있습니다.
+
+```bash
+codex plugin marketplace add https://github.com/code-yeongyu/lazycodex
+codex plugin add omo@sisyphuslabs
+```
+
+다음 Codex 시작 리뷰에서 omo hooks를 승인하세요. 첫 승인 세션은 background bootstrap을 실행하고, 완료 뒤 재시작을 안내합니다. 업그레이드는 다음으로 실행합니다.
+
+```bash
+codex plugin marketplace upgrade sisyphuslabs
+```
+
+업그레이드 후에는 플러그인 파일이 바뀌어 trust hash 재승인이 필요하므로 hooks가 **Modified**로 표시됩니다. 다시 승인하면 다음 세션에서 새 버전 bootstrap이 실행됩니다.
+
+## Exit Behavior
 
 bin은 해석된 커맨드를 상속된 stdio로 실행하고, 그 커맨드의 상태 코드로 종료합니다. `npx` 자체 spawn에 실패하면 에러를 출력하고 0이 아닌 코드로 종료합니다.
 
-## 세션 내 커맨드 기둥
+## In-session Commands
 
-설치되면 LazyCodex는 OmO의 커맨드 기둥을 Codex 안에 등록합니다. 이들은 셸이 아니라 Codex 세션에서 입력합니다. 설치 프로그램이 정확한 `$command` 문법을 보여 줍니다.
+설치되면 LazyCodex는 OmO의 커맨드를 Codex 안에 등록합니다. 이들은 셸 명령이 아니라 Codex 세션 입력창에서 쓰는 `$command`입니다. 문법과 사용 흐름은 [Commands](/ko/docs/commands)에 모아 둡니다.
 
-| 커맨드 | 입력 | 동작 |
-| --- | --- | --- |
-| [`$ulw-plan`](/ko/docs/commands/ulw-plan) | `$ulw-plan "what to build"` | Prometheus 전략 플래너. `plans/<slug>.md`에 계획을 작성합니다. 제품 코드는 절대 작성하지 않습니다. |
-| [`$start-work`](/ko/docs/commands/start-work) | `$start-work [plan-name] [--worktree <path>]` | 모든 체크박스가 끝날 때까지 계획을 실행합니다. **ORCHESTRATION COMPLETE**를 출력합니다. |
-| [`$ulw-loop`](/ko/docs/commands/ulw-loop) | `$ulw-loop "task" [--completion-promise=TEXT] [--strategy=reset\|continue]` | Oracle 검증 완료까지 도는 자기 참조 루프. ultrawork 모드 500회, 일반 모드 100회 상한. |
-| [`$init-deep`](/ko/docs/commands/init-deep) | `$init-deep` | 계층형 `AGENTS.md` 프로젝트 메모리를 생성합니다. |
-
-전체 설명은 [커맨드](/ko/docs/commands) 개요를 참고하세요.
-
-## 함께 보기
+## Related
 
 <Cards>
-  <Card title="설정" href="/ko/docs/reference/configuration">설치 플래그와 Codex 플랫폼 대상.</Card>
-  <Card title="시작하기" href="/ko/docs/getting-started">LazyCodex를 Codex에 설치하기.</Card>
+  <Card title="Configuration" href="/ko/docs/reference/configuration">설치 플래그와 Codex 플랫폼 대상.</Card>
+  <Card title="Getting Started" href="/ko/docs/getting-started">LazyCodex를 Codex에 설치하기.</Card>
+  <Card title="Commands" href="/ko/docs/commands">Codex 세션 안에서 쓰는 `$command` 흐름.</Card>
 </Cards>

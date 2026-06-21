@@ -1,20 +1,20 @@
 ---
 title: 快速开始
-description: 用一行 npx 命令将 LazyCodex 安装进 Codex，完成认证，再用 init-deep、ulw-plan、start-work、ulw-loop 运行第一个任务。
+description: 在 Codex 中安装 LazyCodex，并从项目记忆继续到第一个计划和执行。
 ---
 
-LazyCodex 用一行 `npx` 命令将 OmO 智能体框架安装进 Codex，无需全局安装。先完成配置，再运行第一个任务。
+本文介绍从首次安装 LazyCodex 到运行第一个任务的基本流程。先从 Codex 开始安装，用 `$init-deep` 创建项目记忆，然后执行 `$ulw-plan` 和 `$start-work`。
 
 <Steps>
 
 <Step>
 
-### 前置条件
+### 前置准备
 
-- [Bun](https://bun.sh)
-- [OpenAI Codex CLI](https://github.com/openai/codex)
+- 可以运行 `npx` 的 Node.js/npm 环境。无需 Bun。
+- Codex App 或 [OpenAI Codex CLI](https://github.com/openai/codex)
 
-LazyCodex 运行在 OpenAI Codex 内部，因此 Codex CLI 必须安装并能正常使用。
+LazyCodex 是把 OmO 命令、技能和钩子接入 Codex 设置的工具。只要 Codex 已经能正常使用，App 和 CLI 的安装流程可以视为相同。
 
 </Step>
 
@@ -22,25 +22,38 @@ LazyCodex 运行在 OpenAI Codex 内部，因此 Codex CLI 必须安装并能正
 
 ### 安装
 
-一行即可。无需全局安装，也不要用 `npm i -g`，始终使用 `npx`：
+安装方式可以看作一条流程。打开一个新的 Codex 任务，把 LazyCodex GitHub 链接交给它，然后让它安装。
+
+```text
+https://github.com/code-yeongyu/lazycodex
+
+请参考这个仓库安装 LazyCodex。
+```
+
+如果需要自己执行命令，请使用：
 
 ```bash
 npx lazycodex-ai install
 ```
 
-它是面向 Codex 平台的 OmO 安装程序的简写：
+安装后重新打开 Codex，确认 `$` 菜单中出现 OmO 插件和技能。
+
+<figure className="not-prose my-6">
+  <img
+    src="/images/docs/lazycodex-install-real.gif"
+    alt="安装 LazyCodex 后，在 Codex 的美元菜单中确认 OmO 插件和技能"
+    width="960"
+    height="420"
+    loading="lazy"
+    className="w-full rounded-lg border border-fd-border bg-fd-card"
+  />
+</figure>
+
+下次启动时，需要在 Codex 启动审核中批准 `omo` 钩子。钩子在批准前不会运行。如果状态显示为 `pending` 或 `degraded`，建议先运行诊断。
 
 ```bash
-npx --yes --package oh-my-openagent omo install --platform=codex
+npx lazycodex-ai doctor
 ```
-
-如需完全自主、无 TUI 的配置，加上自主模式标志：
-
-```bash
-npx lazycodex-ai install --no-tui --codex-autonomous
-```
-
-安装程序会把 OmO 框架（命令、技能、钩子、模型路由）接入你的 Codex 配置。强烈建议让 LLM 智能体替你运行安装并完成配置；智能体会自动处理订阅检测、模型选择和提供方认证。
 
 </Step>
 
@@ -48,7 +61,7 @@ npx lazycodex-ai install --no-tui --codex-autonomous
 
 ### 认证
 
-没有单独的 LazyCodex 登录命令。安装程序（以及你让它代劳的任意 LLM 智能体）会自动处理订阅检测、模型选择和提供方认证。登录 Codex CLI 本身是前置条件，但它不是 LazyCodex 的认证步骤。
+LazyCodex 本身没有单独的登录命令。安装程序，或你委托安装的智能体，会处理订阅检测、模型选择和提供方认证。Codex App 或 Codex CLI 本身需要已登录，但这更接近前置准备，而不是 LazyCodex 专有的认证步骤。
 
 提供方与路由细节见[配置](/zh/docs/reference/configuration)。
 
@@ -58,49 +71,80 @@ npx lazycodex-ai install --no-tui --codex-autonomous
 
 ### 运行第一个任务
 
-先建立项目记忆，再使用命令支柱。支柱命令使用安装程序输出的 `$command` 语法调用。
-
-首先生成分层的 `AGENTS.md` 项目记忆，让智能体一开始就具备完整上下文：
+为了让智能体带着项目上下文开始，先创建分层的 `AGENTS.md` 项目记忆。
 
 ```text
 $init-deep
 ```
 
-然后按工作选择一个支柱：
+<figure className="not-prose my-6">
+  <img
+    src="/images/docs/lazycodex-command-init-deep.gif"
+    alt="init-deep 命令运行并创建 AGENTS.md 项目记忆"
+    width="960"
+    height="540"
+    loading="lazy"
+    className="w-full rounded-lg border border-fd-border bg-fd-card"
+  />
+</figure>
 
-- `$ulw-plan "要构建什么"` —— Prometheus 规划方案并写入 `plans/<slug>.md`，绝不编写产品代码。
-- `$start-work [plan-name] [--worktree <path>]` —— 执行计划直至所有复选框完成，然后打印 **ORCHESTRATION COMPLETE**。
-- `$ulw-loop "任务" [--completion-promise=TEXT] [--strategy=reset|continue]` —— 自引用循环，运行直至 Oracle 验证完成。
+然后选择适合当前工作的命令。
 
-典型流程是先规划再执行：
+如果需要先做计划，可以这样输入：
 
 ```text
-$init-deep
-$ulw-plan "构建一个用于任务管理的 REST API"
+$ulw-plan "给一个小型任务应用添加完成处理 helper"
+```
+
+这个阶段不会编写产品代码。它会读取仓库，留下计划草案和批准请求；批准后，会在 `.omo/plans/<slug>.md` 中生成可执行的计划文件。
+
+<figure className="not-prose my-6">
+  <img
+    src="/images/docs/lazycodex-command-ulw-plan.gif"
+    alt="ulw-plan 命令生成计划草案并请求批准"
+    width="960"
+    height="540"
+    loading="lazy"
+    className="w-full rounded-lg border border-fd-border bg-fd-card"
+  />
+</figure>
+
+如果要执行已有计划，可以这样输入：
+
+```text
 $start-work
 ```
 
-或者，对于需要持续推进直到结果被证据验证的开放式任务，直接使用循环：
+它会按照计划推进，直到所有复选框完成，然后输出 **ORCHESTRATION COMPLETE**。
+
+<figure className="not-prose my-6">
+  <img
+    src="/images/docs/lazycodex-command-start-work.gif"
+    alt="start-work 命令执行计划并推进到 ORCHESTRATION COMPLETE"
+    width="960"
+    height="540"
+    loading="lazy"
+    className="w-full rounded-lg border border-fd-border bg-fd-card"
+  />
+</figure>
+
+如果想把实现到验证的全过程都交出去，可以使用 loop。它会继续工作，直到结果能用证据确认。
 
 ```text
-$ulw-loop "修复失败的结账流程并端到端验证"
+$ulw-loop "修复结账流程失败，并端到端验证"
 ```
+
+<figure className="not-prose my-6">
+  <img
+    src="/images/docs/lazycodex-command-ulw-loop.gif"
+    alt="ulw-loop 命令启动目标循环并进入基于证据的执行流程"
+    width="960"
+    height="540"
+    loading="lazy"
+    className="w-full rounded-lg border border-fd-border bg-fd-card"
+  />
+</figure>
 
 </Step>
 
 </Steps>
-
-## 技能
-
-除命令支柱外，LazyCodex 还为专项工作安装 OmO 的技能层 —— `review-work`、`remove-ai-slops`、`frontend-ui-ux`、`programming`、`LSP`、`rules`、`comment-checker` 等。命令层保持简单，技能则补充专家判断。完整库见[技能](/zh/docs/skills)。
-
-## 下一步
-
-<Cards>
-  <Card title="命令" href="/zh/docs/commands" description="命令支柱：ulw-plan、start-work、ulw-loop、init-deep。" />
-  <Card title="概念" href="/zh/docs/concepts" description="ultrawork 循环、纪律智能体、模型路由。" />
-  <Card title="用例与指南" href="/zh/docs/guides" description="日常任务的实操示例。" />
-</Cards>
-
-- 底层引擎：[oh-my-openagent (OmO)](https://github.com/code-yeongyu/oh-my-openagent)
-- [GitHub 上的 LazyCodex](https://github.com/code-yeongyu/lazycodex)

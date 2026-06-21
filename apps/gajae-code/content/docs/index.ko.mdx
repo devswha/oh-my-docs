@@ -40,53 +40,32 @@ deep-interview -> ralplan -> ultragoal
 - 어떤 검사를 돌렸는지
 - 어떤 증거가 결과를 뒷받침하는지
 
-## 설치
+## 먼저 기억할 것
 
-```bash
-bun install -g gajae-code
-```
+처음에는 네 단계만 알면 됩니다.
 
-이 패키지는 `gjc` 바이너리를 설치합니다. 스코프 패키지 `@gajae-code/coding-agent`로도 받을 수 있습니다.
+1. Bun, Git, tmux, provider 자격 증명을 준비합니다.
+2. `gjc --tmux`로 시작합니다.
+3. `deep-interview`와 `ralplan`으로 명확히 하고 계획합니다.
+4. `ultragoal`로 작업을 끌고 갑니다. 병렬 tmux worker가 도움이 될 때만 `team`을 더하세요.
 
-권장하는 tmux 기반 환경으로 시작합니다:
-
-```bash
-gjc --tmux
-```
-
-## 워크플로우 표면
-
-기본 워크플로우 스킬 네 가지:
-
-| 스킬             | 하는 일                                          |
-| ---------------- | ------------------------------------------------ |
-| `deep-interview` | 계획·코드 변경 전에 모호함을 제거합니다.         |
-| `ralplan`        | 변경 전에 계획을 세우고 비평합니다.              |
-| `team`           | 필요할 때 tmux 기반 병렬 실행을 조율합니다.      |
-| `ultragoal`      | 구현·수정·검증·증거 요약까지 목표를 추적합니다.  |
-
-번들된 역할 에이전트 네 가지:
-
-| 에이전트    | 하는 일                                  |
-| ----------- | ---------------------------------------- |
-| `executor`  | 범위가 정해진 구현·수정·리팩터링.        |
-| `architect` | 읽기 전용 아키텍처·코드 리뷰 평가.       |
-| `planner`   | 읽기 전용 순서 설계·수용 기준 정의.      |
-| `critic`    | 읽기 전용 계획 비평·실행 가능성 검토.    |
+직접 변경이 아니라 research가 목적이면 `gjc rlm`으로 시작합니다.
 
 ## 문서 둘러보기
 
 <Cards>
   <Card title="시작하기" href="/ko/docs/getting-started" description="설치하고 gjc를 실행해 첫 루프를 돌립니다." />
+  <Card title="추천 환경" href="/ko/docs/recommended-environment" description="Bun, Git, tmux, provider 자격 증명, OS 메모." />
+  <Card title="FAQ" href="/ko/docs/faq" description="설정, 첫 사용, rlm, team, computer-use 짧은 답변." />
   <Card title="주요 개념" href="/ko/docs/concepts" description="작동 루프, 세션, 모델 라우팅, 검증." />
-  <Card title="워크플로우" href="/ko/docs/workflows" description="deep-interview, ralplan, team, ultragoal." />
-  <Card title="에이전트" href="/ko/docs/agents" description="executor, architect, planner, critic." />
-  <Card title="도구" href="/ko/docs/tools" description="파일, 검색, 런타임, 웹, 세션, 미디어 도구." />
+  <Card title="Commands" href="/ko/docs/commands" description="deep-interview, ralplan, rlm, team, ultragoal." />
+  <Card title="Skills" href="/ko/docs/skills" description="executor, architect, planner, critic 역할 에이전트." />
   <Card title="레퍼런스" href="/ko/docs/reference" description="설정, 모델, 자격 증명, 키바인딩, 테마." />
 </Cards>
 
 ## 다음 단계
 
 - [시작하기](/ko/docs/getting-started) — 설치, 실행, 첫 루프 돌리기.
+- [추천 환경](/ko/docs/recommended-environment) — 설치 전 로컬 환경 확인.
 - 소스 프로젝트: [Yeachan-Heo/gajae-code](https://github.com/Yeachan-Heo/gajae-code)
 - 커뮤니티: [Discord](https://discord.gg/sj4exxQ9v)

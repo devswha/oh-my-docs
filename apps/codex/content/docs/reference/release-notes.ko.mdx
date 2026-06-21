@@ -5,6 +5,25 @@ description: "사용자 영향, 호환성, 검증 근거, 업스트림 링크를
 
 [변경 로그](/ko/docs/reference/changelog)는 짧은 요약입니다. 이 페이지는 최근 릴리스의 실제 의미를 볼 때 사용하세요. 무엇이 바뀌었는지, 마이그레이션이 필요한지, 릴리스 전에 무엇을 검증했는지를 함께 정리합니다.
 
+## v0.18.14 — Routing diagnostics, safer goals, hook/HUD hardening
+
+[업스트림 릴리스 노트](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/release-notes-0.18.14.md) · [CHANGELOG 항목](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#01814---2026-06-20) · [릴리스 준비 근거](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/qa/release-readiness-0.18.14.md) · [Compare](https://github.com/Yeachan-Heo/oh-my-codex/compare/v0.18.13...v0.18.14)
+
+### 사용자 영향
+
+- per-agent override와 launch diagnostics로 agent/model routing을 더 쉽게 확인할 수 있습니다.
+- Codex goal cleanup, Ralplan freshness/approval, supervised Autopilot rework, Ultragoal architecture invariant handling이 goal/planning workflow를 더 안전하게 만듭니다.
+- Plugin setup, native hooks, HUD, Team, tmux paste buffer, worker AGENTS guidance가 local state를 더 잘 보존하고 실패를 덜 모호하게 만듭니다.
+- `omx doctor`는 root-owned repo artifact를 보여주고, resume discovery는 madmax run history를 포함합니다.
+
+### 호환성
+
+`0.18.13`에서 일반 사용자가 해야 할 마이그레이션은 없습니다. 기존 CLI, plugin, native-agent, HUD, state, hook, package layout, runtime contract는 유지됩니다.
+
+### 업스트림 검증 근거
+
+업스트림은 version sync, build, native-agent verification, plugin mirror/bundle check, catalog docs check, CLI dogfooding, `npm pack --dry-run`, `git diff --check`를 release-readiness evidence로 기록했습니다. publication-stage proof는 업스트림 release workflow에서 별도로 추적됩니다.
+
 ## v0.17.0 — Hermes MCP, `$design`, plugin discovery, adversarial UltraQA
 
 [업스트림 릴리스 노트](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/release-notes-0.17.0.md) · [CHANGELOG 항목](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#0170---2026-05-12) · [릴리스 준비 근거](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/qa/release-readiness-0.17.0.md)

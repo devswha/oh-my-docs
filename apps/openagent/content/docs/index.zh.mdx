@@ -10,17 +10,24 @@ description: Multi-model orchestration for OpenCode. Install, type ultrawork, an
 ## Quick Start
 
 ```bash
+# Ultimate / OpenCode
 bunx oh-my-openagent install
+
+# Light / Codex CLI
+npx lazycodex-ai install
+
+# Both
+bunx oh-my-openagent install --platform=both
 bunx oh-my-openagent doctor
 ```
 
-Then open OpenCode and type:
+Ultimate uses Bun and OpenCode provider prompts. Light uses Node/npm through `lazycodex-ai`, writes managed Codex plugin state under `~/.codex/`, and does not require Bun. Then open OpenCode and type:
 
 ```text
 ultrawork
 ```
 
-`oh-my-openagent` 与 `oh-my-opencode` 均已发布。OmO 优先选择 `oh-my-openagent` 的 plugin entry；在重命名过渡期内，`oh-my-opencode` 的 legacy entry 仍然可加载（伴随警告）。
+`oh-my-openagent` 与 `oh-my-opencode` 均已发布。OmO 优先选择 `oh-my-openagent` 的 plugin entry；在重命名过渡期内，`oh-my-opencode` 的 legacy entry 仍然可加载（伴随警告）。Codex Light 通过 marketplace `sisyphuslabs` 与 plugin `omo@sisyphuslabs` 安装。
 
 ## Documentation Map
 

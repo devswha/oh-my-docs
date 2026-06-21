@@ -1,0 +1,33 @@
+---
+title: Ultragoal
+description: .omc/ultragoal artifact와 Claude /goal handoff를 함께 쓰는 durable multi-goal workflow.
+---
+
+## 개요
+
+`ultragoal`은 큰 brief를 순서 있는 goal로 쪼개고, 진행 상황을 `.omc/ultragoal/`에 기록하며, 활성 Claude agent가 Claude Code `/goal` slash command와 맞춰 움직이도록 handoff text를 출력합니다.
+
+shell에서 Claude `/goal` 상태를 직접 바꾸지는 못합니다. CLI는 repo-local durable state를 남기고, 세션 안 agent가 어떤 `/goal` 조건을 설정하고 언제 checkpoint할지 알려줍니다.
+
+## CLI 흐름
+
+```bash
+omc ultragoal create-goals --brief-file plan.md
+omc ultragoal complete-goals
+omc ultragoal checkpoint --goal-id G001-example --status complete --evidence "tests passed"
+omc ultragoal status
+```
+
+기본 `claudeGoalMode`는 `aggregate`입니다. 하나의 Claude `/goal`이 전체 run을 덮고, OMC story는 ledger에서 추적합니다. story마다 별도 Claude `/goal`이 필요할 때만 `--claude-goal-mode per-story`를 쓰세요.
+
+## 최종 Gate
+
+마지막 story에는 `ai-slop-cleaner`, verification, `$code-review` evidence가 필요합니다. review가 clean하지 않으면 complete로 표시하지 말고 `omc ultragoal record-review-blockers`를 호출하세요.
+
+## Reference
+
+| 항목 | 값 |
+|------|----|
+| 호출 | `/oh-my-claudecode:ultragoal` |
+| CLI | `omc ultragoal ...` |
+| artifact root | `.omc/ultragoal/` |

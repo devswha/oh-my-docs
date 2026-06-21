@@ -1,0 +1,44 @@
+---
+title: "トラブルシューティング"
+description: "OMX install は正常に見えるが実行が失敗するときの確認境界"
+---
+
+`omx setup` や `omx doctor` が通るのに、実際の Codex request が失敗するときに使います。
+
+## Install Health vs Execution Health
+
+`omx doctor` は local OMX install surface、つまり prompts、skills、config files、hooks、AGENTS scaffolding、runtime prerequisites を確認します。active Codex profile が認証済みで model request を完了できることまでは証明しません。
+
+OMXを使う同じ shell、`HOME`、`CODEX_HOME`、project directory で smoke test を実行してください。
+
+```bash
+codex login status
+omx exec --skip-git-repo-check -C . "Reply with exactly OMX-EXEC-OK"
+```
+
+| Check | What it proves |
+|---|---|
+| `omx doctor` green | Local OMX wiring は正常に見えます。 |
+| `codex login status` green | active Codex profile が login state を見られます。 |
+| `omx exec ...` returns `OMX-EXEC-OK` | auth、provider routing、execution、cwd assumptions が一緒に機能します。 |
+
+## Common Failure Modes
+
+| Symptom | Check |
+|---|---|
+| `401 Unauthorized`、bearer auth missing、wrong API key | OMXを起動する shell の `HOME`/`CODEX_HOME` が同じか確認します。 |
+| proxy/gateway auth fails | local OpenAI-compatible proxy を使う場合、active `~/.codex/config.toml` に `openai_base_url` があるか確認します。 |
+| `AGENTS.md` exists but doctor says OMX contract missing | `omx setup --scope user --merge-agents`、または project scope で修復します。 |
+| `.omx/` or `.beads/` writes fail | root-owned、owner-mismatched、non-writable files を確認します。`omx doctor --force` は repo root が実行ユーザー所有の場合だけ自動修復します。 |
+| Team resume or `doctor --team` references dead tmux state | 先に `omx team status <team>` と `tmux ls` を確認し、破棄済みなら `omx team shutdown <team> --force --confirm-issues`、次に `omx cancel` を実行します。 |
+| Shift+Enter submits inside tmux | `tmux show -gv extended-keys`、`tmux info | grep extkeys`、`tmux show -gv terminal-features`、`TERM`、`TERM_PROGRAM` を確認します。 |
+
+## Deprecated Explore Surface
+
+`omx explore` は hard-deprecated です。read-only repository lookup は通常の Codex inspection tools/subagents を使い、shell-native read-only evidence や tmux-pane summary が必要なら `omx sparkshell -- <command>` を使います。
+
+## Related
+
+- [Quick Commands](/ja/docs/reference/quick-commands)
+- [Configuration](/ja/docs/reference/configuration)
+- [Codex Native Hooks](/ja/docs/hooks/codex-native-hooks)

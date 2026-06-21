@@ -13,7 +13,7 @@ OmO treats tools as proof surfaces, not conveniences. Agents should use the same
 | Structural search | AST-Grep search/replace | Code-pattern changes without brittle string matching. |
 | File safety | Hashline-aware reads/edits | The file did not drift between read and edit in a shared worktree. |
 | Runtime surface | tmux, browser, HTTP requests, CLI drivers | The feature works where users actually touch it. |
-| External knowledge | Context7, web search, GitHub code search, Librarian | Current docs, OSS examples, and remote repo facts. |
+| External knowledge | Context7, web search, GitHub code search, CodeGraph, Librarian | Current docs, code graph context, OSS examples, and remote repo facts. |
 | Continuation | todos, background task notifications, boulder state | Long work resumes instead of silently stopping. |
 
 ## LSP and AST-Grep
@@ -48,6 +48,7 @@ Use LSP when the question is about symbols. Use AST-Grep when the question is ab
 | Context7 | Official package docs and API examples. |
 | Web search | Current public facts, releases, incidents, and pages. |
 | GitHub code search | Real-world usage patterns from public repositories. |
+| CodeGraph | Codex Light code-intelligence retrieval through the plugin-scoped `codegraph` MCP. |
 | Librarian | Multi-repo or external-library synthesis. |
 | Explore | Internal codebase discovery and pattern maps. |
 

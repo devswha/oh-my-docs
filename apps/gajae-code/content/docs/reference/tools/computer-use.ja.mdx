@@ -1,0 +1,62 @@
+---
+title: Computer use
+description: Gajae-Code のネイティブ supervisor 管理 computer ツールによる、実験的な Apple Silicon macOS スクリーンショットと入力制御。
+---
+
+`computer` は Apple Silicon macOS 向けの実験的なデスクトップ制御ツールです。実際のデスクトップを制御するため、スクリーンショットや入力制御が本当に必要な作業でのみ使います。
+
+![desktop-control computer use を表す Gajae-Code operator mascot](/images/docs/reference-tools-computer-use.png)
+
+## 利用条件
+
+対応ホストでは既定で呼び出し可能かつ discoverable です:
+
+1. Apple Silicon macOS (`process.platform === "darwin"` and `process.arch === "arm64"`)。
+2. `computer.alwaysOn` が明示的に `false` ではない、または `computer.enabled` が `true`。
+
+無効または未対応環境では、すべてのアクションが `COMPUTER_DISABLED` を返し、何もキャプチャしません。ネイティブ実行は supervisor でゲートされます。supervisor 状態異常、権限不足、stale display、キャンセル、suspend は `COMPUTER_*` コードで fail closed します。
+
+## アクション
+
+アクションオブジェクトは厳密な snake_case の判別スキーマを使います。camelCase フィールドは拒否されます。
+
+| アクション | 必須フィールド | 任意フィールド |
+| --- | --- | --- |
+| `screenshot` | なし | `timeout`, `include_screenshot` |
+| `click` | `x`, `y` | `button`, `timeout`, `include_screenshot` |
+| `double_click` | `x`, `y` | `button`, `timeout`, `include_screenshot` |
+| `move` | `x`, `y` | `button`, `timeout`, `include_screenshot` |
+| `drag` | `x`, `y`, `to_x`, `to_y` | `button`, `timeout`, `include_screenshot` |
+| `scroll` | `x`, `y`, `scroll_x`, `scroll_y` | `timeout`, `include_screenshot` |
+| `type` | `text` | `timeout`, `include_screenshot` |
+| `keypress` | `keys` | `timeout`, `include_screenshot` |
+| `wait` | `ms` | `timeout`, `include_screenshot` |
+| `batch` | `actions` | `timeout`, `include_screenshot` |
+
+`button` は `left`, `right`, `middle` のいずれかです。
+
+## 座標契約
+
+`x`, `y`, `to_x`, `to_y` は最新スクリーンショット座標系のピクセルです。CSS ピクセルでも正規化比率でもありません。ネイティブコードは入力前に表示の鮮度と座標を検証し、不正な座標では `COMPUTER_COORD_INVALID` または `COMPUTER_DISPLAY_STALE` を返します。
+
+## エラー
+
+安定したエラーコード:
+
+- `COMPUTER_DISABLED`
+- `COMPUTER_SUSPENDED`
+- `COMPUTER_SUPERVISOR_NOT_LIVE`
+- `COMPUTER_PERMISSION_REQUIRED`
+- `COMPUTER_DISPLAY_STALE`
+- `COMPUTER_COORD_INVALID`
+- `COMPUTER_CANCELLED`
+
+TUI レンダラーは、アクションメタデータ、座標、スクリーンショット寸法、supervisor 状態、エラーコードだけを限定的に表示します。生のスクリーンショット base64 は表示しません。
+
+## 関連
+
+<Cards>
+  <Card title="ランタイムツール" href="/ja/docs/reference/tools/runtime" />
+  <Card title="メディアツール" href="/ja/docs/reference/tools/media" />
+  <Card title="設定" href="/ja/docs/reference/configuration" />
+</Cards>

@@ -1,59 +1,93 @@
 ---
 title: LazyCodex
-description: The OmO agent harness packaged for Codex — project memory, planning, execution, and verified completion. LazyVim for Codex.
+description: Adds OmO commands, skills, and hooks to Codex so project memory, planning, execution, and verification stay connected.
 ---
 
-![LazyCodex](/images/hero.png)
+<figure className="mx-auto w-1/2 min-w-48 max-w-md">
+  <img src="/images/hero.png" alt="LazyCodex" width="4096" height="4096" />
+</figure>
 
-**LazyCodex (LZX)** packages [OmO (oh-my-openagent)](https://github.com/code-yeongyu/oh-my-openagent) as the Codex agent harness for complex codebases. Think LazyVim for lazy.nvim, but for Codex.
+LazyCodex has a simple role. It connects OmO settings so Codex has a clearer sense of what to remember inside a project, what order to work in, and when to stop and verify.
 
-OmO gives Codex a full agent harness: discipline agents, parallel execution, multi-model routing, a skills system, and hooks. LazyCodex packages that harness as a repeatable Codex setup you install with one `npx` line — no global install.
+LazyCodex (LZX) is an OmO Light Edition for Codex. It does not copy all of [OmO (oh-my-openagent)](https://github.com/code-yeongyu/oh-my-openagent). Instead, it bundles the Hephaestus-centered flow, commands, skills, hooks, and helper tools that fit Codex well.
 
-> _"LazyVim made Neovim usable for the rest of us. LazyCodex does the same for Codex."_
+After installation, Codex can read project memory, plan before editing, split work into steps, and verify the result with real evidence at the end. The same setup can be recreated later, so a workflow you tuned once is easy to reuse.
 
-## What you get
+> _Think of it as a tool that gives Codex a work order and a habit of checking its own work._
 
-| Feature | Description |
+## What You Get
+
+| Feature | In plain words |
 | --- | --- |
-| **Discipline agents** | Sisyphus orchestrates Hephaestus, Oracle, and Librarian — a full AI dev team. |
-| **Parallel execution** | Multiple agents work simultaneously on independent subtasks. |
-| **Multi-model routing** | The right model per task category, chosen automatically. |
-| **Skills system** | An extensible skill library for specialized work. |
-| **Hooks & lifecycle** | Pre/post hooks for every agent action. |
-| **Zero config** | Sensible defaults out of the box; override when you want. |
+| **Project memory** | Leaves project context in `AGENTS.md` so Codex does not have to guess from scratch every time. |
+| **Plan first** | Uses `$ulw-plan` to set the order and scope before code is changed. |
+| **Plan execution** | `$start-work` follows the plan checklist and keeps the work moving. |
+| **Evidence check** | `$ulw-loop` and the verification flow look for real evidence, not just “it seems done.” |
+| **Skills and hooks** | Adds specialized flows and automatic checkpoints for review, cleanup, frontend work, programming, and more. |
 
-## The command pillars
+## Remember This First
 
-LazyCodex installs three command pillars plus a project-memory command for Codex. Invoke the pillars with the `$command` syntax the installer prints.
+At first, you only need four steps.
 
-| Command | What it does |
-| --- | --- |
-| `$init-deep` | Generates hierarchical `AGENTS.md` project memory. |
-| `$ulw-plan` | Prometheus strategic planner. Writes a plan to `plans/<slug>.md`; never writes product code. |
-| `$start-work` | Executes a plan until every checkbox is done, then prints **ORCHESTRATION COMPLETE**. |
-| `$ulw-loop` | Self-referential loop that runs until Oracle-verified completion. |
+1. Create project memory with `$init-deep`.
+2. Decide the work order with `$ulw-plan "what to build"`.
+3. Execute the plan with `$start-work`.
+4. Use `$ulw-loop "task"` for long work or anything that needs careful verification.
 
-A typical flow: run `$init-deep` once for project memory, `$ulw-plan "what to build"` to decide the approach, then `$start-work` to execute it — or reach for `$ulw-loop "task"` when you want the work to keep moving until the result is verified by evidence.
+LazyCodex adds rule loading, skills, hooks, model routing, and verification habits to this flow. For details, open only the sidebar pages you need.
 
-## Why different GPT models appear
+## Official Links
 
-OmO does not spend your strongest model on every subtask. It defines task categories and routes each one to the most appropriate model: `quick` lands on a small model like `gpt-5.4-mini`, `ultrabrain` uses a high-reasoning GPT model for hard logic, and agentic coding paths use Codex-tuned GPT models. The point is quota discipline — strong models for deep reasoning, faster models when that is enough.
-
-## Explore the docs
-
-<Cards>
-  <Card title="Getting Started" href="/docs/getting-started" description="Install LazyCodex into Codex and run your first task." />
-  <Card title="Commands" href="/docs/commands" description="The command pillars: ulw-plan, start-work, ulw-loop, init-deep." />
-  <Card title="Concepts" href="/docs/concepts" description="The ultrawork loop, discipline agents, and model routing." />
-  <Card title="Skills" href="/docs/skills" description="review-work, remove-ai-slops, frontend-ui-ux, programming, and more." />
-  <Card title="Use cases & guide" href="/docs/guides" description="Worked examples for everyday tasks." />
-  <Card title="Reference" href="/docs/reference" description="Configuration and CLI." />
-</Cards>
-
-## Next steps
-
-- [Getting Started](/docs/getting-started) — install LazyCodex and run your first task.
-- [Hooks & lifecycle](/docs/concepts/hooks-lifecycle) — when the lifecycle hooks fire.
-- The underlying engine: [oh-my-openagent (OmO)](https://github.com/code-yeongyu/oh-my-openagent)
-- [LazyCodex on GitHub](https://github.com/code-yeongyu/lazycodex)
-- Official site: [lazycodex.ai](https://lazycodex.ai). Maintained by Jobdori / [Sisyphus Labs](https://sisyphuslabs.ai).
+<div className="not-prose mt-4 grid gap-2">
+  <a className="group flex items-center gap-3 rounded-lg border border-fd-border bg-fd-card px-4 py-3 text-fd-foreground no-underline transition-colors hover:bg-fd-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fd-ring" href="https://discord.gg/PUwSMR9XNk">
+    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-fd-border bg-fd-muted text-fd-muted-foreground transition-colors group-hover:text-fd-foreground">
+      <svg aria-hidden="true" className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M20.32 4.37A19.8 19.8 0 0 0 15.36 2.8a13.9 13.9 0 0 0-.64 1.32 18.4 18.4 0 0 0-5.44 0 13.9 13.9 0 0 0-.65-1.32 19.7 19.7 0 0 0-4.95 1.57C.54 9.08-.32 13.67.1 18.2a19.9 19.9 0 0 0 6.08 3.06c.49-.67.92-1.38 1.3-2.13-.71-.27-1.38-.6-2.02-.98.17-.12.33-.25.49-.38a14.2 14.2 0 0 0 12.1 0l.49.38c-.64.38-1.31.71-2.02.98.38.75.82 1.46 1.3 2.13a19.9 19.9 0 0 0 6.08-3.06c.5-5.24-.86-9.79-3.58-13.83ZM8.02 15.46c-1.18 0-2.15-1.08-2.15-2.4s.95-2.4 2.15-2.4c1.2 0 2.17 1.08 2.15 2.4 0 1.32-.95 2.4-2.15 2.4Zm7.96 0c-1.18 0-2.15-1.08-2.15-2.4s.95-2.4 2.15-2.4c1.2 0 2.17 1.08 2.15 2.4 0 1.32-.95 2.4-2.15 2.4Z" />
+      </svg>
+    </span>
+    <span className="min-w-0 flex-1 truncate font-semibold text-inherit">Discord #building-in-public</span>
+    <svg aria-hidden="true" className="h-4 w-4 shrink-0 text-fd-muted-foreground transition-colors group-hover:text-fd-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M7 17 17 7" />
+      <path d="M7 7h10v10" />
+    </svg>
+  </a>
+  <a className="group flex items-center gap-3 rounded-lg border border-fd-border bg-fd-card px-4 py-3 text-fd-foreground no-underline transition-colors hover:bg-fd-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fd-ring" href="https://github.com/code-yeongyu/oh-my-openagent">
+    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-fd-border bg-fd-muted text-fd-muted-foreground transition-colors group-hover:text-fd-foreground">
+      <svg aria-hidden="true" className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 .5a12 12 0 0 0-3.79 23.39c.6.11.82-.26.82-.58v-2.04c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.74.08-.73.08-.73 1.21.09 1.85 1.25 1.85 1.25 1.07 1.84 2.81 1.31 3.5 1 .11-.78.42-1.31.76-1.61-2.66-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23A11.5 11.5 0 0 1 12 5.8c1.02 0 2.04.14 3 .41 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.24 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.62-5.49 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58A12 12 0 0 0 12 .5Z" />
+      </svg>
+    </span>
+    <span className="min-w-0 flex-1 truncate font-semibold text-inherit">GitHub OmO</span>
+    <svg aria-hidden="true" className="h-4 w-4 shrink-0 text-fd-muted-foreground transition-colors group-hover:text-fd-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M7 17 17 7" />
+      <path d="M7 7h10v10" />
+    </svg>
+  </a>
+  <a className="group flex items-center gap-3 rounded-lg border border-fd-border bg-fd-card px-4 py-3 text-fd-foreground no-underline transition-colors hover:bg-fd-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fd-ring" href="https://github.com/code-yeongyu/lazycodex">
+    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-fd-border bg-fd-muted text-fd-muted-foreground transition-colors group-hover:text-fd-foreground">
+      <svg aria-hidden="true" className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 .5a12 12 0 0 0-3.79 23.39c.6.11.82-.26.82-.58v-2.04c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.74.08-.73.08-.73 1.21.09 1.85 1.25 1.85 1.25 1.07 1.84 2.81 1.31 3.5 1 .11-.78.42-1.31.76-1.61-2.66-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23A11.5 11.5 0 0 1 12 5.8c1.02 0 2.04.14 3 .41 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.24 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.62-5.49 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58A12 12 0 0 0 12 .5Z" />
+      </svg>
+    </span>
+    <span className="min-w-0 flex-1 truncate font-semibold text-inherit">GitHub LazyCodex</span>
+    <svg aria-hidden="true" className="h-4 w-4 shrink-0 text-fd-muted-foreground transition-colors group-hover:text-fd-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M7 17 17 7" />
+      <path d="M7 7h10v10" />
+    </svg>
+  </a>
+  <a className="group flex items-center gap-3 rounded-lg border border-fd-border bg-fd-card px-4 py-3 text-fd-foreground no-underline transition-colors hover:bg-fd-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fd-ring" href="https://lazycodex.ai">
+    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-fd-border bg-fd-muted text-fd-muted-foreground transition-colors group-hover:text-fd-foreground">
+      <svg aria-hidden="true" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M2 12h20" />
+        <path d="M12 2a15 15 0 0 1 0 20" />
+        <path d="M12 2a15 15 0 0 0 0 20" />
+      </svg>
+    </span>
+    <span className="min-w-0 flex-1 truncate font-semibold text-inherit">lazycodex.ai</span>
+    <svg aria-hidden="true" className="h-4 w-4 shrink-0 text-fd-muted-foreground transition-colors group-hover:text-fd-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M7 17 17 7" />
+      <path d="M7 7h10v10" />
+    </svg>
+  </a>
+</div>

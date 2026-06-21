@@ -5,7 +5,15 @@ description: "OMX リリース履歴 — 最新リリース要約とアップス
 
 完全な changelog はアップストリームの [`CHANGELOG.md`](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md) で管理されています。このページは最近のリリースを要約したものです。
 
-## 最新リリース — v0.17.0
+## 最新リリース — v0.18.14
+
+`0.18.13` 後の patch です。agent/model routing diagnostics が明確になり、goal/planning workflows が安全になり、plugin/native hook behavior と HUD/Team/tmux handling が強化されました。doctor は root-owned artifacts を検出し、resume は madmax run histories を見つけます。
+
+**Changed:** per-agent model overrides、launch diagnostics、completed Codex goal cleanup guidance、Ralplan transition diagnostics、supervised Autopilot rework、Beads metadata handling、goal/skill workflow guidance。
+
+**Fixed:** plugin AGENTS policy preservation、dev plugin cache diagnostics、bundled skill agent-tier references、null-output native hook success、`PreToolUse` stdout/schema handling、Windows native hook launch、stale Autopilot HUD reporting、tmux paste-buffer cleanup、worker AGENTS guidance、Ralplan freshness/approval gates。
+
+## v0.17.0
 
 `0.16.4` 以降の minor release です。bounded Hermes MCP coordination、canonical `$design` workflow guidance、plugin-mode skill marketplace exposure、より強い UltraQA adversarial contract、Windows native-hook reliability、tmux ownership safety、startup shell isolation、committed project-memory loading、Ultragoal task-scoped goal reconciliation に焦点を当てています。
 

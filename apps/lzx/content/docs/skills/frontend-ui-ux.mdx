@@ -1,80 +1,62 @@
 ---
-title: frontend-ui-ux
-description: Designer-turned-developer craft for polished, memorable UI surfaces.
+title: frontend
+description: The LazyCodex Skill for UI, UX, design, performance, accessibility, and visual QA.
 ---
 
-`frontend-ui-ux` is the playbook for a designer who learned to code. It targets the things pure developers miss — spacing, color harmony, micro-interactions, and the indefinable "feel" that makes an interface memorable. Even without mockups, it envisions and builds cohesive, striking UI.
+`frontend` is the Skill LazyCodex uses for web UI, UX, styling, performance, accessibility, and visual QA. It does not just fill a screen with components. It builds UI against the existing design system and verifies the result in a real browser.
 
-The mission: visually stunning, emotionally engaging interfaces that hold up as production-grade code.
+This Skill works more like a router than a single rule file. Depending on the task, it reads only the relevant `design`, `perfection`, and `ui-ux-db` references, then uses those standards for both implementation and verification.
 
-## Work principles
+## When to Use It
 
-- **Complete what's asked** — execute the exact task, no scope creep, and never mark work complete without verification.
-- **Leave it better** — the project is in a working state after the changes.
-- **Study before acting** — examine existing patterns, conventions, and `git log` before implementing.
-- **Blend seamlessly** — match existing code patterns so the work looks like the team wrote it.
-- **Be transparent** — announce each step and report successes and failures.
+- Frontend implementation, styling, layout, and animation work.
+- Polishing an existing UI that feels awkward or inconsistent.
+- Checking Lighthouse, Core Web Vitals, accessibility, and SEO in a real browser.
+- Adding React development tools such as `react-grab`, `react-scan`, or `react-doctor`.
+- Looking up colors, fonts, charts, landing-page structures, or UX patterns.
 
-## Design process
+## Three Axes
 
-Before coding, commit to a bold aesthetic direction:
+| Axis | Role |
+| --- | --- |
+| `design` | Design systems, brand tone, layout taste, browser-based design QA. |
+| `perfection` | Lighthouse 100, performance, accessibility, SEO, Core Web Vitals. |
+| `ui-ux-db` | Searchable styles, palettes, font pairings, and UX guidelines. |
+
+## Operating Principles
+
+- Do not create new components without checking the design system.
+- Do not weaken UX just to improve Lighthouse scores.
+- Use SVG icon sets rather than emoji.
+- Prefer GPU-friendly animation properties such as `transform`, `opacity`, and `filter`.
+- Verify the result in a real browser before calling the work done.
+
+## Common Flow
 
 <Steps>
 
 <Step>
 
-### Purpose
+### Route
 
-What problem does this solve, and who uses it?
-
-</Step>
-
-<Step>
-
-### Tone
-
-Pick an extreme — brutally minimal, maximalist chaos, retro-futuristic, organic, luxury, playful, editorial, brutalist, art deco, soft/pastel, or industrial.
+Classify whether the request is UI implementation, UI improvement, performance audit, or style research. Read only the references needed for that path.
 
 </Step>
 
 <Step>
 
-### Constraints
+### Build
 
-Technical requirements: framework, performance, accessibility.
+Implement in the style of the existing codebase and design system. When a new visual rule is necessary, leave it as a repeatable token or pattern.
 
 </Step>
 
 <Step>
 
-### Differentiation
+### Verify
 
-The one thing someone will remember.
+Check the desktop and mobile surfaces in the browser, and include performance or accessibility metrics when the task calls for them.
 
 </Step>
 
 </Steps>
-
-Intentionality beats intensity: choose a clear direction and execute with precision.
-
-## Aesthetic guidelines
-
-| Dimension | Direction |
-| --- | --- |
-| Typography | Distinctive fonts; pair a characterful display font with a refined body font. |
-| Color | A cohesive palette via CSS variables; dominant colors with sharp accents. |
-| Motion | High-impact moments; one orchestrated page load with staggered reveals beats scattered micro-interactions. CSS-first. |
-| Spatial composition | Unexpected layouts, asymmetry, overlap, diagonal flow, considered negative space. |
-| Visual detail | Atmosphere and depth — gradient meshes, noise textures, layered transparencies, dramatic shadows. |
-
-## Anti-patterns (never)
-
-- Generic fonts (Inter, Roboto, Arial, system fonts, Space Grotesk).
-- Cliched color schemes — purple gradients on white.
-- Predictable layouts and component patterns.
-- Cookie-cutter design lacking context-specific character.
-- Converging on the same common choices every time.
-
-## Execution
-
-Match implementation complexity to the aesthetic vision: maximalist directions get elaborate code with extensive animation; minimalist directions get restraint, precision, and careful spacing. Vary themes, fonts, and aesthetics between projects — no two designs should look the same.

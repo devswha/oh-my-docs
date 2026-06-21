@@ -1,0 +1,60 @@
+---
+title: Recommended Environment
+description: The Codex, Node.js, and repository setup LazyCodex expects before installation.
+---
+
+LazyCodex does not require a separate complex runtime. It is closer to connecting OmO commands, skills, and hooks inside Codex. First make sure Codex opens correctly, `npx` can run, and the repository you want to work on is ready.
+
+## Operating system
+
+Ubuntu and macOS are the safest choices. LazyCodex touches shells, Git, Node.js/npm, Codex config files, and hooks, so Unix-like environments tend to be smoother.
+
+| OS | Recommendation | Notes |
+| --- | --- | --- |
+| <span className="not-prose inline-flex items-center gap-2 whitespace-nowrap align-middle"><img src="/images/docs/os-ubuntu.svg" alt="" width="20" height="20" className="h-5 w-5 shrink-0" /> Ubuntu</span> | Best choice | Predictable paths, shell behavior, and package management for both servers and local development. |
+| <span className="not-prose inline-flex items-center gap-2 whitespace-nowrap align-middle"><img src="/images/docs/os-macos.svg" alt="" width="20" height="20" className="h-5 w-5 shrink-0" /> macOS</span> | Recommended | Good for local development when Homebrew and Node.js/npm are set up cleanly. |
+| <span className="not-prose inline-flex items-center gap-2 whitespace-nowrap align-middle"><img src="/images/docs/os-windows.svg" alt="" width="20" height="20" className="h-5 w-5 shrink-0" /> Windows</span> | Strongly discouraged | Native Windows shells and path differences can add friction around hooks, CLI behavior, file permissions, and scripts. |
+
+If you must use Windows, use Ubuntu on WSL2 rather than native Windows. Keeping the project inside the WSL2 filesystem is usually less fragile.
+
+## Before installing
+
+| Check | Recommended state |
+| --- | --- |
+| Codex | Codex App or Codex CLI is installed, working, and signed in. |
+| Node.js/npm | Use a maintained Node.js LTS. `npx` ships with npm. |
+| Project | Open the repository where you want to use LazyCodex in Codex. |
+| Git | A Git repository is recommended so changes can be reviewed and reverted normally. |
+| Secrets | Keep provider keys in your shell or Codex environment. Do not paste secrets into project files. |
+
+You do not need Bun unless you are building LazyCodex from source. Normal installation and use follow the Node.js/npm `npx` path.
+
+`npx` ships with npm. Check it first:
+
+```bash
+node -v
+npm -v
+npx -v
+```
+
+If it is missing, install Node.js/npm:
+
+```bash
+# Ubuntu or WSL2 Ubuntu
+sudo apt update
+sudo apt install -y nodejs npm
+
+# macOS
+brew install node
+```
+
+<Callout title="What are Node.js and npm?">
+  Node.js lets your computer run JavaScript tools. npm is the package manager that ships with Node.js, and `npx` is the npm-provided command runner. LazyCodex uses `npx` to run the installer once.
+</Callout>
+
+## Author's Subjective Recommendation
+
+- **Start with the Codex App**: installation, sign-in, session state, and skill invocation are easiest to see there, so it is the safest starting point for new users.
+- **Use ChatGPT Pro or higher**: the examples in these docs are easiest to understand with the Codex environment available on ChatGPT Pro or higher.
+- **Try native Codex first if you are new**: before adding LazyCodex, open a project in Codex and learn how it responds and edits files.
+- **Avoid other model stacks**: GLM, Kimi, Mimo, and similar setups are not recommended here. These docs are written around Codex and the OmO skill workflow, so they do not try to provide the same guidance for other models.

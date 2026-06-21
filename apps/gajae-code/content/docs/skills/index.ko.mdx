@@ -1,0 +1,44 @@
+---
+title: Skills
+description: 번들된 네 가지 역할 에이전트 — executor, architect, planner, critic — 와 변경 경계, 그리고 작동 루프와의 매핑.
+---
+
+Gajae-Code는 경계가 분명한 역할 에이전트를 정확히 네 개 번들로 제공합니다. 워크플로 스킬이 아니라 위임용 작업 역할 에이전트입니다. 핵심 원칙은 하나입니다: **한 역할만 파일을 변경하고, 나머지 셋은 엄격하게 읽기 전용입니다.**
+
+## 네 가지 역할
+
+| 에이전트     | 역할                                          | 변경?  | thinking |
+| ----------- | --------------------------------------------- | ------ | -------- |
+| `executor`  | 범위가 정해진 구현·수정·리팩터링.               | **예** | medium   |
+| `architect` | 읽기 전용 아키텍처 및 코드 리뷰 평가.           | 아니오 | high     |
+| `planner`   | 읽기 전용 순서 정리 및 수용 기준.               | 아니오 | medium   |
+| `critic`    | 읽기 전용 계획 비평 및 실행 가능성 검토.        | 아니오 | high     |
+
+읽기 전용 역할은 절대로 파일을 쓰거나 편집·포맷·커밋·푸시·변경하지 않습니다. 이들의 산출물은 판단 — 평가, 계획, 판정 — 입니다. 오직 `executor`만 파일을 바꾸며, 그것도 열린 범위가 아니라 계획 단계에서 정해진 범위 안에서 동작합니다.
+
+<Cards>
+  <Card title="executor" href="/ko/docs/skills/executor">범위가 정해진 작업을 동작하고 검증 가능한 변경으로 바꿉니다. 유일한 쓰기 역할.</Card>
+  <Card title="architect" href="/ko/docs/skills/architect">심각도 등급이 매겨진 발견을 동반한 읽기 전용 아키텍처·코드 리뷰.</Card>
+  <Card title="planner" href="/ko/docs/skills/planner">읽기 전용 순서 정리, 수용 기준, 리스크, 핸드오프 형태.</Card>
+  <Card title="critic" href="/ko/docs/skills/critic">읽기 전용 계획 비평: 실행 가능하고 검증 가능한가, 아닌가.</Card>
+</Cards>
+
+## 루프와의 매핑
+
+역할 에이전트는 [워크플로 루프](/ko/docs/commands)에 매핑됩니다:
+
+- **planner** — `deep-interview` / `ralplan` 동안 의도를 명시적인 수용 기준이 있는 순서화된 계획으로 바꿉니다.
+- **critic** — 변경이 시작되기 전에 그 계획을 압박 테스트해 `OKAY`, `ITERATE`, `REJECT` 중 하나를 반환합니다.
+- **executor** — `ultragoal` 아래에서 승인된 작업을 수행하며, diff를 작게 유지하고 증거를 남깁니다.
+- **architect** — `ralplan` 루프 안의 고정된 합의 단계(planner → architect → critic)로 실행됩니다. 어떤 변경이 시작되기 전, 제안된 접근에 대한 읽기 전용 아키텍처·설계 평가(`CLEAR` / `WATCH` / `BLOCK` 와 `APPROVE` / `COMMENT` / `REQUEST CHANGES`)를 제공합니다. executor 이후 리뷰가 아닙니다.
+
+이 역할들의 병렬 실행은 `team`으로 조율할 수 있습니다.
+
+## 읽기 전용 vs 쓰기
+
+읽기 전용과 쓰기를 분리하는 것이 핵심입니다.
+
+- 파일이 바뀌기 전에 계획이 압박 테스트됩니다.
+- 리뷰어가 "그냥 고쳐버리는" 일 없이 변경이 리뷰됩니다.
+
+위임할 때는 들어맞는 가장 좁은 역할을 고르세요. 평가나 계획에는 읽기 전용 역할을, 실제로 무언가가 바뀌어야 할 때만 `executor`를 씁니다.

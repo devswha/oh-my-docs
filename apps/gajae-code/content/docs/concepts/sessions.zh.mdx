@@ -70,13 +70,13 @@ description: 持久的会话状态、切换与最近列表、export/share/fork/r
 
 ## Worktree 隔离
 
-分支级或一次性工作建议在隔离的 Git worktree 中运行，以保持主检出干净：
+分支级或一次性工作建议在隔离的 Git worktree 中运行，以保持主检出干净。`--worktree` 的值不是文件系统路径，而是 GJC 管理的 sibling worktree 的 branch-like 名称：
 
 ```bash
-gjc --tmux --worktree <path>
+gjc --tmux --worktree my-task-branch
 ```
 
-每个工作目录有独立会话范围，因此 worktree 运行拥有自己的会话命名空间。实验用专用路径，完成后丢弃 worktree 即可。
+如果你已经创建了 worktree 目录，请在其中运行 `gjc --tmux`。每个工作目录有独立会话范围，因此 worktree 运行拥有自己的会话命名空间。
 
 ## 相关
 

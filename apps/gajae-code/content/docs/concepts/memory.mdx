@@ -25,15 +25,9 @@ Memory is treated as **heuristic context**, not authoritative state. The agent i
 - cite the memory artifact path when memory changes the plan, and pair it with current-repo evidence before acting,
 - prefer repo state and your instructions when they conflict with memory, treating conflicting memory as stale.
 
-## Reading memory artifacts
+## Runtime memory artifacts
 
-The agent can read memory files directly using `memory://` URLs with the `read` tool:
-
-| URL                                    | Content                             |
-| -------------------------------------- | ----------------------------------- |
-| `memory://root`                        | Compact summary injected at startup |
-| `memory://root/MEMORY.md`              | Full long-term memory document      |
-| `memory://root/skills/<name>/SKILL.md` | A generated skill playbook          |
+Generated local memory artifacts are private runtime state. GJC may keep summaries, long-term memory documents, and generated playbooks on disk so future sessions can recall them, but `memory://` should be treated as a compatibility route for internal reads rather than a public user contract.
 
 ## The `/memory` slash command
 

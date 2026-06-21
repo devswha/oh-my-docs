@@ -5,7 +5,15 @@ description: "OMX 릴리스 이력 — 최신 릴리스 요약과 업스트림 C
 
 전체 changelog는 업스트림 [`CHANGELOG.md`](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md)에서 관리됩니다. 이 페이지는 최근 릴리스를 요약합니다.
 
-## 최신 릴리스 — v0.17.0
+## 최신 릴리스 — v0.18.14
+
+`0.18.13` 이후 패치입니다. agent/model routing diagnostics가 더 명확해지고, goal/planning workflow가 안전해졌으며, plugin/native hook 동작과 HUD/Team/tmux 처리가 단단해졌습니다. doctor는 root-owned artifact를 감지하고, resume은 madmax run history를 찾습니다.
+
+**변경:** per-agent model override, launch diagnostics, completed Codex goal cleanup guidance, Ralplan transition diagnostics, supervised Autopilot rework, Beads metadata handling, goal/skill workflow guidance.
+
+**수정:** plugin AGENTS policy 보존, dev plugin cache diagnostics, bundled skill agent-tier reference, null-output native hook success, `PreToolUse` stdout/schema 처리, Windows native hook launch, stale Autopilot HUD reporting, tmux paste-buffer cleanup, worker AGENTS guidance, Ralplan freshness/approval gate.
+
+## v0.17.0
 
 `0.16.4` 이후의 minor release입니다. bounded Hermes MCP coordination, canonical `$design` workflow guidance, plugin-mode skill marketplace exposure, 더 강한 UltraQA adversarial contract, Windows native-hook reliability, tmux ownership safety, startup shell isolation, committed project-memory loading, Ultragoal task-scoped goal reconciliation에 초점을 맞췄습니다.
 

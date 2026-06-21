@@ -2,9 +2,13 @@
   "title": "Reference",
   "pages": [
     "configuration",
+    "cli",
     "models-and-credentials",
+    "auth-broker",
+    "tools",
     "environment-variables",
     "keybindings",
+    "status-line",
     "theme"
   ]
 }

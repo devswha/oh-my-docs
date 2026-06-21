@@ -1,0 +1,80 @@
+---
+title: Commands
+description: deep-interview, ralplan, rlm, team, ultragoal command 표면.
+---
+
+Gajae-Code는 공개 에이전트 표면을 의도적으로 작게 유지합니다. 거대한 스킬 더미 대신 기본 워크플로우 스킬 네 가지를 제공합니다. 이 방법 하나를 더 잘 다듬는 식으로 발전합니다. 스킬은 GJC 세션 안에서 `/skill:<name>`으로 실행합니다.
+
+## 워크플로우 스킬 네 가지
+
+| 스킬                                                  | 하는 일                                                |
+| ----------------------------------------------------- | ------------------------------------------------------ |
+| [`deep-interview`](/ko/docs/commands/deep-interview) | 계획·코드 변경 전에 모호함을 제거합니다.               |
+| [`ralplan`](/ko/docs/commands/ralplan)               | 변경 전에 계획을 세우고 비평합니다.                    |
+| [`team`](/ko/docs/commands/team)                     | 여러 워커가 도움이 될 때 tmux 기반 병렬 실행을 조율합니다. |
+| [`ultragoal`](/ko/docs/commands/ultragoal)           | 구현·수정·검증·증거 요약까지 목표를 추적합니다.        |
+
+`rlm`은 네 가지 기본 워크플로우 스킬과 별개입니다. 일반 coding-agent 루프가 아니라 research/REPL 세션이 필요할 때 `gjc rlm`으로 시작합니다.
+
+## 작동 루프
+
+스킬은 하나의 유용한 루프로 엮입니다:
+
+```text
+deep-interview -> ralplan -> ultragoal
+                         └─ 병렬 tmux 워커가 도움이 될 때만 team 실행
+```
+
+각 스킬의 역할:
+
+- `deep-interview` — 의도를 명확히 합니다.
+- `ralplan` — 접근을 비평합니다.
+- `ultragoal` — 구현·수정·검증·증거 요약까지 끌고 갑니다.
+- `team` — 조율된 병렬 워커가 이득일 때만 추가합니다. 필수 단계가 아니라 선택적 실행 모드입니다.
+
+<Cards>
+  <Card title="deep-interview" href="/ko/docs/commands/deep-interview">
+    진짜 버그·기능, 영향 범위, 비목표, 수용 기준을 명확히 합니다.
+  </Card>
+  <Card title="ralplan" href="/ko/docs/commands/ralplan">
+    파일 변경 전의 관문 — 계획을 세우고 비평합니다.
+  </Card>
+  <Card title="rlm" href="/ko/docs/commands/rlm">
+    제한된 Python, read, web_search로 노트북식 조사를 실행합니다.
+  </Card>
+  <Card title="team" href="/ko/docs/commands/team">
+    작업 분할이 이득일 때 tmux 기반 병렬 워커를 조율합니다.
+  </Card>
+  <Card title="ultragoal" href="/ko/docs/commands/ultragoal">
+    구현·검증·증거까지 지속 목표를 끌고 갑니다.
+  </Card>
+</Cards>
+
+## 전체 운영 패스
+
+구체적인 버그 수정 패스가 루프를 엮습니다:
+
+```text
+/skill:deep-interview clarify the bug, affected behavior, non-goals, and acceptance checks
+/skill:ralplan turn the clarified bug report into a reviewed fix plan
+gjc ultragoal create-goals --brief-file <approved-plan>
+# 병렬 작업일 때만 선택:
+gjc team 2:executor "split implementation and verification for this bug fix"
+gjc ultragoal complete-goals
+```
+
+이는 숨은 자동화가 아니라 운영자 시퀀스를 설명합니다. 에이전트는 다음을 보고합니다:
+
+- 무엇을 바꿨는지
+- 발견 후 무엇을 수정했는지
+- 어떤 검사를 돌렸는지
+- 어떤 증거가 수정을 뒷받침하는지
+
+## 스킬 뒤의 에이전트
+
+워크플로우 스킬은 번들된 역할 [에이전트](/ko/docs/skills) 네 가지에 의존합니다:
+
+- [`executor`](/ko/docs/skills/executor) — 범위가 한정된 구현·수정·리팩터링.
+- [`architect`](/ko/docs/skills/architect) — 읽기 전용 아키텍처·코드 리뷰 평가.
+- [`planner`](/ko/docs/skills/planner) — 읽기 전용 시퀀싱과 수용 기준.
+- [`critic`](/ko/docs/skills/critic) — 읽기 전용 계획 비평과 실행 가능성 검토.

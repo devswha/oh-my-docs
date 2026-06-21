@@ -3,13 +3,13 @@ title: "Codex ネイティブフック"
 description: "OMX が Codex CLI のネイティブフックインターフェースを直接使う方法と、ネイティブカバレッジとランタイムフォールバックの境界"
 ---
 
-Codex CLI は `.codex/config.toml` に `[features] codex_hooks = true` が設定されると、`.codex/hooks.json` の登録情報を読み取り、ライフサイクルのタイミングごとに外部ハンドラーを呼び出します。OMX は Codex バイナリをシェルスクリプトでラップする代わりに、このインターフェースを直接使用します。
+Codex CLI は install path に応じて plugin hook surface または `.codex/hooks.json` から hook registration を読みます。現在の setup-owned fallback config は `[features].hooks = true` と `[features].goals = true` を有効化します。legacy `codex_hooks` は migration alias としてのみ残り、official plugin-scoped hooks をサポートする plugin install は `[features].plugin_hooks = true` を使います。
 
 ## インストール構造
 
-`omx setup` は 2 つのファイルを書き込みます。
+対応 plugin install では packaged plugin が hook registration を所有します。legacy install や古い Codex versions では `omx setup` が fallback native Codex artifacts を書きます。
 
-- `.codex/config.toml` — `codex_hooks` を有効化
+- `.codex/config.toml` — `[features].hooks = true`、または対応 plugin install の `[features].plugin_hooks = true`、そして `[features].goals = true` を有効化
 - `.codex/hooks.json` — OMX ハンドラー `dist/scripts/codex-native-hook.js` を登録
 
 インストール時、`.codex/hooks.json` に既存のユーザー管理フックエントリが存在する場合は保持されます。`omx uninstall` は OMX が登録したエントリのみを削除し、ユーザーフックには触れません。
@@ -22,12 +22,12 @@ Codex バイナリ周辺のシェルラッパーは `omx tmux-hook` で引き続
 |---|---|---|
 | セッションブックキーピング、wiki 起動コンテキスト | `SessionStart` | ネイティブ |
 | キーワード検出、スキル状態シード | `UserPromptSubmit` | ネイティブ |
-| Bash 安全チェック、コミットフォーマットガード | `PreToolUse`（Bash のみ） | ネイティブ-部分 |
+| Bash 安全チェック、コミットフォーマットガード、document-refresh warnings | `PreToolUse` | ネイティブ-部分 |
 | コマンド未検出ガイダンス、終了コードレビュー | `PostToolUse`（Bash のみ） | ネイティブ-部分 |
 | ralph / autopilot / ultrawork / ultraqa 継続実行 | `Stop` | ネイティブ-部分 |
 | 停滞したターンの自動ナッジ | `Stop` | ネイティブ-部分 |
 | セッション終了 wiki キャプチャ、`session-idle` | — | ランタイム-フォールバック |
-| Bash 以外のツールのインターセプション | — | ランタイム-フォールバック |
+| Codex が tool events を提供する場合の Bash 以外のツールのインターセプション | `PreToolUse` / `PostToolUse` | ネイティブ-部分 |
 
 「ネイティブ-部分」とは、ネイティブパスが一般的なケースを処理し、エッジケースは notify-hook または tmux ランタイムパスにフォールバックすることを意味します。
 

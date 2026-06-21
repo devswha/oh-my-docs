@@ -1,45 +1,40 @@
 ---
-title: 多模型路由
-description: 按任务类别自动选择模型 —— 遵守配额纪律，基于基准，而非随机更换。
+title: Model Routing
+description: How LazyCodex aligns model profiles with Codex roles.
 ---
 
-LazyCodex(LZX)的一次运行不会对每个子任务都动用你最好的模型。底层的 OmO 框架定义了**任务类别**与回退链，使每个工作单元落到最合适的 GPT 模型。这是基于基准的路由，而非随机更换模型。
+LazyCodex (LZX) 会在安装过程中根据 Codex 配置和 agent roles 对齐模型 profile。实际应用的值来自插件内置的 `model-catalog.json`，以及当前 Codex build 支持的模型。
 
-## 为什么会出现不同的 GPT 模型
+## Current Baseline
 
-如果一次运行中出现 `gpt-5.2` 配 `xhigh`、`gpt-5.4-mini`、`gpt-5.3-codex`，或 `gpt-5.5` 配 `xhigh` 等更新的等价模型，不必惊讶。这是有意为之。
+`4.12.1` 的 bundled `model-catalog.json` 将当前默认 profile 放在 `gpt-5.5` 上。
 
-框架会挑选适合该工作的模型：
-
-| 类别 | 路由到 | 用于 |
+| Profile | Model | Reasoning |
 |---|---|---|
-| `quick` | `gpt-5.4-mini` | 小改动 |
-| `ultrabrain` | 高推理 GPT 模型 | 硬逻辑 |
-| agentic coding | Codex 调优的 GPT 模型(如 `gpt-5.3-codex`) | 软件工程路径(可用时) |
+| default | `gpt-5.5` | `high` |
+| plan mode | `gpt-5.5` | `xhigh` |
+| worker | `gpt-5.5` | `high` |
+| verifier | `gpt-5.5` | `high` |
 
-## 配额纪律
+如果 Codex 或 OpenAI 的模型配置变化，实际看到的模型名可能不同。因此本文重点不是比较模型性能，而是说明 LazyCodex 在哪里使用模型 profile。
 
-要点是配额纪律：任务需要深度推理时用最强模型，足够时用更便宜更快的模型，让并行的智能体工作保持高效，而不是把高级配额烧在常规步骤上。
+## Why Role Profiles Exist
 
-这与[并行执行](/zh/docs/concepts/discipline-agents)相配：多条车道同时运行，各以合适的成本。
+角色 profile 用来分离工作性质。
 
-## 基于基准，逐个模型
+- 普通工作使用默认模型设置。
+- 计划模式可能需要更强 reasoning 设置。
+- worker 与 verifier 分离执行和判断，让同一个结果能从不同角度检查。
 
-该路由反映了 OpenAI 对每个模型的官方说明：
+这与 [Agent Roles](/zh/docs/concepts/discipline-agents) 配套。即使多个角色同时移动，也能在 Codex 配置中追踪每个角色使用的模型 profile。
 
-- **GPT-5.2** 被 OpenAI 记录为在代码评审、查找缺陷与复杂工具使用上更强；其公告指出其 API 最大推理强度使用 `xhigh`。
-- **GPT-5.3-Codex** 是 OpenAI 面向智能体式软件工程的 Codex 调优模型，其公告报告了 SWE-Bench Pro、Terminal-Bench 2.0、OSWorld Verified 等公开编码智能体基准。
-- **GPT-5.4 mini** 定位于高效的日常编码、计算机使用与子智能体 —— 这正是轻量任务会落到它，而非动用前沿推理模型的原因。
+## User Notes
 
-## 参考链接
-
-- [OpenAI GPT-5.2 公告](https://openai.com/index/introducing-gpt-5-2/)
-- [OpenAI GPT-5.2 模型文档](https://platform.openai.com/docs/models/gpt-5.2/)
-- [OpenAI GPT-5.3-Codex 模型文档](https://developers.openai.com/api/docs/models/gpt-5.3-codex)
-- [OpenAI GPT-5.4 mini 与 nano 公告](https://openai.com/index/introducing-gpt-5-4-mini-and-nano/)
-- [OpenAI 最新模型指南](https://platform.openai.com/docs/guides/latest-model)
+- 安装后看到的模型名可能和文档不同。此时以 Codex 支持的最新模型名和 LazyCodex 的 `model-catalog.json` 为准。
+- 模型设置同时影响质量和速度。随意降低它们，可能让规划、评审、QA 质量一起变弱。
+- 如果怀疑有问题，先检查安装状态和 Codex 配置。
 
 <Cards>
-  <Card title="纪律智能体" href="/zh/docs/concepts/discipline-agents">被路由的工作分派给谁。</Card>
-  <Card title="ultrawork 循环" href="/zh/docs/concepts/ultrawork">被路由的并行工作如何收敛到经过验证的完成。</Card>
+  <Card title="Agent Roles" href="/zh/docs/concepts/discipline-agents">按角色拆分工作和验证流程。</Card>
+  <Card title="Ultrawork Loop" href="/zh/docs/concepts/ultrawork">角色化工作如何收敛到基于证据的完成。</Card>
 </Cards>

@@ -1,63 +1,76 @@
 ---
 title: $init-deep
-description: Generates hierarchical AGENTS.md project memory so future agents start with full context.
+description: Generates hierarchical AGENTS.md project memory so later agents start with full context.
 ---
 
-`$init-deep` builds project memory for LazyCodex. It generates hierarchical `AGENTS.md` files across the repository so that every future agent run starts with the context it needs, right next to the code it is about to edit.
+`$init-deep` builds LazyCodex project memory. It creates hierarchical `AGENTS.md` files across the repository so every later agent run starts with the context it needs, right next to the code it is about to edit.
 
 Run it when the repository is too large to explain from memory.
 
-## What it does
+## What It Does
 
 <Steps>
 
 <Step>
 
-### Score complex directories
+### Scores Complex Directories
 
-`$init-deep` walks the codebase and scores directories by complexity, finding the parts of the tree that actually need written guidance.
-
-</Step>
-
-<Step>
-
-### Write local guidance near the code
-
-For the directories that matter, it writes an `AGENTS.md` close to the code it describes — so guidance is discovered exactly where an agent is working, not buried in one giant root file.
+`$init-deep` walks the codebase, scores directories by complexity, and finds the places that actually need written guidance.
 
 </Step>
 
 <Step>
 
-### Leave landmarks for future agents
+### Writes Local Guidance Near Code
 
-The result is a hierarchy of `AGENTS.md` files that give future agents landmarks before they edit: what lives here, how it fits together, and what to be careful about.
+Important directories get nearby `AGENTS.md` files that explain that slice of code. The guidance is not buried in one huge root file; the agent finds it where it is working.
+
+</Step>
+
+<Step>
+
+### Leaves Landmarks for Future Agents
+
+The resulting `AGENTS.md` hierarchy gives future agents landmarks before they edit: what exists here, how it fits together, and what to watch out for.
 
 </Step>
 
 </Steps>
 
-## When to run it
+## When To Run It
 
-- **First time in a codebase.** Before you ask LazyCodex to do real work in an unfamiliar or large repository, run `$init-deep` so the agents start with full context.
-- **The repository is too large to explain from memory.** When you cannot summarize the project in a sentence, let `$init-deep` write the map for you.
+- **When you first work in a codebase.** Run `$init-deep` before giving LazyCodex real work in an unfamiliar or large repository.
+- **When the repository is too large to explain from memory.** If you cannot summarize the project in one sentence, let `$init-deep` draw the map.
 
-## When to re-run it
+## When To Run It Again
 
-Re-run `$init-deep` when the **shape of the codebase changes** — new top-level areas, a significant refactor, or a reorganization that makes the existing `AGENTS.md` landmarks stale. Keeping the memory current keeps every later run grounded.
+Run `$init-deep` again **when the shape of the codebase changes**: a new top-level area, a large refactor, or any restructuring that makes existing `AGENTS.md` landmarks stale. Keeping memory fresh makes every later run more grounded.
 
-## Where it fits
+## Options
 
-`$init-deep` is the memory step. Once the map exists, the command pillars do the work:
+The default run is update mode: it reads existing `AGENTS.md` files and refreshes the places that need changes.
 
-- `$ulw-plan` decides what to build before any code changes.
+```bash
+$init-deep
+$init-deep --create-new
+$init-deep --max-depth=2
+```
+
+- `--create-new` reads existing `AGENTS.md` context, preserves it, then regenerates the structure.
+- `--max-depth=<number>` limits directory traversal depth. The default is 3.
+
+## Where It Fits
+
+`$init-deep` is the memory step. Once the map exists, the other Commands do the work.
+
+- `$ulw-plan` decides what to build before code changes.
 - `$start-work` executes a plan to the last checkbox.
-- `$ulw-loop` keeps an open-ended task moving until the result is verified.
+- `$ulw-loop` keeps open-ended work moving until the result is verified.
 
-## Related
+## Related Docs
 
 <Cards>
-<Card title="Command pillars" href="/docs/commands" />
+<Card title="Commands" href="/docs/commands" />
 <Card title="$ulw-plan" href="/docs/commands/ulw-plan" />
 <Card title="$start-work" href="/docs/commands/start-work" />
 <Card title="$ulw-loop" href="/docs/commands/ulw-loop" />

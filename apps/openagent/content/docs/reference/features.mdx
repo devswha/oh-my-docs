@@ -142,6 +142,7 @@ Disable specific hooks: `{ "disabled_hooks": ["comment-checker"] }`. Claude Code
 | Built-in | `src/mcp/` | `websearch` (Exa), `context7` (library docs), `grep_app` (GitHub code search) |
 | `.mcp.json` loader | Project / user `.mcp.json` / `.claude.json` | Custom remote MCP servers with `${VAR}` expansion |
 | Skill-embedded | `SKILL.md` `mcp:` frontmatter | Playwright, custom per-skill MCPs |
+| Codex Light plugin-scoped | `packages/omo-codex/plugin/.mcp.json` | `grep_app`, `context7`, `codegraph`, `git_bash`, `lsp` |
 
 Skill MCP clients are isolated per session by `${sessionID}:${skillName}:${serverName}`.
 

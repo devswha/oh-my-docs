@@ -1,0 +1,56 @@
+---
+title: Commands
+description: deep-interview、ralplan、rlm、team、ultragoal 的 command surface。
+---
+
+Gajae-Code 刻意保持公开的 agent 表面很小。它不堆砌 skill，而是提供四个默认工作流 skill，并通过把这一套方法做得更好来演进。在 GJC 会话中用 `/skill:<name>` 调用。
+
+## 四个工作流 skill
+
+| Skill                                              | 作用                                       |
+| -------------------------------------------------- | ------------------------------------------ |
+| [`deep-interview`](/zh/docs/commands/deep-interview) | 在规划或改动代码前消除歧义。               |
+| [`ralplan`](/zh/docs/commands/ralplan)               | 在变更前构建并评审计划。                   |
+| [`team`](/zh/docs/commands/team)                     | 多 worker 有益时协调 tmux 并行执行。       |
+| [`ultragoal`](/zh/docs/commands/ultragoal)           | 跟踪目标，贯穿实现、修订与证据汇总。       |
+
+`rlm` 独立于四个默认工作流 skill。当你需要 research/REPL 会话而不是普通 coding-agent 循环时，用 `gjc rlm` 启动。
+
+## 工作循环
+
+这些 skill 组成一个有用的循环：
+
+```text
+deep-interview -> ralplan -> ultragoal
+                         └─ 仅当并行 tmux worker 有帮助时执行 team
+```
+
+用 `deep-interview` 厘清意图，用 `ralplan` 评审方法，用 `ultragoal` 把工作推进到实现、修订、验证和证据汇总。仅当任务受益于协调的并行 worker 时再加 `team`——它是可选执行模式，不是必需步骤。
+
+<Cards>
+  <Card title="rlm" href="/zh/docs/commands/rlm">
+    使用受限的 Python、read、web_search 执行笔记本式调查。
+  </Card>
+</Cards>
+
+## 完整操作流程
+
+```text
+/skill:deep-interview clarify the bug, affected behavior, non-goals, and acceptance checks
+/skill:ralplan turn the clarified bug report into a reviewed fix plan
+gjc ultragoal create-goals --brief-file <approved-plan>
+# 仅并行工作时可选：
+gjc team 2:executor "split implementation and verification for this bug fix"
+gjc ultragoal complete-goals
+```
+
+这描述的是操作顺序，而非隐藏的自动化：agent 仍会报告改了什么、修订了什么、运行了哪些检查、有哪些证据支撑修复。
+
+## skill 背后的 agent
+
+工作流 skill 依赖四个内置角色 [agent](/zh/docs/skills)：
+
+- [`executor`](/zh/docs/skills/executor) —— 有边界的实现、修复与重构。
+- [`architect`](/zh/docs/skills/architect) —— 只读的架构与代码评审。
+- [`planner`](/zh/docs/skills/planner) —— 只读的排序与验收标准。
+- [`critic`](/zh/docs/skills/critic) —— 只读的计划评审与可执行性审查。

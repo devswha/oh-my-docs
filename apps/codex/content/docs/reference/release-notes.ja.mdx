@@ -5,6 +5,25 @@ description: "ユーザー影響、互換性、検証根拠、アップストリ
 
 [変更ログ](/ja/docs/reference/changelog) は短い要約です。このページでは、最近のリリースで何が変わったのか、移行が必要か、リリース前に何が検証されたのかを確認できます。
 
+## v0.18.14 — Routing diagnostics, safer goals, hook/HUD hardening
+
+[アップストリームリリースノート](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/release-notes-0.18.14.md) · [CHANGELOG 項目](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#01814---2026-06-20) · [リリース準備証拠](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/qa/release-readiness-0.18.14.md) · [Compare](https://github.com/Yeachan-Heo/oh-my-codex/compare/v0.18.13...v0.18.14)
+
+### User impact
+
+- Per-agent overrides と launch diagnostics により agent/model routing を確認しやすくなりました。
+- Codex goal cleanup、Ralplan freshness/approval、supervised Autopilot rework、Ultragoal architecture invariant handling により goal/planning workflows が安全になりました。
+- Plugin setup、native hooks、HUD、Team、tmux paste buffers、worker AGENTS guidance が local state をよりよく保存し、ambiguous failures を減らします。
+- `omx doctor` は root-owned repo artifacts を表示し、resume discovery は madmax run histories を含みます。
+
+### Compatibility
+
+`0.18.13` から通常の移行作業は不要です。既存 CLI、plugin、native-agent、HUD、state、hook、package layout、runtime contracts は互換です。
+
+### Verification noted upstream
+
+upstream は version sync、build、native-agent verification、plugin mirror/bundle checks、catalog docs checks、CLI dogfooding、`npm pack --dry-run`、`git diff --check` を readiness evidence として記録しています。publication-stage proof は upstream release workflow で別途追跡されます。
+
 ## v0.17.0 — Hermes MCP、`$design`、plugin discovery、adversarial UltraQA
 
 [アップストリームリリースノート](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/release-notes-0.17.0.md) · [CHANGELOG 項目](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#0170---2026-05-12) · [リリース準備証拠](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/qa/release-readiness-0.17.0.md)

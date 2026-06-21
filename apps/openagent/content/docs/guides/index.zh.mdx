@@ -1,29 +1,102 @@
 ---
-title: Guides
-description: Choose the right OmO workflow for each kind of work.
+title: 使用指南
+description: 为不同任务选择合适的 OmO workflow。
 ---
 
-## Which Mode Should I Use?
+OmO 有多个入口。多数时候只需要其中一个；这页帮你快速判断该走哪条路。
 
-| Situation | Use | Why |
-|---|---|---|
-| Small fix | Normal prompt | Sisyphus can handle it directly. |
-| Complex but you are lazy | `ultrawork` or `ulw` | OmO explores, delegates, implements, and verifies. |
-| Complex and precise | Prometheus, then `/start-work` | You get an interviewed plan and Atlas-led execution. |
+## Choosing a Workflow
 
-## Recommended First Workflow
+<Cards>
+  <Card title="Normal prompt">小修复或直接问题。开销最低，直接和 Sisyphus 对话。</Card>
+  <Card title="Ultrawork (`ulw`)">任务复杂但希望交给系统自主处理。Sisyphus 会探索、委派、实现、验证并继续推进。</Card>
+  <Card title="Prometheus + Atlas">任务复杂且精度优先。先用 `@plan` 锁定计划，再用 `/start-work` 交给 Atlas 执行。</Card>
+  <Card title="Hephaestus">GPT-native deep reasoning。适合架构、调试和综合判断。</Card>
+  <Card title="Category task">一个很窄的实现单元。按 category 和 skill 启动 focused Sisyphus-Junior。</Card>
+</Cards>
 
-```text
-ultrawork add the missing test coverage for the payment parser
+## Ultrawork
+
+`ulw` 是“请直接处理到底”的路径。给出目标时，最好也给出证明它可用的 surface。
+
+```bash
+ulw fix the login error message and verify success/failure in the browser
 ```
 
-For higher control:
+好的 `ulw` prompt 会说明三件事：
 
-```text
+- 用户可见行为。
+- 证明 surface：browser、CLI、API、tests 或 docs build。
+- 不应触碰的边界。
+
+## Prometheus + Atlas
+
+精度比速度更重要时，使用 Prometheus。
+
+<Steps>
+
+<Step>
+
+### Plan with Prometheus
+
+在 Sisyphus 中输入 `@plan`，或用 Tab 切换到 Prometheus。
+
+```bash
 @plan migrate the settings page without changing behavior
+```
+
+回答 interview questions，直到需求足够清楚。Prometheus 会在 `.sisyphus/plans/` 下写入计划。
+
+</Step>
+
+<Step>
+
+### Hand off to Atlas
+
+```bash
 /start-work
 ```
 
-## Model Setup Guidance
+</Step>
 
-Sisyphus works best with Claude Opus-class or Claude-like models such as Kimi K2.5 and GLM 5. Hephaestus and Oracle prefer GPT-5.4-class reasoning. Explore and Librarian should stay on fast, cheap models. Do not override models unless you know why.
+<Step>
+
+### Recover if needed
+
+如果 `/start-work` 找不到 active plan，先创建 Prometheus plan，或清理 stale `.sisyphus/boulder.json`。
+
+</Step>
+
+</Steps>
+
+## Hephaestus vs Sisyphus
+
+| Aspect | Hephaestus | Sisyphus + `ulw` |
+|---|---|---|
+| Model style | GPT-native autonomous deep worker. | 使用 category 和 skill 委派的 orchestrator。 |
+| Best for | 架构、困难调试、cross-domain reasoning。 | 大多数“请帮我处理完”的复杂任务。 |
+| Planning | 执行中自我规划。 | 使用 Prometheus plans 或自主探索。 |
+| Delegation | 依赖 Explore 和 Librarian 获取上下文。 | 使用 category workers 和 specialists。 |
+
+默认使用 `ulw`。只有明确需要 GPT-5.5 风格深度推理时，再切换到 Hephaestus。
+
+## Installation as an Agent Task
+
+upstream README 建议让 agent 安装 OmO。被委派安装的 agent 应该：
+
+1. 询问你拥有哪些 subscriptions 和 providers。
+2. 询问目标 harness：Ultimate/OpenCode、Light/Codex CLI，还是两者都要。
+3. Ultimate 运行 `bunx oh-my-openagent install --no-tui ...`；Light 运行 `npx lazycodex-ai install --no-tui --codex-autonomous`；两者都要则运行 `bunx oh-my-openagent install --platform=both`。
+4. Ultimate 需要 provider auth 时，引导你在交互终端运行 `opencode auth login`。
+5. Ultimate 运行 `bunx oh-my-openagent doctor`，Light 运行 `npx lazycodex-ai doctor`。
+6. 解释 model setup 和安全的 overrides。
+
+agent 不应静默改变 model settings，也不应未经同意禁用 hooks/MCPs。
+
+## Model Rule of Thumb
+
+- Sisyphus 最适合 Claude Opus、Kimi K2.6、GLM 5 风格模型。
+- Hephaestus、Oracle、Momus 是 GPT-friendly 或 GPT-native；当前 upstream examples 对 GPT-backed lanes 提到 GPT-5.5。
+- Visual engineering 适合 Gemini 风格 frontend reasoning。
+- Explore 和 Librarian 应保持快速、低成本。
+- `fallback_models` 和 runtime fallback 会越过失败，而不是停止整个 workflow。

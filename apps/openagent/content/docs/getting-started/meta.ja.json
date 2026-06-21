@@ -2,8 +2,12 @@
   "title": "クイックスタート",
   "pages": [
     "[Prerequisites](/ja/docs/getting-started#prerequisites)",
+    "[Pick an Edition](/ja/docs/getting-started#pick-an-edition)",
     "[Install](/ja/docs/getting-started#install)",
+    "[Non-Interactive Install](/ja/docs/getting-started#ultimate-non-interactive-install)",
+    "[Authenticate Providers](/ja/docs/getting-started#authenticate-providers)",
     "[Verify](/ja/docs/getting-started#verify)",
-    "[First Task](/ja/docs/getting-started#first-task)"
+    "[First Task](/ja/docs/getting-started#first-task)",
+    "[Telemetry](/ja/docs/getting-started#telemetry)"
   ]
 }

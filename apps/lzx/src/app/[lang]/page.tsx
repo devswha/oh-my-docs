@@ -15,7 +15,7 @@ const translations = {
     metaDescription: 'Official docs for LazyCodex (LZX): project memory, planning, execution, and verified completion inside Codex.',
     subtitle: 'The OmO agent harness, packaged for Codex',
     desc: ['Project memory, planning, execution, and verified completion inside Codex.', 'Think LazyVim for Codex — sensible defaults, override when you want.'],
-    getStarted: 'Get Started', docs: 'View Docs', different: 'What you get',
+    getStarted: 'Get Started', different: 'What you get',
     features: [
       ['Discipline Agents', 'Sisyphus orchestrates Hephaestus, Oracle, and Librarian — a full AI dev team inside Codex.'],
       ['Parallel Execution', 'Multiple agents work simultaneously on subtasks instead of one serial thread.'],
@@ -32,7 +32,7 @@ const translations = {
     metaDescription: 'LazyCodex(LZX) 공식 문서. Codex 안에서의 프로젝트 메모리, 계획, 실행, 검증된 완료.',
     subtitle: 'Codex용으로 패키징한 OmO 에이전트 하네스',
     desc: ['Codex 안에서 프로젝트 메모리, 계획, 실행, 검증된 완료까지.', 'Codex를 위한 LazyVim이라고 생각하세요 — 합리적 기본값, 원할 때 덮어쓰기.'],
-    getStarted: '시작하기', docs: '문서 보기', different: '무엇을 얻나',
+    getStarted: '시작하기', different: '무엇을 얻나',
     features: [
       ['기강 잡힌 에이전트', 'Sisyphus가 Hephaestus, Oracle, Librarian을 지휘합니다 — Codex 안의 완전한 AI 개발팀.'],
       ['병렬 실행', '하나의 직렬 스레드 대신 여러 에이전트가 동시에 하위 작업을 처리합니다.'],
@@ -48,7 +48,7 @@ const translations = {
     metaTitle: 'LazyCodex - 面向 Codex 的 OmO 智能体 harness',
     metaDescription: 'LazyCodex(LZX) 官方文档：在 Codex 内的项目记忆、规划、执行与验证完成。',
     subtitle: '为 Codex 打包的 OmO 智能体 harness', desc: ['在 Codex 内实现项目记忆、规划、执行与验证完成。', '把它想成 Codex 版的 LazyVim — 合理默认，按需覆盖。'],
-    getStarted: '开始使用', docs: '查看文档', different: '你能得到什么',
+    getStarted: '开始使用', different: '你能得到什么',
     features: [['纪律智能体', 'Sisyphus 指挥 Hephaestus、Oracle、Librarian —— Codex 内的完整 AI 开发团队。'], ['并行执行', '多个智能体同时处理子任务，而非单线串行。'], ['多模型路由', '按任务类别自动选择模型 —— 是配额纪律，不是随机切换。'], ['验证完成', '$ulw-loop 持续运行，直到 Oracle 以证据验证结果。']],
     pipeline: '三大命令支柱', pipelineDesc: '用 $ulw-plan 规划，用 $start-work 执行，用 $ulw-loop 循环到验证完成。',
     steps: [['/init-deep', '项目记忆'], ['$ulw-plan', '规划工作'], ['$start-work', '执行计划'], ['$ulw-loop', '验证完成']],
@@ -59,7 +59,7 @@ const translations = {
     metaTitle: 'LazyCodex - Codex 向け OmO エージェント harness',
     metaDescription: 'LazyCodex(LZX) の公式ドキュメント。Codex 内でのプロジェクトメモリ、計画、実行、検証済み完了。',
     subtitle: 'Codex 向けにパッケージした OmO エージェント harness', desc: ['Codex の中でプロジェクトメモリ、計画、実行、検証済み完了まで。', 'Codex 版の LazyVim だと考えてください — 合理的な既定値、必要なら上書き。'],
-    getStarted: 'はじめる', docs: 'ドキュメント', different: '得られるもの',
+    getStarted: 'はじめる', different: '得られるもの',
     features: [['規律あるエージェント', 'Sisyphus が Hephaestus、Oracle、Librarian を統括 —— Codex 内の完全な AI 開発チーム。'], ['並列実行', '1 本の直列スレッドではなく、複数エージェントが同時にサブタスクを処理。'], ['マルチモデルルーティング', 'タスクカテゴリごとに自動でモデル選択 —— ランダムではなくクォータ規律。'], ['検証済み完了', '$ulw-loop は希望的観測ではなく Oracle が証拠で検証するまで回ります。']],
     pipeline: '3 つのコマンドの柱', pipelineDesc: '$ulw-plan で計画し、$start-work で実行し、$ulw-loop で検証済み完了まで回します。',
     steps: [['/init-deep', 'プロジェクトメモリ'], ['$ulw-plan', '作業を計画'], ['$start-work', '計画を実行'], ['$ulw-loop', '検証済み完了']],
@@ -93,8 +93,7 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
               <div className="space-y-2 text-lg text-fd-muted-foreground">{t.desc.map((line) => <p key={line}>{line}</p>)}</div>
             </div>
             <div className="flex flex-wrap gap-3">
-              <Link href={`${prefix}/docs/installation`} className="rounded-full bg-fd-primary px-5 py-3 font-semibold text-fd-primary-foreground">{t.getStarted}</Link>
-              <Link href={`${prefix}/docs`} className="rounded-full border border-fd-border px-5 py-3 font-semibold">{t.docs}</Link>
+              <Link href={`${prefix}/docs/getting-started`} className="rounded-full bg-fd-primary px-5 py-3 font-semibold text-fd-primary-foreground">{t.getStarted}</Link>
             </div>
             <div className="max-w-xl"><CopyInstallCommand command={INSTALL_COMMAND} label={t.install} /></div>
           </div>

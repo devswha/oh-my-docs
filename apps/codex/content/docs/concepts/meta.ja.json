@@ -1,10 +1,9 @@
 {
   "title": "コアコンセプト",
   "pages": [
-    "[エージェントプロンプト](/ja/docs/concepts#agent-prompts)",
-    "[スキル](/ja/docs/concepts#skills)",
-    "[Codex ネイティブフック](/ja/docs/concepts#codex-native-hooks)",
-    "[チームオーケストレーション](/ja/docs/concepts#team-orchestration)",
-    "[.omx/ ディレクトリ](/ja/docs/concepts#the-omx-directory)"
+    "[エージェント](/ja/docs/concepts#エージェントとは)",
+    "[スキル](/ja/docs/concepts#スキルとは)",
+    "[フック](/ja/docs/concepts#フックとは)",
+    "[ステート管理](/ja/docs/concepts#ステート管理の概要)"
   ]
 }

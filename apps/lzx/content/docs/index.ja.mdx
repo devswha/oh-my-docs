@@ -1,59 +1,93 @@
 ---
 title: LazyCodex
-description: Codex 向けにパッケージ化された OmO エージェントハーネス — プロジェクトメモリ、計画、実行、検証済みの完了。Codex のための LazyVim。
+description: Codex に OmO のコマンド、スキル、フックを追加し、プロジェクトメモリから計画、実行、確認までつなげます。
 ---
 
-![LazyCodex](/images/hero.png)
+<figure className="mx-auto w-1/2 min-w-48 max-w-md">
+  <img src="/images/hero.png" alt="LazyCodex" width="4096" height="4096" />
+</figure>
 
-**LazyCodex（LZX）** は、複雑なコードベース向けの Codex エージェントハーネスとして [OmO（oh-my-openagent）](https://github.com/code-yeongyu/oh-my-openagent) をパッケージ化したものです。lazy.nvim に対する LazyVim のようなもの、ただし Codex 向け、と考えてください。
+LazyCodex の役割はシンプルです。Codex がプロジェクト内で何を記憶し、どの順序で作業し、どこで止まって確認すべきかを迷いにくくするために、OmO 設定を接続します。
 
-OmO は Codex に完全なエージェントハーネスを提供します。規律エージェント、並列実行、マルチモデルルーティング、スキルシステム、フックです。LazyCodex はそのハーネスを、一行の `npx` で導入できる再現可能な Codex セットアップとしてパッケージ化します。グローバルインストールは不要です。
+LazyCodex（LZX）は Codex 向けの OmO Light Edition です。[OmO（oh-my-openagent）](https://github.com/code-yeongyu/oh-my-openagent) 全体をそのまま移すものではなく、Codex で使いやすい Hephaestus 中心の流れ、コマンド、スキル、フック、補助ツールをまとめます。
 
-> _「LazyVim は Neovim を一般の人にも使えるものにしました。LazyCodex は Codex に同じことをします。」_
+インストール後は、Codex がプロジェクトメモリを読み、先に計画を立て、作業を段階に分けて進め、最後に実際の証拠で結果を確認する流れを使えます。同じ設定を再作成できるため、一度整えた作業方法を繰り返し使いやすくなります。
 
-## 得られるもの
+> _Codex に作業の順序と確認する習慣を付けるための道具です。_
 
-| 機能 | 説明 |
+## 何が得られるか
+
+| 機能 | 簡単に言うと |
 | --- | --- |
-| **規律エージェント** | Sisyphus が Hephaestus、Oracle、Librarian をオーケストレーションします。完全な AI 開発チームです。 |
-| **並列実行** | 複数のエージェントが独立したサブタスクを同時に処理します。 |
-| **マルチモデルルーティング** | タスクカテゴリごとに最適なモデルを自動選択します。 |
-| **スキルシステム** | 専門作業のための拡張可能なスキルライブラリです。 |
-| **フックとライフサイクル** | すべてのエージェント動作に対する前後フックを提供します。 |
-| **ゼロ設定** | 妥当なデフォルトをそのまま提供し、必要に応じて上書きできます。 |
+| **プロジェクトメモリ** | Codex が毎回最初から推測しなくてよいように、`AGENTS.md` にプロジェクトの文脈を残します。 |
+| **先に計画** | コードをすぐ変更する前に、`$ulw-plan` で順序と範囲を決めます。 |
+| **計画の実行** | `$start-work` が計画チェックリストに沿って作業を進めます。 |
+| **証拠で確認** | `$ulw-loop` と検証フローが、「終わった気がする」ではなく実際の証拠を基準に見ます。 |
+| **スキルとフック** | review、cleanup、frontend、programming などの専門フローと自動確認ポイントを追加します。 |
 
-## コマンドの柱
+## まず覚えること
 
-LazyCodex は Codex 向けに 3 つのコマンドの柱とプロジェクトメモリ用コマンドを導入します。柱コマンドはインストーラーが表示する `$command` 構文で呼び出します。
+最初は 4 つの手順だけで十分です。
 
-| コマンド | 機能 |
-| --- | --- |
-| `$init-deep` | 階層型の `AGENTS.md` プロジェクトメモリを生成します。 |
-| `$ulw-plan` | Prometheus 戦略プランナー。計画を `plans/<slug>.md` に書き出し、プロダクトコードは決して書きません。 |
-| `$start-work` | すべてのチェックボックスが完了するまで計画を実行し、**ORCHESTRATION COMPLETE** を出力します。 |
-| `$ulw-loop` | Oracle が検証する完了に達するまで実行される自己参照ループです。 |
+1. `$init-deep` でプロジェクトメモリを作ります。
+2. `$ulw-plan "何を作るか"` で作業順序を決めます。
+3. `$start-work` で計画を実行します。
+4. 長い作業や細かい確認が必要な作業は `$ulw-loop "タスク"` に任せます。
 
-典型的な流れは次のとおりです。プロジェクトメモリのために `$init-deep` を一度実行し、`$ulw-plan "何を作るか"` で方針を決め、`$start-work` で実行します。結果が証拠で検証されるまで作業を進め続けたい場合は `$ulw-loop "タスク"` を使います。
+LazyCodex はこの流れに、ルール読み込み、スキル、フック、モデルルーティング、検証の習慣を追加します。詳しい構造は、サイドバーの文書から必要な項目だけ確認してください。
 
-## なぜ異なる GPT モデルが現れるのか
+## 公式リンク
 
-OmO はすべてのサブタスクに最強モデルを使うわけではありません。タスクカテゴリを定義し、各カテゴリを最適なモデルへルーティングします。`quick` は `gpt-5.4-mini` のような小型モデルへ、`ultrabrain` は難しいロジックのために高推論 GPT モデルへ、エージェント型コーディング経路は Codex 調整済み GPT モデルを使います。要点はクォータ管理です。深い推論には強力なモデルを、それで十分なときはより速いモデルを使います。
-
-## ドキュメントを見る
-
-<Cards>
-  <Card title="はじめに" href="/ja/docs/getting-started" description="LazyCodex を Codex に導入し、最初のタスクを実行します。" />
-  <Card title="コマンド" href="/ja/docs/commands" description="コマンドの柱：ulw-plan、start-work、ulw-loop、init-deep。" />
-  <Card title="コンセプト" href="/ja/docs/concepts" description="ultrawork ループ、規律エージェント、モデルルーティング。" />
-  <Card title="スキル" href="/ja/docs/skills" description="review-work、remove-ai-slops、frontend-ui-ux、programming など。" />
-  <Card title="ユースケース & ガイド" href="/ja/docs/guides" description="日常タスクの実践例。" />
-  <Card title="リファレンス" href="/ja/docs/reference" description="設定と CLI。" />
-</Cards>
-
-## 次のステップ
-
-- [はじめに](/ja/docs/getting-started) — LazyCodex を導入し、最初のタスクを実行します。
-- [hook & ライフサイクル](/ja/docs/concepts/hooks-lifecycle) — ライフサイクルフックがいつ発火するか。
-- 基盤エンジン：[oh-my-openagent (OmO)](https://github.com/code-yeongyu/oh-my-openagent)
-- [GitHub の LazyCodex](https://github.com/code-yeongyu/lazycodex)
-- 公式サイト：[lazycodex.ai](https://lazycodex.ai)。メンテナンス：Jobdori / [Sisyphus Labs](https://sisyphuslabs.ai)。
+<div className="not-prose mt-4 grid gap-2">
+  <a className="group flex items-center gap-3 rounded-lg border border-fd-border bg-fd-card px-4 py-3 text-fd-foreground no-underline transition-colors hover:bg-fd-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fd-ring" href="https://discord.gg/PUwSMR9XNk">
+    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-fd-border bg-fd-muted text-fd-muted-foreground transition-colors group-hover:text-fd-foreground">
+      <svg aria-hidden="true" className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M20.32 4.37A19.8 19.8 0 0 0 15.36 2.8a13.9 13.9 0 0 0-.64 1.32 18.4 18.4 0 0 0-5.44 0 13.9 13.9 0 0 0-.65-1.32 19.7 19.7 0 0 0-4.95 1.57C.54 9.08-.32 13.67.1 18.2a19.9 19.9 0 0 0 6.08 3.06c.49-.67.92-1.38 1.3-2.13-.71-.27-1.38-.6-2.02-.98.17-.12.33-.25.49-.38a14.2 14.2 0 0 0 12.1 0l.49.38c-.64.38-1.31.71-2.02.98.38.75.82 1.46 1.3 2.13a19.9 19.9 0 0 0 6.08-3.06c.5-5.24-.86-9.79-3.58-13.83ZM8.02 15.46c-1.18 0-2.15-1.08-2.15-2.4s.95-2.4 2.15-2.4c1.2 0 2.17 1.08 2.15 2.4 0 1.32-.95 2.4-2.15 2.4Zm7.96 0c-1.18 0-2.15-1.08-2.15-2.4s.95-2.4 2.15-2.4c1.2 0 2.17 1.08 2.15 2.4 0 1.32-.95 2.4-2.15 2.4Z" />
+      </svg>
+    </span>
+    <span className="min-w-0 flex-1 truncate font-semibold text-inherit">Discord #building-in-public</span>
+    <svg aria-hidden="true" className="h-4 w-4 shrink-0 text-fd-muted-foreground transition-colors group-hover:text-fd-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M7 17 17 7" />
+      <path d="M7 7h10v10" />
+    </svg>
+  </a>
+  <a className="group flex items-center gap-3 rounded-lg border border-fd-border bg-fd-card px-4 py-3 text-fd-foreground no-underline transition-colors hover:bg-fd-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fd-ring" href="https://github.com/code-yeongyu/oh-my-openagent">
+    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-fd-border bg-fd-muted text-fd-muted-foreground transition-colors group-hover:text-fd-foreground">
+      <svg aria-hidden="true" className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 .5a12 12 0 0 0-3.79 23.39c.6.11.82-.26.82-.58v-2.04c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.74.08-.73.08-.73 1.21.09 1.85 1.25 1.85 1.25 1.07 1.84 2.81 1.31 3.5 1 .11-.78.42-1.31.76-1.61-2.66-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23A11.5 11.5 0 0 1 12 5.8c1.02 0 2.04.14 3 .41 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.24 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.62-5.49 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58A12 12 0 0 0 12 .5Z" />
+      </svg>
+    </span>
+    <span className="min-w-0 flex-1 truncate font-semibold text-inherit">GitHub OmO</span>
+    <svg aria-hidden="true" className="h-4 w-4 shrink-0 text-fd-muted-foreground transition-colors group-hover:text-fd-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M7 17 17 7" />
+      <path d="M7 7h10v10" />
+    </svg>
+  </a>
+  <a className="group flex items-center gap-3 rounded-lg border border-fd-border bg-fd-card px-4 py-3 text-fd-foreground no-underline transition-colors hover:bg-fd-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fd-ring" href="https://github.com/code-yeongyu/lazycodex">
+    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-fd-border bg-fd-muted text-fd-muted-foreground transition-colors group-hover:text-fd-foreground">
+      <svg aria-hidden="true" className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 .5a12 12 0 0 0-3.79 23.39c.6.11.82-.26.82-.58v-2.04c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.74.08-.73.08-.73 1.21.09 1.85 1.25 1.85 1.25 1.07 1.84 2.81 1.31 3.5 1 .11-.78.42-1.31.76-1.61-2.66-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23A11.5 11.5 0 0 1 12 5.8c1.02 0 2.04.14 3 .41 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.24 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.62-5.49 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58A12 12 0 0 0 12 .5Z" />
+      </svg>
+    </span>
+    <span className="min-w-0 flex-1 truncate font-semibold text-inherit">GitHub LazyCodex</span>
+    <svg aria-hidden="true" className="h-4 w-4 shrink-0 text-fd-muted-foreground transition-colors group-hover:text-fd-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M7 17 17 7" />
+      <path d="M7 7h10v10" />
+    </svg>
+  </a>
+  <a className="group flex items-center gap-3 rounded-lg border border-fd-border bg-fd-card px-4 py-3 text-fd-foreground no-underline transition-colors hover:bg-fd-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fd-ring" href="https://lazycodex.ai">
+    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-fd-border bg-fd-muted text-fd-muted-foreground transition-colors group-hover:text-fd-foreground">
+      <svg aria-hidden="true" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M2 12h20" />
+        <path d="M12 2a15 15 0 0 1 0 20" />
+        <path d="M12 2a15 15 0 0 0 0 20" />
+      </svg>
+    </span>
+    <span className="min-w-0 flex-1 truncate font-semibold text-inherit">lazycodex.ai</span>
+    <svg aria-hidden="true" className="h-4 w-4 shrink-0 text-fd-muted-foreground transition-colors group-hover:text-fd-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M7 17 17 7" />
+      <path d="M7 7h10v10" />
+    </svg>
+  </a>
+</div>

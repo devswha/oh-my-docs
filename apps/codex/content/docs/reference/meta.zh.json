@@ -3,6 +3,7 @@
   "pages": [
     "configuration",
     "quick-commands",
+    "troubleshooting",
     "environment",
     "migration",
     "cjk-ime",

@@ -91,7 +91,7 @@ LSP와 AST-grep은 서로 보완합니다. LSP는 실제 심볼에 대한 의미
 - `as any`, `@ts-ignore`, `@ts-expect-error`를 쓰지 않고, 통과시키려고 테스트를 지우지 않습니다.
 - 기존 패턴을 이해한 뒤에만 리팩터하고, 적용 전에 미리봅니다.
 - 폐기된 API는 `librarian`에게 현대적 대체를 묻되, 사용자가 마이그레이션을 명시적으로 요청하지 않는 한 라이브러리 버전을 자동으로 올리지 않습니다.
-- 복잡한 아키텍처 판단은 (읽기 전용) `oracle`에게 묻습니다.
+- 복잡한 아키텍처 판단은 읽기 전용 reviewer 역할에 맡깁니다.
 - 커버리지 0, 공개 API 깨짐, 불분명한 범위, 연속 세 번의 검증 실패에서는 중단하고 사용자에게 묻습니다.
 
 ## 관련 스킬
@@ -99,5 +99,5 @@ LSP와 AST-grep은 서로 보완합니다. LSP는 실제 심볼에 대한 의미
 <Cards>
   <Card title="lsp" href="/ko/docs/skills/lsp">진단, 정의, 참조, 안전한 이름 변경입니다.</Card>
   <Card title="programming" href="/ko/docs/skills/programming">LZX가 모든 줄에 적용하는 타입 규율입니다.</Card>
-  <Card title="스킬 개요" href="/ko/docs/skills">모든 LazyCodex 스킬입니다.</Card>
+  <Card title="Skills" href="/ko/docs/skills">모든 LazyCodex Skills입니다.</Card>
 </Cards>

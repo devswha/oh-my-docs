@@ -1,97 +1,40 @@
 ---
-title: What LazyCodex Is
-description: A thin distribution layer that packages OmO (oh-my-openagent) as the Codex agent harness — project memory, planning, execution, and verified completion, "omo in Codex, packaged for the lazy."
+title: Concept
+description: A thin Codex distribution for OmO.
 ---
 
-LazyCodex (LZX) packages [OmO (oh-my-openagent)](https://github.com/code-yeongyu/oh-my-openagent) as the agent harness for Codex. OmO is the engine that gives Codex discipline agents, parallel orchestration, multi-model routing, skills, hooks, and verified completion. LazyCodex bundles that engine into a repeatable Codex setup you install with one command.
+LazyCodex packages [OmO (oh-my-openagent)](https://github.com/code-yeongyu/oh-my-openagent) in a form that is convenient to use from Codex. The install command is short, but inside it are the Codex OmO plugin, Skills, hooks, MCP servers, and Commands-based workflows.
 
-> _"LazyVim made Neovim usable for the rest of us. LazyCodex does the same for Codex."_
+> _"Just as LazyVim made Neovim usable for the rest of us, LazyCodex does the same for Codex."_
 
-Think [LazyVim](https://github.com/LazyVim/LazyVim) for [lazy.nvim](https://github.com/folke/lazy.nvim), but for Codex. It is **omo in Codex, packaged for the lazy.**
+Think of it as the Codex version of [LazyVim](https://github.com/LazyVim/LazyVim) for [lazy.nvim](https://github.com/folke/lazy.nvim).
 
-## A thin distribution layer
+## Thin Distribution
 
-LazyCodex does not reimplement the agent harness — it distributes one. The core engine is OmO, and `npx lazycodex-ai install` is shorthand for `npx --yes --package oh-my-openagent omo install --platform=codex`. What LazyCodex adds is a clean, memorable entry point and a Codex-shaped install.
+LazyCodex itself is close to a small install alias. `lazycodex-ai` runs the OmO installer for the Codex platform, and the actual features are provided by the `omo` plugin.
 
 ```text
 lazycodex/
-├── src/            → oh-my-openagent (OmO submodule — the engine)
-└── packages/
-    └── web/        → the lazycodex.ai documentation site
+├── package.json       -> lazycodex-ai install alias
+└── plugins/omo/       -> Codex plugin, Skills, hooks, MCP servers
 ```
 
-Everything that does the work — agents, routing, skills, hooks, verification — lives in the OmO submodule. LazyCodex is the layer that points Codex at it.
+Installation lives in [Getting Started](/docs/getting-started). This section explains what layers are added to Codex after installation.
 
-## What the harness gives Codex
+## What Gets Installed
 
-Once installed, Codex runs the full OmO harness:
-
-| Capability | What it means in Codex |
+| Layer | Meaning in Codex |
 | --- | --- |
-| Discipline agents | Sisyphus orchestrates Hephaestus, Oracle, and Librarian — a full AI dev team |
-| Parallel execution | Independent subtasks fan out to multiple agents at once |
-| Multi-model routing | The right GPT model is chosen automatically per task category |
-| Skills system | Specialist judgment (review, cleanup, frontend, LSP, AST-grep, and more) |
-| Hooks & lifecycle | Hooks fire around session start, prompt submission, and edit-like tool calls — see [Hooks & lifecycle](/docs/concepts/hooks-lifecycle) |
-| Zero config | Sensible defaults out of the box; override only when you want to |
+| Commands | Workflow entry points such as `$init-deep`, `$ulw-plan`, `$start-work`, and `$ulw-loop` |
+| Skills | Specialist playbooks for review, debugging, refactoring, frontend, LSP, and rules injection |
+| Hooks | Automatic helpers at session start, prompt submit, after edits, after compact, and stop |
+| MCP Servers | Tool connections such as `grep_app`, `context7`, `codegraph`, `git_bash`, and `lsp` |
 
-## The four ideas
-
-The harness exists to do four things well, end to end:
-
-<Steps>
-
-<Step>
-
-### Project memory
-
-`$init-deep` generates hierarchical `AGENTS.md` context across the repository, so agents land with the right files in view before they edit. Run it when the codebase is too large to explain from memory.
-
-</Step>
-
-<Step>
-
-### Planning
-
-`$ulw-plan "what to build"` turns a fuzzy idea into a decision-complete plan written to `plans/<slug>.md`. It plans only — it never writes product code.
-
-</Step>
-
-<Step>
-
-### Execution
-
-`$start-work [plan-name]` executes a plan until every checkbox is done, with durable progress, and prints **ORCHESTRATION COMPLETE** when the plan is finished.
-
-</Step>
-
-<Step>
-
-### Verified completion
-
-`$ulw-loop "task"` keeps moving until the result is verified by evidence rather than a hopeful status update. An Oracle must confirm the work before the loop ends.
-
-</Step>
-
-</Steps>
-
-## Install
-
-```bash
-npx lazycodex-ai install
-```
-
-No global install — always use `npx`. For a fully autonomous, no-TUI setup:
-
-```bash
-npx lazycodex-ai install --no-tui --codex-autonomous
-```
-
-## Explore the concepts
+## Explore Concept
 
 <Cards>
-  <Card title="The ultrawork loop" href="/docs/concepts/ultrawork" />
-  <Card title="Discipline agents" href="/docs/concepts/discipline-agents" />
-  <Card title="Multi-model routing" href="/docs/concepts/model-routing" />
-  <Card title="Command pillars" href="/docs/commands" />
+  <Card title="Commands" href="/docs/commands" />
+  <Card title="Ultrawork Loop" href="/docs/concepts/ultrawork" />
+  <Card title="Model Routing" href="/docs/concepts/model-routing" />
+  <Card title="Hooks & Lifecycle" href="/docs/concepts/hooks-lifecycle" />
 </Cards>

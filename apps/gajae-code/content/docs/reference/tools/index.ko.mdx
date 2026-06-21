@@ -1,0 +1,64 @@
+---
+title: 도구
+description: Gajae-Code 에이전트가 쓰는 도구 표면 — 파일, 검색, 런타임, computer-use, 웹, 세션, 미디어 — 를 계열별로 정리.
+---
+
+Gajae-Code 에이전트는 집중되고 이름이 붙은 도구 표면을 통해 동작합니다. 모든 도구는 업스트림 `docs/tools/` 항목과 매핑되어 이름·플래그·동작이 그대로 유지됩니다. 아래 계열은 각 도구별 상세 페이지로 연결됩니다.
+
+## 도구 계열
+
+<Cards>
+  <Card title="파일" href="/ko/docs/reference/tools/files">
+    `read`, `write`, `edit`(여러 편집 variant), 구조적 재작성을 위한 `ast-edit`.
+  </Card>
+  <Card title="검색·탐색" href="/ko/docs/reference/tools/search">
+    `find`, `search`, `search_tool_bm25`, `ast-grep`, `lsp`, `resolve`.
+  </Card>
+  <Card title="런타임·실행" href="/ko/docs/reference/tools/runtime">
+    `bash`, `eval`, `python-repl`, `debug`, `ssh`, 백그라운드 `job` 제어.
+  </Card>
+  <Card title="Computer use" href="/ko/docs/reference/tools/computer-use">
+    Apple Silicon macOS 스크린샷과 마우스/키보드 제어를 위한 실험적 도구.
+  </Card>
+  <Card title="웹·외부" href="/ko/docs/reference/tools/web">
+    `web_search`, `browser`, `github`.
+  </Card>
+  <Card title="세션·메모리" href="/ko/docs/reference/tools/session-and-memory">
+    `task`, `todo_write`, `checkpoint`, `rewind`, `recall`, `retain`, `reflect`.
+  </Card>
+  <Card title="미디어·기타" href="/ko/docs/reference/tools/media">
+    `render_mermaid`, `inspect_image`, `calc`, `recipe`, `ask`.
+  </Card>
+</Cards>
+
+## 한눈에 보기
+
+| 계열 | 도구 | 페이지 |
+| --- | --- | --- |
+| 파일 | `read` · `write` · `edit` · `ast-edit` | [파일](/ko/docs/reference/tools/files) |
+| 검색·탐색 | `find` · `search` · `search_tool_bm25` · `ast-grep` · `lsp` · `resolve` | [검색](/ko/docs/reference/tools/search) |
+| 런타임·실행 | `bash` · `eval` · `python-repl` · `debug` · `ssh` · `job` | [런타임](/ko/docs/reference/tools/runtime) |
+| Computer use | `computer` | [Computer use](/ko/docs/reference/tools/computer-use) |
+| 웹·외부 | `web_search` · `browser` · `github` | [웹](/ko/docs/reference/tools/web) |
+| 세션·메모리 | `task` · `todo_write` · `checkpoint` · `rewind` · `recall` · `retain` · `reflect` | [세션·메모리](/ko/docs/reference/tools/session-and-memory) |
+| 미디어·기타 | `render_mermaid` · `inspect_image` · `calc` · `recipe` · `ask` | [미디어](/ko/docs/reference/tools/media) |
+
+## 공통 규칙
+
+도구 표면 전반에 반복되는 패턴이 있습니다.
+
+- **내부 URL.** 내용 도구(`read`, `search`, `ast-grep`)는 `agent://`, `artifact://`, `memory://`, `gjc://`, `rule://`, `issue://`, `pr://` 같은 내부 URL을 받습니다. 라우터가 백킹 리소스로 해석할 수 있을 때만 동작합니다. 내부 URL에는 glob을 쓸 수 없습니다.
+- **해시라인 앵커.** `read`, `search`, `ast-grep`는 `LINEhh|text` 앵커(예: `41th|def alpha():`)를 냅니다. `edit`는 `|` 왼쪽의 `LINEhh` 토큰만 소비합니다. `:raw` 읽기와 불변 리소스에서는 앵커가 억제됩니다.
+- **미리보기 후 resolve.** 일부 도구(특히 `ast-edit`)는 먼저 미리보기를 하고 강제 `resolve` 동작을 예약합니다. `resolve(action: "apply", ...)`를 호출하기 전엔 아무것도 기록되지 않습니다.
+- **한도와 절단.** 출력은 바이트·줄 단위로 제한됩니다(`search`는 처음 `100`개 매치, `ast-grep`는 기본 `50`개). 결과에는 한도나 절단 도달 여부가 표시됩니다.
+
+## 설정·자격증명이 필요한 도구
+
+일부 도구는 백엔드가 설정돼야 동작합니다. 켜는 키·환경변수·자격증명은 [레퍼런스](/ko/docs/reference)를 보세요.
+
+- `web_search`와 `browser`는 provider 설정에 의존합니다.
+- `computer`는 Apple Silicon macOS에서 기본 호출 가능하며 supervisor로 게이트됩니다. `computer.alwaysOn=false`로 끌 수 있습니다.
+- `github`는 `gh` CLI와 그 캐시를 씁니다.
+- `lsp`는 `lsp.enabled`에 게이트되며 프로젝트별로 언어 서버를 탐색·설정합니다.
+- `search_tool_bm25`는 `tools.discoveryMode !== "off"`일 때만 나타납니다.
+- 활성 `edit` variant는 `GJC_EDIT_VARIANT`로, `ast-edit`의 파일 범위는 `GJC_MAX_AST_FILES`로 정해집니다.

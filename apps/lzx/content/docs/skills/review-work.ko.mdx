@@ -5,19 +5,19 @@ description: 다섯 에이전트가 병렬로 도는 다각도 구현 후 리뷰
 
 `review-work`는 구현 후 리뷰 오케스트레이터입니다. 의미 있는 구현을 마친 뒤, 다섯 개의 전문 서브 에이전트를 병렬로 띄워 서로 보완하는 각도에서 작업을 검사합니다. 리뷰가 통과하려면 다섯이 모두 통과해야 합니다. 하나라도 실패하면 리뷰는 실패입니다.
 
-"review work", "review my work", "review changes", "QA my work", "verify implementation", "post-implementation review" 같은 표현이 트리거입니다.
+"review work", "review my work", "review changes", "QA my work", "verify implementation", "check my work", "validate changes", "post-implementation review" 같은 표현이 트리거입니다.
 
-## 다섯 에이전트
+## 다섯 리뷰 레인
 
-| # | 에이전트 | 유형 | 답하는 질문 | 레벨 |
-| --- | --- | --- | --- | --- |
-| 1 | 목표·제약 검증자 | Oracle | 규칙 안에서 요청한 그대로 만들었는가? | MAIN |
-| 2 | QA 실행자 | unspecified-high | 실제로 돌렸을 때 동작하는가? | MAIN |
-| 3 | 코드 리뷰어 | Oracle | 코드가 잘 쓰였고 일관적인가? | MAIN |
-| 4 | 보안 감사자 | Oracle | 보안 취약점이 있는가? | SUB |
-| 5 | 컨텍스트 마이너 | unspecified-high | 놓친 맥락은 없는가? | MAIN |
+| # | 레인 | 답하는 질문 | Codex에서의 실행 |
+| --- | --- | --- | --- |
+| 1 | 목표·제약 검증 | 요청한 것을 정확히 만들었는가? | self-contained reviewer sub-agent |
+| 2 | QA 실행 | 실제 표면에서 동작하는가? | hands-on QA sub-agent |
+| 3 | 코드 품질 | 코드가 일관적이고 유지보수 가능한가? | `lazycodex-code-reviewer` 또는 reviewer sub-agent |
+| 4 | 보안 | 입력, 인증, 시크릿, 데이터 노출 위험은 없는가? | security-focused reviewer sub-agent |
+| 5 | 컨텍스트 마이닝 | git 이력, 이슈, 주변 맥락에서 놓친 것은 없는가? | context-mining sub-agent |
 
-Oracle 에이전트는 파일을 읽거나 명령을 실행할 수 없으므로 diff, 전체 파일 내용, 맥락을 모두 프롬프트로 받습니다. `unspecified-high` 에이전트는 자율적이라 파일을 읽고 명령을 실행하며 도구를 쓰기 때문에, 원본 덩어리 대신 목표와 단서를 받습니다.
+원본 Skill에는 OpenCode식 예시가 일부 남아 있지만, Codex에서는 그대로 호출하지 않습니다. `multi_agent_v1.spawn_agent`로 역할을 설명하는 자기완결 메시지를 보내고, 가능한 경우 `lazycodex-code-reviewer`, `lazycodex-qa-executor`, `lazycodex-gate-reviewer` 같은 설치된 역할을 사용합니다.
 
 ## 동작 방식
 
@@ -40,9 +40,9 @@ git diff HEAD~1               # 또는: git diff main...HEAD
 
 <Step>
 
-### Phase 1 — 다섯을 한꺼번에 띄우기
+### Phase 1 — 다섯 레인을 한꺼번에 띄우기
 
-다섯 에이전트를 한 턴에 모두, 각각 백그라운드로 띄웁니다. 순차 실행도, 사이에 기다림도 없습니다. 목표 검증자는 목표를 하위 요구사항으로 쪼개 각각 ACHIEVED / MISSED / PARTIAL로 표시합니다. QA 실행자는 15~30개 시나리오를 브레인스토밍해 보강하고, 작업 목록을 만들어 우선순위대로 실행합니다. 코드 리뷰어는 정확성, 패턴 일관성, 타입 안전성, 성능, 기술 부채를 평가합니다. 보안 감사자는 입력 검증, 인증, 시크릿, 데이터 노출을 점검합니다. 컨텍스트 마이너는 git 이력, GitHub, 커뮤니케이션 채널, 코드 교차 참조를 뒤집니다.
+다섯 레인을 한 턴에 모두, 각각 백그라운드로 띄웁니다. 순차 실행도, 사이에 기다림도 없습니다. 목표 검증자는 요구사항 충족 여부를 나누어 보고하고, QA 실행자는 실제 시나리오를 돌리며, 코드 리뷰어와 보안 감사자는 diff와 관련 파일을 검토합니다. 컨텍스트 마이너는 git 이력, GitHub, 주변 문맥, 코드 교차 참조를 확인합니다.
 
 </Step>
 
@@ -68,5 +68,6 @@ git diff HEAD~1               # 또는: git diff main...HEAD
 
 - 모든 에이전트가 판정과 확신도를 냅니다.
 - 단 한 번의 FAIL이 전체 리뷰를 실패시킵니다.
+- timeout, 빈 응답, ack-only, 명시적 `BLOCKED:`는 PASS가 아닙니다.
 - 실패 시 발견 사항은 문제, 파일, 수정안을 짚습니다. 막연한 "X를 개선해 보세요"는 없습니다.
 - 성공 시 보고서는 짧게 유지하고, 차단되지 않는 제안만 적습니다.

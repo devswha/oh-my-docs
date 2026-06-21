@@ -1,74 +1,88 @@
 ---
-title: 設定
-description: インストールフラグ、Codex プラットフォーム対象、zero-config デフォルト、そして provider・モデル設定が OmO のどこにあるか。
+title: Configuration
+description: Install flags, Codex target, zero-config defaults, doctor, hooks, and provider/model setup.
 ---
 
-LazyCodex は設定を最小に保ちます。LazyCodex が直接公開するつまみはインストールフラグのみで、それ以降のすべて（provider、モデル、ルーティング、フック）は基盤の OmO エンジンで設定します。
+LazyCodex は configuration を最小に保ちます。直接扱うのは install flags と Codex plugin configuration です。その後の provider、model、routing、hooks、Skills、Agent Roles は下の OmO-based setup が担当します。
 
-## デフォルトは zero-config
+## Zero-config by Default
 
-LazyCodex は妥当なデフォルト値を備え、インストール直後から動作します。デフォルトがリポジトリに合わないときだけ設定に手を入れます。事前に作成すべき独立した設定ファイルはありません。インストールしてすぐ作業を始めてください。
-
-```bash
-npx lazycodex-ai install
-```
-
-グローバルインストールはありません。常に `npx` で呼び出します。これは `npx --yes --package oh-my-openagent omo install --platform=codex` の短縮形です。
-
-> これが「Codex Light setup」です。インストーラーは Codex マーケットプレイスプラグインを `omo@sisyphuslabs` として接続し、公開パッケージ `lazycodex-ai` は呼び出し用のエイリアス/エントリーポイントとして残ります。
-
-## Codex プラットフォーム対象
-
-LazyCodex は常に Codex を対象とします。`--platform=codex` 引数は `lazycodex-ai` バイナリの `install` 経路に組み込まれており、ハーネスは他のプラットフォームではなく [OpenAI Codex CLI](https://github.com/openai/codex) に接続されます。`--platform` を自分で渡すことはありません。
-
-### 前提条件
-
-- [Bun](https://bun.sh)
-- [OpenAI Codex CLI](https://github.com/openai/codex)
-
-## インストールフラグ
-
-<Tabs items={["対話", "自律"]}>
-
-<Tab value="対話">
-
-デフォルトのインストーラーは対話式（TUI）です。サブスクリプションを検出し、モデル選択を補助し、provider 認証を案内します。
+LazyCodex は妥当な defaults とともに提供され、install 直後に動作します。defaults が repository に合わないときだけ configuration を触ります。事前に作るべき別 config file はありません。
 
 ```bash
 npx lazycodex-ai install
 ```
 
-LLM エージェントにインストールとセットアップを任せることを強く推奨します。サブスクリプション検出、モデル選択、provider 認証を自動で処理します。
+global install はありません。常に `npx` で呼び出します。これは `npx --yes --package oh-my-openagent omo install --platform=codex` の短縮形です。
+
+> これが Codex light setup です: Agent Roles、Commands、hooks、Skills、model routing、verification defaults。
+
+## Codex Target
+
+LazyCodex は常に Codex を対象にします。`--platform=codex` argument は `lazycodex-ai` bin の `install` path に組み込まれており、harness は他 platform ではなく [OpenAI Codex CLI](https://github.com/openai/codex) に接続されます。自分で `--platform` を渡す必要はありません。
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org): maintained LTS で十分です。`npx` は npm に含まれ、Bun は不要です。
+- [OpenAI Codex CLI](https://github.com/openai/codex) または Codex app に login 済み。
+
+## Hooks & Lifecycle
+
+hooks は承認前には実行されません。install 後の初回実行で、Codex startup review が omo hooks の承認を求めます。upgrade 後は plugin files が変わり、以前の trust hash と一致しないため hooks が **Modified** と表示されます。再承認すると、次の session で新 version bootstrap が実行されます。
+
+## Install Flags
+
+<Tabs items={["interactive", "autonomous"]}>
+
+<Tab value="interactive">
+
+default installer は interactive (TUI) です。subscription を検出し、model selection を助け、provider authentication を案内します。
+
+```bash
+npx lazycodex-ai install
+```
+
+LLM agent に install と setup を進めさせるのが推奨です。subscription detection、model selection、provider authentication を自動で処理します。
 
 </Tab>
 
-<Tab value="自律">
+<Tab value="autonomous">
 
-完全自律・プロンプトなしのセットアップには、両方のフラグを追加します。
+完全自律・no-prompt setup では 2 つの flags を一緒に追加します。
 
 ```bash
 npx lazycodex-ai install --no-tui --codex-autonomous
 ```
 
-`--no-tui --codex-autonomous` は、完全自律・プロンプトなしのセットアップのためにまとめて渡します。`lazycodex-ai` バイナリはこれらを解釈しません。`install` の後ろのフラグはすべて `omo install` へそのまま転送され、意味は `omo install` が与えます。
+`--no-tui --codex-autonomous` は完全自律 setup のため一緒に転送されます。`lazycodex-ai` bin はこれらの flags を解釈しません。`install` 後のすべての flags は `omo install` にそのまま渡され、意味は `omo install` が与えます。
 
 </Tab>
 
 </Tabs>
 
-## provider・モデル設定
+## Provider & Model Settings
 
-provider とモデルの設定は LazyCodex ではなく OmO が担います。インストール中、OmO はどのモデルサブスクリプションを持っているか尋ね、それに応じて各タスクカテゴリをルーティングします。これがマルチモデルルーティング層です。
+provider と model setup は LazyCodex ではなく OmO が担当します。install 中、OmO は Codex configuration と bundled `model-catalog.json` を基準に model profiles を合わせます。これが model routing layer です。
 
-- インストーラーが provider 認証を代わりに接続します。エージェントに実行させるのが推奨経路です。
-- provider キーは環境から読み込まれます。すべての `*_API_KEY` と OAuth 資格情報は機密として扱ってください。ログ出力・コミットは禁止です。
-- インストールを超えた深い provider・モデル調整は OmO の規約に従います。provider 環境変数とモデル解決ルールは OmO のドキュメントを参照してください。
+- installer が provider authentication をつなぎます。agent に実行させるのが推奨経路です。
+- provider keys は environment から読まれます。すべての `*_API_KEY` と OAuth credentials は secret として扱い、log や commit に残さないでください。
+- install を超える深い provider/model tuning は OmO conventions に従います。provider env vars と model interpretation rules は OmO docs を参照してください。
 
-> provider キーを勝手に作らないでください。選んだ provider が文書化したキーを環境経由で渡し、ルーティングはインストーラーに解決させてください。
+> provider keys を勝手に作らないでください。選んだ provider が文書化した key を environment に渡し、routing は installer に解釈させてください。
 
-## 関連
+## Doctor
+
+何かが pending または degraded に見えたら実行します。
+
+```bash
+npx lazycodex-ai doctor
+```
+
+plugin cache、hooks、MCP Servers、Agent Roles、Codex config state を health report で確認します。何が misconfigured で、なぜそうなり、どの field や component を直すべきかを説明します。
+
+## Related
 
 <Cards>
-  <Card title="CLI" href="/ja/docs/reference/cli">`lazycodex-ai` が OmO へどう転送されるか、そして `--dry-run`。</Card>
-  <Card title="モデルルーティング" href="/ja/docs/concepts/model-routing">タスクカテゴリごとに異なる GPT モデルが現れる理由。</Card>
+  <Card title="CLI" href="/ja/docs/reference/cli">`lazycodex-ai` が OmO へどう forward されるか、そして `--dry-run`。</Card>
+  <Card title="Model Routing" href="/ja/docs/concepts/model-routing">LazyCodex が model profiles を管理する方法。</Card>
 </Cards>

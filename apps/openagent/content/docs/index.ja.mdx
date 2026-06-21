@@ -10,17 +10,24 @@ description: Multi-model orchestration for OpenCode. Install, type ultrawork, an
 ## Quick Start
 
 ```bash
+# Ultimate / OpenCode
 bunx oh-my-openagent install
+
+# Light / Codex CLI
+npx lazycodex-ai install
+
+# Both
+bunx oh-my-openagent install --platform=both
 bunx oh-my-openagent doctor
 ```
 
-Then open OpenCode and type:
+UltimateはBunとOpenCode provider promptsを使います。LightはNode/npmの`lazycodex-ai`で入り、管理下のCodex plugin stateを`~/.codex/`に書きます。Bunは不要です。その後、OpenCodeを開いて入力します。
 
 ```text
 ultrawork
 ```
 
-`oh-my-openagent` と `oh-my-opencode` の両方が公開されています。OmO は `oh-my-openagent` の plugin entry を優先し、`oh-my-opencode` の legacy entry は移行期間中に警告付きでロードされます。
+`oh-my-openagent` と `oh-my-opencode` の両方が公開されています。OmO は `oh-my-openagent` の plugin entry を優先し、`oh-my-opencode` の legacy entry は移行期間中に警告付きでロードされます。Codex Lightはmarketplace `sisyphuslabs` とplugin `omo@sisyphuslabs`として入ります。
 
 ## Documentation Map
 

@@ -1,0 +1,144 @@
+---
+title: 파일 도구
+description: read, write, edit, ast-edit — Gajae-Code가 파일을 읽고 정밀하거나 구조적인 변경을 적용하는 방법.
+---
+
+파일 계열은 내용 읽기와 변경 적용을 다룹니다.
+
+- `read` — 단일 `path` 문자열로 파일·디렉터리·아카이브·DB·URL 등 거의 모든 것을 읽습니다.
+- `write` — 파일, 아카이브 엔트리, SQLite 행을 생성하거나 덮어씁니다.
+- `edit` — 여러 variant로 범위 지정 줄 편집을 적용합니다.
+- `ast-edit` — 구조적 AST 재작성을 미리보고 적용합니다.
+
+## `read`
+
+단일 `path` 문자열로 파일, 디렉터리, 아카이브, SQLite DB, 내부 리소스, 이미지, 문서, URL을 읽습니다. 뒤에 붙는 셀렉터가 잘라낼 범위를 정합니다.
+
+| 입력 | 타입 | 필수 | 설명 |
+| --- | --- | --- | --- |
+| `path` | `string` | 예 | 파일 경로, 내부 URL, 웹 URL. `:50-100`이나 `:raw` 같은 셀렉터로 끝날 수 있음. |
+
+### 셀렉터
+
+| 접미사 | 의미 |
+| --- | --- |
+| `:raw` | 원문 모드. 구조 요약과 줄 접두를 끔. |
+| `:N` / `:LN` | 1-기준 `N`줄부터, 끝 열림. |
+| `:A-B` / `:LA-LB` | 1-기준 포함 줄 범위. |
+| `:A+C` / `:LA+LC` | `A`부터 `C`줄. |
+| `:range:raw` / `:raw:range` | 같은 줄 선택, 원문 출력. |
+
+줄 번호는 1-기준입니다(`:0`은 무효). URL 셀렉터는 `:raw`, `:N`, `:A-B`, `:A+C`만 지원하며 `L` 접두는 없습니다.
+
+### 열 수 있는 것
+
+- **텍스트 파일** — 요약이 켜져 있고 파일이 충분히 작으면(`<= 2 MiB`, `<= 20_000`줄) 생략 구간을 `...`로 바꾼 구조 요약과 복구 셀렉터 안내를 냅니다. 아니면 줄 범위 스트림 읽기.
+- **디렉터리** — 최근순 트리(깊이 `2`, 디렉터리당 최대 `12`개), 크기와 경과 표시.
+- **아카이브** — `archive.ext:inner/path[:lines]`로 `.tar`, `.tar.gz`, `.tgz`, `.zip`.
+- **SQLite** — `db.sqlite`는 테이블 목록, `:table`은 스키마+샘플, `:table:key`는 한 행, `?limit=&offset=&order=&where=`는 쿼리, `?q=SELECT ...`는 원문 읽기 전용 SQL.
+- **문서** — `.pdf`, `.doc(x)`, `.ppt(x)`, `.xls(x)`, `.rtf`, `.epub`을 텍스트로 변환.
+- **Jupyter 노트북** — `.ipynb`을 편집 가능한 `# %% [code] cell:N` 텍스트로(`:raw` 제외).
+- **이미지** — 인라인 이미지 블록(최대 `20 MiB`), `inspect_image.enabled`면 메타데이터만.
+- **내부 URL** — `agent://`, `artifact://`, `memory://`, `gjc://`, `rule://`, `issue://`, `pr://`.
+- **웹 URL** — `http://`, `https://`, `www.`; 읽기 좋은 텍스트로 렌더, `:raw`로 본문 폴백.
+
+<Callout type="info">
+해시라인 모드의 비-raw 텍스트 읽기는 `LINEhh|text`(예: `41th|def alpha():`)로 접두됩니다. 이 앵커를 이후 `edit`가 소비합니다. 단독 `/`는 파일시스템 루트가 아니라 세션 cwd로 해석됩니다.
+</Callout>
+
+## `write`
+
+파일, 아카이브 엔트리, SQLite 행을 생성하거나 덮어씁니다.
+
+| 입력 | 타입 | 필수 | 설명 |
+| --- | --- | --- | --- |
+| `path` | `string` | 예 | 일반 경로는 파일 기록. `archive.ext:inner/path`는 아카이브 엔트리. `db.sqlite:table`은 행 삽입, `db.sqlite:table:key`는 갱신·삭제. |
+| `content` | `string` | 예 | 전체 교체 내용. SQLite 비삭제 쓰기는 JSON5 객체여야 하고, 행 키와 함께 빈 내용은 행을 삭제. |
+
+variant:
+
+- **일반 파일** — 기존 파일 덮어쓰기. 부모 디렉터리 생성은 아카이브 경로에서만 이뤄집니다.
+- **아카이브 엔트리** — `.tar`, `.tar.gz`, `.tgz`, `.zip`의 `archive.ext:inner/path`; 한 엔트리 교체 후 아카이브 전체를 다시 씁니다.
+- **SQLite 삽입** — `db.sqlite:table`에 JSON5 객체(빈 객체는 기본값 삽입).
+- **SQLite 갱신/삭제** — `db.sqlite:table:key`; 비어있지 않으면 갱신, 비거나 공백이면 삭제.
+
+<Callout type="warn">
+`write`는 자동 생성으로 감지된 파일 덮어쓰기를 거부합니다. 프롬프트는 일상 편집에 `write` 쓰기(대신 `edit`)와 명시 요청 없는 `*.md`/`README` 생성을 금합니다. SQLite DB는 `write`로 새로 만들 수 없으며 이미 존재해야 합니다.
+</Callout>
+
+## `edit`
+
+소스 편집을 적용합니다. 기본 모드는 **해시라인** 패치 언어로, 단일 `input` 문자열로 전달합니다.
+
+| 입력 | 타입 | 필수 | 설명 |
+| --- | --- | --- | --- |
+| `input` | `string` | 예 | 하나 이상의 편집 섹션. 첫 비공백 줄은 `§PATH`여야 함. 선택적 `*** Begin Patch` / `*** End Patch` 봉투는 있으면 무시. |
+
+### 해시라인 패치 언어
+
+| 토큰 | 의미 |
+| --- | --- |
+| `§PATH` | 섹션 헤더 — 대상 파일. |
+| `»ANCHOR` | 앵커 줄 뒤에 삽입. |
+| `«ANCHOR` | 앵커 줄 앞에 삽입. |
+| `≔A..B` | 범위 교체·삭제(페이로드 있으면 교체, 없으면 삭제). |
+| `≔A` | `≔A..A`의 약식. |
+| `BOF` / `EOF` | 파일 시작/끝 앵커. |
+
+앵커는 `read`/`search` 출력의 `LINEhh` 토큰(예: `41th`)입니다. `|` 왼쪽만 복사하세요. 파서는 첫·마지막 앵커 해시를 현재 파일과 대조합니다. 오래됐으면 mismatch를 던지고, 마지막 읽기 스냅샷을 기반으로 복구를 시도합니다.
+
+```text
+§src/a.ts
+»4fb
+const added = true;
+```
+
+```text
+§src/a.ts
+≔4fb..6qx
+```
+
+### 편집 variant
+
+활성 모드는 도구 페이로드 밖에서 `resolveEditMode()`와 `GJC_EDIT_VARIANT` 환경변수로 정해집니다. 기본은 `hashline`입니다.
+
+| variant | 하는 일 |
+| --- | --- |
+| `hashline` | 기본 — 위의 줄 앵커 패치 언어. |
+| `replace` | 정확/퍼지 옛-새 텍스트 교체. |
+| `patch` | 구조적 JSON diff-hunk 모드. |
+| `apply_patch` | 자유형 `*** Begin Patch` 봉투, patch 모드 항목으로 확장. |
+| `vim` | 지속 모달 편집 버퍼. |
+| `atom` | Atom 스타일 편집 모드. |
+
+<Callout type="info">
+다중 op 패치는 원본 파일 스냅샷에 대해 파싱됩니다 — 앞 op 후 뒤 앵커를 다시 번호 매기지 마세요. 아래에서 위로 적용됩니다. 페이로드 없는 `≔A..B`는 범위를 삭제하며, 줄을 그 자리에 비우려면 명시적 빈 페이로드 줄 하나를 넣으세요.
+</Callout>
+
+## `ast-edit`
+
+네이티브 ast-grep로 소스 파일에 구조적 재작성을 미리보고 적용합니다.
+
+| 입력 | 타입 | 필수 | 설명 |
+| --- | --- | --- | --- |
+| `ops` | `{ pat: string; out: string }[]` | 예 | 하나 이상의 재작성 규칙. `pat`은 비어선 안 되고 중복 `pat`은 실패. 빈 `out`은 매치 노드 삭제. |
+| `paths` | `string[]` | 예 | 파일, 디렉터리, glob, 백킹 파일이 있는 내부 URL. 내부 URL에는 glob 금지. |
+
+[`ast-grep`](/ko/docs/reference/tools/search) 패턴 문법을 공유합니다: `$NAME`은 노드 캡처, `$_`는 바인딩 없이 하나, `$$$NAME` / `$$$`는 0개 이상. 메타변수 이름은 대문자여야 하고 전체 노드를 가리켜야 하며, `pat`의 캡처가 `out`에 치환됩니다.
+
+<Steps>
+<Step>**먼저 미리보기.** `ast-edit`는 항상 드라이런을 돌리고 파일별로 묶인 `-before` / `+after` 줄을 보여줍니다. 아직 기록되지 않습니다.</Step>
+<Step>**resolve로 적용.** 강제 `resolve` 동작이 예약됩니다. `resolve(action: "apply", ...)`로 기록하거나 `discard`로 버립니다.</Step>
+<Step>**stale 검사.** 적용은 재작성 세트를 실제로 다시 돌리고, 합계가 미리보기와 더 이상 맞지 않으면 적용을 거부합니다.</Step>
+</Steps>
+
+파일 범위는 `GJC_MAX_AST_FILES`(기본 `1000`)로 제한됩니다. 디렉터리 스캔은 `.gitignore`를 따르고 glob에 명시하지 않는 한 `node_modules`를 건너뜁니다. 겹치는 편집은 실행을 중단합니다. 구문 오류 파일은 건너뜁니다.
+
+## 무엇을 언제 쓸까
+
+| 목표 | 도구 |
+| --- | --- |
+| 내용·범위·DB·URL 확인 | `read` |
+| 새 파일 생성 또는 전체 교체 | `write` |
+| 몇 줄을 그 자리에서 변경 | `edit` |
+| 여러 파일에 걸친 구문 패턴 재작성 | `ast-edit` |

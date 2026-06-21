@@ -1,97 +1,40 @@
 ---
-title: LazyCodex란
-description: OmO(oh-my-openagent)를 Codex 에이전트 하니스로 패키징한 얇은 배포 레이어 — 프로젝트 메모리, 계획, 실행, 검증된 완료. "게으른 이들을 위한, Codex 속 omo."
+title: Concept
+description: A thin Codex distribution for OmO.
 ---
 
-LazyCodex(LZX)는 [OmO(oh-my-openagent)](https://github.com/code-yeongyu/oh-my-openagent)를 Codex의 에이전트 하니스로 패키징합니다. OmO는 Codex에 규율 에이전트, 병렬 오케스트레이션, 멀티 모델 라우팅, 스킬, 훅, 검증된 완료를 제공하는 엔진입니다. LazyCodex는 이 엔진을 한 줄의 명령으로 설치되는 반복 가능한 Codex 설정으로 묶습니다.
+LazyCodex는 [OmO(oh-my-openagent)](https://github.com/code-yeongyu/oh-my-openagent)를 Codex에서 쓰기 좋게 묶은 배포판입니다. 설치 명령은 짧지만, 안쪽에는 Codex용 OmO 플러그인, 스킬, 훅, MCP 서버, Commands 기반 워크플로우가 들어 있습니다.
 
 > _"LazyVim이 Neovim을 우리 모두가 쓸 수 있게 만들었듯, LazyCodex는 Codex를 그렇게 만듭니다."_
 
-[lazy.nvim](https://github.com/folke/lazy.nvim)에 대한 [LazyVim](https://github.com/LazyVim/LazyVim)을, Codex 버전으로 생각하면 됩니다. 한마디로 **게으른 이들을 위한, Codex 속 omo**입니다.
+[lazy.nvim](https://github.com/folke/lazy.nvim)에 대한 [LazyVim](https://github.com/LazyVim/LazyVim)을, Codex 버전으로 생각하면 됩니다.
 
-## 얇은 배포 레이어
+## Thin Distribution
 
-LazyCodex는 에이전트 하니스를 다시 구현하지 않고, 하나를 배포합니다. 핵심 엔진은 OmO이며, `npx lazycodex-ai install`은 `npx --yes --package oh-my-openagent omo install --platform=codex`의 축약형입니다. LazyCodex가 더하는 것은 깔끔하고 기억하기 쉬운 진입점과 Codex에 맞춘 설치입니다.
+LazyCodex 자체는 작은 설치 alias에 가깝습니다. `lazycodex-ai`가 Codex 플랫폼을 대상으로 OmO 설치를 실행하고, 실제 기능은 플러그인 `omo`가 제공합니다.
 
 ```text
 lazycodex/
-├── src/            → oh-my-openagent (OmO 서브모듈 — 엔진)
-└── packages/
-    └── web/        → lazycodex.ai 문서 사이트
+├── package.json       → lazycodex-ai 설치 alias
+└── plugins/omo/       → Codex 플러그인, 스킬, 훅, MCP 서버
 ```
 
-실제 작업을 수행하는 모든 것 — 에이전트, 라우팅, 스킬, 훅, 검증 — 은 OmO 서브모듈 안에 있습니다. LazyCodex는 Codex가 그곳을 가리키도록 하는 레이어입니다.
+설치 절차는 [시작하기](/ko/docs/getting-started)에 두고, 이 섹션에서는 설치 뒤 Codex에 어떤 층이 더해지는지만 설명합니다.
 
-## 하니스가 Codex에 주는 것
+## What Gets Installed
 
-설치하면 Codex는 OmO 하니스 전체를 실행합니다.
-
-| 기능 | Codex에서의 의미 |
+| Layer | Codex에서의 의미 |
 | --- | --- |
-| 규율 에이전트 | Sisyphus가 Hephaestus, Oracle, Librarian을 조율 — 완전한 AI 개발팀 |
-| 병렬 실행 | 독립적인 하위 작업이 여러 에이전트로 동시에 분기 |
-| 멀티 모델 라우팅 | 작업 카테고리별로 적절한 GPT 모델이 자동 선택 |
-| 스킬 시스템 | 전문가적 판단(리뷰, 정리, 프런트엔드, LSP, AST-grep 등) |
-| 훅 & 라이프사이클 | 세션 시작, 프롬프트 제출, 편집류 도구 호출 시점에 훅이 동작합니다 — [훅 & 라이프사이클](/ko/docs/concepts/hooks-lifecycle) 참고 |
-| 제로 설정 | 합리적인 기본값, 원할 때만 재정의 |
+| Commands | `$init-deep`, `$ulw-plan`, `$start-work`, `$ulw-loop` 같은 워크플로우 진입점 |
+| Skills | 리뷰, 디버깅, 리팩터링, 프런트엔드, LSP, 규칙 주입 같은 전문 플레이북 |
+| Hooks | 세션 시작, 프롬프트 제출, 편집 후, compact 후, stop 시점에 동작하는 자동 보조 장치 |
+| MCP Servers | `grep_app`, `context7`, `codegraph`, `git_bash`, `lsp` 같은 도구 연결 |
 
-## 네 가지 핵심 아이디어
-
-하니스는 처음부터 끝까지 네 가지를 잘 해내기 위해 존재합니다.
-
-<Steps>
-
-<Step>
-
-### 프로젝트 메모리
-
-`$init-deep`는 리포지토리 전반에 계층적 `AGENTS.md` 컨텍스트를 생성하므로, 에이전트가 편집 전에 적절한 파일을 먼저 파악합니다. 코드베이스가 기억만으로 설명하기 어려울 때 실행하세요.
-
-</Step>
-
-<Step>
-
-### 계획
-
-`$ulw-plan "무엇을 만들지"`는 모호한 아이디어를 의사결정이 완료된 계획으로 바꿔 `plans/<slug>.md`에 기록합니다. 계획만 세우며, 제품 코드는 작성하지 않습니다.
-
-</Step>
-
-<Step>
-
-### 실행
-
-`$start-work [plan-name]`는 모든 체크박스가 완료될 때까지 계획을 실행하고, 지속 가능한 진행 상태를 유지하며, 계획이 끝나면 **ORCHESTRATION COMPLETE**를 출력합니다.
-
-</Step>
-
-<Step>
-
-### 검증된 완료
-
-`$ulw-loop "task"`는 희망 섞인 상태 보고가 아니라 증거로 검증될 때까지 계속 진행합니다. 루프가 끝나려면 Oracle이 작업을 확인해야 합니다.
-
-</Step>
-
-</Steps>
-
-## 설치
-
-```bash
-npx lazycodex-ai install
-```
-
-전역 설치는 없습니다 — 항상 `npx`를 사용하세요. 완전 자율, no-TUI 설정은 다음과 같습니다.
-
-```bash
-npx lazycodex-ai install --no-tui --codex-autonomous
-```
-
-## 개념 둘러보기
+## Explore Concept
 
 <Cards>
-  <Card title="ultrawork 루프" href="/ko/docs/concepts/ultrawork" />
-  <Card title="규율 에이전트" href="/ko/docs/concepts/discipline-agents" />
-  <Card title="멀티 모델 라우팅" href="/ko/docs/concepts/model-routing" />
-  <Card title="커맨드 기둥" href="/ko/docs/commands" />
+  <Card title="Commands" href="/ko/docs/commands" />
+  <Card title="Ultrawork Loop" href="/ko/docs/concepts/ultrawork" />
+  <Card title="Model Routing" href="/ko/docs/concepts/model-routing" />
+  <Card title="Hooks & Lifecycle" href="/ko/docs/concepts/hooks-lifecycle" />
 </Cards>

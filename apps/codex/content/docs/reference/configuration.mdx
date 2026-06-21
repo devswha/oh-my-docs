@@ -9,17 +9,35 @@ OMX reads configuration from `~/.codex/` (user-level) and `.codex/` (project-lev
 
 | Field | Type | Description |
 |---|---|---|
-| `model` | string | Default model (e.g. `"gpt-4.1"`, `"o3"`) |
-| `codex_hooks` | bool | Enable the OMX hook pipeline. Set to `true` to activate skills, team, and OpenClaw. |
+| `model` | string | Default Codex model. In current OMX routing this participates in the frontier/default lane. |
+| `[features].hooks` | bool | Stable Codex native hook feature flag for setup-owned fallback hooks. Legacy `codex_hooks` is migration-only. |
+| `[features].plugin_hooks` | bool | Plugin-scoped hook feature flag for Codex plugin installs that support it. |
+| `[features].goals` | bool | Enables Codex goal integration used by goal-oriented workflows. |
 | `custom-prompts` | string | Path to a directory that extends or overrides OMX default prompts |
-| `approval_policy` | string | Tool-call approval policy: `"suggest"`, `"auto-edit"`, or `"full-auto"` |
+| `approval_policy` | string | Codex approval policy. Autonomous launches may intentionally choose dangerous/no-prompt execution boundaries. |
 
 ```toml
-model = "gpt-4.1"
-codex_hooks = true
+model = "gpt-5.5"
 custom-prompts = "~/.codex/prompts"
-approval_policy = "auto-edit"
+approval_policy = "never"
+
+[features]
+hooks = true
+goals = true
 ```
+
+## `.omx-config.json`
+
+Use `.omx-config.json` for OMX-owned routing and feature config that is not a Codex root TOML key.
+
+| Key | Purpose |
+|---|---|
+| `agentModels` | Per-agent model overrides such as `{ "planner": "gpt-5.5" }`. These win before built-in role pins. |
+| `agentReasoning` | Per-agent reasoning overrides: `low`, `medium`, `high`, or `xhigh`. |
+| `env` | Fallback environment values such as `OMX_DEFAULT_FRONTIER_MODEL`, `OMX_DEFAULT_STANDARD_MODEL`, and `OMX_DEFAULT_SPARK_MODEL`. Real shell env wins. |
+| `models` | Mode defaults such as `default`, `team`, `autopilot`, and `team_low_complexity`. |
+
+`agentModels.planner` is significant for Autopilot and Ralplan planning: when the main/default lane is cheap or mini, OMX can route the initial planning draft to the dedicated planner role. Use `omx team status <team> --model-inspect` when you need to inspect team model routing.
 
 ## `.codex/hooks.json`
 
@@ -41,8 +59,9 @@ For the full hook catalog, see the [upstream repository](https://github.com/Yeac
 
 | Flag | Description |
 |---|---|
-| `--madmax` | Maximum parallelism mode — spawns the full team pipeline automatically. |
-| `--high` | High-effort mode — uses the highest-tier model available. |
+| `--madmax` | Dangerous bypass shorthand for high-autonomy execution boundaries. It is not the same thing as starting a full Team pipeline. |
+| `--high` | Reasoning-effort shorthand for high reasoning. It is not a model-tier selector. |
+| `--xhigh` | Reasoning-effort shorthand for extra-high reasoning where supported. |
 | `--skip-git-repo-check` | Suppresses the error when launching outside a git repository. |
 | `--spark` | Routes team workers through the spark worker tier. |
 | `--madmax-spark` | Combines `--madmax` with spark worker routing. |

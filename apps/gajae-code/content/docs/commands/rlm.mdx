@@ -1,0 +1,48 @@
+---
+title: rlm
+description: Research/REPL mode for notebook-style investigation with a gated Python, read, and web-search toolset.
+---
+
+`rlm` is an opt-in research/REPL mode. Use it when the task is exploration, source-backed research, or iterative analysis rather than direct mutation in the normal coding-agent loop.
+
+![Gajae-Code scientist mascot representing notebook-style research mode](/images/docs/commands-rlm.png)
+
+```bash
+gjc rlm
+```
+
+## What it does
+
+`rlm` runs a notebook-style research session over the agent loop. It is backed by the shared persistent Python kernel and a hard-gated research toolset:
+
+- `python`
+- `read`
+- `web_search`
+- `search_tool_bm25`
+- read-only `bash` for inspection commands (`grep`, `rg`, `tree`, `ls`, `pwd`, `wc`, `du`, `file`, `stat`)
+- `goal`
+- `complete_research`
+
+Runs aggregate under the current GJC session root:
+
+```text
+.gjc/_session-<gjcSessionId>/rlm/<rlmSessionId>/notebook.ipynb
+```
+
+On exit, the session synthesizes:
+
+```text
+.gjc/_session-<gjcSessionId>/rlm/<rlmSessionId>/report.md
+```
+
+## When to use it
+
+Reach for `rlm` when you need a durable research scratchpad: compare sources, run small Python probes, preserve intermediate cells, and leave a report. Stay in the normal `gjc` loop when the work is implementation, review, or workflow execution through `deep-interview`, `ralplan`, `team`, and `ultragoal`.
+
+## Related
+
+<Cards>
+  <Card title="Runtime tools" href="/docs/reference/tools/runtime" />
+  <Card title="Workflows" href="/docs/commands" />
+  <Card title="Use cases" href="/docs/guides" />
+</Cards>

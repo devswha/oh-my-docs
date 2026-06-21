@@ -1,0 +1,116 @@
+---
+title: Web & External
+description: The web_search, browser, and github tools that let Gajae-Code agents reach the network and external services.
+---
+
+Web tools connect Gajae-Code agents to the network and to external services: search engines, a real browser, and GitHub. These tools mostly depend on credentials — see [Environment Variables](/docs/reference/environment-variables) for the keys that enable each provider.
+
+## web_search
+
+`web_search` runs one query through the first available search provider and returns an LLM-formatted answer, source URLs, and optional citations.
+
+### Inputs
+
+| Field                | Type                                  | Description                                                            |
+| -------------------- | ------------------------------------- | ---------------------------------------------------------------------- |
+| `query`              | `string`                              | Search query. Any `2020`-`2029` substring is rewritten to the current year before dispatch. |
+| `recency`            | `"day" \| "week" \| "month" \| "year"`| Time filter. Used by providers that implement it (Brave, Perplexity, Tavily, SearXNG). |
+| `limit`              | `number`                              | Max results to return.                                                 |
+| `max_tokens`         | `number`                              | Passed through only by Anthropic, Gemini, and Perplexity API-key mode. |
+| `temperature`        | `number`                              | Passed through only by the same three.                                 |
+| `num_search_results` | `number`                              | Requested upstream search breadth.                                     |
+
+### Providers
+
+There is no fan-out — providers are tried **sequentially** until one succeeds. With no forced provider, the auto chain order is:
+
+```text
+tavily → perplexity → brave → jina → kimi → anthropic → gemini
+→ openai-code → zai → exa → parallel → kagi → synthetic → searxng
+```
+
+A provider is "available" only when its credentials resolve. Each needs its own key or auth:
+
+| Provider     | Availability source                                                                 |
+| ------------ | ----------------------------------------------------------------------------------- |
+| Tavily       | API key (env or stored credential).                                                 |
+| Perplexity   | `PERPLEXITY_COOKIES` → OAuth token → `PERPLEXITY_API_KEY` / `PPLX_API_KEY`.         |
+| Brave        | `BRAVE_API_KEY`.                                                                    |
+| Jina         | `JINA_API_KEY`.                                                                     |
+| Kimi         | `MOONSHOT_SEARCH_API_KEY` / `KIMI_SEARCH_API_KEY` / `MOONSHOT_API_KEY` or stored.   |
+| Anthropic    | Anthropic auth (model web-search tool).                                             |
+| Gemini       | Google OAuth (`google-gemini-cli` / `google-antigravity`).                          |
+| OpenAI code  | OpenAI code OAuth credential.                                                       |
+| Z.AI         | `zai` credential (env or stored).                                                   |
+| Exa          | `EXA_API_KEY`, and `exa.enabled` / `exa.enableSearch` must not be disabled.         |
+| Parallel     | `parallel` credential.                                                              |
+| Kagi         | `kagi` credential.                                                                  |
+| Synthetic    | `synthetic` credential.                                                             |
+| SearXNG      | `searxng.endpoint` setting or `SEARXNG_ENDPOINT` (self-hosted).                     |
+
+If no configured provider is available, `web_search` falls back to keyless DuckDuckGo. A preferred provider can be set in settings (the enum covers `auto`, `exa`, `brave`, `jina`, `kimi`, `perplexity`, `anthropic`, `zai`, `tavily`, `kagi`, `synthetic`, `parallel`, `searxng`); it is tried first, then the rest of the chain before the DuckDuckGo fallback.
+
+### Output
+
+The text result leads with `response.answer` when present, then a `## Sources` section (one entry per source with title, age/date, URL, and an optional snippet truncated to 240 chars), then `## Citations`, `## Related`, and a `Search queries` summary when those exist.
+
+## browser
+
+`browser` opens, reuses, closes, and scripts Puppeteer tabs against headless Chromium or a CDP-attached app. Tabs live in a process-global map, so the same `name` is reused across calls until closed.
+
+### Actions
+
+The `action` field is one of `open`, `close`, or `run`.
+
+| Action  | Key fields                                                                 |
+| ------- | -------------------------------------------------------------------------- |
+| `open`  | `url`, `viewport`, `wait_until`, `dialogs`, `app` — acquire/reuse a tab.   |
+| `close` | `all`, `kill` — release one tab or all tabs.                               |
+| `run`   | `code` (required) — async JS body executed in a VM context inside the tab. |
+
+Shared fields: `name` (tab id, defaults to `"main"`) and `timeout` (seconds, default `30`, clamped to a max of `30`).
+
+### Browser kinds
+
+<Steps>
+<Step>**Headless** — launches local Chromium via Puppeteer (downloading it on first use if needed), applies stealth patches, and creates a fresh page per tab. Default viewport `1365x768` at scale `1.25`.</Step>
+<Step>**Spawned app** (`app.path`) — reuses or spawns the executable with remote debugging, then attaches. No stealth patches.</Step>
+<Step>**Connected browser** (`app.cdp_url`) — attaches to an already-running CDP endpoint; `close` only disconnects.</Step>
+</Steps>
+
+### The `tab` API
+
+Inside `run`, your code gets the raw Puppeteer `page`/`browser` plus a `tab` helper: `tab.goto()`, `tab.observe()`, `tab.screenshot()`, `tab.extract()`, `tab.click()`, `tab.type()`, `tab.fill()`, `tab.press()`, `tab.scroll()`, `tab.waitFor()`, `tab.evaluate()`, `tab.select()`, `tab.uploadFile()`, `tab.waitForUrl()`, `tab.waitForResponse()`, and `tab.id(n)`. Call `display(value)` to emit text, JSON, or `{ type: "image", data, mimeType }` image content.
+
+Proxy env vars affect only headless launch: `PUPPETEER_PROXY`, `PUPPETEER_PROXY_BYPASS_LOOPBACK`, `PUPPETEER_PROXY_IGNORE_CERT_ERRORS`. Headless launch prefers a detected system Chrome, then `PUPPETEER_EXECUTABLE_PATH`, then downloads Chromium.
+
+## github
+
+`github` dispatches GitHub CLI (`gh`) operations. The tool is exposed only when `gh` is on `PATH`, and it requires `gh auth login` to be authenticated.
+
+The `op` field selects the operation:
+
+| `op`             | What it does                                                              |
+| ---------------- | ------------------------------------------------------------------------- |
+| `repo_view`      | View repository metadata (`repo`, optional `branch`).                     |
+| `pr_create`      | Create a pull request (`title` or `fill`, plus `body`/`base`/`head`/`draft`/`reviewer`/`assignee`/`label`). |
+| `pr_checkout`    | Check out one or more PRs into dedicated worktrees (`pr`, `force`).        |
+| `pr_push`        | Push the current/branch PR head (`branch`, `forceWithLease`).             |
+| `search_issues`  | Search issues (`query`, `repo`, `limit`).                                 |
+| `search_prs`     | Search pull requests.                                                     |
+| `search_code`    | Search code.                                                              |
+| `search_commits` | Search commits.                                                           |
+| `search_repos`   | Search repositories (query-scoped only; no `repo`).                       |
+| `run_watch`      | Watch a GitHub Actions run or all runs for a commit (`run`, `branch`, `tail`). |
+
+Notes:
+
+- Search `limit` defaults to `10`, clamped to `50`. The search ops default `repo` to the current checkout's `owner/repo` unless the query already carries a `repo:`/`org:`/`user:`/`owner:` qualifier.
+- `pr_checkout` creates worktrees under `~/.gjc/wt/<encoded-repo-root>/pr-<number>`, with the local branch always named `pr-<number>`. `pr_push` reads the push metadata that `pr_checkout` wrote into git branch config — it must run first.
+- `run_watch` is the only streaming op: it polls every `3s`, emits live snapshots, and on failure appends `Full failed-job logs: artifact://<id>`. The inline report shows the last `tail` lines (default `15`, max `200`) per failed job.
+
+Single issue/PR reads and PR diffs are not `op`s here — they resolve through the `issue://` / `pr://` internal URL schemes backed by a shared SQLite cache (`~/.gjc/cache/github-cache.db`, override `GJC_GITHUB_CACHE_DB`).
+
+---
+
+Most web tools fail closed without credentials. See [Environment Variables](/docs/reference/environment-variables) for every search-provider key, the browser proxy/executable vars, and the GitHub cache settings.

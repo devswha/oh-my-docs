@@ -2,6 +2,7 @@
   "title": "Quick Start",
   "pages": [
     "[Prerequisites](/docs/getting-started#prerequisites)",
+    "[Pick an Edition](/docs/getting-started#pick-an-edition)",
     "[Install](/docs/getting-started#install)",
     "[Non-Interactive Install](/docs/getting-started#non-interactive-install)",
     "[Authenticate Providers](/docs/getting-started#authenticate-providers)",

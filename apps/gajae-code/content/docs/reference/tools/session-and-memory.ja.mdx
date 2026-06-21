@@ -1,0 +1,83 @@
+---
+title: セッション & メモリツール
+description: サブエージェント、ToDo、チェックポイント、Hindsight メモリ層 —— task、todo_write、checkpoint、rewind、recall、retain、reflect。
+---
+
+これらのツールは、エージェントが作業をサブエージェントへ分散し、自分の計画を追跡し、探索コンテキストを整理し、永続メモリを読み書きできるようにします。名称は上流 `docs/tools/` リファレンスと一致します。
+
+## `task`
+
+並列（任意で隔離）作業のためにサブエージェントを起動します。親が名前でエージェントを選び、小さく自己完結したタスク群を渡します。
+
+| フィールド | 型 | 必須 | 説明 |
+| --- | --- | --- | --- |
+| `agent` | `string` | はい | バッチで使う正確なエージェント名。実行時に解決。 |
+| `tasks` | `Array<{ id; description; assignment }>` | はい | 小さく自己完結した項目。`id` は最大 48、大文字小文字を無視した重複は拒否。`description` は UI 用、`assignment` が実際の指示。 |
+| `context` | `string` | いいえ | 各サブエージェントのプロンプト前に付く共通背景。`independent` モードでは拒否。 |
+| `schema` | `string` | いいえ | JSON エンコードした JTD 出力スキーマ。`schema-free` と `independent` モードでは拒否。 |
+| `isolated` | `boolean` | いいえ | 隔離が有効なときのみ存在。隔離ワークスペースでバッチを実行。 |
+
+シンプルモード: `default`（context/schema 可）、`schema-free`（schema 拒否）、`independent`（両方拒否、各 assignment が自己完結）。
+
+バンドルエージェント: `explore`（読み取り専用の偵察）、`plan`（設計・計画、explore を起動可）、`designer`（UI/UX）、`reviewer`（report_finding 付き）、`task`（汎用フル機能）、`quick_task`（低推論の機械的ワーカー）、`librarian`（外部 API/ライブラリ調査）。プロジェクトの `agents/` の独自エージェントは同名のバンドルを上書きできます。
+
+実行モデル: **同期**が既定（エージェントが `blocking` か、タスクが無いとき強制）。**非同期**は `async.enabled` が有効でエージェントが `blocking` でないとき、タスクごとに 1 つのバックグラウンドジョブを予約し進捗をストリーミング。各サブエージェントは隠し `yield` ツールで終了（しなければ最大 3 回のリマインド）。サブエージェントは `<id>.md` を書き、`agent://<id>` がそのファイルに解決します。
+
+隔離バックエンド: `worktree`、`fuse-overlay`、`fuse-projfs`。マージ戦略は patch モードまたは branch モード（`gjc/task/<id>` にコミット後 cherry-pick）。隔離実行には git リポジトリが必要です。
+
+上限: サブエージェントごとの出力切り詰め `MAX_OUTPUT_BYTES = 500_000`、`MAX_OUTPUT_LINES = 5000`（完全な生出力は `<id>.md` に記録、`GJC_TASK_MAX_OUTPUT_BYTES` / `GJC_TASK_MAX_OUTPUT_LINES` で上書き可）。並列度は `task.maxConcurrency`。`task.maxRecursionDepth` 以上で `task` を隠す。`GJC_BLOCKED_AGENT` は特定のサブエージェント型をブロック。子セッションは会話履歴を継承せず、`todo_write` も得ません。await タイムアウトは観察窓に過ぎず、サブエージェントを停止・失敗させません。
+
+## `todo_write`
+
+セッション ToDo リストへ順序付き変更を適用し、要約と完全なフェーズ/タスク状態を返します。`ops` は非空で、各 op がリストを変更します。
+
+| Op | 必須 | 効果 |
+| --- | --- | --- |
+| `init` | `list` | リスト全体を置換。新タスクはすべて `pending`。 |
+| `start` | `task` | 1 タスクを `in_progress` に。他のアクティブは `pending` へ降格。 |
+| `done` | `task`/`phase`/なし | 対象を `completed` に。 |
+| `drop` | `task`/`phase`/なし | 対象を `abandoned` に。 |
+| `rm` | `task`/`phase`/なし | タスクを削除、またはフェーズ/全体を空に。 |
+| `append` | `phase`, `items` | `pending` タスクを追加。フェーズが無ければ作成。 |
+| `note` | `task`, `text` | タスクにメモ 1 件。トリム後に空なら拒否。 |
+
+バッチ後の正規化が単一アクティブタスクを強制します（複数 `in_progress` なら先頭のみ、無ければ先頭 `pending` を自動昇格）。タスク検索は完全一致。不正なペイロードは例外を投げず `Errors:` 接頭で蓄積。完了/放棄タスクは `tasks.todoClearDelay`（既定 60 秒）後に自動整理され、再開時に剥がされます（`/todo` が記録から復元）。
+
+## `checkpoint`
+
+現在の最上位会話状態をマークし、後の `rewind` が探索コンテキストを簡潔なレポートへ畳めるようにします。既定で無効（`checkpoint.enabled`）、サブエージェントでは使用不可。
+
+| フィールド | 型 | 必須 | 説明 |
+| --- | --- | --- | --- |
+| `goal` | `string` | はい | 調査目標。結果にエコーされる。 |
+
+会話メタデータ（メッセージ数、セッションエントリ id、タイムスタンプ）のみを捕捉し、git は呼ばず、作業ツリーや成果物のスナップショットも取り**ません**。チェックポイント中に先に `yield` するとシステム警告で阻止されます。セッションごとにアクティブなチェックポイントは 1 つだけ。
+
+## `rewind`
+
+探索メッセージを整理し、その場に簡潔なレポートを残してアクティブなチェックポイントを終了します。
+
+| フィールド | 型 | 必須 | 説明 |
+| --- | --- | --- | --- |
+| `report` | `string` | はい | 調査結果。トリムされ空は拒否。 |
+
+即座に返りますが、副作用はターン終了時に適用されます。メモリ履歴はチェックポイントまでの接頭辞に置換され、永続セッションリーフが `branch_summary` 付きでチェックポイントエントリへ分岐し、隠し `rewind-report` メッセージが再構築コンテキストへレポートを運びます。復元するのは記録/セッション状態のみで、ファイル・git・成果物・blob は復元しません。永続履歴に対し非破壊で、`rewind` は常に唯一のアクティブなチェックポイントを対象とします。
+
+## メモリ: `recall`、`retain`、`reflect`
+
+3 つは Hindsight メモリバックエンドのフロントで、`memory.backend == "hindsight"` のときのみ利用可能です。保存はサーバー側でセッション横断。サブエージェントは親の状態をエイリアスし同じ bank に書き込みます。bank スコープ: `global`（単一共有）、`per-project`（cwd 名ごとに別 bank）、`per-project-tagged`（共有 bank + `project:<cwd basename>` タグ）。
+
+- **`recall`** — `query`（必須）。アクティブ bank を検索し生のメモリを返す。無ければ `No relevant memories found.`。既定 `recallBudget = "mid"`、`recallMaxTokens = 1024`、`recallTypes = ["world", "experience"]`。
+- **`retain`** — `items`（必須、`minItems: 1`、各項目に `content` と任意の `context`）。メモリを非同期書き込みのためキューへ。返却前に書き込みは**確定せず**、キューは 16 件到達・5000ms デバウンス・エージェント終了でフラッシュ。フラッシュ失敗はセッション警告のみ。
+- **`reflect`** — `query`（必須）、`context`（任意）。サーバーに bank 全体からの統合回答を要求し、統合テキストを返す（空なら `No relevant information found to reflect on.`）。生ヒットは返しません。
+
+組み込みメンタルモデル `user-preferences`、`project-conventions`、`project-decisions` は、これらとは別に共有バックエンドがシード・更新します。
+
+## 関連
+
+<Cards>
+  <Card title="メモリ: recall & retain" href="/ja/docs/concepts/memory" />
+  <Card title="セッション & worktree" href="/ja/docs/concepts/sessions" />
+  <Card title="エージェント概要" href="/ja/docs/skills" />
+  <Card title="環境変数" href="/ja/docs/reference/environment-variables" />
+</Cards>

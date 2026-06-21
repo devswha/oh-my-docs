@@ -7,14 +7,14 @@ Gajae-Code（`gjc`）提供由 JSON 颜色 token 驱动的主题化 TUI。显式
 
 ## 默认主题
 
-默认深色主题是 `red-claw` —— GJC 甲壳类外观，带红/橙品牌 token、独立的语义 error/warning/diff-removal token，以及螃蟹风格的符号覆盖。
+默认深色主题是 `red-claw`，带有温暖的 red-claw accent 和强状态对比。浅色外观终端默认使用 `blue-crab`。
 
 设置 schema 的默认值：
 
 | 设置 | 默认 |
 | --- | --- |
 | `theme.dark` | `red-claw` |
-| `theme.light` | `light` |
+| `theme.light` | `blue-crab` |
 | `symbolPreset` | `unicode` |
 | `colorBlindMode` | `false` |
 
@@ -39,10 +39,20 @@ Gajae-Code（`gjc`）提供由 JSON 颜色 token 驱动的主题化 TUI。显式
 
 查找顺序：
 
-1. 内置嵌入主题（`dark.json`、`light.json` 及所有打包的 `defaults/*.json`，含 `red-claw`）。
+1. 内置嵌入主题（`red-claw`、`blue-crab`、`claude-code`、`codex`、`opencode`，以及 legacy dark/light 主题）。
 2. 自定义主题文件：`<customThemesDir>/<name>.json`。
 
 自定义主题目录默认为 `~/.gjc/agent/themes`，可由 `GJC_CODING_AGENT_DIR`（`$GJC_CODING_AGENT_DIR/themes`）覆盖。名称冲突时内置优先。
+
+## 内置主题
+
+| 主题 | 适用场景 |
+| --- | --- |
+| `red-claw` | 深色终端中的 GJC 原生 identity。 |
+| `blue-crab` | 浅色终端或 OS 浅色外观。 |
+| `claude-code` | 不离开 GJC，同时保留 Claude Code 的视觉习惯。 |
+| `codex` | 类 Codex 的深色工作区。 |
+| `opencode` | 在内置 picker 中使用 OpenCode 风格。 |
 
 ### 创建自定义主题
 

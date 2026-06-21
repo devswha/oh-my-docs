@@ -1,73 +1,61 @@
 ---
-title: ultrawork 循环
-description: $ulw-loop 如何把工作推进到 Oracle 验证的完成——以证据取代乐观状态、迭代上限、--completion-promise 与 --strategy，以及它与 $ulw-plan、$start-work 的关系。
+title: Ultrawork Loop
+description: The evidence-first work discipline behind LazyCodex.
 ---
 
-ultrawork 是核心模式。在提示词的任意位置输入 `ultrawork`（或短别名 `ulw`），即可激活最高精度、结果优先、证据驱动的编排。
+ultrawork 是 LazyCodex 处理长任务时使用的工作纪律。当 prompt 中包含 `ultrawork` 或 `ulw`，或调用 `$ulw-loop` 时，智能体会根据已执行的证据判断完成，而不是根据“看起来完成了”。
 
-> _"规划、执行、验证，并把证据一并留存。"_
+> _"计划、执行、验证，并留下证据。"_
 
-原则很简单：任务并非因为智能体声称完成就算完成，而是当 **Oracle 依据证据验证**通过时才算完成。
+原则很简单：不是智能体说完成就完成。只有**可观察证据被验证**后，工作才算完成。
 
-## ultrawork 强制什么
+## What Ultrawork Enforces
 
-ultrawork 激活时，harness 不会满足于乐观的"看起来完成了"：
+ultrawork 激活后，harness 不接受乐观的“看起来完成了”。
 
-- 严格 TDD：RED → GREEN → SURFACE → CLEAN
-- 至少 3 个真实的 QA 场景
-- 真实的手动 QA 通道（HTTP 调用、tmux、浏览器）
-- 一个有约束力的验证门，循环直到工作真正完成
+- 严格 TDD：RED -> GREEN -> SURFACE -> CLEAN
+- 与工作风险匹配的现实 QA 场景
+- 真实手动 QA 通道，例如 HTTP 调用、tmux、浏览器、computer use、CLI stdout、数据 diff
+- 持续运行到工作真正完成的强约束验证门
 
-## $ulw-loop：已验证的完成
+## Relationship to `$ulw-loop`
 
-`$ulw-loop` 是一个自引用开发循环，运行直到验证通过的完成。智能体持续工作，认为完成时会发出 `<promise>DONE</promise>`——但这**不会**结束循环。
+`$ulw-loop` 是把 ultrawork 纪律作为 Command 使用的方式。最新流程会在 `.omo/ulw-loop` 下记录请求、目标、成功标准和证据账本。
 
-必须先由 Oracle 验证结果。只有在系统确认 Oracle 已验证后，循环才结束。验证失败时，会带着以下消息继续：
-
-```text
-Oracle verification failed. Continuing ULTRAWORK loop.
-```
-
-### 语法
-
-```bash
-$ulw-loop "task description" [--completion-promise=TEXT] [--strategy=reset|continue]
-```
-
-| 标志 | 作用 |
+| 文件 | 作用 |
 | --- | --- |
-| `--completion-promise=TEXT` | 设置验证前智能体必须满足的承诺文本 |
-| `--strategy=reset` | 每次迭代从干净状态开始 |
-| `--strategy=continue` | 在迭代间延续状态 |
+| `.omo/ulw-loop/brief.md` | 原始请求和持续约束 |
+| `.omo/ulw-loop/goals.json` | 目标和成功标准 |
+| `.omo/ulw-loop/ledger.jsonl` | pass、fail、block、steering、checkpoint 记录 |
 
-### 迭代上限
+仅仅说工作完成是不够的。每个成功标准都需要真实表面的证据，而且证据必须通过后循环才会停止。
 
-循环有界，不会无限运行：
+准确语法和 flags 只放在 [`$ulw-loop` command 文档](/zh/docs/commands/ulw-loop)。
 
-- ultrawork 模式 **500** 次
-- 普通模式 **100** 次
+## Failure Limits
 
-## 以证据取代乐观状态
+循环有上限，不会永远运行。最新 `$ulw-loop` 工作流使用：
 
-循环不止于"写了点代码"，而是在结果由证据——运行过的检查及其结果——确认时停止，而非智能体乐观的状态更新。这正是 `<promise>DONE</promise>` 与循环结束之间要有 Oracle 把关的原因。
-
-## 在支柱中的位置
-
-`$ulw-loop` 是三大命令支柱之一，各自面向不同形态的工作：
-
-| 支柱 | 何时使用 |
+| 条件 | 上限 |
 | --- | --- |
-| `$ulw-plan` | 写代码前需要决策时。写入 `plans/<slug>.md`，绝不写产品代码。 |
-| `$start-work` | 计划就绪、需执行到完成时。打印 **ORCHESTRATION COMPLETE**。 |
-| `$ulw-loop` | 任务应持续推进直到结果由证据验证时。 |
+| 一个 goal 没有完整通过时的重复 | 5 个 cycle |
+| 同一 criterion 的同一种失败 | 3 次 |
 
-常见流程：`$ulw-plan` 产出决策完备的计划，`$start-work` 逐个复选框执行，`$ulw-loop` 让开放式任务持续运行直到 Oracle 签字认可。
+## Evidence Over Hope
 
-## 相关
+循环不会停在“写了一些代码”。只有用证据确认结果时才会停止：运行了哪些检查、显示了什么、为什么能证明结果。
+
+## Position Among Commands
+
+`$ulw-loop` 是 Commands 之一，每个 Command 面向不同形态的工作。
+
+常见流程很简单：`$ulw-plan` 创建决策完备的计划，`$start-work` 按复选框执行，`$ulw-loop` 持续推进开放工作，直到验证者批准。每个命令的详细语法集中在 [Commands](/zh/docs/commands)。
+
+## Related Docs
 
 <Cards>
-  <Card title="$ulw-loop 命令" href="/zh/docs/commands/ulw-loop" />
-  <Card title="$ulw-plan 命令" href="/zh/docs/commands/ulw-plan" />
-  <Card title="$start-work 命令" href="/zh/docs/commands/start-work" />
-  <Card title="纪律智能体" href="/zh/docs/concepts/discipline-agents" />
+  <Card title="$ulw-loop Command" href="/zh/docs/commands/ulw-loop" />
+  <Card title="$ulw-plan Command" href="/zh/docs/commands/ulw-plan" />
+  <Card title="$start-work Command" href="/zh/docs/commands/start-work" />
+  <Card title="Agent Roles" href="/zh/docs/concepts/discipline-agents" />
 </Cards>

@@ -5,7 +5,15 @@ description: "OMX 发布历史 — 最新版本摘要与上游 CHANGELOG 链接"
 
 完整 changelog 在上游 [`CHANGELOG.md`](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md) 中维护。本页汇总最近的发布信息。
 
-## 最新版本 — v0.17.0
+## 最新版本 — v0.18.14
+
+`0.18.13` 之后的 patch：agent/model routing diagnostics 更清晰，goal/planning workflows 更安全，plugin/native hook behavior 更稳，HUD/Team/tmux handling 更干净，doctor 会检测 root-owned artifacts，resume 会发现 madmax run histories。
+
+**Changed:** per-agent model overrides、launch diagnostics、completed Codex goal cleanup guidance、Ralplan transition diagnostics、supervised Autopilot rework、Beads metadata handling、goal/skill workflow guidance。
+
+**Fixed:** plugin AGENTS policy preservation、dev plugin cache diagnostics、bundled skill agent-tier references、null-output native hook success、`PreToolUse` stdout/schema handling、Windows native hook launch、stale Autopilot HUD reporting、tmux paste-buffer cleanup、worker AGENTS guidance、Ralplan freshness/approval gates。
+
+## v0.17.0
 
 这是 `0.16.4` 之后的 minor release，重点是新的 coordination 与 workflow surface：bounded Hermes MCP coordination、canonical `$design` workflow guidance、plugin-mode skill marketplace exposure、更强的 UltraQA adversarial contract、Windows native-hook reliability、tmux ownership safety、startup shell isolation、committed project-memory loading，以及 Ultragoal task-scoped goal reconciliation。
 

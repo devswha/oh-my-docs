@@ -1,0 +1,114 @@
+---
+title: FAQ
+description: 关于 LazyCodex 安装、OmO、ulw、钩子、doctor、token、Codex App 和 OMX 冲突的简短回答。
+---
+
+先看与你当前问题最接近的部分：安装问题看**安装与环境**，不知道用哪个命令看**首次使用**，运行中异常看**运行与验证**。
+
+## 安装与环境
+
+<section className="not-prose my-6 divide-y divide-fd-border rounded-lg border border-fd-border bg-fd-card">
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>LazyCodex 是什么？</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">LazyCodex 是面向 Codex 的轻量移植层，把 OmO 的核心命令、技能和钩子接入 Codex。可以把它理解为一层薄薄的工作流增强：帮助 Codex 规划长任务、持续推进，并用证据验证完成。</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>LazyCodex 是用来取代 OmO 吗？</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">不完全是。它更像是把 OmO 调整到 Codex 中更容易使用的 light port。完整 OmO 有更深的编排能力；LazyCodex 专注于适合 Codex 的部分。</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>可以直接让 Codex 帮我安装吗？</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">可以。在 Codex App 或 Codex CLI 里给出 LazyCodex GitHub 链接或 <code>lazycodex.ai</code>，让它安装即可。也可以自己运行 <code>npx lazycodex-ai install</code>。</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>Codex App 和 Codex CLI 的安装方式不同吗？</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">可以视为同一条设置路径。LazyCodex 安装到 Codex 环境中；平时使用 Codex App 就在 App 中确认，使用 CLI 就在 CLI 中确认。</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>需要 Bun 吗？</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">不需要。除非要从源码构建 LazyCodex，否则不需要安装 Bun。普通安装和使用走 Node.js/npm 的 <code>npx</code> 路径。</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>Windows 上可以用吗？</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">可以，但不推荐原生 Windows 路径。如果必须使用 Windows，建议在 WSL2 Ubuntu 中使用 Codex 和 LazyCodex。安装或运行异常时，先在 WSL2 或 Git Bash 这类 shell 中重试。</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>文档中显示的是什么版本？</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">文档显示的是插件版本。当前为 <code>4.12.1</code>，来自 LazyCodex 的 OmO 插件包。</p>
+  </details>
+</section>
+
+## 首次使用
+
+<section className="not-prose my-6 divide-y divide-fd-border rounded-lg border border-fd-border bg-fd-card">
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>LazyCodex 适合什么工作？</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">它适合范围较大、耗时较长，并且需要计划、委派和验证的工作。小问题或一行修改，直接按平常方式让 Codex 做即可。</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>应该“放空大脑”用，还是认真写清楚再用？</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">两种都可以。LazyCodex 即使在粗略委派时也能跑起来；但目标和完成标准越清楚，效果越好。不要先研究完所有内部技能，遇到真实卡点时再学需要的部分。</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>一开始应该先学哪些命令？</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">大型仓库先运行一次 <code>$init-deep</code>。需要先做决策再写代码时用 <code>$ulw-plan</code>；已有计划要执行时用 <code>$start-work</code>；希望开放式任务一直推进到有证据证明完成时用 <code>$ulw-loop</code>。</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>如何确认安装成功？</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">打开 Codex，在输入框中按 <code>$</code>，确认 OmO 命令和技能出现。在 CLI 中，输入 <code>ulw</code> 后看到 ultrawork mode 启用也是一种确认方式。第一个常用命令通常是 <code>$init-deep</code>。</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>安装后 $ 菜单里看不到命令怎么办？</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">打开新的 Codex 会话，让插件重新加载，并检查启动审核里 omo 钩子是否仍在等待批准。如果仍然看不到命令，运行 <code>npx lazycodex-ai doctor</code> 检查安装和技能加载状态。</p>
+  </details>
+</section>
+
+## 运行与验证
+
+<section className="not-prose my-6 divide-y divide-fd-border rounded-lg border border-fd-border bg-fd-card">
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>npx lazycodex-ai doctor 是真实功能吗？</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">是。<code>lazycodex-ai</code> 会把 <code>doctor</code> 转交给 OmO doctor 流程。它会检查本地 LazyCodex/Codex 配置；如果发现问题，可能以错误状态退出。</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>为什么需要批准钩子？</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">Codex 会在启动时审核钩子。LazyCodex 的 omo 钩子在批准前不会运行。安装后需要在启动审核中批准 omo 钩子，生命周期检查才会工作。</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>更新后应该检查什么？</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">如果更新后钩子显示为 Modified，需要重新批准。若状态异常，先运行 <code>npx lazycodex-ai doctor</code> 检查安装、钩子和技能加载状态。</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>$ulw-loop 结束得太浅怎么办？</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">单纯重复并不会自动补齐缺失数据或模糊的完成标准。请写清需要收集的范围、必须通过的检查，以及数据不足时要调查什么；或者先用 <code>$ulw-plan</code> 做计划。</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>需要更高套餐或很大的 token 额度吗？</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">不要把 LazyCodex 当作省 token 的工具。它更像是用好模型和足够 token 去推进计划、执行与验证的工作流。大型工作建议在单个 thread 过重前按工作单元拆分。</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>thinking/reasoning 等级怎么选？</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">不用想太复杂。避开 <code>low</code>；普通任务用 <code>medium</code>，错误成本高或需要更强审查时用 <code>high</code>。<code>xhigh</code> 留给真正很重的工作。</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>LazyCodex 会使用 computer-use 吗？</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">可以，前提是当前 Codex 会话有可调用的 computer-use 工具。LazyCodex 可以把它纳入工作流，但浏览器或操作系统控制仍然需要实际可用的 computer-use 能力。</p>
+  </details>
+</section>
+
+## 冲突与限制
+
+<section className="not-prose my-6 divide-y divide-fd-border rounded-lg border border-fd-border bg-fd-card">
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>可以在 Codex App、移动端或远程会话里使用吗？</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">LazyCodex 安装在 Codex 内部，所以用你平时使用的 Codex 环境即可。它尤其适合 Codex App 的桌面/移动端远程流程，不过有些能力可能只在桌面应用中完全一致。</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>看到 team mode，但创建 thread 失败怎么办？</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">先更新 LazyCodex 和 Codex，再运行 <code>npx lazycodex-ai doctor</code> 检查插件、钩子和配置状态。Team mode 可能依赖 Codex 桌面应用的行为，不要默认假设 CLI 和桌面应用暴露完全相同的路径。</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>可以和 OMX 一起用吗？</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">不推荐。LazyCodex 和 OMX 同时启用可能互相冲突，消耗 token 后失败。如果安装器提示已有其他 harness，先清理其中一边，再把 LazyCodex 作为 Codex 上的薄层单独使用。</p>
+  </details>
+</section>

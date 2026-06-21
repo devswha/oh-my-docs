@@ -1,47 +1,57 @@
 ---
-title: 스킬
-description: LazyCodex가 명령 기둥 위에 올려 쓰는 전문가 플레이북입니다.
+title: Skills
+description: LazyCodex가 Commands 위에 올려 쓰는 전문가 플레이북입니다.
 ---
 
-LazyCodex는 OmO(oh-my-openagent)를 Codex 에이전트 하니스로 패키징합니다. 명령 기둥(`$ulw-plan`, `$start-work`, `$ulw-loop`, `$init-deep`) 위에 OmO 플러그인이 여러 스킬을 설치합니다. 스킬은 재사용 가능한 지시문 묶음으로, 집중 워커를 도메인 전문가로 바꿔 줍니다.
+LazyCodex는 OmO 플러그인의 Skills를 Codex에 설치합니다. Commands(`$ulw-plan`, `$start-work`, `$ulw-loop`, `$init-deep`)는 작업 흐름을 잡고, Skills는 그 흐름 안에서 필요한 전문 판단을 제공합니다.
 
-스킬은 Codex 세션 안에서 호출됩니다. 규율 에이전트(Sisyphus, Hephaestus, Oracle, Librarian)가 작업과 도메인이 겹치는 스킬을 로드한 뒤 그 플레이북을 따릅니다.
+Skills는 Codex 세션 안에서 로드됩니다. 사용자가 직접 “이 Skill을 써”라고 말할 수도 있고, 작업 내용이 Skill 설명과 맞으면 Codex가 해당 플레이북을 따릅니다.
 
-## 설치되는 스킬
+## 상세 문서가 있는 Skills
 
-| 스킬 | 쓰임새 |
+| Skill | 쓰임새 |
 | --- | --- |
 | [`review-work`](/ko/docs/skills/review-work) | 다각도 구현 후 리뷰 |
-| [`remove-ai-slops`](/ko/docs/skills/remove-ai-slops) | 동작을 보존하면서 AI 티 나는 코드 정리 [^1] |
+| [`remove-ai-slops`](/ko/docs/skills/remove-ai-slops) | 동작을 보존하면서 AI 티 나는 코드 정리 |
 | [`debugging`](/ko/docs/skills/debugging) | 체계적인 근본 원인 디버깅 |
-| [`refactor`](/ko/docs/skills/refactor) | 테스트로 검증하는 리팩터링. `ast_grep_search` / `ast_grep_replace`를 통한 구조적 검색·재작성 포함 |
-| [`frontend-ui-ux`](/ko/docs/skills/frontend-ui-ux) | 일반적인 레이아웃 채우기 대신 디자인된 UI 작업 |
+| [`frontend`](/ko/docs/skills/frontend-ui-ux) | 일반적인 레이아웃 채우기 대신 디자인된 UI 작업 |
 | [`programming`](/ko/docs/skills/programming) | 엄격한 TypeScript, Rust, Python, Go 규율 |
+| [`refactor`](/ko/docs/skills/refactor) | 테스트로 검증하는 리팩터링. AST-grep을 통한 구조적 검색·재작성 포함 |
 | [`LSP`](/ko/docs/skills/lsp) | 진단, 정의, 참조, 심볼, 이름 변경 |
 | [`rules`](/ko/docs/skills/rules) | AGENTS, rules, 지시 파일에서 가져온 프로젝트 지시문 |
 | [`comment-checker`](/ko/docs/skills/comment-checker) | 편집류 작업 후 피드백 |
-| [`ultragoal`](/ko/docs/skills/ultragoal) | 목표를 고정한 증거 기반 완료 |
 
-[^1]: `ai-slop-remover`는 `remove-ai-slops`가 병렬로 호출하는 단일 파일 워커이며, 별도의 사용자용 스킬이 아닙니다.
+## 함께 설치되는 Skills
 
-## 스킬이 들어가는 자리
+`4.12.1` 기준 플러그인에는 아래 Skills도 포함됩니다. 이 문서 사이트에서는 아직 개별 페이지를 만들지 않았지만, Codex 세션에서는 Skill로 로드될 수 있습니다.
 
-- 명령 기둥이 루프를 가집니다: 계획, 실행, 검증된 완료.
-- 스킬은 그 기둥 둘레에 전문가 판단을 더합니다: 리뷰, 정리, UI 장인 작업, 언어 규율, 코드 인텔리전스.
-- 스킬은 해당 작업에 대해서만 로드되고 끝나면 내려가므로, 에이전트 프롬프트가 가볍게 유지됩니다.
+| Skill | 쓰임새 |
+| --- | --- |
+| `ast-grep` | AST-aware 구조 검색과 재작성 |
+| `git-master` | 커밋, 히스토리 조사, rebase/squash/fixup 같은 git 작업 |
+| `lsp-setup` | 언어 서버 설치와 설정 |
+| `lcx-doctor` | LazyCodex/Codex 설치 상태 진단 |
+| `lcx-report-bug` | LazyCodex/Codex 관련 버그 이슈 작성 |
+| `lcx-contribute-bug-fix` | 검증된 버그 수정 기여 흐름 |
+| `teammode` | 여러 Codex thread를 팀처럼 조율 |
+| `ultraresearch` | 명시적으로 요청한 깊은 리서치 |
+| `visual-qa` | UI/TUI 변경 후 스크린샷·시각 검증 |
 
-## 스킬이 사는 곳
+Commands 자체도 Skill로 설치되지만, 사용자가 보는 문서에서는 [Commands](/ko/docs/commands)에 따로 모았습니다.
 
-OmO는 `.opencode/skills`, `~/.config/opencode/skills`, `.claude/skills`, `.agents/skills`, `~/.agents/skills` 같은 프로젝트·사용자 위치에서 스킬을 로드할 수 있습니다.
+## Skills가 들어가는 자리
 
-## 스킬별 문서
+- Commands가 흐름을 가집니다: 계획, 실행, 검증된 완료.
+- Skills는 그 흐름 둘레에 전문가 판단을 더합니다: 리뷰, 정리, UI 작업, 언어 규율, 코드 인텔리전스.
+- Skills는 해당 작업에 대해서만 로드되고 끝나면 내려가므로, 에이전트 프롬프트가 가볍게 유지됩니다.
+
+## Skill 문서
 
 <Cards>
   <Card title="review-work" href="/ko/docs/skills/review-work">완료된 작업을 다섯 에이전트가 병렬 리뷰하고, 전부 통과해야 합니다.</Card>
   <Card title="remove-ai-slops" href="/ko/docs/skills/remove-ai-slops">테스트로 동작을 고정한 뒤 AI 슬롭을 걷어내고 검증합니다.</Card>
-  <Card title="frontend-ui-ux" href="/ko/docs/skills/frontend-ui-ux">디자이너 출신 개발자의 감각으로 다듬은 UI 표면.</Card>
+  <Card title="frontend" href="/ko/docs/skills/frontend-ui-ux">디자인, UI, UX, 성능, 시각 QA를 묶어 다루는 Skill.</Card>
   <Card title="debugging" href="/ko/docs/skills/debugging">체계적인 근본 원인 디버깅.</Card>
   <Card title="refactor" href="/ko/docs/skills/refactor">구조적 검색·재작성을 갖춘 테스트 검증 리팩터링.</Card>
-  <Card title="ultragoal" href="/ko/docs/skills/ultragoal">목표를 고정한 증거 기반 완료.</Card>
-  <Card title="명령 기둥" href="/ko/docs/commands">스킬이 그 위에서 도는 `$ulw-*`와 `$init-deep` 워크플로우.</Card>
+  <Card title="Commands" href="/ko/docs/commands">Skills가 그 위에서 도는 `$ulw-*`와 `$init-deep` 워크플로우.</Card>
 </Cards>

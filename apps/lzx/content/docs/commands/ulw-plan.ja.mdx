@@ -1,81 +1,83 @@
 ---
 title: $ulw-plan
-description: Prometheus 戦略プランナー — 製品コードを書かずに、アイデアを決定の整った計画へ変えます。
+description: "Prometheus 戦略プランナー: 製品コードを書かず、.omo/plans に決定済みの計画を書きます。"
 ---
 
-`$ulw-plan` は戦略計画コンサルタント（Prometheus）です。アイデアを決定の整った作業計画へ変えます。実装者では**なく**プランナーです。「X をやって」と言えば X の計画を作るだけで、製品コードは決して書きません。
+`$ulw-plan` は Prometheus 戦略計画コンサルタントです。アイデアを決定済みの作業計画へ変えます。実装者では**なく**プランナーです。「X をやって」と言うと、X の計画を作るだけで、製品コードは絶対に書きません。
 
-## 構文
+成果物は `.omo/drafts/<slug>.md` と `.omo/plans/<slug>.md` です。draft は探索と承認状態を残す再開地点で、plan は `$start-work` がそのまま実行できるチェックリストです。
+
+## Syntax
 
 ```bash
 $ulw-plan "what to build"
 ```
 
-## いつ使うか
+## When To Use It
 
-実装前に判断が必要な作業に `$ulw-plan` を使います。範囲が不明確、実行可能な方法が複数ある、または誰かがコードに触れる前に順序付けすべき横断的な変更などです。
+実装前に判断が必要な作業に `$ulw-plan` を使います。範囲が不明確、可能なアプローチが複数ある、または誰かがコードに触れる前に順序を決めるべき横断的な変更などです。
 
-手早い回答や小さな編集だけなら通常どおりプロンプトします。計画がすでにあるなら、そのまま [`$start-work`](/ja/docs/commands/start-work) へ進みます。
+手早い回答や小さな編集だけなら普通にプロンプトします。計画がすでにあるなら、そのまま [`$start-work`](/ja/docs/commands/start-work) へ進みます。
 
-## 流れ
+## Flow
 
 <Steps>
 
 <Step>
 
-### ソクラテス式インタビュー
+### Socratic Interview
 
-Prometheus は計画の前に曖昧さを取り除くために必要な質問をします。
-
-</Step>
-
-<Step>
-
-### 並列コードベース探索
-
-関連コードを並列で探索し、実際に存在するものの上に計画を据えます。
+Prometheus は計画前に曖昧さを取り除くために必要な質問をします。
 
 </Step>
 
 <Step>
 
-### Metis ギャップ分析
+### Parallel Codebase Exploration
 
-欠けている判断、エッジケース、リスクを探すギャップ分析を行います。
-
-</Step>
-
-<Step>
-
-### 計画の書き出し
-
-作業計画を `plans/<slug>.md` に書きます。
+関連コードを並列に探索し、実際に存在するものの上に計画を立てます。
 
 </Step>
 
 <Step>
 
-### 任意の Momus レビュー
+### Metis Gap Analysis
 
-さらなる厳密さが必要なら高精度レビューを実行できます。
+欠けている判断、エッジケース、リスクを見つけるギャップ分析を行います。
+
+</Step>
+
+<Step>
+
+### Plan Writing
+
+作業計画を `.omo/plans/<slug>.md` に書きます。スキャフォールドスクリプトが構造を作り、計画内容は定められた領域に追加されます。
+
+</Step>
+
+<Step>
+
+### Review and Approval
+
+必要なら Metis/Momus 系のレビューを通します。意図が不明確な作業では、planner が best-practice の既定値を採用し、より強いレビューを自動で付けることがあります。ユーザー承認なしに計画が実行へ進むことはありません。
 
 </Step>
 
 </Steps>
 
-## 得られるもの
+## What You Get
 
-質問、調査、そして `$start-work` にそのまま渡せる `plans/<slug>.md` の決定の整った作業計画です。
+質問、調査、そして `$start-work` にそのまま渡せる `.omo/plans/<slug>.md` の決定済み作業計画です。
 
 ```bash
 $ulw-plan "migrate the auth service to OAuth with refresh tokens"
-# → plans/oauth-refresh-tokens.md を書き出す
+# → .omo/plans/oauth-refresh-tokens.md を書き出す
 $start-work
 ```
 
-## 関連
+## Related Docs
 
 <Cards>
-  <Card title="$start-work" href="/ja/docs/commands/start-work">Prometheus が書いた計画をチェックボックス一つずつ実行。</Card>
-  <Card title="コマンドの柱" href="/ja/docs/commands">$ulw-plan が他のコマンドとどう組み合わさるか。</Card>
+  <Card title="$start-work" href="/ja/docs/commands/start-work">Prometheus が書いた計画をチェックボックス一つずつ実行します。</Card>
+  <Card title="Commands" href="/ja/docs/commands">$ulw-plan が他の Commands とどう組み合わさるか。</Card>
 </Cards>

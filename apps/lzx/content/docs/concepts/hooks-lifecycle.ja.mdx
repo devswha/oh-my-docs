@@ -1,68 +1,95 @@
 ---
 title: Hooks & Lifecycle
-description: OmO プラグインが Codex に登録するライフサイクルフック —— ルール注入、テレメトリ、コメント検査、LSP 診断。
+description: Lifecycle hooks for rules, bootstrap, diagnostics, and continuation.
 ---
 
-LazyCodex(LZX)は、Codex セッションの決まった地点で発火するライフサイクルフックとともに OmO プラグインを提供します。これらのフックはプロジェクトルールを読み込んだまま保ち、編集後のフィードバックを表に出し、診断を実行します —— ユーザーが手動で何かを呼び出す必要はありません。以下の内容はすべてプラグインの `hooks.json` に登録されています。
+LazyCodex (LZX) は、Codex session の決まった地点で発火する lifecycle hooks とともに OmO plugin を提供します。これらの hooks は project rules を読み込んだまま保ち、install 状態を確認し、編集後の feedback と diagnostics を実行します。以下は最新 `4.12.1` plugin manifest と hook files に基づきます。
 
-## いつ何が発火するか
+## Trigger Matrix
 
-| イベント | 発火する内容 |
+| Event | 発火する内容 |
 |---|---|
-| `SessionStart` | OMO プロジェクトルール（[rules](/ja/docs/skills/rules) コンポーネント）を読み込み、続いて[テレメトリ](#インストール済みコンポーネント)を記録します。 |
-| `UserPromptSubmit` | OMO プロジェクトルールを再注入し、ultrawork ディテクターを実行し、ultragoal ステアリングを確認します。 |
-| `PostToolUse`(編集系ツール) | [comment-checker](/ja/docs/skills/comment-checker) のフィードバックと [LSP](/ja/docs/skills/lsp) 診断を実行します。`apply_patch` の場合はプロジェクトルールも照合します。 |
-| `PostCompact`(`manual` または `auto`) | 注入されたルールがコンテキスト圧縮後も残るよう、OMO プロジェクトルールキャッシュをリセットします。 |
+| `SessionStart` | project rules loading、telemetry、auto update check、bootstrap provisioning、CodeGraph bootstrap。 |
+| `UserPromptSubmit` | project rules の再注入、ultrawork trigger、`$ulw-loop` steering の確認。 |
+| `PreToolUse` | Bash 呼び出しへの Git Bash MCP guidance と、`$ulw-loop` の goal budget 制約保護。 |
+| `PostToolUse` | comment check、LSP diagnostics、CodeGraph init guidance、`apply_patch` rule matching、thread title hygiene。 |
+| `Stop` / `SubagentStop` | `$start-work` continuation と LazyCodex executor evidence verification。 |
+| `PostCompact` | Git Bash reminder、project rules、LSP diagnostic cache の reset。 |
 
 ## SessionStart
 
-Codex セッションが始まると、2 つのフックが実行されます。
+Codex session が始まると、baseline state を合わせる hooks が実行されます。
 
-- **Rules** —— `rules hook session-start` が OMO プロジェクトルールを読み込み、エージェントは `AGENTS.md`・rules・instruction ファイルを既にコンテキストに持って開始します。
-- **Telemetry** —— `telemetry hook session-start` がセッション開始を記録します。
+- **Rules**: `rules hook session-start` が OMO project rules を読み込み、agent が supported rules と instruction files をすでに context に持って始めます。
+- **Telemetry**: `telemetry hook session-start` が session start を記録します。
+- **Auto update**: plugin update state を確認します。
+- **Bootstrap provisioning**: plugin cache、config blocks、bin links など LazyCodex bootstrap state を確認します。
+- **CodeGraph bootstrap**: CodeGraph component initialization state を確認します。
 
 ## UserPromptSubmit
 
-プロンプトを送信するたびに、3 つのフックが順に実行されます。
+prompt を送信するたびに 3 つの hooks が実行されます。
 
-- **Rules** —— `rules hook user-prompt-submit` が OMO プロジェクトルールを再注入し、会話が長くなっても残り続けます。
-- **Ultrawork ディテクター** —— プロンプト内の `ultrawork` トリガーを検出する Python フック(`ultrawork/hooks/ultrawork-detector.py`)です。
-- **Ultragoal** —— `ultragoal hook user-prompt-submit` が ultragoal ステアリングを確認します。
+- **Rules**: `rules hook user-prompt-submit` が OMO project rules を再注入し、会話が長くなっても rules が残ります。
+- **Ultrawork trigger**: prompt 内の `ultrawork` / `ulw` flow を検出します。
+- **ulw-loop steering**: `$ulw-loop` が続いている間に必要な steering state を確認します。
+
+## PreToolUse
+
+tool call の直前には 2 つの補助 hooks があります。
+
+- **Git Bash MCP guidance**: Bash tools が呼ばれたとき、Windows/Git Bash path に必要な MCP guidance を提供します。
+- **Goal budget protection**: goal creation tools が呼ばれたとき、`$ulw-loop` に必要な budget constraints を保ちます。
 
 ## PostToolUse
 
-編集系ツールが実行された後、OmO はその結果を検査します。マッチャーは編集ファミリーを対象とします。
+編集系 tool が実行された後、OmO がその結果を検査します。matcher は edit family を対象にします。
 
 ```text
 ^(apply_patch|write|Write|edit|Edit|multi_edit|multiedit|MultiEdit)$
 ```
 
-マッチすると 2 つのフックが実行されます。
+match すると 2 つの hooks が実行されます。
 
-- **comment-checker** —— `comment-checker hook post-tool-use` が、たった今書いたり変更したコメントにフィードバックを与えます。[comment-checker](/ja/docs/skills/comment-checker) を参照してください。
-- **LSP** —— `lsp hook post-tool-use` が編集されたコードに language-server 診断を実行します。[lsp](/ja/docs/skills/lsp) を参照してください。
+- **comment-checker**: `comment-checker hook post-tool-use` が、今書いたり変更した comments に feedback を与えます。[comment-checker](/ja/docs/skills/comment-checker) を参照してください。
+- **LSP**: `lsp hook post-tool-use` が編集された code に language-server diagnostics を実行します。[lsp](/ja/docs/skills/lsp) を参照してください。
 
-2 つ目の、より狭いマッチャー(`^apply_patch$`)は追加で `rules hook post-tool-use` を実行し、そのパッチにプロジェクトルールを照合します。
+より狭い 2 つ目の matcher (`^apply_patch$`) は追加で `rules hook post-tool-use` を実行し、patch に project rules を match します。
+
+編集系 tool でなくても一部の後処理があります。CodeGraph 関連 tool call 後には CodeGraph init guidance が実行され、thread 作成後には team mode component が thread title hygiene を確認します。
+
+## Stop / SubagentStop
+
+response や child agent が止まるときにも continuation hooks が実行されます。
+
+- **start-work continuation**: `$start-work` が plan を最後まで続ける必要があるとき、次の進行状態を確認します。
+- **executor evidence verification**: `lazycodex-executor` child agent が終わったとき、証拠が十分か確認します。
 
 ## PostCompact
 
-Codex がコンテキストを圧縮するとき —— `manual` または `auto` —— `rules hook post-compact` が OMO プロジェクトルールキャッシュをリセットします。これにより、注入されたルールは、古いコンテキストが要約されて消えるときに一緒に失われず、圧縮を生き延びます。
+Codex が context を compact するとき、manual でも auto でも、OmO は Git Bash MCP reminders、project rules、LSP diagnostic cache を reset します。古い context が要約されても、次の turn で必要な guidance と diagnostics state が整理されます。
 
-## インストール済みコンポーネント
+## Installed Components
 
-上記のフックは、インストール済みコンポーネントへの薄い入口です。
+これらの hooks は installed components への薄い入口です。
 
-| コンポーネント | 担当 |
+| Component | 担当 |
 |---|---|
-| `rules` | セッション開始時、すべてのプロンプト時、`apply_patch` 時、圧縮後のプロジェクトルール注入。 |
-| `telemetry` | セッション開始の記録。 |
-| `comment-checker` | 編集系ツール後のコメントフィードバック。 |
-| `lsp` | 編集系ツール後の language-server 診断。 |
-| `ultrawork` | プロンプト時の ultrawork ディテクター。 |
-| `ultragoal` | プロンプトごとの ultragoal ステアリング確認。 |
+| `rules` | session start、prompt submit、`apply_patch`、compact 後の project rules 管理。 |
+| `bootstrap` | LazyCodex install state と provisioning check。 |
+| `telemetry` | session start 記録。 |
+| `comment-checker` | edit-like tools 後の comment feedback。 |
+| `lsp` | edit-like tools 後の language-server diagnostics と compact 後の cache reset。 |
+| `ultrawork` | prompt 時点の ultrawork trigger detection。 |
+| `ulw-loop` | loop steering と goal budget protection。 |
+| `start-work-continuation` | `$start-work` 実行 flow continuation。 |
+| `git-bash` | Bash 呼び出しと compact 後の Git Bash MCP guidance。 |
+| `codegraph` | CodeGraph bootstrap と init guidance。 |
+| `teammode` | thread title hygiene。 |
+| `lazycodex-executor-verify` | child-agent evidence verification。 |
 
 <Cards>
-  <Card title="rules" href="/ja/docs/skills/rules">AGENTS・rules・instruction ファイルから注入されるプロジェクト指示。</Card>
-  <Card title="comment-checker" href="/ja/docs/skills/comment-checker">編集系操作の後のコメントへのフィードバック。</Card>
-  <Card title="lsp" href="/ja/docs/skills/lsp">診断・定義・参照・シンボル・安全な rename。</Card>
+  <Card title="rules" href="/ja/docs/skills/rules">supported rules と instruction files から注入される project instructions。</Card>
+  <Card title="comment-checker" href="/ja/docs/skills/comment-checker">edit-like work 後の comments への feedback。</Card>
+  <Card title="lsp" href="/ja/docs/skills/lsp">diagnostics、definitions、references、symbols、安全な rename。</Card>
 </Cards>

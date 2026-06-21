@@ -1,0 +1,114 @@
+---
+title: FAQ
+description: LazyCodex の install、OmO、ulw、hook、doctor、token、Codex App、OMX conflict についての短い回答。
+---
+
+迷ったら、今の状況に近いところから読んでください。セットアップなら**インストールと環境**、コマンド選びなら**最初に使うとき**、動作確認なら**実行と検証**です。
+
+## インストールと環境
+
+<section className="not-prose my-6 divide-y divide-fd-border rounded-lg border border-fd-border bg-fd-card">
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>LazyCodex とは何ですか?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">LazyCodex は Codex 向けの light port で、OmO の主要なコマンド、スキル、フックを Codex に重ねます。Codex が長い作業を計画し、進め続け、証拠で完了を確認しやすくする薄いレイヤーと考えるとよいです。</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>LazyCodex は OmO の代替ですか?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">厳密には違います。OmO を Codex で使いやすくした light port に近いです。完全な OmO にはより深いオーケストレーションがあり、LazyCodex は Codex に直接合う部分へ集中しています。</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>Codex にインストールを頼んでもいいですか?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">はい。Codex App または Codex CLI に LazyCodex の GitHub リンクか <code>lazycodex.ai</code> を渡し、インストールを依頼できます。自分で <code>npx lazycodex-ai install</code> を実行しても構いません。</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>Codex App と Codex CLI でインストールは違いますか?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">同じセットアップパスとして扱って構いません。LazyCodex は Codex 環境に入ります。普段使うのが Codex App なら App で、CLI なら CLI で確認します。</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>Bun は必要ですか?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">不要です。LazyCodex をソースからビルドする場合を除き、Bun をインストールする必要はありません。通常のインストールと利用は Node.js/npm の <code>npx</code> 経路を前提にします。</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>Windows でも使えますか?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">使えますが、ネイティブ Windows は推奨しません。Windows を使う必要がある場合は、WSL2 Ubuntu で Codex と LazyCodex を使うほうが安定します。インストールや実行で詰まる場合は、WSL2 または Git Bash 系の shell で再確認してください。</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>表示されるバージョンは何ですか?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">ドキュメントにはプラグインバージョンを表示します。現在は <code>4.12.1</code> で、LazyCodex の OmO プラグインパッケージから取得しています。</p>
+  </details>
+</section>
+
+## 最初に使うとき
+
+<section className="not-prose my-6 divide-y divide-fd-border rounded-lg border border-fd-border bg-fd-card">
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>LazyCodex はどんな作業に向いていますか?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">範囲が大きい、時間がかかる、計画・委任・検証が重要な作業に向いています。小さな質問や一行修正なら、普段どおり Codex に頼めば十分です。</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>brain-off で使うべきですか、brain-on で使うべきですか?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">どちらでも使えます。LazyCodex はゆるく任せても回ることが大事ですが、目標と完了条件を明確に渡せるほど結果がよくなります。内部 skill を全部先に勉強する必要はなく、実際に詰まった場所だけ学べば十分です。</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>最初に覚える command はどれですか?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">大きなリポジトリではまず <code>$init-deep</code> を一度実行します。コードを書く前に判断が必要なら <code>$ulw-plan</code>、書かれた計画を実行するなら <code>$start-work</code>、証拠で完了が確認されるまで開いたタスクを進めるなら <code>$ulw-loop</code> を使います。</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>インストール成功はどう確認しますか?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">Codex を開き、入力欄で <code>$</code> を押して OmO コマンドとスキルが表示されるか確認します。CLI では <code>ulw</code> と入力して ultrawork mode が有効になるかも確認材料になります。最初の実用コマンドは通常 <code>$init-deep</code> です。</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>インストール後に $ メニューへ command が出ない場合は?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">新しい Codex session を開いて plugin を読み直し、startup review で omo hook の承認待ちがないか確認します。それでも出ない場合は <code>npx lazycodex-ai doctor</code> を実行し、install と skill loading の状態を確認してください。</p>
+  </details>
+</section>
+
+## 実行と検証
+
+<section className="not-prose my-6 divide-y divide-fd-border rounded-lg border border-fd-border bg-fd-card">
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>npx lazycodex-ai doctor は実在する機能ですか?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">はい。<code>lazycodex-ai</code> は <code>doctor</code> を OmO doctor フローへ渡します。ローカルの LazyCodex/Codex 設定を確認し、問題があればエラー終了することがあります。</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>なぜ hook の承認が必要ですか?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">Codex は起動時に hook をレビューします。LazyCodex の omo hook は承認前には実行されません。ライフサイクル確認を使うには、インストール後のスタートアップレビューで omo hook を承認してください。</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>更新後は何を確認すればよいですか?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">更新後に hook が Modified と表示されたら再承認してください。状態がおかしければ、まず <code>npx lazycodex-ai doctor</code> を実行して install、hook、skill loading の状態を確認します。</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>$ulw-loop が浅く終わる場合は?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">反復だけでは、不足したデータや曖昧な完了条件は自動的には良くなりません。収集範囲、通すべき検証、データ不足時に調査する内容を明記するか、先に <code>$ulw-plan</code> で計画してください。</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>より高い plan や大きな token budget が必要ですか?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">LazyCodex を token 節約ツールとして見るのは避けてください。よい model と十分な token を使い、planning、execution、verification を押し切る workflow に近いです。大きな作業は 1 つの thread が重くなる前に作業単位で分けます。</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>thinking/reasoning level はどう選びますか?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">深く考えすぎなくて大丈夫です。<code>low</code> は避け、通常は <code>medium</code>、ミスのコストが高い作業や強い review が必要な作業では <code>high</code> を使います。<code>xhigh</code> は本当に重い作業用です。</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>LazyCodex は computer-use を行いますか?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">できます。ただし現在の Codex session に呼び出せる computer-use tool がある場合です。LazyCodex はその tool を workflow に組み込めますが、browser や OS 操作には実際に使える computer-use capability が必要です。</p>
+  </details>
+</section>
+
+## 衝突と制限
+
+<section className="not-prose my-6 divide-y divide-fd-border rounded-lg border border-fd-border bg-fd-card">
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>Codex App、mobile、remote session でも使えますか?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">LazyCodex は Codex の中にインストールされるため、普段使う Codex 環境から使います。特に Codex App のデスクトップ/モバイルリモートの流れと相性がよいです。ただし一部の機能はデスクトップアプリでだけ完全に同じことがあります。</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>team mode は見えるのに thread 作成が失敗します。どうすればよいですか?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">まず LazyCodex と Codex を更新し、<code>npx lazycodex-ai doctor</code> でプラグイン、フック、設定の状態を確認してください。team mode は Codex デスクトップアプリの挙動に依存することがあるため、CLI とデスクトップアプリが同じ経路を持つとは限りません。</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>OMX と一緒に使えますか?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">おすすめしません。LazyCodex と OMX を同時に有効にすると衝突し、token だけ使って失敗することがあります。installer が別 harness を警告する場合は片方を整理し、LazyCodex は Codex 上の薄い layer として単独で使うのが安全です。</p>
+  </details>
+</section>

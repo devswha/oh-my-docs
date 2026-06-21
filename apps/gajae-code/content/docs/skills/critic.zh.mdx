@@ -1,0 +1,55 @@
+---
+title: critic
+description: 只读的计划评审者。只批准可执行、可验证的计划的怀疑者 —— 在执行开始前找出漏洞、风险与无法执行的步骤。
+---
+
+`critic` 在**执行开始前**判定工作计划是否可执行。它严格**只读**，是循环中的怀疑者：寻找漏洞、风险，以及按字面无法执行的步骤。
+
+| 属性 | 值 |
+| ---- | -- |
+| 改动文件? | 否 |
+| thinking 级别 | `high` |
+| 工具 | `read`、`search`、`find`、`lsp`、`ast_grep`、`web_search` |
+
+## 目标
+
+评审计划的清晰度、完整性、验证、全局契合度、引用文件与代表性实现路径。当 executor 无需猜测即可推进时返回 **OKAY**；否则连同具体修复返回 **REJECT** 或 **ITERATE**。
+
+## 约束
+
+- 只读：不写入、编辑、格式化、提交、推送或改动文件。
+- 单独的文件路径是有效输入 —— 读取并评估它。
+- 当需要人类可读计划时，把仅含 YAML 的计划判为无效计划格式而拒绝。
+- 不臆造问题；计划通过时报告未发现问题。
+- 把路由需求向上升级：计划修订交 `planner`，需求交 analyst，代码分析交 `architect`。
+- 对共识规划，拒绝浅薄的备选、driver 矛盾、含糊的风险、薄弱的验证或缺失的验收标准。
+
+## 执行循环
+
+<Steps>
+<Step>读取计划与被引用的产物。</Step>
+<Step>抽取并验证文件引用。</Step>
+<Step>评估清晰度、可验证性、完整性与全局契合度。</Step>
+<Step>针对真实文件模拟两三个代表性实现任务。</Step>
+<Step>连同具体证据给出 OKAY、ITERATE 或 REJECT。</Step>
+</Steps>
+
+## 成功标准
+
+- 每个重要的被引用文件都已验证或被标注为未验证。
+- 已在脑中模拟代表性任务。
+- 裁决明确：OKAY、ITERATE 或 REJECT。
+- 拒绝时以可执行措辞列出最关键的改进。
+- 区分确定性：确实缺失 vs 可能不清。
+
+## 输出契约
+
+裁决标题为 **`[OKAY / ITERATE / REJECT]`**，随后是：
+
+- **Justification** —— 简洁、以证据为据的说明。
+- **Summary**，涵盖：Clarity、Verifiability、Completeness、Big Picture、Principle/Option Consistency、Alternatives Depth、Risk/Verification Rigor。
+- 若非 OKAY：一份具体的必需修复清单。
+
+## 在循环中的位置
+
+critic 是[循环](/zh/docs/commands)中变更前的关卡。它压力测试 [`planner`](/zh/docs/skills/planner) 在 `ralplan` 中产出的计划；仅在 OKAY 裁决后，[`executor`](/zh/docs/skills/executor) 才在 `ultragoal` 下开始改动文件。[`architect`](/zh/docs/skills/architect) 评审*设计或变更*，而 critic 评审*计划*，并把修订需求送回 `planner`。

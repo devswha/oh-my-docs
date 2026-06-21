@@ -9,17 +9,35 @@ OMX は `~/.codex/`（ユーザーグローバル）と `.codex/`（プロジェ
 
 | フィールド | 型 | 説明 |
 |---|---|---|
-| `model` | string | デフォルトモデル（例: `"gpt-4.1"`、`"o3"`） |
-| `codex_hooks` | bool | OMX フックパイプラインを有効化します。`true` にすると skills、team、OpenClaw が動作します。 |
+| `model` | string | デフォルト Codex モデル。現在の OMX routing では frontier/default lane に関わります。 |
+| `[features].hooks` | bool | setup-owned fallback hooks 用の安定した Codex native hook flag。legacy `codex_hooks` は migration 用です。 |
+| `[features].plugin_hooks` | bool | 対応する Codex plugin install の plugin-scoped hook flag。 |
+| `[features].goals` | bool | goal-oriented workflows が使う Codex goal integration を有効化します。 |
 | `custom-prompts` | string | OMX デフォルトプロンプトを拡張または置き換えるディレクトリパス |
-| `approval_policy` | string | ツール呼び出し承認ポリシー: `"suggest"`、`"auto-edit"`、`"full-auto"` |
+| `approval_policy` | string | Codex approval policy。autonomous launch は意図して dangerous/no-prompt execution boundary を選べます。 |
 
 ```toml
-model = "gpt-4.1"
-codex_hooks = true
+model = "gpt-5.5"
 custom-prompts = "~/.codex/prompts"
-approval_policy = "auto-edit"
+approval_policy = "never"
+
+[features]
+hooks = true
+goals = true
 ```
+
+## `.omx-config.json`
+
+Codex root TOML key ではない OMX-owned routing/feature config は `.omx-config.json` に置きます。
+
+| Key | Purpose |
+|---|---|
+| `agentModels` | `{ "planner": "gpt-5.5" }` のような per-agent model overrides。built-in role pins より先に適用されます。 |
+| `agentReasoning` | `low`、`medium`、`high`、`xhigh` の per-agent reasoning overrides。 |
+| `env` | `OMX_DEFAULT_FRONTIER_MODEL`、`OMX_DEFAULT_STANDARD_MODEL`、`OMX_DEFAULT_SPARK_MODEL` などの fallback env values。実際の shell env が優先します。 |
+| `models` | `default`、`team`、`autopilot`、`team_low_complexity` などの mode defaults。 |
+
+`agentModels.planner` は Autopilot/Ralplan planning で重要です。main/default lane が cheap/mini の場合、OMX は initial planning draft を dedicated planner role に送れます。Team model routing は `omx team status <team> --model-inspect` で確認します。
 
 ## `.codex/hooks.json`
 
@@ -41,8 +59,9 @@ approval_policy = "auto-edit"
 
 | フラグ | 説明 |
 |---|---|
-| `--madmax` | 最大並列モード。team pipeline 全体を自動で起動します。 |
-| `--high` | 高推論強度。最上位 tier モデルを使用します。 |
+| `--madmax` | high-autonomy execution boundary の dangerous bypass shorthand です。full Team pipeline 起動と同じ意味ではありません。 |
+| `--high` | high reasoning-effort shorthand です。model-tier selector ではありません。 |
+| `--xhigh` | 対応する場合の extra-high reasoning shorthand です。 |
 | `--skip-git-repo-check` | git リポジトリ外で実行するときのエラーを無視します。 |
 | `--spark` | team worker をライトな spark tier にルーティングします。 |
 | `--madmax-spark` | `--madmax` と spark worker ルーティングを同時に適用します。 |

@@ -1,34 +1,34 @@
 ---
-title: リファレンス
-description: LazyCodex の設定と CLI リファレンス。深い設定は基盤の OmO の規約に従います。
+title: Reference
+description: LazyCodex CLI and configuration reference.
 ---
 
-本節は LazyCodex（LZX）のランタイムリファレンスです。LazyCodex は [OmO（oh-my-openagent）](https://github.com/code-yeongyu/oh-my-openagent) を Codex のエージェントハーネスとしてパッケージした薄い配布レイヤーです。LazyCodex で実行するすべては OmO に転送されるため、深い設定は OmO の規約に従います。
+このセクションは LazyCodex (LZX) runtime Reference です。LazyCodex は [OmO (oh-my-openagent)](https://github.com/code-yeongyu/oh-my-openagent) を Codex 向けに packaging する薄い配布です。LazyCodex で実行する深い workflows は、OmO plugin の Skills、hooks、MCP Servers、model profiles の上で動作します。
 
-## LazyCodex が担うもの
+## What LazyCodex Owns
 
-LazyCodex 自体は小さく、提供するものは一つです。`npx` で呼び出し、Codex プラットフォームを対象に OmO をインストールして駆動する `lazycodex-ai` npm バイナリです。
+LazyCodex 自体は小さいものです。提供するのは 1 つだけです。`npx` で呼び出し、Codex platform 向けに OmO を install して動かす `lazycodex-ai` npm bin です。
 
 ```bash
 npx lazycodex-ai install
 ```
 
-これは `npx --yes --package oh-my-openagent omo install --platform=codex` の短縮形です。グローバルインストールはありません。常に `npx` で呼び出します。ハーネスは後から上書きできる zero-config のデフォルト値を備えています。
+これは `npx --yes --package oh-my-openagent omo install --platform=codex` の短縮形です。global install はありません。常に `npx` で呼び出します。Codex light setup は、あとから上書きできる zero-config defaults を備えています。
 
-## OmO が担うもの
+## What OmO Owns
 
-インストール後は、基盤の OmO エンジンが残りを担います。規律エージェント（Sisyphus、Hephaestus、Oracle、Librarian）、並列実行、マルチモデルルーティング、スキル、フック、検証済みの完了です。インストールフラグを超えて provider・モデル・動作を調整する場合、実質的に OmO を設定していることになります。
+install 後は、その下の OmO-based setup が残りを担当します: Agent Roles、parallel exploration、model routing、Skills、hooks、verified completion。install flags を超えて provider、model、behavior を調整する場合、実質的には OmO を設定しています。
 
-## 本節の内容
+## Pages
 
 <Cards>
-  <Card title="設定" href="/ja/docs/reference/configuration">インストールフラグ、Codex プラットフォーム対象、zero-config デフォルト、provider・モデル設定。</Card>
-  <Card title="CLI" href="/ja/docs/reference/cli">`lazycodex-ai` バイナリ、OmO への転送方法、`--dry-run`、セッション内コマンドの柱。</Card>
+  <Card title="Configuration" href="/ja/docs/reference/configuration">install flags、Codex target、zero-config defaults、provider/model setup。</Card>
+  <Card title="CLI" href="/ja/docs/reference/cli">`lazycodex-ai` bin、OmO への forwarding、`--dry-run`、session 内 Commands。</Card>
 </Cards>
 
-## クイックマップ
+## Quick Links
 
-- **[設定](/ja/docs/reference/configuration)** — `--no-tui`、`--codex-autonomous`、Codex プラットフォーム対象、provider/モデル設定が OmO のどこにあるか。
-- **[CLI](/ja/docs/reference/cli)** — `npx lazycodex-ai` が `omo` 呼び出しへどう展開されるか、そして `$ulw-plan` / `$start-work` / `$ulw-loop` のコマンドの柱。
+- **[Configuration](/ja/docs/reference/configuration)**: `--no-tui`、`--codex-autonomous`、Codex target、provider/model setup が OmO のどこにあるか。
+- **[CLI](/ja/docs/reference/cli)**: `npx lazycodex-ai` が `omo` call にどう展開されるか、そして `$ulw-plan` / `$start-work` / `$ulw-loop` Commands。
 
-すべての provider `*_API_KEY` と OAuth 資格情報は機密として扱ってください。ログ出力・コミットは禁止です。
+すべての provider `*_API_KEY` と OAuth credentials は secret として扱い、log や commit に残さないでください。

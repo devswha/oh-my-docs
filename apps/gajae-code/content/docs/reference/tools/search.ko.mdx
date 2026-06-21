@@ -1,0 +1,128 @@
+---
+title: 검색·탐색 도구
+description: find, search, search_tool_bm25, ast-grep, lsp, resolve — 파일 찾기, 내용 매칭, AST 쿼리, 코드 탐색.
+---
+
+이 계열은 "어디 있지?"와 "이게 뭐지?"에 답합니다 — 파일명 globbing부터 정규식 내용 매칭, AST 패턴, 언어 서버 탐색까지.
+
+## `find`
+
+glob으로 파일시스템 경로를 찾습니다. 선택 기준이 파일명·경로면 `find`, 파일 내용이면 [`search`](#search)를 쓰세요.
+
+| 입력 | 타입 | 필수 | 설명 |
+| --- | --- | --- | --- |
+| `paths` | `string[]` | 예 | glob, 파일, 디렉터리. 여러 항목은 하나의 brace-union 검색으로 합쳐질 수 있음. |
+| `hidden` | `boolean` | 아니오 | 숨김 파일 포함. 기본 `true`. |
+| `limit` | `number` | 아니오 | 반환 경로 최대 수. 기본 `1000`. |
+
+- glob 문자가 없는 경로는 암묵적 `**/*`로 검색합니다. 최상위 단독 glob `*.ts`는 `**/*.ts`가 되며, `src/*.ts`는 `src` 아래 비재귀 세그먼트로 유지됩니다.
+- 결과는 최근 수정순으로 정렬됩니다.
+- `.gitignore`는 항상 적용됩니다. 끄는 플래그는 없습니다.
+- 루트 `/`에서의 검색은 거부됩니다. 매치 없으면 `No files found matching pattern`.
+
+## `search`
+
+파일, 디렉터리, glob, 내부 URL에 걸쳐 정규식으로 파일 내용을 검색합니다.
+
+| 입력 | 타입 | 필수 | 설명 |
+| --- | --- | --- | --- |
+| `pattern` | `string` | 예 | 정규식. 패턴에 개행이나 `\n`이 있을 때만 멀티라인 활성화. 리터럴 중괄호는 이스케이프(예: ``interface\{\}``). |
+| `paths` | `string[]` | 예 | 파일, 디렉터리, glob, 내부 URL(내부 URL엔 glob 불가). |
+| `i` | `boolean` | 아니오 | 대소문자 무시. 기본 `false`. |
+| `gitignore` | `boolean` | 아니오 | 디렉터리 스캔 시 `.gitignore` 준수. 기본 `true`. |
+| `skip` | `number` | 아니오 | 페이지네이션용 전역 매치 오프셋. 기본 `0`. |
+
+매치 줄은 `*anchor|line`, 컨텍스트 줄은 ` anchor|line`입니다(해시라인: `*5th|content`, 일반: `*5|content`). 디렉터리 결과는 `# <path>` 제목 아래 파일별로 묶입니다. 기본 컨텍스트는 앞 1줄, 뒤 3줄.
+
+<Callout type="info">
+보이는 페이지는 처음 `100`개 매치를 보여주고, 긴 줄은 `1024`자에서 절단됩니다. 더 보려면 `skip`을 쓰세요. 앵커는 [`edit`](/ko/docs/reference/tools/files)가 소비합니다.
+</Callout>
+
+## `search_tool_bm25`
+
+숨은 도구 발견 인덱스를 검색하고 상위 매치를 현재 세션에 활성화합니다. 파일 내용이 아니라 *다른 도구*를 찾습니다.
+
+| 입력 | 타입 | 필수 | 설명 |
+| --- | --- | --- | --- |
+| `query` | `string` | 예 | 자연어 또는 키워드 쿼리. 트림 후 비면 거부. |
+| `limit` | `integer` | 아니오 | 반환·활성화 최대 매치 수. 기본 `8`. |
+
+BM25로 발견 가능한 도구를 랭킹합니다. `activateDiscoveredTools()`로 매치를 활성화한 뒤 간결한 JSON 요약을 반환합니다:
+
+```json
+{"query":"...","activated_tools":["..."],"match_count":2,"total_tools":17}
+```
+
+활성화된 도구는 같은 턴의 다음 모델 호출 전에 사용 가능해집니다. 이 도구는 `tools.discoveryMode !== "off"`일 때만 나타나며, `"all"` 모드에서 숨은 발견 가능 빌트인을 표면화할 수 있습니다(기본 `read`, `bash`, `edit`은 계속 활성).
+
+## `ast-grep`
+
+네이티브 ast-grep로 지원 소스 파일에 구조적 코드 검색을 합니다.
+
+| 입력 | 타입 | 필수 | 설명 |
+| --- | --- | --- | --- |
+| `pat` | `string` | 예 | 단일 AST 패턴. 추론 언어에서 하나의 유효한 AST 노드로 파싱돼야 함. |
+| `paths` | `string[]` | 예 | 파일, 디렉터리, glob, 백킹 파일이 있는 내부 URL(내부 URL엔 glob 불가). |
+| `skip` | `number` | 아니오 | 매치 오프셋. 기본 `0`. |
+
+패턴 문법:
+
+| 토큰 | 의미 |
+| --- | --- |
+| `$NAME` | AST 노드 하나 캡처. |
+| `$_` | 바인딩 없이 노드 하나 매치. |
+| `$$$NAME` | 0개 이상 노드 캡처. |
+| `$$$` | 바인딩 없이 0개 이상 노드 매치. |
+
+메타변수 이름은 대문자여야 하고 전체 노드를 가리켜야 합니다. 같은 이름을 두 번 쓰면 매 등장마다 동일 코드를 요구합니다. 언어는 넓은 카탈로그에서 파일별로 추론됩니다(`javascript`, `typescript`, `tsx`, `python`, `go`, `rust`, `java`, `c`, `cpp`, `ruby`, `php`, `json`, `yaml`, `html`, `css` 등). 매치는 `*LINE+HASH|text`(해시라인) 또는 `*LINE|text`로 렌더되며 선택적 `meta: NAME=value` 줄이 붙습니다. 보이는 결과는 기본 `50`개입니다.
+
+## `lsp`
+
+언어 서버에 진단, 탐색, 심볼, 이름 변경, 코드 액션, 능력, 원시 요청을 질의합니다.
+
+| 입력 | 타입 | 필수 | 설명 |
+| --- | --- | --- | --- |
+| `action` | enum | 예 | `diagnostics`, `definition`, `references`, `hover`, `symbols`, `rename`, `rename_file`, `code_actions`, `type_definition`, `implementation`, `status`, `reload`, `capabilities`, `request`. |
+| `file` | `string` | 아니오 | 파일 경로; `diagnostics`에선 glob도; 워크스페이스 형식엔 `"*"`. |
+| `line` | `number` | 아니오 | 위치 기반 액션의 1-기준 줄. 기본 `1`. |
+| `symbol` | `string` | 아니오 | 열을 해석할 부분 문자열; `name#N` 등장 셀렉터 지원. |
+| `query` | `string` | 아니오 | 워크스페이스 심볼 쿼리, 코드 액션 셀렉터, `action=request`의 LSP 메서드. |
+| `new_name` | `string` | 아니오 | `rename`, `rename_file`에 필수. |
+| `apply` | `boolean` | 아니오 | `rename`/`rename_file`은 기본 적용; `code_actions`는 `true`가 아니면 목록만. |
+| `timeout` | `number` | 아니오 | 초, `5..60`로 클램프, 기본 `20`. |
+
+주요 액션:
+
+- **`diagnostics`** — 파일별·glob 진단; `file: "*"`는 워크스페이스 검사(`cargo check`, `npx tsc --noEmit`, `go build ./...`, `pyright`).
+- **`definition` / `type_definition` / `implementation` / `references`** — 정의 이동·사용처 찾기, 주변 컨텍스트 포함.
+- **`hover`** — 위치의 타입/시그니처 텍스트.
+- **`symbols`** — 문서 심볼 또는 `query`에 맞는 워크스페이스 심볼.
+- **`rename` / `rename_file`** — 심볼·파일 이름 변경(`apply: false`로 미리보기).
+- **`code_actions`** — 퀵픽스 목록·적용; `query`는 목록 모드에선 필터, 적용 모드에선 선택(인덱스 또는 제목 부분 문자열).
+- **`status` / `reload` / `capabilities` / `request`** — 서버 점검과 원시 JSON-RPC.
+
+<Callout type="info">
+`lsp`는 `lsp.enabled`와 세션에 게이트됩니다. 서버는 루트 마커와 `defaults.json`에서 자동 탐지되거나 프로젝트별로 설정됩니다. `GJC_DISABLE_LSPMUX=1`은 `lspmux` 래핑을 끕니다.
+</Callout>
+
+## `resolve`
+
+예약된 미리보기 동작을 적용하거나 버려 마무리합니다. 숨은 도구입니다. 다른 도구(예: [`ast-edit`](/ko/docs/reference/tools/files))가 미리보기를 예약하고 일회성 `resolve` 선택을 강제한 후에만 동작합니다.
+
+| 입력 | 타입 | 필수 | 설명 |
+| --- | --- | --- | --- |
+| `action` | `"apply" \| "discard"` | 예 | 예약된 미리보기를 커밋 또는 거부. |
+| `reason` | `string` | 예 | 예약 콜백에 전달되는 설명. |
+
+`apply`는 생산자의 apply 콜백을, `discard`는 reject 콜백을 돌리거나 `Discarded: <label>. Reason: <reason>`을 냅니다. 대기 중 미리보기가 없으면 `No pending action to resolve.`로 오류.
+
+## 무엇을 언제 쓸까
+
+| 목표 | 도구 |
+| --- | --- |
+| 이름·경로로 파일 찾기 | `find` |
+| 파일 내용에서 텍스트·정규식 매칭 | `search` |
+| 더 많은 도구 발견·활성화 | `search_tool_bm25` |
+| 구문 코드 패턴 매칭 | `ast-grep` |
+| 진단, 정의 이동, 이름 변경 | `lsp` |
+| 예약된 미리보기 적용·폐기 | `resolve` |

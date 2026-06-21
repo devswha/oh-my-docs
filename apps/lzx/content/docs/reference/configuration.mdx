@@ -1,74 +1,88 @@
 ---
 title: Configuration
-description: Install flags, the Codex platform target, zero-config defaults, and where provider and model setup lives in OmO.
+description: Install flags, Codex target, zero-config defaults, doctor, hooks, and provider/model setup.
 ---
 
-LazyCodex keeps configuration minimal. The only knobs LazyCodex exposes directly are the install flags; everything past that — providers, models, routing, hooks — is configured in the underlying OmO engine.
+LazyCodex keeps configuration minimal. The parts you directly handle are install flags and Codex plugin configuration. Provider, model, routing, hooks, Skills, and Agent Roles are handled by the OmO-based setup underneath.
 
-## Zero config by default
+## Zero-config by Default
 
-LazyCodex ships sensible defaults and works immediately after install. You only reach for configuration when a default is not right for your repo. There is no separate config file to create up front — run the installer and start working.
+LazyCodex ships with reasonable defaults and works right after installation. Touch configuration only when defaults do not fit the repository. There is no separate config file you must prepare first.
 
 ```bash
 npx lazycodex-ai install
 ```
 
-No global install. Always invoke via `npx`. This is shorthand for `npx --yes --package oh-my-openagent omo install --platform=codex`.
+No global install. Always invoke through `npx`. This is shorthand for `npx --yes --package oh-my-openagent omo install --platform=codex`.
 
-> This is the "Codex Light setup": the installer wires the Codex marketplace plugin as `omo@sisyphuslabs`, while the public `lazycodex-ai` package stays the alias/entrypoint you invoke.
+> This is the Codex light setup: Agent Roles, Commands, hooks, Skills, model routing, and verification defaults.
 
-## The Codex platform target
+## Codex Target
 
-LazyCodex always targets Codex. The `--platform=codex` argument is baked into the `install` path of the `lazycodex-ai` bin, so the harness is wired for the [OpenAI Codex CLI](https://github.com/openai/codex) rather than any other platform. You do not pass `--platform` yourself.
+LazyCodex always targets Codex. The `--platform=codex` argument is built into the `install` path of the `lazycodex-ai` bin, so the harness connects to [OpenAI Codex CLI](https://github.com/openai/codex), not another platform. You do not pass `--platform` yourself.
 
 ### Prerequisites
 
-- [Bun](https://bun.sh)
-- The [OpenAI Codex CLI](https://github.com/openai/codex)
+- [Node.js](https://nodejs.org): any maintained LTS. `npx` ships with npm, and Bun is not required.
+- [OpenAI Codex CLI](https://github.com/openai/codex) or the Codex app, signed in.
 
-## Install flags
+## Hooks & Lifecycle
 
-<Tabs items={["Interactive", "Autonomous"]}>
+Hooks do not run before approval. On the first run after installation, Codex startup review asks you to approve the omo hooks. After upgrades, plugin files changed and no longer match the previous trust hashes, so hooks appear as **Modified**. Approve them again so the next session can bootstrap the new version.
 
-<Tab value="Interactive">
+## Install Flags
 
-The default installer is interactive (TUI). It detects subscriptions, helps pick models, and walks provider auth.
+<Tabs items={["interactive", "autonomous"]}>
+
+<Tab value="interactive">
+
+The default installer is interactive (TUI). It detects subscriptions, helps choose models, and guides provider authentication.
 
 ```bash
 npx lazycodex-ai install
 ```
 
-It is strongly recommended to let an LLM agent run the install and walk the setup — it handles subscription detection, model selection, and provider auth automatically.
+The recommended path is to let an LLM agent run the install and setup: it handles subscription detection, model selection, and provider authentication for you.
 
 </Tab>
 
-<Tab value="Autonomous">
+<Tab value="autonomous">
 
-For a fully autonomous, no-prompt setup, add both flags:
+For a fully autonomous, no-prompt setup, pass both flags:
 
 ```bash
 npx lazycodex-ai install --no-tui --codex-autonomous
 ```
 
-`--no-tui --codex-autonomous` are passed together for a fully autonomous, no-prompt setup. The `lazycodex-ai` bin does not interpret them — any flags after `install` are forwarded verbatim to `omo install`, which assigns their meaning.
+`--no-tui --codex-autonomous` are forwarded together for fully autonomous setup. The `lazycodex-ai` bin does not interpret these flags; every flag after `install` is passed through to `omo install`, which gives them meaning.
 
 </Tab>
 
 </Tabs>
 
-## Provider and model setup
+## Provider & Model Settings
 
-Provider and model configuration is owned by OmO, not LazyCodex. During install, OmO asks which model subscriptions you have and routes each task category accordingly — this is the multi-model routing layer.
+Provider and model setup is owned by OmO, not LazyCodex. During installation, OmO aligns model profiles from Codex configuration and the bundled `model-catalog.json`; this is the model routing layer.
 
-- The installer wires up provider auth for you. Letting an agent run it is the recommended path.
-- Provider keys are read from your environment. Treat every `*_API_KEY` and OAuth credential as a secret — never log or commit them.
-- Beyond install, deeper provider/model tuning follows OmO conventions. See the OmO documentation for its provider environment variables and model resolution rules.
+- The installer connects provider authentication. Letting an agent run it is the recommended path.
+- Provider keys are read from the environment. Treat all `*_API_KEY` and OAuth credentials as secrets; never log or commit them.
+- Deeper provider/model tuning beyond installation follows OmO conventions. Refer to OmO docs for provider env vars and model interpretation rules.
 
-> Do not invent provider keys. Use the keys your chosen providers document, supplied through your environment, and let the installer resolve routing.
+> Do not invent provider keys. Supply the keys documented by the provider you chose, and let the installer interpret routing.
 
-## See also
+## Doctor
+
+If anything looks pending or degraded, run:
+
+```bash
+npx lazycodex-ai doctor
+```
+
+It checks plugin cache, hooks, MCP Servers, Agent Roles, and Codex config state in a health report. It explains what is misconfigured, why, and which field or component to fix.
+
+## Related
 
 <Cards>
   <Card title="CLI" href="/docs/reference/cli">How `lazycodex-ai` forwards to OmO, and `--dry-run`.</Card>
-  <Card title="Model routing" href="/docs/concepts/model-routing">Why different GPT models appear per task category.</Card>
+  <Card title="Model Routing" href="/docs/concepts/model-routing">How LazyCodex manages model profiles.</Card>
 </Cards>

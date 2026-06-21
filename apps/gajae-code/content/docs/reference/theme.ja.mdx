@@ -7,14 +7,14 @@ Gajae-Code（`gjc`）は JSON カラートークンで駆動するテーマ化 T
 
 ## 既定テーマ
 
-既定のダークテーマは `red-claw` です — GJC の甲殻類ルックで、赤/オレンジのブランドトークン、独立した意味的 error/warning/diff-removal トークン、カニ志向のシンボル上書きを持ちます。
+既定のダークテーマは `red-claw` です。暖かい red-claw アクセントと強いステータスコントラストを持つ GJC 既定のダークテーマです。ライト外観の端末では `blue-crab` が既定です。
 
 設定スキーマの既定値：
 
 | 設定 | 既定 |
 | --- | --- |
 | `theme.dark` | `red-claw` |
-| `theme.light` | `light` |
+| `theme.light` | `blue-crab` |
 | `symbolPreset` | `unicode` |
 | `colorBlindMode` | `false` |
 
@@ -39,10 +39,20 @@ Gajae-Code（`gjc`）は JSON カラートークンで駆動するテーマ化 T
 
 検索順：
 
-1. 組み込み埋め込みテーマ（`dark.json`、`light.json`、および `red-claw` を含む全バンドルの `defaults/*.json`）。
+1. 組み込み埋め込みテーマ（`red-claw`、`blue-crab`、`claude-code`、`codex`、`opencode`、legacy dark/light テーマ）。
 2. カスタムテーマファイル：`<customThemesDir>/<name>.json`。
 
 カスタムテーマディレクトリの既定は `~/.gjc/agent/themes` で、`GJC_CODING_AGENT_DIR`（`$GJC_CODING_AGENT_DIR/themes`）で上書きできます。名前衝突時は組み込みが優先されます。
+
+## バンドルテーマ
+
+| テーマ | 向いている用途 |
+| --- | --- |
+| `red-claw` | ダーク端末での GJC ネイティブ identity。 |
+| `blue-crab` | ライト端末または OS のライト外観。 |
+| `claude-code` | GJC を離れず Claude Code の感覚を保つ。 |
+| `codex` | Codex 風のダークワークスペース。 |
+| `opencode` | OpenCode の感覚をバンドル picker で使う。 |
 
 ### カスタムテーマを作る
 

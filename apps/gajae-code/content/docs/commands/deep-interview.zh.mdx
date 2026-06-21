@@ -1,0 +1,44 @@
+---
+title: deep-interview
+description: 在规划或改动代码前消除歧义的厘清 skill —— 真正的 bug 或功能、影响范围、非目标、验收标准。
+---
+
+`deep-interview` 是[工作循环](/zh/docs/commands)的第一步。它在规划或改动代码前消除歧义，让后续流程建立在清晰、达成一致的理解之上，而非猜测。
+
+## 它厘清什么
+
+在画出计划或改动文件之前，`deep-interview` 确定：
+
+- **真正的 bug 或功能** —— 把实际要求与最初的措辞分开。
+- **影响范围** —— 哪些用户可见行为或系统行为在范围内。
+- **非目标** —— 明确不在范围内的部分，避免工作蔓延。
+- **验收标准** —— 如何判断工作完成且正确。
+
+## 用法
+
+在 GJC 会话中用 `/skill:<name>` 调用：
+
+```text
+/skill:deep-interview clarify the bug, affected behavior, non-goals, and acceptance checks
+```
+
+用自己的话描述问题；skill 会提出必要的问题，把模糊的请求变得足够具体以便规划。
+
+可用 `--quick`、`--standard`、`--deep` 调节访谈深度：
+
+```text
+/skill:deep-interview --deep <vague idea>
+```
+
+## 何时使用
+
+- **使用**：请求模糊、影响范围不清、bug 报告不完整，或功能存在从未说明的隐含约束时。
+- **跳过**：任务已完全明确且较小，没有需要消歧的内容时。
+
+## 在循环中的位置
+
+```text
+deep-interview -> ralplan -> ultragoal
+```
+
+`deep-interview` 把厘清后的问题陈述交给 [`ralplan`](/zh/docs/commands/ralplan)，由它在任何变更前转为评审过的计划。跳过厘清，往往会在 [`ultragoal`](/zh/docs/commands/ultragoal) 阶段以返工的形式暴露——当发现与从未核实的假设相矛盾时。

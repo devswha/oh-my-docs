@@ -1,0 +1,57 @@
+---
+title: FAQ
+description: Short answers about Gajae-Code install, gjc, tmux, providers, workflows, rlm, team, computer-use, and limits.
+---
+
+Start with the section that matches where you are stuck: **Install and environment** for setup, **First use** for choosing the first command, and **Running and limits** for longer sessions.
+
+## Install and Environment
+
+<section className="not-prose my-6 divide-y divide-fd-border rounded-lg border border-fd-border bg-fd-card">
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>What is Gajae-Code?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">Gajae-Code is the <code>gjc</code> coding-agent harness: a small public workflow surface wrapped around sessions, tmux, model routing, tools, and evidence.</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>How do I install it?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">Use <code>bun install -g gajae-code</code>. The package installs the <code>gjc</code> binary. The scoped package is also available as <code>@gajae-code/coding-agent</code>.</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>Do I need tmux?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">Not for bare <code>gjc</code>, but the recommended path is <code>gjc --tmux</code>. The <code>team</code> command expects a tmux session.</p>
+  </details>
+</section>
+
+## First Use
+
+<section className="not-prose my-6 divide-y divide-fd-border rounded-lg border border-fd-border bg-fd-card">
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>Which flow should I learn first?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">Learn the loop: <code>deep-interview</code> for clarity, <code>ralplan</code> for the reviewed plan, and <code>ultragoal</code> for durable execution and evidence.</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>When should I use rlm?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">Use <code>gjc rlm</code> for exploratory research instead of code mutation. It writes notebook and report artifacts under <code>.gjc/_session-&lt;gjcSessionId&gt;/rlm/&lt;rlmSessionId&gt;/</code>.</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>Is team required?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">No. <code>team</code> is optional and useful only when parallel tmux workers genuinely help. Single-threaded work can stay in the normal loop.</p>
+  </details>
+</section>
+
+## Running and Limits
+
+<section className="not-prose my-6 divide-y divide-fd-border rounded-lg border border-fd-border bg-fd-card">
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>How do provider credentials resolve?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground"><code>gjc</code> checks CLI API keys, stored API keys, stored OAuth credentials, environment variables, then <code>models.yml</code> <code>apiKey</code>. Keep secrets out of committed files.</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>What does computer-use require?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">The experimental computer tool is available by default on supported Apple Silicon macOS hosts, supervisor-gated, and can be disabled with <code>computer.alwaysOn=false</code>.</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>Where should I look for command details?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">Use <a href="/docs/commands">Commands</a> for the workflow commands and <a href="/docs/reference/cli">CLI Reference</a> for launch, setup, research, team, and ultragoal command shapes.</p>
+  </details>
+</section>

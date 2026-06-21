@@ -1,0 +1,41 @@
+---
+title: 推荐环境
+description: 第一次 gjc 会话前建议准备的 shell、Bun、tmux、Git、provider 与操作系统环境。
+---
+
+Gajae-Code 是终端优先的 coding-agent harness。安装前，请确认 shell 能运行 Bun，目标仓库由 Git 管理，并且至少能认证一个模型 provider。
+
+## 操作系统
+
+| OS | 建议 | 说明 |
+| --- | --- | --- |
+| macOS | 推荐 | 适合本地开发。Apple Silicon macOS 也是实验性 `computer-use` 工具的受支持主机。 |
+| Linux | 推荐 | 适合 tmux 终端会话、接近 CI 的 shell 与远程开发。 |
+| Windows | 尽量使用 WSL2 | 部分终端流程可在原生 Windows 上运行，但 tmux 与 shell 行为通常在 WSL2 中更顺。 |
+
+## 安装前检查
+
+| 检查 | 推荐状态 |
+| --- | --- |
+| Bun | 已安装并在 `PATH` 中；文档中的安装命令是 `bun install -g gajae-code`。 |
+| Git | 在 Git 仓库中开始，便于审查 diff、worktree 与 checkpoint。 |
+| tmux | 如果要使用推荐的 `gjc --tmux` 体验或 `team`，请先安装。 |
+| Provider 认证 | 选择模型前准备 API key、OAuth 凭据或 provider preset。 |
+| Secrets | 将密钥放在 shell、`~/.gjc/agent/.env` 或其他 private env 文件中，不要提交。 |
+
+先检查基础工具：
+
+```bash
+bun --version
+git --version
+tmux -V
+```
+
+## 作者的主观建议
+
+- **从 Git checkout 开始。** Gajae-Code 在能读取真实 diff 并隔离风险工作时最有用。
+- **首次使用 `gjc --tmux`。** tmux 路径给 team execution 与长任务提供稳定终端表面。
+- **清楚设置一个 provider。** 在试验 model routing 前，先 export 一个 provider key 或添加一个 preset。
+- **Windows-heavy 环境请用 WSL2。** tmux、shell 路径和项目文件行为会更接近文档流程。
+
+第一次运行请继续阅读[快速开始](/zh/docs/getting-started)。

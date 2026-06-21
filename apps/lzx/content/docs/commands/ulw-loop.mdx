@@ -1,11 +1,11 @@
 ---
 title: $ulw-loop
-description: A self-referential loop that keeps working until an Oracle verifies the result is actually done.
+description: Uses .omo/ulw-loop state and an evidence ledger to continue until goals are verified.
 ---
 
-`$ulw-loop` is LazyCodex's persistence command. It runs a self-referential development loop that does not stop on a hopeful status update — it stops only when an Oracle has verified the result against evidence.
+`$ulw-loop` is LazyCodex's persistence command. It keeps working until the result is verified by evidence captured from real usage surfaces, not by hopeful status reports.
 
-Use it when the task is open-ended and you want completion judged by proof, not by the agent declaring victory.
+Use it when the work is open-ended and you want completion judged by evidence instead of the agent's own "done" declaration.
 
 ## Syntax
 
@@ -13,75 +13,83 @@ Use it when the task is open-ended and you want completion judged by proof, not 
 $ulw-loop "task description" [--completion-promise=TEXT] [--strategy=reset|continue]
 ```
 
-| Part | Meaning |
+| Component | Meaning |
 | --- | --- |
-| `"task description"` | The outcome to drive toward. State the result you want, not the steps. |
-| `--completion-promise=TEXT` | The exact phrase the agent must emit when it believes the work is done. |
-| `--strategy=reset` | Start each iteration from a clean slate. |
-| `--strategy=continue` | Carry context forward across iterations. |
+| `"task description"` | The result to reach. Describe the desired outcome, not the steps. |
+| `--completion-promise=TEXT` | Compatibility syntax. Use it when a specific promise must be satisfied before completion. |
+| `--strategy=reset` | Compatibility syntax. Use it when the loop should restart from fresh state. |
+| `--strategy=continue` | Compatibility syntax. Use it when state should carry across iterations. |
 
-## How it works
+Runtime state is stored under `.omo/ulw-loop`.
 
-The loop is deliberately not allowed to end on the agent's own say-so.
+| File | Role |
+| --- | --- |
+| `.omo/ulw-loop/brief.md` | Original request and continuing constraints |
+| `.omo/ulw-loop/goals.json` | Goals and success criteria |
+| `.omo/ulw-loop/ledger.jsonl` | Evidence ledger for pass, fail, block, steering, checkpoint |
+
+## How It Works
+
+The loop is intentionally designed so the agent cannot end it by self-report alone.
 
 <Steps>
 
 <Step>
 
-### Work continuously
+### It Keeps Working
 
-The agent plans, executes, and gathers evidence — the same outcome-first, evidence-driven discipline that the `ultrawork` mode enforces.
-
-</Step>
-
-<Step>
-
-### Emit the completion promise
-
-When the agent believes the task is finished, it emits `<promise>DONE</promise>` (or your `--completion-promise` text). This signals intent — it does **not** end the loop.
+The agent breaks the goal into criteria, plans the needed work, and gathers evidence. The latest flow uses internal CLI state such as `omo ulw-loop create-goals`, `complete-goals`, `record-evidence`, and `checkpoint`.
 
 </Step>
 
 <Step>
 
-### Oracle verifies
+### It Emits Completion Promises
 
-An Oracle reviews the result against the evidence. The loop ends only after the system confirms the Oracle verified it.
+Even when the agent thinks the work is done, that is only an intent signal. It does **not** end the loop. Each success criterion needs observable evidence.
 
 </Step>
 
 <Step>
 
-### Continue on failure
+### Oracle Verifies
 
-If verification fails, the loop keeps going with the message: _"Oracle verification failed. Continuing ULTRAWORK loop."_
+The verifier reviews the result against the evidence. Tests alone are not enough; real-surface evidence matters: HTTP calls, tmux transcripts, browser screenshots, computer-use logs, CLI stdout, and data diffs.
+
+</Step>
+
+<Step>
+
+### It Continues on Failure
+
+If verification fails, the loop retries the criterion or records the failure/block in the ledger and moves to the next decision.
 
 </Step>
 
 </Steps>
 
-## Iteration limits
+## Failure Limits
 
-The loop is bounded so it cannot run forever:
+The latest workflow has limits so the loop does not run forever.
 
-| Mode | Iteration cap |
+| Condition | Limit |
 | --- | --- |
-| ultrawork mode | 500 |
-| normal mode | 100 |
+| Repeats on one goal without a full pass | 5 cycles |
+| Same failure on the same criterion | 3 times |
 
-## When to use it
+## When To Use It
 
-- The task is **open-ended** — "make the flaky test suite pass," "get the build green," "land this migration."
-- You want completion judged by **evidence**, not by a status report.
-- You are willing to let the agent keep iterating until the Oracle signs off.
+- The work is **open-ended**: "make the flaky test suite pass", "make the build green", "finish this migration".
+- You want completion judged by **evidence**, not status reports.
+- You want the agent to keep iterating until the verifier approves.
 
-For decision-heavy work that needs a plan before code, reach for `$ulw-plan` instead. To execute an existing plan to the last checkbox, use `$start-work`.
+Use `$ulw-plan` when the work needs decisions before code. Use `$start-work` when a written plan should be executed to the last checkbox.
 
-## Related
+## Related Docs
 
 <Cards>
 <Card title="$ulw-plan" href="/docs/commands/ulw-plan" />
 <Card title="$start-work" href="/docs/commands/start-work" />
-<Card title="The ultrawork loop" href="/docs/concepts/ultrawork" />
-<Card title="Discipline agents" href="/docs/concepts/discipline-agents" />
+<Card title="Ultrawork Loop" href="/docs/concepts/ultrawork" />
+<Card title="Agent Roles" href="/docs/concepts/discipline-agents" />
 </Cards>

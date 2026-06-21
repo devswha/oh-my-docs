@@ -80,24 +80,25 @@ If `/start-work` reports no active plan, create a Prometheus plan first or clear
 | Planning | Self-plans while executing. | Uses Prometheus plans or autonomous exploration. |
 | Delegation | Leans on Explore and Librarian for context. | Uses category-based workers and specialists. |
 
-Default to `ulw`. Switch to Hephaestus when you specifically want GPT-5.4-style deep reasoning.
+Default to `ulw`. Switch to Hephaestus when you specifically want GPT-5.5-style deep reasoning.
 
 ## Installation as an Agent Task
 
 The upstream README recommends letting an agent install OmO. When you delegate the install, the agent should:
 
 1. Ask which subscriptions and providers you have.
-2. Run `bunx oh-my-openagent install --no-tui ...` with matching flags.
-3. Guide `opencode auth login` in an interactive terminal when needed.
-4. Run `bunx oh-my-openagent doctor`.
-5. Explain model setup and safe overrides.
+2. Ask which harness you want: Ultimate/OpenCode, Light/Codex CLI, or both.
+3. Run `bunx oh-my-openagent install --no-tui ...` for Ultimate, `npx lazycodex-ai install --no-tui --codex-autonomous` for Light, or `bunx oh-my-openagent install --platform=both` for both.
+4. Guide `opencode auth login` in an interactive terminal when Ultimate needs provider auth.
+5. Run `bunx oh-my-openagent doctor` for Ultimate or `npx lazycodex-ai doctor` for Light.
+6. Explain model setup and safe overrides.
 
 The agent should never silently change model settings or disable hooks/MCPs.
 
 ## Model Rule of Thumb
 
-- Sisyphus runs best on Claude Opus, Kimi K2.5, or GLM 5 style models.
-- Hephaestus, Oracle, and Momus are GPT-friendly or GPT-native.
+- Sisyphus runs best on Claude Opus, Kimi K2.6, or GLM 5 style models.
+- Hephaestus, Oracle, and Momus are GPT-friendly or GPT-native; current upstream examples call out GPT-5.5 for the GPT-backed lanes.
 - Visual engineering benefits from Gemini-style frontend reasoning.
 - Explore and Librarian should stay fast and cheap.
 - `fallback_models` and runtime fallback move past failures instead of stopping the workflow.

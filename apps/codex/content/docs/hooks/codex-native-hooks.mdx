@@ -3,13 +3,19 @@ title: "Codex-Native Hooks"
 description: "How OMX uses the Codex CLI native hook interface directly, and the boundary between native coverage and runtime fallback."
 ---
 
-Codex CLI reads registrations from `.codex/hooks.json` and invokes external handlers at defined lifecycle points when `[features] codex_hooks = true` is set in `.codex/config.toml`. OMX uses this interface directly rather than wrapping the Codex binary in a shell script.
+Codex CLI reads hook registrations from the plugin hook surface or from `.codex/hooks.json`, depending on the install path. Current setup-owned fallback config enables `[features].hooks = true` and `[features].goals = true`; legacy `codex_hooks` remains only as a migration alias. Plugin installs that support official plugin-scoped hooks use `[features].plugin_hooks = true`.
 
 ## Installation structure
 
-`omx setup` writes two files.
+For plugin installs on Codex versions with plugin-scoped hook support, the packaged plugin owns hook registration:
 
-- `.codex/config.toml` — enables `codex_hooks`
+- `plugins/oh-my-codex/.codex-plugin/plugin.json` points Codex at `./hooks/hooks.json`
+- `plugins/oh-my-codex/hooks/hooks.json` registers OMX lifecycle hook commands with `${PLUGIN_ROOT}`
+- `.codex/config.toml` enables `[features].plugin_hooks = true` and `[features].goals = true`
+
+`omx setup` still owns fallback native Codex artifacts for legacy installs and older Codex versions:
+
+- `.codex/config.toml` — enables `[features].hooks = true` (or legacy `[features].codex_hooks = true` only when that is the available feature) plus `[features].goals = true`
 - `.codex/hooks.json` — registers the OMX handler `dist/scripts/codex-native-hook.js`
 
 User-managed hook entries already present in `.codex/hooks.json` are preserved during installation. `omx uninstall` removes only the OMX-managed entries and leaves user hooks in place.
@@ -22,12 +28,12 @@ The shell wrapper around the Codex binary is still supported via `omx tmux-hook`
 |---|---|---|
 | Session bookkeeping, wiki startup context | `SessionStart` | Native |
 | Keyword detection, skill state seeding | `UserPromptSubmit` | Native |
-| Bash safety checks, commit format guard | `PreToolUse` (Bash only) | Native-partial |
+| Bash safety checks, commit format guard, document-refresh warnings | `PreToolUse` | Native-partial |
 | Command-not-found guidance, exit-code review | `PostToolUse` (Bash only) | Native-partial |
 | Ralph / autopilot / ultrawork / ultraqa continuation | `Stop` | Native-partial |
 | Auto-nudge on stalled turns | `Stop` | Native-partial |
 | Session-end wiki capture, `session-idle` | — | Runtime-fallback |
-| Non-Bash tool interception | — | Runtime-fallback |
+| Non-Bash tool interception when Codex supplies tool events | `PreToolUse` / `PostToolUse` | Native-partial |
 
 "Native-partial" means the native path handles the common case; edge cases fall back to the notify-hook or tmux runtime path.
 
@@ -46,6 +52,8 @@ omx exec --skip-git-repo-check -C . "Reply with exactly OMX-EXEC-OK"
 ```
 
 Plugin dispatch logs are written to `.omx/logs/hooks-YYYY-MM-DD.jsonl`.
+
+Codex CLI `PreToolUse` stdout currently accepts `systemMessage`; internal hook fields are stripped before stdout. Native hooks also treat null output as success, and Windows native hook launch avoids shell wrapping.
 
 ## Related
 

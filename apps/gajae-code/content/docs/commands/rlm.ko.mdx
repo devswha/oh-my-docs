@@ -1,0 +1,48 @@
+---
+title: rlm
+description: 제한된 Python, read, web_search 도구셋으로 노트북식 조사를 수행하는 research/REPL 모드.
+---
+
+`rlm`은 opt-in research/REPL 모드입니다. 일반 coding-agent 루프에서 바로 변경하기보다 탐색, 출처 기반 조사, 반복 분석이 필요할 때 사용합니다.
+
+![노트북식 research 모드를 나타내는 Gajae-Code 과학자 마스코트](/images/docs/commands-rlm.png)
+
+```bash
+gjc rlm
+```
+
+## 하는 일
+
+`rlm`은 agent 루프 위에서 노트북식 연구 세션을 실행합니다. 공유 영속 Python 커널과 제한된 research 도구셋을 사용합니다:
+
+- `python`
+- `read`
+- `web_search`
+- `search_tool_bm25`
+- 조사 명령용 read-only `bash` (`grep`, `rg`, `tree`, `ls`, `pwd`, `wc`, `du`, `file`, `stat`)
+- `goal`
+- `complete_research`
+
+실행 결과는 다음 위치에 모입니다:
+
+```text
+.gjc/_session-<gjcSessionId>/rlm/<rlmSessionId>/notebook.ipynb
+```
+
+종료 시 다음 보고서를 합성합니다:
+
+```text
+.gjc/_session-<gjcSessionId>/rlm/<rlmSessionId>/report.md
+```
+
+## 언제 쓰나
+
+출처를 비교하고, 작은 Python 실험을 돌리고, 중간 셀을 남기고, 최종 보고서까지 보존해야 하는 조사라면 `rlm`을 쓰세요. 구현, 리뷰, `deep-interview`/`ralplan`/`team`/`ultragoal` 실행은 일반 `gjc` 루프에 남겨두는 편이 맞습니다.
+
+## 관련
+
+<Cards>
+  <Card title="런타임 도구" href="/ko/docs/reference/tools/runtime" />
+  <Card title="워크플로우" href="/ko/docs/commands" />
+  <Card title="사용 사례" href="/ko/docs/guides" />
+</Cards>

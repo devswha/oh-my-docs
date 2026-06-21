@@ -1,0 +1,62 @@
+---
+title: Computer use
+description: Gajae-Code의 네이티브 supervisor 기반 computer 도구로 Apple Silicon macOS 화면 캡처와 입력 제어를 실험적으로 수행합니다.
+---
+
+`computer`는 Apple Silicon macOS용 실험적 데스크톱 제어 도구입니다. 실제 데스크톱을 제어하므로, 작업에 스크린샷이나 입력 제어가 정말 필요할 때만 사용합니다.
+
+![데스크톱 제어 computer use를 나타내는 Gajae-Code 오퍼레이터 마스코트](/images/docs/reference-tools-computer-use.png)
+
+## 사용 가능 조건
+
+지원 호스트에서는 기본적으로 호출 및 discover가 가능합니다:
+
+1. Apple Silicon macOS (`process.platform === "darwin"` and `process.arch === "arm64"`).
+2. `computer.alwaysOn`이 명시적으로 `false`가 아니거나, `computer.enabled`가 `true`.
+
+비활성 또는 미지원 환경에서는 모든 액션이 `COMPUTER_DISABLED`를 반환하고 아무것도 캡처하지 않습니다. 네이티브 실행은 supervisor로 게이트됩니다. supervisor 상태 이상, 권한 없음, stale display, 취소, suspend는 `COMPUTER_*` 코드로 fail closed 됩니다.
+
+## 액션
+
+액션 객체는 정확한 snake_case 판별 스키마를 사용합니다. camelCase 필드는 거부됩니다.
+
+| 액션 | 필수 필드 | 선택 필드 |
+| --- | --- | --- |
+| `screenshot` | 없음 | `timeout`, `include_screenshot` |
+| `click` | `x`, `y` | `button`, `timeout`, `include_screenshot` |
+| `double_click` | `x`, `y` | `button`, `timeout`, `include_screenshot` |
+| `move` | `x`, `y` | `button`, `timeout`, `include_screenshot` |
+| `drag` | `x`, `y`, `to_x`, `to_y` | `button`, `timeout`, `include_screenshot` |
+| `scroll` | `x`, `y`, `scroll_x`, `scroll_y` | `timeout`, `include_screenshot` |
+| `type` | `text` | `timeout`, `include_screenshot` |
+| `keypress` | `keys` | `timeout`, `include_screenshot` |
+| `wait` | `ms` | `timeout`, `include_screenshot` |
+| `batch` | `actions` | `timeout`, `include_screenshot` |
+
+`button`은 `left`, `right`, `middle` 중 하나입니다.
+
+## 좌표 계약
+
+`x`, `y`, `to_x`, `to_y`는 최신 스크린샷 좌표계의 픽셀입니다. CSS 픽셀이나 정규화된 비율이 아닙니다. 네이티브 코드는 입력 전에 디스플레이 최신성 및 좌표를 검증하며, 잘못된 좌표는 `COMPUTER_COORD_INVALID` 또는 `COMPUTER_DISPLAY_STALE`을 반환합니다.
+
+## 오류
+
+안정적인 오류 코드는 다음과 같습니다:
+
+- `COMPUTER_DISABLED`
+- `COMPUTER_SUSPENDED`
+- `COMPUTER_SUPERVISOR_NOT_LIVE`
+- `COMPUTER_PERMISSION_REQUIRED`
+- `COMPUTER_DISPLAY_STALE`
+- `COMPUTER_COORD_INVALID`
+- `COMPUTER_CANCELLED`
+
+TUI 렌더러는 액션 메타데이터, 좌표, 스크린샷 크기, supervisor 상태, 오류 코드만 제한적으로 보여줍니다. 원본 스크린샷 base64는 렌더링하지 않습니다.
+
+## 관련
+
+<Cards>
+  <Card title="런타임 도구" href="/ko/docs/reference/tools/runtime" />
+  <Card title="미디어 도구" href="/ko/docs/reference/tools/media" />
+  <Card title="설정" href="/ko/docs/reference/configuration" />
+</Cards>

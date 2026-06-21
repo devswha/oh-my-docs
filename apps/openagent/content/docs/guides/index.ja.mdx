@@ -1,29 +1,102 @@
 ---
-title: Guides
-description: Choose the right OmO workflow for each kind of work.
+title: 活用ガイド
+description: 作業ごとに適したOmO workflowを選びます。
 ---
 
-## Which Mode Should I Use?
+OmOには複数の入口があります。多くの日はそのうち1つだけで十分です。このページは、どの道を選ぶかの短い地図です。
 
-| Situation | Use | Why |
-|---|---|---|
-| Small fix | Normal prompt | Sisyphus can handle it directly. |
-| Complex but you are lazy | `ultrawork` or `ulw` | OmO explores, delegates, implements, and verifies. |
-| Complex and precise | Prometheus, then `/start-work` | You get an interviewed plan and Atlas-led execution. |
+## Choosing a Workflow
 
-## Recommended First Workflow
+<Cards>
+  <Card title="Normal prompt">小さな修正や直接の質問。最も軽い経路です。</Card>
+  <Card title="Ultrawork (`ulw`)">複雑だが自律的に進めたいとき。Sisyphusが探索、委任、実装、検証、継続を行います。</Card>
+  <Card title="Prometheus + Atlas">複雑で精度が重要なとき。`@plan`で先に固め、`/start-work`でAtlasに渡します。</Card>
+  <Card title="Hephaestus">GPT-native deep reasoning。アーキテクチャ、難しいデバッグ、総合判断に向きます。</Card>
+  <Card title="Category task">狭い実装単位。categoryとskillを指定してfocused Sisyphus-Juniorを起動します。</Card>
+</Cards>
 
-```text
-ultrawork add the missing test coverage for the payment parser
+## Ultrawork
+
+`ulw`は「最後まで処理して」の経路です。目標に加えて、動作を証明するsurfaceも書くと安定します。
+
+```bash
+ulw fix the login error message and verify success/failure in the browser
 ```
 
-For higher control:
+よい`ulw` promptは3つを示します。
 
-```text
+- ユーザーに見える挙動。
+- 証明するsurface: browser、CLI、API、tests、docs build。
+- 触ってはいけない境界。
+
+## Prometheus + Atlas
+
+速度より正確さが大事なときはPrometheusを使います。
+
+<Steps>
+
+<Step>
+
+### Plan with Prometheus
+
+Sisyphus内で`@plan`を入力するか、TabでPrometheusへ切り替えます。
+
+```bash
 @plan migrate the settings page without changing behavior
+```
+
+要件が明確になるまでinterview questionsに答えます。Prometheusは`.sisyphus/plans/`に計画を書きます。
+
+</Step>
+
+<Step>
+
+### Hand off to Atlas
+
+```bash
 /start-work
 ```
 
-## Model Setup Guidance
+</Step>
 
-Sisyphus works best with Claude Opus-class or Claude-like models such as Kimi K2.5 and GLM 5. Hephaestus and Oracle prefer GPT-5.4-class reasoning. Explore and Librarian should stay on fast, cheap models. Do not override models unless you know why.
+<Step>
+
+### Recover if needed
+
+`/start-work`がactive planを見つけられない場合は、先にPrometheus planを作るか、staleな`.sisyphus/boulder.json`を整理します。
+
+</Step>
+
+</Steps>
+
+## Hephaestus vs Sisyphus
+
+| Aspect | Hephaestus | Sisyphus + `ulw` |
+|---|---|---|
+| Model style | GPT-native autonomous deep worker. | categoryとskillで委任するorchestrator。 |
+| Best for | アーキテクチャ、難しいデバッグ、cross-domain reasoning。 | 多くの「任せたい」複雑作業。 |
+| Planning | 実行しながら自己計画します。 | Prometheus plansまたは自律探索を使います。 |
+| Delegation | ExploreとLibrarianで文脈を集めます。 | category workersとspecialistsを使います。 |
+
+基本は`ulw`です。GPT-5.5風の深い推論が明確に必要なときだけHephaestusへ切り替えます。
+
+## Installation as an Agent Task
+
+upstream READMEはagentにOmO installを任せる流れを推奨しています。installを任されたagentは次のように動くべきです。
+
+1. どのsubscriptionsとprovidersがあるかを質問します。
+2. どのharnessを入れるかを質問します: Ultimate/OpenCode、Light/Codex CLI、または両方。
+3. Ultimateは`bunx oh-my-openagent install --no-tui ...`、Lightは`npx lazycodex-ai install --no-tui --codex-autonomous`、両方なら`bunx oh-my-openagent install --platform=both`を実行します。
+4. Ultimateでprovider authが必要なら、interactive terminalで`opencode auth login`を案内します。
+5. Ultimateは`bunx oh-my-openagent doctor`、Lightは`npx lazycodex-ai doctor`を実行します。
+6. model setupと安全なoverridesを説明します。
+
+agentがmodel settingsやhooks/MCPを黙って変更してはいけません。
+
+## Model Rule of Thumb
+
+- SisyphusはClaude Opus、Kimi K2.6、GLM 5系のモデルで安定します。
+- Hephaestus、Oracle、MomusはGPT-friendlyまたはGPT-nativeです。現在のupstream examplesはGPT-backed lanesでGPT-5.5に触れています。
+- Visual engineeringはGemini系frontend reasoningが合います。
+- ExploreとLibrarianは高速で安価に保ちます。
+- `fallback_models`とruntime fallbackは失敗で止まらず先へ進むためのものです。

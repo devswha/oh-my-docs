@@ -1,68 +1,95 @@
 ---
 title: Hooks & Lifecycle
-description: The lifecycle hooks the OmO plugin registers in Codex — rules injection, telemetry, comment checks, and LSP diagnostics.
+description: Lifecycle hooks for rules, bootstrap, diagnostics, and continuation.
 ---
 
-LazyCodex (LZX) ships the OmO plugin with lifecycle hooks that fire at well-defined points in a Codex session. They keep your project rules loaded, surface feedback after edits, and run diagnostics — without you invoking anything by hand. Everything below is registered in the plugin's `hooks.json`.
+LazyCodex (LZX) ships the OmO plugin with lifecycle hooks that fire at fixed points in a Codex session. They keep project rules loaded, check install state, and run feedback and diagnostics after edits. This page reflects the latest `4.12.1` plugin manifest and hook files.
 
-## What fires, when
+## Trigger Matrix
 
-| Event | What fires |
+| Event | What runs |
 |---|---|
-| `SessionStart` | Loads OMO project rules (the [rules](/docs/skills/rules) component), then records [telemetry](#installed-components). |
-| `UserPromptSubmit` | Re-injects OMO project rules, runs the ultrawork detector, and checks ultragoal steering. |
-| `PostToolUse` (edit-like tools) | Runs the [comment-checker](/docs/skills/comment-checker) feedback pass and [LSP](/docs/skills/lsp) diagnostics; for `apply_patch`, also matches project rules. |
-| `PostCompact` (`manual` or `auto`) | Resets the OMO project rule cache so injected rules survive context compaction. |
+| `SessionStart` | Project rules loading, telemetry, auto update check, bootstrap provisioning, CodeGraph bootstrap. |
+| `UserPromptSubmit` | Re-injects project rules, checks the ultrawork trigger, and checks `$ulw-loop` steering. |
+| `PreToolUse` | Gives Git Bash MCP guidance for Bash calls and preserves `$ulw-loop` goal budget constraints. |
+| `PostToolUse` | Runs comment checks, LSP diagnostics, CodeGraph init guidance, `apply_patch` rule matching, and thread title hygiene. |
+| `Stop` / `SubagentStop` | Runs `$start-work` continuation and LazyCodex executor evidence verification. |
+| `PostCompact` | Resets Git Bash reminders, project rules, and LSP diagnostic cache. |
 
 ## SessionStart
 
-When a Codex session begins, two hooks run:
+When a Codex session starts, hooks align the baseline state.
 
-- **Rules** — `rules hook session-start` loads OMO project rules so the agent starts with your `AGENTS.md`, rules, and instruction files already in context.
-- **Telemetry** — `telemetry hook session-start` records that the session started.
+- **Rules**: `rules hook session-start` loads OMO project rules so agents begin with supported rules and instruction files already in context.
+- **Telemetry**: `telemetry hook session-start` records session start.
+- **Auto update**: checks plugin update state.
+- **Bootstrap provisioning**: checks LazyCodex bootstrap state such as plugin cache, config blocks, and bin links.
+- **CodeGraph bootstrap**: checks CodeGraph component initialization.
 
 ## UserPromptSubmit
 
-Every time you submit a prompt, three hooks run in order:
+Three hooks run each time a prompt is submitted.
 
-- **Rules** — `rules hook user-prompt-submit` re-injects OMO project rules so they stay present as the conversation grows.
-- **Ultrawork detector** — a Python hook (`ultrawork/hooks/ultrawork-detector.py`) that detects the `ultrawork` trigger in your prompt.
-- **Ultragoal** — `ultragoal hook user-prompt-submit` checks ultragoal steering.
+- **Rules**: `rules hook user-prompt-submit` re-injects OMO project rules so they survive long conversations.
+- **Ultrawork trigger**: detects `ultrawork` / `ulw` flows in the prompt.
+- **ulw-loop steering**: checks steering state while `$ulw-loop` is continuing.
+
+## PreToolUse
+
+Two helper hooks run before tool calls.
+
+- **Git Bash MCP guidance**: provides Windows/Git Bash MCP guidance when Bash tools are called.
+- **Goal budget protection**: preserves the budget constraints `$ulw-loop` needs when goal creation tools are called.
 
 ## PostToolUse
 
-After edit-like tools run, OmO inspects the result. The matcher targets the edit family:
+After edit-like tools run, OmO inspects the result. The matcher targets edit families:
 
 ```text
 ^(apply_patch|write|Write|edit|Edit|multi_edit|multiedit|MultiEdit)$
 ```
 
-For any match, two hooks run:
+When it matches, two hooks run.
 
-- **comment-checker** — `comment-checker hook post-tool-use` gives feedback on comments you just wrote or changed. See [comment-checker](/docs/skills/comment-checker).
-- **LSP** — `lsp hook post-tool-use` runs language-server diagnostics on the edited code. See [lsp](/docs/skills/lsp).
+- **comment-checker**: `comment-checker hook post-tool-use` gives feedback on comments just written or changed. See [comment-checker](/docs/skills/comment-checker).
+- **LSP**: `lsp hook post-tool-use` runs language-server diagnostics on edited code. See [lsp](/docs/skills/lsp).
 
-A second, narrower matcher (`^apply_patch$`) additionally runs `rules hook post-tool-use` to match project rules against the patch.
+A narrower second matcher (`^apply_patch$`) also runs `rules hook post-tool-use` to match project rules against the patch.
+
+Even non-edit tools can trigger follow-up work. CodeGraph-related tool calls can run CodeGraph init guidance, and thread creation can trigger team mode thread title hygiene.
+
+## Stop / SubagentStop
+
+Continuation hooks also run when a response or child agent stops.
+
+- **start-work continuation**: checks the next state when `$start-work` must continue until the plan is done.
+- **executor evidence verification**: checks whether a finished `lazycodex-executor` child agent provided enough evidence.
 
 ## PostCompact
 
-When Codex compacts context — `manual` or `auto` — `rules hook post-compact` resets the OMO project rule cache. This is what lets injected rules survive compaction instead of being lost when older context is summarized away.
+When Codex compacts context, manually or automatically, OmO resets Git Bash MCP reminders, project rules, and the LSP diagnostic cache. After old context is summarized, the next turn gets fresh guidance and diagnostic state.
 
-## Installed components
+## Installed Components
 
-The hooks above are thin entry points into installed components:
+These hooks are thin entry points into installed components.
 
-| Component | Powers |
+| Component | Responsibility |
 |---|---|
-| `rules` | Project-rule injection at session start, on every prompt, on `apply_patch`, and after compaction. |
-| `telemetry` | Session-start recording. |
+| `rules` | Project rules at session start, prompt submit, `apply_patch`, and after compact. |
+| `bootstrap` | LazyCodex install state and provisioning checks. |
+| `telemetry` | Session start recording. |
 | `comment-checker` | Comment feedback after edit-like tools. |
-| `lsp` | Language-server diagnostics after edit-like tools. |
-| `ultrawork` | The prompt-time ultrawork detector. |
-| `ultragoal` | Ultragoal steering checks on each prompt. |
+| `lsp` | Language-server diagnostics after edit-like tools and cache reset after compact. |
+| `ultrawork` | Ultrawork trigger detection at prompt time. |
+| `ulw-loop` | Loop steering and goal budget protection. |
+| `start-work-continuation` | `$start-work` execution continuation. |
+| `git-bash` | Git Bash MCP guidance for Bash calls and after compact. |
+| `codegraph` | CodeGraph bootstrap and init guidance. |
+| `teammode` | Thread title hygiene. |
+| `lazycodex-executor-verify` | Child-agent evidence verification. |
 
 <Cards>
-  <Card title="rules" href="/docs/skills/rules">Project instructions injected from AGENTS, rules, and instruction files.</Card>
-  <Card title="comment-checker" href="/docs/skills/comment-checker">Feedback on comments after edit-like operations.</Card>
-  <Card title="lsp" href="/docs/skills/lsp">Diagnostics, definitions, references, symbols, and safe renames.</Card>
+  <Card title="rules" href="/docs/skills/rules">Project instructions injected from supported rules and instruction files.</Card>
+  <Card title="comment-checker" href="/docs/skills/comment-checker">Feedback on comments after edit-like work.</Card>
+  <Card title="lsp" href="/docs/skills/lsp">Diagnostics, definitions, references, symbols, and safe rename.</Card>
 </Cards>

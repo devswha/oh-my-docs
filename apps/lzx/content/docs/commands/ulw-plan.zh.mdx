@@ -1,9 +1,11 @@
 ---
 title: $ulw-plan
-description: Prometheus 战略规划器 — 在不编写产品代码的情况下，把想法变成决策完备的计划。
+description: Prometheus 战略规划器：不写产品代码，在 .omo/plans 下写出决策完备的计划。
 ---
 
-`$ulw-plan` 是战略规划顾问（Prometheus）。它把想法变成决策完备的工作计划。它是规划者，**而非**实现者：当你说"做 X"时，它会为 X 生成计划，从不编写产品代码。
+`$ulw-plan` 是 Prometheus 战略规划顾问。它把想法变成决策完备的工作计划。它是规划者，**不是**实现者。你说“做 X”时，它会为 X 创建计划，但绝不编写产品代码。
+
+输出物是 `.omo/drafts/<slug>.md` 和 `.omo/plans/<slug>.md`。draft 保留探索和审批状态，作为可恢复点；plan 是 `$start-work` 可以直接执行的清单。
 
 ## 语法
 
@@ -13,9 +15,9 @@ $ulw-plan "what to build"
 
 ## 何时使用
 
-当工作在实现前需要决策时使用 `$ulw-plan` —— 范围不清、有多种可行方案，或需要在任何人动代码前先排序的横切改动。
+当工作在实现前需要决策时使用 `$ulw-plan`：范围不清、可行方案不止一个，或需要在动代码前先排序的横切改动。
 
-如果你只想要快速答案或小改动，正常提示即可。如果计划已存在，直接跳到 [`$start-work`](/zh/docs/commands/start-work)。
+如果只是快速回答或小改动，正常提示即可。如果计划已经存在，直接进入 [`$start-work`](/zh/docs/commands/start-work)。
 
 ## 流程
 
@@ -25,7 +27,7 @@ $ulw-plan "what to build"
 
 ### 苏格拉底式访谈
 
-Prometheus 在任何规划前提出消除歧义所需的问题。
+Prometheus 会在规划前提出消除歧义所需的问题。
 
 </Step>
 
@@ -33,7 +35,7 @@ Prometheus 在任何规划前提出消除歧义所需的问题。
 
 ### 并行代码库探索
 
-它并行探索相关代码，让计划立足于实际存在的内容。
+它并行探索相关代码，让计划建立在真实存在的代码之上。
 
 </Step>
 
@@ -41,7 +43,7 @@ Prometheus 在任何规划前提出消除歧义所需的问题。
 
 ### Metis 缺口分析
 
-一次缺口分析查找缺失的决策、边界情况和风险。
+它执行缺口分析，寻找缺失的决策、边界情况和风险。
 
 </Step>
 
@@ -49,33 +51,33 @@ Prometheus 在任何规划前提出消除歧义所需的问题。
 
 ### 写出计划
 
-将工作计划写入 `plans/<slug>.md`。
+工作计划会写入 `.omo/plans/<slug>.md`。脚手架脚本创建结构，计划内容写入指定区域。
 
 </Step>
 
 <Step>
 
-### 可选的 Momus 评审
+### 评审与批准
 
-需要额外严谨时可运行一次高准确度评审。
+需要时会经过 Metis/Momus 风格的评审。对于意图不清的任务，planner 可以采用 best-practice 默认值，并自动附加更强评审。没有用户批准，计划不会进入执行阶段。
 
 </Step>
 
 </Steps>
 
-## 你将获得
+## 你会得到什么
 
-问题、调研，以及一份可直接交给 `$start-work` 的、位于 `plans/<slug>.md` 的决策完备工作计划。
+问题、调研，以及一份可直接交给 `$start-work` 的 `.omo/plans/<slug>.md` 决策完备工作计划。
 
 ```bash
 $ulw-plan "migrate the auth service to OAuth with refresh tokens"
-# → 写出 plans/oauth-refresh-tokens.md
+# → 写入 .omo/plans/oauth-refresh-tokens.md
 $start-work
 ```
 
-## 相关
+## 相关文档
 
 <Cards>
   <Card title="$start-work" href="/zh/docs/commands/start-work">逐个复选框执行 Prometheus 写出的计划。</Card>
-  <Card title="命令支柱" href="/zh/docs/commands">$ulw-plan 如何与其他命令组合。</Card>
+  <Card title="Commands" href="/zh/docs/commands">$ulw-plan 如何与其他命令组合。</Card>
 </Cards>

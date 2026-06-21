@@ -1,26 +1,34 @@
 ---
 title: $ulw-loop
-description: 結果が本当に完了したと Oracle が検証するまで止まらない、自己参照ループです。
+description: .omo/ulw-loop 状態と evidence ledger を使い、目標が検証されるまで続くループです。
 ---
 
-`$ulw-loop` は LazyCodex の永続性コマンドです。希望的なステータス報告では止まらず、Oracle が証拠にもとづいて結果を検証したあとにのみ止まる、自己参照型の開発ループを実行します。
+`$ulw-loop` は LazyCodex の永続性コマンドです。希望的な状態報告ではなく、実際の利用表面から取った証拠で結果が検証されるまで作業を続けます。
 
-タスクがオープンエンドで、エージェントの「完了しました」宣言ではなく証拠で完了を判断したいときに使います。
+タスクが開いた形で、エージェント自身の「完了」宣言ではなく証拠で完了を判断したいときに使います。
 
-## 構文
+## Syntax
 
 ```bash
 $ulw-loop "task description" [--completion-promise=TEXT] [--strategy=reset|continue]
 ```
 
-| 要素 | 意味 |
+| Component | 意味 |
 | --- | --- |
-| `"task description"` | 目指す結果。手順ではなく、ほしい結果を書きます。 |
-| `--completion-promise=TEXT` | 完了したと判断したときにエージェントが出力すべき正確なフレーズ。 |
-| `--strategy=reset` | 各反復をクリーンな状態から開始します。 |
-| `--strategy=continue` | 反復の間でコンテキストを引き継ぎます。 |
+| `"task description"` | 到達したい結果。手順ではなく、ほしい結果を書きます。 |
+| `--completion-promise=TEXT` | 互換構文。完了前に満たすべき約束テキストを指定するときに使います。 |
+| `--strategy=reset` | 互換構文。新しい状態から繰り返しを始めるときに使います。 |
+| `--strategy=continue` | 互換構文。繰り返しの間で状態を引き継ぐときに使います。 |
 
-## 仕組み
+実行状態は `.omo/ulw-loop` の下に残ります。
+
+| File | Role |
+| --- | --- |
+| `.omo/ulw-loop/brief.md` | 元の依頼と継続する制約 |
+| `.omo/ulw-loop/goals.json` | 目標と成功基準 |
+| `.omo/ulw-loop/ledger.jsonl` | pass、fail、block、steering、checkpoint の証拠台帳 |
+
+## How It Works
 
 このループは、エージェント自身の判断だけでは終われないよう意図的に設計されています。
 
@@ -28,60 +36,60 @@ $ulw-loop "task description" [--completion-promise=TEXT] [--strategy=reset|conti
 
 <Step>
 
-### 継続的に作業する
+### It Keeps Working
 
-エージェントは計画・実行し、証拠を集めます。`ultrawork` モードが強制するのと同じ、結果優先・証拠駆動の規律です。
-
-</Step>
-
-<Step>
-
-### 完了の約束を出力する
-
-タスクが終わったと判断すると、エージェントは `<promise>DONE</promise>`（または `--completion-promise` のテキスト）を出力します。これは意図のシグナルであり、ループを終わらせ**ません**。
+エージェントは目標を成功基準へ分解し、必要な作業を計画し、証拠を集めます。最新の流れでは `omo ulw-loop create-goals`、`complete-goals`、`record-evidence`、`checkpoint` などの内部 CLI 状態を使います。
 
 </Step>
 
 <Step>
 
-### Oracle が検証する
+### It Emits Completion Promises
 
-Oracle が証拠にもとづいて結果をレビューします。システムが Oracle の検証を確認したあとにのみ、ループが終了します。
+作業が終わったと判断しても、それは意図のシグナルにすぎず、ループを終わらせ**ません**。各成功基準には観測可能な証拠が必要です。
 
 </Step>
 
 <Step>
 
-### 失敗時は継続する
+### Oracle Verifies
 
-検証に失敗すると、ループは次のメッセージとともに継続します。_"Oracle verification failed. Continuing ULTRAWORK loop."_
+検証者は証拠をもとに結果をレビューします。テストだけでは十分ではなく、HTTP 呼び出し、tmux transcript、ブラウザ screenshot、computer-use log、CLI stdout、data diff など、実際の表面の証拠が必要です。
+
+</Step>
+
+<Step>
+
+### It Continues on Failure
+
+検証に失敗すると、同じ基準を再実行するか、失敗・ブロック状態を ledger に記録して次の判断へ進みます。
 
 </Step>
 
 </Steps>
 
-## 反復回数の上限
+## Failure Limits
 
-ループが無限に走らないよう上限があります。
+最新ワークフローは無限に回らないよう失敗上限を持ちます。
 
-| モード | 反復上限 |
+| Condition | Limit |
 | --- | --- |
-| ultrawork モード | 500 |
-| 通常モード | 100 |
+| 1 つの goal で全体通過なしに繰り返す | 5 cycles |
+| 同じ criterion の同じ失敗 | 3 回 |
 
-## いつ使うか
+## When To Use It
 
-- タスクが**オープンエンド**なとき —「不安定なテストスイートを通す」「ビルドをグリーンにする」「このマイグレーションを完了させる」。
-- 完了をステータス報告ではなく**証拠**で判断したいとき。
-- Oracle が承認するまでエージェントに反復を任せたいとき。
+- 作業が**開いた形**のとき: 「不安定なテストスイートを通す」「ビルドをグリーンにする」「このマイグレーションを終える」。
+- 完了を状態報告ではなく**証拠**で判断したいとき。
+- 検証者が承認するまでエージェントに反復を任せたいとき。
 
-コードの前に意思決定の計画が必要な作業には `$ulw-plan` を使います。既存の計画を最後のチェックボックスまで実行するには `$start-work` を使います。
+コード前に計画が必要な判断中心の作業には `$ulw-plan` を使います。作成済みの計画を最後のチェックボックスまで実行するには `$start-work` を使います。
 
-## 関連ドキュメント
+## Related Docs
 
 <Cards>
 <Card title="$ulw-plan" href="/ja/docs/commands/ulw-plan" />
 <Card title="$start-work" href="/ja/docs/commands/start-work" />
-<Card title="ultrawork ループ" href="/ja/docs/concepts/ultrawork" />
-<Card title="規律エージェント" href="/ja/docs/concepts/discipline-agents" />
+<Card title="Ultrawork Loop" href="/ja/docs/concepts/ultrawork" />
+<Card title="Agent Roles" href="/ja/docs/concepts/discipline-agents" />
 </Cards>

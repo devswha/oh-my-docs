@@ -1,0 +1,56 @@
+---
+title: Commands
+description: deep-interview、ralplan、rlm、team、ultragoal の command surface。
+---
+
+Gajae-Code は公開エージェント面を意図的に小さく保ちます。膨大なスキル群を持たず、4 つのデフォルトワークフロースキルを提供し、この 1 つの手法をより良くすることで進化します。スキルは GJC セッション内で `/skill:<name>` で呼び出します。
+
+## 4 つのワークフロースキル
+
+| スキル                                                | 役割                                       |
+| ----------------------------------------------------- | ------------------------------------------ |
+| [`deep-interview`](/ja/docs/commands/deep-interview) | 計画やコード変更の前に曖昧さを取り除く。   |
+| [`ralplan`](/ja/docs/commands/ralplan)               | 変更前に計画を立て批評する。               |
+| [`team`](/ja/docs/commands/team)                     | 複数ワーカーが有益なとき tmux 並列実行を調整する。 |
+| [`ultragoal`](/ja/docs/commands/ultragoal)           | 目標を実装・改訂・検証・証拠まで追跡する。 |
+
+`rlm` は 4 つのデフォルトワークフロースキルとは別です。通常の coding-agent ループではなく research/REPL セッションが必要なとき、`gjc rlm` で開始します。
+
+## 動作ループ
+
+スキルは 1 つの有用なループを構成します：
+
+```text
+deep-interview -> ralplan -> ultragoal
+                         └─ 並列 tmux ワーカーが役立つときのみ team を実行
+```
+
+`deep-interview` で意図を明確化し、`ralplan` でアプローチを批評し、`ultragoal` で実装・改訂・検証・証拠のまとめまで進めます。`team` はタスクが協調並列ワーカーで有益なときのみ追加します — 必須ステップではなく任意の実行モードです。
+
+<Cards>
+  <Card title="rlm" href="/ja/docs/commands/rlm">
+    制限された Python、read、web_search でノートブック形式の調査を実行します。
+  </Card>
+</Cards>
+
+## 一連の操作パス
+
+```text
+/skill:deep-interview clarify the bug, affected behavior, non-goals, and acceptance checks
+/skill:ralplan turn the clarified bug report into a reviewed fix plan
+gjc ultragoal create-goals --brief-file <approved-plan>
+# 並列作業のときのみ任意：
+gjc team 2:executor "split implementation and verification for this bug fix"
+gjc ultragoal complete-goals
+```
+
+これは隠れた自動化ではなく操作シーケンスを説明します。エージェントは何を変え、何を改訂し、どの検査を実行し、どの証拠が修正を裏付けるかを報告します。
+
+## スキルを支えるエージェント
+
+ワークフロースキルは 4 つのバンドルされたロール [エージェント](/ja/docs/skills) に依存します：
+
+- [`executor`](/ja/docs/skills/executor) — 範囲を限定した実装・修正・リファクタリング。
+- [`architect`](/ja/docs/skills/architect) — 読み取り専用のアーキテクチャ・コードレビュー評価。
+- [`planner`](/ja/docs/skills/planner) — 読み取り専用のシーケンスと受け入れ基準。
+- [`critic`](/ja/docs/skills/critic) — 読み取り専用の計画批評と実行可能性レビュー。

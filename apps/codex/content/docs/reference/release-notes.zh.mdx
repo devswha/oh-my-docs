@@ -5,6 +5,25 @@ description: "包含用户影响、兼容性、验证证据与上游链接的 OM
 
 [变更日志](/zh/docs/reference/changelog) 是简短摘要。需要了解最近版本的实际影响、是否需要迁移、以及发布前验证证据时，请阅读本页。
 
+## v0.18.14 — Routing diagnostics, safer goals, hook/HUD hardening
+
+[上游发布说明](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/release-notes-0.18.14.md) · [CHANGELOG 条目](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#01814---2026-06-20) · [发布准备证据](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/qa/release-readiness-0.18.14.md) · [Compare](https://github.com/Yeachan-Heo/oh-my-codex/compare/v0.18.13...v0.18.14)
+
+### User impact
+
+- Per-agent overrides 和 launch diagnostics 让 agent/model routing 更容易检查。
+- Codex goal cleanup、Ralplan freshness/approval、supervised Autopilot rework、Ultragoal architecture invariant handling 让 goal/planning workflows 更安全。
+- Plugin setup、native hooks、HUD、Team、tmux paste buffers、worker AGENTS guidance 更好地保留 local state，并降低 ambiguous failures。
+- `omx doctor` 会展示 root-owned repo artifacts，resume discovery 包含 madmax run histories。
+
+### Compatibility
+
+从 `0.18.13` 升级通常不需要迁移。现有 CLI、plugin、native-agent、HUD、state、hook、package layout、runtime contracts 保持兼容。
+
+### Verification noted upstream
+
+upstream 记录了 version sync、build、native-agent verification、plugin mirror/bundle checks、catalog docs checks、CLI dogfooding、`npm pack --dry-run`、`git diff --check` 的 readiness evidence。publication-stage proof 由 upstream release workflow 单独追踪。
+
 ## v0.17.0 — Hermes MCP、`$design`、plugin discovery 与 adversarial UltraQA
 
 [上游发布说明](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/release-notes-0.17.0.md) · [CHANGELOG 条目](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#0170---2026-05-12) · [发布准备证据](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/qa/release-readiness-0.17.0.md)

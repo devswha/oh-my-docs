@@ -1,0 +1,65 @@
+---
+title: CLI
+description: launch、provider setup、research、team execution 与 ultragoal 常用的 gjc command 形态。
+---
+
+本页是简短 command reference。第一次运行请看[快速开始](/zh/docs/getting-started)，各 command 的含义请看 [Commands](/zh/docs/commands)。
+
+## Launch
+
+| Command | 用途 |
+| --- | --- |
+| `gjc --tmux` | 启动推荐的 tmux-backed interactive session。 |
+| `gjc` | 不创建或 attach tmux session，直接启动。 |
+| `gjc --tmux --worktree my-task-branch` | 用 branch-like task name 创建或使用 GJC-managed sibling Git worktree。 |
+| `gjc @screenshot.png "What should I change?"` | 带 image input 启动。 |
+
+`--worktree` 不是 filesystem path。如果已有 worktree directory，请先 `cd` 到该目录再运行 `gjc --tmux`。
+
+## Provider setup
+
+```bash
+gjc setup provider --preset minimax
+gjc setup provider --preset minimax-cn
+gjc setup provider --preset glm
+```
+
+在 TUI 中使用：
+
+```text
+/provider add --preset glm
+/provider add zai
+```
+
+模型在 TUI 中用 `/model` 选择，在 CLI 中用 `--model` / `--models` 选择。
+
+## Workflow commands
+
+```text
+/skill:deep-interview clarify the bug, affected behavior, non-goals, and acceptance checks
+/skill:ralplan turn the clarified bug report into a reviewed fix plan
+gjc ultragoal create-goals --brief-file <approved-plan>
+gjc ultragoal complete-goals
+```
+
+只有 parallel tmux workers 有帮助时才使用 `team`。
+
+```bash
+gjc team 2:executor "split implementation and verification for this bug fix"
+```
+
+## Research mode
+
+```bash
+gjc rlm
+```
+
+`rlm` 打开 notebook-style research/REPL loop，并把 artifact 写入 `.gjc/_session-<gjcSessionId>/rlm/<rlmSessionId>/`。
+
+## Auth broker
+
+```bash
+gjc auth-broker
+```
+
+只有当你确实想从 shared host 提供 OAuth refresh token，而不是只留在 local machine 上时，才使用 broker。

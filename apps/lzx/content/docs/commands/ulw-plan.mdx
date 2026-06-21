@@ -1,9 +1,11 @@
 ---
 title: $ulw-plan
-description: Prometheus strategic planner — turn an idea into a decision-complete plan without writing product code.
+description: "Prometheus strategic planner: writes decision-complete plans under .omo/plans without writing product code."
 ---
 
-`$ulw-plan` is the strategic planning consultant (Prometheus). It turns an idea into a decision-complete work plan. It is a planner, **not** an implementer: when you say "do X" it produces a plan for X and never writes product code.
+`$ulw-plan` is the Prometheus strategic planning consultant. It turns an idea into a decision-complete work plan. It is a planner, **not** an implementer. When you ask it to "do X", it creates the plan for X; it never writes product code.
+
+The outputs are `.omo/drafts/<slug>.md` and `.omo/plans/<slug>.md`. The draft preserves exploration and approval state as a resume point, and the plan is the checklist `$start-work` can execute directly.
 
 ## Syntax
 
@@ -11,71 +13,71 @@ description: Prometheus strategic planner — turn an idea into a decision-compl
 $ulw-plan "what to build"
 ```
 
-## When to use it
+## When To Use It
 
-Reach for `$ulw-plan` when the work needs decisions before implementation — an unclear scope, multiple viable approaches, or cross-cutting changes that should be sequenced before anyone touches code.
+Use `$ulw-plan` when the work needs decisions before implementation: unclear scope, several possible approaches, or cross-cutting changes that need sequencing before anyone touches code.
 
-If you just want a quick answer or a small edit, prompt normally. If a plan already exists, jump straight to [`$start-work`](/docs/commands/start-work).
+If you only need a quick answer or a small edit, prompt normally. If a plan already exists, go straight to [`$start-work`](/docs/commands/start-work).
 
-## The flow
+## Flow
 
 <Steps>
 
 <Step>
 
-### Socratic interview
+### Socratic Interview
 
-Prometheus asks the questions needed to remove ambiguity before any planning.
-
-</Step>
-
-<Step>
-
-### Parallel codebase exploration
-
-It explores the relevant code in parallel to ground the plan in what actually exists.
+Prometheus asks the questions needed to remove ambiguity before planning.
 
 </Step>
 
 <Step>
 
-### Metis gap analysis
+### Parallel Codebase Exploration
 
-A gap-analysis pass looks for missing decisions, edge cases, and risks.
-
-</Step>
-
-<Step>
-
-### Write the plan
-
-The work plan is written to `plans/<slug>.md`.
+It explores relevant code in parallel so the plan is grounded in what actually exists.
 
 </Step>
 
 <Step>
 
-### Optional Momus review
+### Metis Gap Analysis
 
-A high-accuracy review pass can be run for extra rigor.
+It runs gap analysis to find missing decisions, edge cases, and risk.
+
+</Step>
+
+<Step>
+
+### Plan Writing
+
+It writes the work plan to `.omo/plans/<slug>.md`. A scaffold script creates the structure; the plan content is added to the designated areas.
+
+</Step>
+
+<Step>
+
+### Review and Approval
+
+When needed, Metis/Momus-style review checks the plan. For unclear work, the planner can choose best-practice defaults and attach stronger review automatically. The plan does not move into execution without user approval.
 
 </Step>
 
 </Steps>
 
-## What you get
+## What You Get
 
-Questions, research, and a decision-complete work plan at `plans/<slug>.md` that you can hand directly to `$start-work`.
+Questions, research, and a decision-complete `.omo/plans/<slug>.md` work plan that can be handed directly to `$start-work`.
 
 ```bash
 $ulw-plan "migrate the auth service to OAuth with refresh tokens"
-# → writes plans/oauth-refresh-tokens.md
+# → writes .omo/plans/oauth-refresh-tokens.md
 $start-work
 ```
 
-## Related
+## Related Docs
 
 <Cards>
-  <Card title="$start-work" href="/docs/commands/start-work">Execute the plan Prometheus wrote, checkbox by checkbox.</Card>
-  <Card title="Command pillars" href="/docs/commands">How $ulw-plan composes with the other commands.</Card>
+  <Card title="$start-work" href="/docs/commands/start-work">Executes the plan Prometheus wrote, one checkbox at a time.</Card>
+  <Card title="Commands" href="/docs/commands">How $ulw-plan composes with the other commands.</Card>
 </Cards>

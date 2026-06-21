@@ -22,12 +22,18 @@ The upstream rename is transitional and both packages are still published. Prefe
 |---|---|
 | `bunx oh-my-openagent install` | Interactive installer. |
 | `bunx oh-my-openagent install --no-tui ...` | Non-interactive setup for agent-driven installs. |
+| `bunx oh-my-openagent install --platform=both` | Install both Ultimate/OpenCode and Light/Codex surfaces. |
+| `npx lazycodex-ai install` | Supported Codex Light installer; Bun is not required. |
+| `npx lazycodex-ai install --no-tui --codex-autonomous` | Non-interactive Codex Light install with autonomous Codex permissions. |
+| `npx lazycodex-ai doctor` | Codex Light diagnostics. |
 | `bunx oh-my-openagent doctor` | System, config, tool, and model-resolution diagnostics. |
 | `bunx oh-my-openagent run <message>` | OpenCode session runner with completion enforcement. |
 | `bunx oh-my-openagent get-local-version` | Show installed plugin version and update status. |
 | `bunx oh-my-openagent refresh-model-capabilities` | Refresh the cached model capabilities snapshot from models.dev. |
 | `bunx oh-my-openagent version` | Version information. |
 | `bunx oh-my-openagent mcp oauth login\|logout\|status ...` | OAuth helper for remote MCP servers (PKCE + dynamic client registration). |
+
+Do not use `bunx omo` or `npx omo` for OmO. `omo` is a different npm package name; use `oh-my-openagent` for Ultimate and `lazycodex-ai` for Codex Light.
 
 ## Config Files
 
@@ -94,6 +100,9 @@ If your installed package exposes a renamed schema, use the path reported by `do
 | `--kimi-for-coding=no\|yes` | Kimi for Coding path. |
 | `--vercel-ai-gateway=no\|yes` | Vercel AI Gateway path. |
 | `--skip-auth` | Skip post-install auth guidance. |
+| `--platform=opencode\|codex\|both` | Select Ultimate/OpenCode, Light/Codex, or both from the shared installer. |
+| `--codex-autonomous` | Configure Codex Light for autonomous agent-style permissions. |
+| `--no-codex-autonomous` | Leave Codex permission settings untouched during Light install. |
 
 ## Environment
 
@@ -101,4 +110,6 @@ If your installed package exposes a renamed schema, use the path reported by `do
 |---|---|
 | `OMO_SEND_ANONYMOUS_TELEMETRY=0` | Disable anonymous active-install telemetry. |
 | `OMO_DISABLE_POSTHOG=1` | Disable PostHog telemetry. |
+| `OMO_CODEX_SEND_ANONYMOUS_TELEMETRY=0` | Disable Codex Light active-install telemetry. |
+| `OMO_CODEX_DISABLE_POSTHOG=1` | Disable Codex Light PostHog telemetry. |
 | `OPENCODE_CONFIG_DIR` | Override OpenCode config directory. |

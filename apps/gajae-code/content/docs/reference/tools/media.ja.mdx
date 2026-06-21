@@ -1,0 +1,83 @@
+---
+title: メディア & その他ツール
+description: 図、画像分析、算術、プロジェクトタスクランナー、対話プロンプト —— render_mermaid、inspect_image、calc、recipe、ask。
+---
+
+図、ビジョン、数学、タスクランナー、ユーザーへの質問をカバーする少数のツールです。名称は上流 `docs/tools/` リファレンスと一致します。
+
+## `render_mermaid`
+
+Mermaid ソースを端末向けの ASCII/Unicode テキストへ変換します。名前に反してテキストを生成し、PNG・SVG・ブラウザ・Mermaid CLI は関与せず、レンダリングは `beautiful-mermaid` によりインプロセスで行われます。
+
+| フィールド | 型 | 必須 | 説明 |
+| --- | --- | --- | --- |
+| `mermaid` | `string` | はい | Mermaid ソーステキスト（例: `graph TD; A-->B`）。 |
+| `config` | `object` | いいえ | 使用前にサニタイズされる任意のレンダラーオプション。 |
+
+`config` フィールド: `useAscii`（`true` で純 ASCII、それ以外は Unicode 罫線）、`paddingX`、`paddingY`、`boxBorderPadding`（数値は切り捨てて `>= 0` にクランプ）。
+
+レンダリング結果はインラインで返ります。永続セッションでは完全なテキストが `<id>.render_mermaid.log` 成果物として保存され、結果に `Saved artifact: artifact://<id>` が付きます。Mermaid 構文が無効なら部分出力ではなく呼び出しが失敗します。`renderMermaid.enabled` で制御されます。
+
+## `inspect_image`
+
+ローカル画像ファイルをビジョン対応モデルへ送り、テキスト分析を返します。
+
+| フィールド | 型 | 必須 | 説明 |
+| --- | --- | --- | --- |
+| `path` | `string` | はい | セッション cwd 基準で解決される画像パス。 |
+| `question` | `string` | はい | 画像とともに送るプロンプト。 |
+
+モデル選択は `pi/vision`、`pi/default`、アクティブモデル、最初の利用可能モデルの順に試し、選ばれたモデルは画像入力に対応している必要があります。対応形式は拡張子ではなくファイル**内容**から検出: PNG、JPEG、GIF、WEBP。`20 MiB`（`MAX_IMAGE_INPUT_BYTES`）超のファイルはモデル呼び出し前に拒否されます。
+
+`images.autoResize` が有効なとき、大きい画像は 500 KiB を目標に縮小・再エンコードされます（既定上限 `1568x1568`）。リサイズ失敗時は静かに元のバイトを保持します。`images.blockImages` が設定されるとツールは完全に無効化されます。
+
+結果はモデルのテキスト分析と、選ばれた `model`・解決済み `imagePath`・実際に送った `mimeType` を含む `details` です。
+
+## `calc`
+
+1 つ以上の算術式を評価し、整形した数値結果を返します。
+
+| フィールド | 型 | 必須 | 説明 |
+| --- | --- | --- | --- |
+| `calculations` | `Calculation[]` | はい | 順に評価される式のバッチ。 |
+
+各 `Calculation` は `expression`（式）、`prefix`（そのまま前置）、`suffix`（そのまま後置）を持ち、いずれも必須です。
+
+対応演算子は `+`、`-`、`*`、`/`、`%`、`**`（右結合）。数値リテラルは小数（`.5` のような先頭ドット形式を含む）、指数表記（`1e10`）、16 進（`0x...`）、2 進（`0b...`）、8 進（`0o...`）。関数・識別子・単位・定数は**ありません** —— スキーマ例が `sqrt(16)` でも解析されません。結果は有限である必要があり、評価エラーはバッチ全体を中断します。
+
+## `recipe`
+
+検出されたプロジェクトタスクランナーが公開するタスクを実行します。タスクを持つランナーが 1 つ以上検出されたときのみ現れます。
+
+| フィールド | 型 | 必須 | 説明 |
+| --- | --- | --- | --- |
+| `op` | `string` | はい | タスクセレクタと後続引数。最初のトークンがタスクを選び、残りはそのままコマンドに付加。 |
+
+例: `test`、`build --release`、`pkg-a/test`、`crate/bin/server`、`pkg:test --watch`。
+
+対応ランナー: `just`（`PATH` 上の just + justfile）、`pkg`（ルート `package.json`、ルート＆ワークスペーススクリプト）、`cargo`（`PATH` 上の cargo + `Cargo.toml`）、`make`（`PATH` 上の make + makefile）、`task`（`PATH` 上の task + Taskfile）。
+
+解決規則: 非修飾のタスク名（`test`）は正確に 1 ランナーが持つときのみ成功し、曖昧なら `<runner-id>:<task>` を使うようヒントして拒否。明示プレフィックス（`pkg:test`）は単一ランナーを指定。名前空間付きタスク名は `/` を使い（例 `pkg-a/test`）、`/` は名前の一部で区切りではありません。
+
+実行は `bash` に委譲されるため、出力・切り詰め・cwd 処理は `bash` ツールと同じです。recipe は自前のタイムアウトを持たず、bash 既定の `300` 秒が適用されます。`recipe.enabled` で制御され、ツール説明はランナーごとに最大 20 タスクを列挙します。
+
+## `ask`
+
+対話的ユーザーへ 1 つ以上の選択肢または自由記述の回答を求めます。セッションに UI がある場合のみ登録され、ヘッドレスセッションには現れません。
+
+| フィールド | 型 | 必須 | 説明 |
+| --- | --- | --- | --- |
+| `questions` | `Question[]` | はい | 1 つ以上の質問（非空）。 |
+
+各 `Question` は `id`（安定識別子）、`question`（表示プロンプト）、`options`（明示選択肢。UI が常に `Other (type your own)` を追加するため含めない）、`multi`（複数選択、既定 `false`）、`recommended`（0 始まりの推奨インデックス。UI ヒントで、無効なインデックスは無視）を持ちます。
+
+`ask.notify` が `off` でなければ端末通知（`Waiting for input`）が送られます。入力前にタイムアウトすると推奨項（無ければ先頭項）が自動選択されます。`ask.timeout` の既定は `30` 秒、`0` で無効、プランモードでも無効。タイムアウトは選択ピッカーにのみ適用され、`Other` を選ぶとエディタにタイムアウトはありません。キャンセルやヘッドレス使用は結果を返さず例外を投げます。
+
+## 関連
+
+<Cards>
+  <Card title="ツール概要" href="/ja/docs/reference/tools" />
+  <Card title="ランタイムツール" href="/ja/docs/reference/tools/runtime" />
+  <Card title="ファイルツール" href="/ja/docs/reference/tools/files" />
+  <Card title="設定" href="/ja/docs/reference/configuration" />
+</Cards>

@@ -1,73 +1,61 @@
 ---
-title: The ultrawork loop
-description: How $ulw-loop drives work to Oracle-verified completion — evidence over hopeful status, iteration caps, --completion-promise and --strategy, and its place alongside $ulw-plan and $start-work.
+title: Ultrawork Loop
+description: The evidence-first work discipline behind LazyCodex.
 ---
 
-ultrawork is the headline mode. Typing `ultrawork` (or the short alias `ulw`) anywhere in your prompt activates maximum-precision, outcome-first, evidence-driven orchestration.
+Ultrawork is the discipline LazyCodex uses for long work. When a prompt includes `ultrawork` or `ulw`, or when `$ulw-loop` is invoked, the agent judges completion by executed evidence, not by "it seems done."
 
-> _"Plan, execute, verify, and keep the evidence attached."_
+> _"Plan, execute, verify, and leave evidence behind."_
 
-The principle is simple: a task is not done because the agent says so. It is done when an **Oracle verifies** it against evidence.
+The principle is simple: work is not done because the agent says it is done. It is done only when **observable evidence is verified**.
 
-## What ultrawork enforces
+## What Ultrawork Enforces
 
-When ultrawork is active, the harness does not settle for a hopeful "looks done":
+When ultrawork is active, the harness does not accept a hopeful "looks done."
 
-- Strict TDD: RED → GREEN → SURFACE → CLEAN
-- At least 3 realistic QA scenarios
-- Real manual-QA channels (HTTP call, tmux, browser)
-- A binding verification gate that loops until the work is genuinely done
+- Strict TDD: RED -> GREEN -> SURFACE -> CLEAN
+- Realistic QA scenarios sized to the risk of the work
+- Real manual QA channels such as HTTP calls, tmux, browser, computer use, CLI stdout, and data diffs
+- Binding verification gates that keep running until the work is actually done
 
-## $ulw-loop: verified completion
+## Relationship to `$ulw-loop`
 
-`$ulw-loop` is a self-referential development loop that runs until verified completion. The agent works continuously and emits `<promise>DONE</promise>` when it believes the task is complete — but that does **not** end the loop.
+`$ulw-loop` exposes ultrawork discipline as a Command. The latest flow records the request, goals, success criteria, and evidence ledger under `.omo/ulw-loop`.
 
-An Oracle must verify the result first. The loop ends only after the system confirms the Oracle verified it. If verification fails, it continues with the message:
-
-```text
-Oracle verification failed. Continuing ULTRAWORK loop.
-```
-
-### Syntax
-
-```bash
-$ulw-loop "task description" [--completion-promise=TEXT] [--strategy=reset|continue]
-```
-
-| Flag | Effect |
+| File | Role |
 | --- | --- |
-| `--completion-promise=TEXT` | Sets the promise text the agent must satisfy before verification |
-| `--strategy=reset` | Starts each iteration from a clean slate |
-| `--strategy=continue` | Carries state forward between iterations |
+| `.omo/ulw-loop/brief.md` | Original request and continuing constraints |
+| `.omo/ulw-loop/goals.json` | Goals and success criteria |
+| `.omo/ulw-loop/ledger.jsonl` | Records for pass, fail, block, steering, checkpoint |
 
-### Iteration caps
+Saying the work is done is not enough. Each success criterion needs real-surface evidence, and that evidence must pass before the loop stops.
 
-The loop is bounded so it cannot run forever:
+Exact syntax and flags live only in the [`$ulw-loop` command doc](/docs/commands/ulw-loop).
 
-- **500** iterations in ultrawork mode
-- **100** iterations in normal mode
+## Failure Limits
 
-## Evidence over hopeful status
+The loop has limits so it does not run forever. The latest `$ulw-loop` workflow uses:
 
-The loop does not stop at "wrote some code." It stops when the result is confirmed by evidence — the checks that ran and what they showed — rather than a status update the agent is hopeful about. That is the whole reason an Oracle sits between `<promise>DONE</promise>` and the loop ending.
-
-## Where it sits among the pillars
-
-`$ulw-loop` is one of three command pillars, each for a different shape of work:
-
-| Pillar | Use it when |
+| Condition | Limit |
 | --- | --- |
-| `$ulw-plan` | The work needs decisions before any code is written. Writes `plans/<slug>.md`, never product code. |
-| `$start-work` | A plan is ready and should be executed to completion. Prints **ORCHESTRATION COMPLETE**. |
-| `$ulw-loop` | The task should keep moving until the result is verified by evidence. |
+| Repeats on one goal without a full pass | 5 cycles |
+| Same failure on the same criterion | 3 times |
 
-A common flow: `$ulw-plan` produces a decision-complete plan, `$start-work` executes it checkbox by checkbox, and `$ulw-loop` keeps an open-ended task running until the Oracle signs off.
+## Evidence Over Hope
 
-## Related
+The loop does not stop at "some code was written." It stops only when the result is confirmed by evidence: which checks ran, what they showed, and why that proves the outcome.
+
+## Position Among Commands
+
+`$ulw-loop` is one of the Commands, and each Command is for a different shape of work.
+
+The usual flow is simple: `$ulw-plan` creates a decision-complete plan, `$start-work` executes it checkbox by checkbox, and `$ulw-loop` keeps open work moving until the verifier approves. Detailed syntax for each command lives in [Commands](/docs/commands).
+
+## Related Docs
 
 <Cards>
-  <Card title="$ulw-loop command" href="/docs/commands/ulw-loop" />
-  <Card title="$ulw-plan command" href="/docs/commands/ulw-plan" />
-  <Card title="$start-work command" href="/docs/commands/start-work" />
-  <Card title="Discipline agents" href="/docs/concepts/discipline-agents" />
+  <Card title="$ulw-loop Command" href="/docs/commands/ulw-loop" />
+  <Card title="$ulw-plan Command" href="/docs/commands/ulw-plan" />
+  <Card title="$start-work Command" href="/docs/commands/start-work" />
+  <Card title="Agent Roles" href="/docs/concepts/discipline-agents" />
 </Cards>

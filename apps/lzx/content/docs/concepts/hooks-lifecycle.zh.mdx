@@ -1,68 +1,95 @@
 ---
 title: Hooks & Lifecycle
-description: OmO 插件在 Codex 中注册的生命周期钩子 —— 规则注入、遥测、注释检查与 LSP 诊断。
+description: Lifecycle hooks for rules, bootstrap, diagnostics, and continuation.
 ---
 
-LazyCodex(LZX)随 OmO 插件提供一组生命周期钩子，它们在 Codex 会话的固定节点触发：让项目规则保持加载、在编辑后给出反馈、运行诊断 —— 无需你手动调用任何东西。以下内容都注册在插件的 `hooks.json` 中。
+LazyCodex (LZX) 随 OmO 插件提供 Codex 会话固定节点触发的 lifecycle hooks。这些 hooks 会持续加载项目规则、检查安装状态，并在编辑后运行反馈和诊断。以下内容基于最新 `4.12.1` plugin manifest 和 hook 文件。
 
-## 何时触发什么
+## Trigger Matrix
 
-| 事件 | 触发内容 |
+| 事件 | 会触发什么 |
 |---|---|
-| `SessionStart` | 加载 OMO 项目规则（[rules](/zh/docs/skills/rules) 组件），随后记录[遥测](#已安装的组件)。 |
-| `UserPromptSubmit` | 重新注入 OMO 项目规则、运行 ultrawork 检测器、检查 ultragoal 引导。 |
-| `PostToolUse`（编辑类工具） | 运行 [comment-checker](/zh/docs/skills/comment-checker) 反馈与 [LSP](/zh/docs/skills/lsp) 诊断；对 `apply_patch` 还会匹配项目规则。 |
-| `PostCompact`（`manual` 或 `auto`） | 重置 OMO 项目规则缓存，让注入的规则在上下文压缩后依然存在。 |
+| `SessionStart` | 加载项目规则、记录 telemetry、检查 auto update、bootstrap provisioning、CodeGraph bootstrap。 |
+| `UserPromptSubmit` | 重新注入项目规则，检查 ultrawork trigger 和 `$ulw-loop` steering。 |
+| `PreToolUse` | 对 Bash 调用提供 Git Bash MCP 指引，并保护 `$ulw-loop` 的 goal budget 约束。 |
+| `PostToolUse` | 运行 comment check、LSP diagnostics、CodeGraph init guidance、`apply_patch` rule matching、thread title hygiene。 |
+| `Stop` / `SubagentStop` | 运行 `$start-work` continuation 和 LazyCodex executor evidence verification。 |
+| `PostCompact` | 重置 Git Bash 提醒、项目规则、LSP diagnostic cache。 |
 
 ## SessionStart
 
-Codex 会话开始时，运行两个钩子：
+Codex 会话开始时，hooks 会对齐基础状态。
 
-- **Rules** —— `rules hook session-start` 加载 OMO 项目规则，使智能体在启动时已将 `AGENTS.md`、rules、instruction 文件载入上下文。
-- **Telemetry** —— `telemetry hook session-start` 记录会话已开始。
+- **Rules**：`rules hook session-start` 加载 OMO 项目规则，让智能体在开始时就拥有受支持的 rules 和 instruction 文件上下文。
+- **Telemetry**：`telemetry hook session-start` 记录会话开始。
+- **Auto update**：检查插件更新状态。
+- **Bootstrap provisioning**：检查插件缓存、配置块、bin links 等 LazyCodex bootstrap 状态。
+- **CodeGraph bootstrap**：检查 CodeGraph 组件初始化状态。
 
 ## UserPromptSubmit
 
-每次提交提示时，按顺序运行三个钩子：
+每次提交 prompt 时会运行三个 hooks。
 
-- **Rules** —— `rules hook user-prompt-submit` 重新注入 OMO 项目规则，使其随对话变长而持续存在。
-- **Ultrawork 检测器** —— 一个 Python 钩子（`ultrawork/hooks/ultrawork-detector.py`），用于在提示中检测 `ultrawork` 触发词。
-- **Ultragoal** —— `ultragoal hook user-prompt-submit` 检查 ultragoal 引导。
+- **Rules**：`rules hook user-prompt-submit` 重新注入 OMO 项目规则，让长对话中规则也能保留。
+- **Ultrawork trigger**：检测 prompt 中的 `ultrawork` / `ulw` 流程。
+- **ulw-loop steering**：在 `$ulw-loop` 持续运行时检查 steering 状态。
+
+## PreToolUse
+
+工具调用前有两个辅助 hooks。
+
+- **Git Bash MCP guidance**：Bash 工具被调用时提供 Windows/Git Bash MCP 指引。
+- **Goal budget protection**：goal 创建工具被调用时，保留 `$ulw-loop` 所需预算约束。
 
 ## PostToolUse
 
-编辑类工具运行后，OmO 会检查其结果。匹配器针对编辑家族：
+编辑类工具运行后，OmO 会检查结果。matcher 针对编辑工具族：
 
 ```text
 ^(apply_patch|write|Write|edit|Edit|multi_edit|multiedit|MultiEdit)$
 ```
 
-命中后运行两个钩子：
+匹配时运行两个 hooks。
 
-- **comment-checker** —— `comment-checker hook post-tool-use` 对你刚写或刚改的注释给出反馈。参见 [comment-checker](/zh/docs/skills/comment-checker)。
-- **LSP** —— `lsp hook post-tool-use` 对被编辑的代码运行 language-server 诊断。参见 [lsp](/zh/docs/skills/lsp)。
+- **comment-checker**：`comment-checker hook post-tool-use` 对刚写入或修改的注释给出反馈。参见 [comment-checker](/zh/docs/skills/comment-checker)。
+- **LSP**：`lsp hook post-tool-use` 对编辑后的代码运行 language-server diagnostics。参见 [lsp](/zh/docs/skills/lsp)。
 
-第二个更窄的匹配器（`^apply_patch$`）会额外运行 `rules hook post-tool-use`，对该补丁匹配项目规则。
+更窄的第二个 matcher（`^apply_patch$`）还会运行 `rules hook post-tool-use`，用项目规则匹配 patch。
+
+非编辑工具也可能有后处理。CodeGraph 相关工具调用后可运行 CodeGraph init guidance，thread 创建后 team mode 组件可检查 thread title hygiene。
+
+## Stop / SubagentStop
+
+响应或子智能体停止时也会运行 continuation hooks。
+
+- **start-work continuation**：当 `$start-work` 必须执行到计划完成时，检查下一步状态。
+- **executor evidence verification**：检查完成的 `lazycodex-executor` 子智能体是否提供了足够证据。
 
 ## PostCompact
 
-当 Codex 压缩上下文时 —— `manual` 或 `auto` —— `rules hook post-compact` 重置 OMO 项目规则缓存。正是这一点让注入的规则在旧上下文被摘要清除时不会一并丢失，而能挺过压缩。
+Codex 手动或自动 compact 上下文时，OmO 会重置 Git Bash MCP 提醒、项目规则和 LSP diagnostic cache。旧上下文被摘要后，下一轮会重新获得所需指引和诊断状态。
 
-## 已安装的组件
+## Installed Components
 
-上述钩子是进入已安装组件的轻量入口：
+这些 hooks 是进入已安装组件的薄入口。
 
-| 组件 | 负责 |
+| 组件 | 负责内容 |
 |---|---|
-| `rules` | 会话开始时、每次提示时、`apply_patch` 时、压缩后注入项目规则。 |
-| `telemetry` | 会话开始记录。 |
-| `comment-checker` | 编辑类工具之后的注释反馈。 |
-| `lsp` | 编辑类工具之后的 language-server 诊断。 |
-| `ultrawork` | 提示时的 ultrawork 检测器。 |
-| `ultragoal` | 每次提示时的 ultragoal 引导检查。 |
+| `rules` | session start、prompt submit、`apply_patch`、compact 后的项目规则管理。 |
+| `bootstrap` | LazyCodex 安装状态和 provisioning 检查。 |
+| `telemetry` | 记录 session start。 |
+| `comment-checker` | 编辑类工具后的注释反馈。 |
+| `lsp` | 编辑类工具后的 language-server diagnostics，以及 compact 后 cache reset。 |
+| `ultrawork` | prompt 时的 ultrawork trigger detection。 |
+| `ulw-loop` | loop steering 和 goal budget protection。 |
+| `start-work-continuation` | `$start-work` 执行流程 continuation。 |
+| `git-bash` | Bash 调用和 compact 后的 Git Bash MCP 指引。 |
+| `codegraph` | CodeGraph bootstrap 和 init guidance。 |
+| `teammode` | thread title hygiene。 |
+| `lazycodex-executor-verify` | 子智能体 evidence verification。 |
 
 <Cards>
-  <Card title="rules" href="/zh/docs/skills/rules">从 AGENTS、rules、instruction 文件注入的项目指令。</Card>
-  <Card title="comment-checker" href="/zh/docs/skills/comment-checker">编辑类操作后对注释的反馈。</Card>
-  <Card title="lsp" href="/zh/docs/skills/lsp">诊断、定义、引用、符号与安全 rename。</Card>
+  <Card title="rules" href="/zh/docs/skills/rules">从受支持 rules 和 instruction 文件注入的项目指令。</Card>
+  <Card title="comment-checker" href="/zh/docs/skills/comment-checker">编辑类工作后的注释反馈。</Card>
+  <Card title="lsp" href="/zh/docs/skills/lsp">诊断、定义、引用、符号和安全 rename。</Card>
 </Cards>

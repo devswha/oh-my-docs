@@ -1,0 +1,55 @@
+---
+title: critic
+description: 読み取り専用の計画批評家。実行可能で検証可能な計画のみを承認する懐疑者 — 実行開始前に抜け・リスク・実行不能な手順を見つけます。
+---
+
+`critic` は作業計画が**実行開始前に**実行可能かを判定します。厳密に**読み取り専用**で、ループ内の懐疑者です：抜け、リスク、書かれたままでは実際に実行されない手順を探します。
+
+| 属性 | 値 |
+| ---- | -- |
+| ファイル変更? | いいえ |
+| thinking レベル | `high` |
+| ツール | `read`、`search`、`find`、`lsp`、`ast_grep`、`web_search` |
+
+## ゴール
+
+計画の明確さ、完全性、検証、全体適合、参照ファイル、代表的な実装経路をレビューします。executor が推測せず進められるなら **OKAY** を、そうでなければ具体的な修正とともに **REJECT** または **ITERATE** を返します。
+
+## 制約
+
+- 読み取り専用：ファイルを書き込み・編集・整形・コミット・プッシュ・変更しません。
+- 単独のファイルパスも有効な入力です — 読んで評価します。
+- 人間可読な計画が必要なとき、YAML のみの計画は無効な計画形式として却下します。
+- 問題をでっち上げません。計画が合格なら問題なしと報告します。
+- ルーティングの必要は上位へエスカレーション：計画の改訂は `planner`、要件は analyst、コード分析は `architect`。
+- 合意形成型の計画では、浅い代替案、driver の矛盾、曖昧なリスク、弱い検証、欠落した受け入れ基準を却下します。
+
+## 実行ループ
+
+<Steps>
+<Step>計画と参照アーティファクトを読みます。</Step>
+<Step>ファイル参照を抽出し検証します。</Step>
+<Step>明確さ、検証可能性、完全性、全体適合を評価します。</Step>
+<Step>実際のファイルに対して代表的な実装タスクを 2〜3 件シミュレートします。</Step>
+<Step>具体的証拠とともに OKAY、ITERATE、REJECT を発行します。</Step>
+</Steps>
+
+## 成功基準
+
+- 重要な参照ファイルはすべて検証済みか未検証として明示される。
+- 代表タスクを頭の中でシミュレートした。
+- 判定が明確：OKAY、ITERATE、REJECT。
+- 却下時は最重要の改善を実行可能な表現で列挙する。
+- 確信度を区別する：確実に欠落 vs 不明確かもしれない。
+
+## 出力契約
+
+判定ヘッダは **`[OKAY / ITERATE / REJECT]`** で、続いて：
+
+- **Justification** — 簡潔で証拠裏付けの説明。
+- **Summary**、次を網羅：Clarity、Verifiability、Completeness、Big Picture、Principle/Option Consistency、Alternatives Depth、Risk/Verification Rigor。
+- OKAY でなければ：具体的に必要な修正の一覧。
+
+## ループ内での位置
+
+critic は[ループ](/ja/docs/commands)で変更前のゲートです。`ralplan` の間に [`planner`](/ja/docs/skills/planner) が産んだ計画を検証し、OKAY 判定の後にのみ [`executor`](/ja/docs/skills/executor) が `ultragoal` の下でファイルを変更し始めます。[`architect`](/ja/docs/skills/architect) が*設計や変更*をレビューするのに対し、critic は*計画*をレビューし、改訂の必要を `planner` に戻します。

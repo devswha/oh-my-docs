@@ -1,5 +1,5 @@
 {
-  "title": "技能",
+  "title": "Skills",
   "pages": [
     "review-work",
     "remove-ai-slops",
@@ -9,7 +9,6 @@
     "refactor",
     "lsp",
     "rules",
-    "comment-checker",
-    "ultragoal"
+    "comment-checker"
   ]
 }

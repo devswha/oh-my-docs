@@ -9,6 +9,19 @@ Get the `gjc` binary running, sign in to a model provider, and drive your first 
 
 <Step>
 
+### Prerequisites
+
+- Bun installed and available as `bun`.
+- A Git repository for the project you want `gjc` to work on.
+- `tmux` if you want the recommended `gjc --tmux` experience.
+- At least one reachable model provider.
+
+For OS and shell notes, see [Recommended Environment](/docs/recommended-environment).
+
+</Step>
+
+<Step>
+
 ### Install
 
 Gajae-Code is published through the npm registry as `gajae-code`. Use Bun for the recommended runtime workflow:
@@ -37,10 +50,16 @@ Bare `gjc` launches directly without creating or attaching a tmux session:
 gjc
 ```
 
-Run inside an isolated Git worktree when you want a safer, branch-local workspace. Use a dedicated path for throwaway or branch-specific work so the main checkout stays clean:
+Run inside an isolated Git worktree when you want a safer, branch-local workspace. `--worktree` takes an optional branch-like name and creates a GJC-managed sibling worktree; it is not a filesystem path:
 
 ```bash
-gjc --tmux --worktree <path>
+gjc --tmux --worktree my-task-branch
+```
+
+If you already created a worktree directory, launch from that directory instead:
+
+```bash
+cd ../my-task-worktree && gjc --tmux
 ```
 
 </Step>
@@ -97,6 +116,20 @@ Then pick a model with `/model` in the TUI, or `--model` / `--models` on the CLI
 
 <Step>
 
+### Pass an image
+
+At startup, prefix a local path with `@`:
+
+```bash
+gjc @screenshot.png "What should I change?"
+```
+
+Inside the TUI, copy an image to the system clipboard and use **Paste image from clipboard** (`Ctrl+V` on Linux/macOS, `Alt+V` on Windows), or type `#paste-image` and choose the prompt action. If clipboard access is unavailable, paste or pass the image file path as `@path/to/image.png`.
+
+</Step>
+
+<Step>
+
 ### Run the loop
 
 Gajae-Code focuses on one useful loop:
@@ -123,44 +156,29 @@ gjc ultragoal complete-goals
 
 </Step>
 
-</Steps>
+<Step>
 
-## Skills
+### Try research mode
 
-Gajae-Code ships exactly four workflow skills — no sprawling default skill zoo. Invoke each one inside a GJC session as `/skill:<name>`.
+Use `rlm` when the job is exploratory research rather than direct code mutation:
 
-| Skill            | What it does                                                                        |
-| ---------------- | ----------------------------------------------------------------------------------- |
-| `deep-interview` | Removes ambiguity before planning or code changes.                                  |
-| `ralplan`        | Builds and critiques a plan before mutation.                                        |
-| `team`           | Optionally coordinates tmux-backed parallel execution when multiple workers help.   |
-| `ultragoal`      | Tracks durable goals through implementation, revisions, verification, and evidence. |
-
-The four bundled role agents — `executor`, `architect`, `planner`, and `critic` — carry these skills out. See [Workflows](/docs/workflows) for each skill and [Agents](/docs/agents) for the roles.
-
-## Configuration
-
-Provider retry budgets and other settings live in `~/.gjc/config.yml` (or the active project/user settings source):
-
-```yaml
-retry:
-  # Similar to codex-cli request_max_retries. Counts retries, not the initial request.
-  requestMaxRetries: 4
-  # Similar to codex-cli stream_max_retries. Counts replay-safe stream retries.
-  streamMaxRetries: 100
-  # Session-level terminal-error retries remain separately configurable.
-  maxRetries: 3
-  maxDelayMs: 300000
+```bash
+gjc rlm
 ```
 
-Gajae-Code has two retry layers: session auto-retry (`retry.maxRetries`) retries a failed assistant turn after a terminal transient error, while provider retry budgets (`requestMaxRetries`, `streamMaxRetries`) control retries inside the provider transport before that terminal error reaches the session. Invalid auth, unsupported models/providers, malformed requests, context overflow, user aborts, and permanent quota failures stay fail-fast instead of being hidden by retry loops.
+It opens a notebook-style research/REPL loop backed by a persistent Python kernel and a hard-gated toolset: `python`, `read`, `web_search`, `search_tool_bm25`, read-only `bash`, `goal`, and `complete_research`. The run writes `notebook.ipynb`, `report.md`, metadata, and agent-session artifacts under `.gjc/_session-<gjcSessionId>/rlm/<rlmSessionId>/`.
+
+</Step>
+
+</Steps>
 
 ## Next steps
 
 <Cards>
-  <Card title="Use cases & guide" href="/docs/guides" description="Worked examples for everyday tasks." />
+  <Card title="Recommended Environment" href="/docs/recommended-environment" description="Check the local setup before installing." />
+  <Card title="Commands" href="/docs/commands" description="deep-interview, ralplan, rlm, team, and ultragoal." />
   <Card title="Core Concepts" href="/docs/concepts" description="The working loop, sessions, model routing, and durable verification." />
-  <Card title="Workflows" href="/docs/workflows" description="deep-interview, ralplan, team, and ultragoal." />
+  <Card title="FAQ" href="/docs/faq" description="Short answers for setup and first use." />
 </Cards>
 
 - Source project and full reference: [Yeachan-Heo/gajae-code](https://github.com/Yeachan-Heo/gajae-code)

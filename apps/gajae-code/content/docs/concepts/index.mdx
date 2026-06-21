@@ -69,10 +69,10 @@ The result is a compact CLI that stays easy to reason about, but still gives you
 Each run is a session with durable state — history, model changes, and evidence are recorded. For safer, branch-local work, run inside an isolated Git worktree:
 
 ```bash
-gjc --tmux --worktree <path>
+gjc --tmux --worktree my-task-branch
 ```
 
-Use a dedicated path for throwaway or branch-specific work so the main checkout stays clean.
+`--worktree` takes a branch-like name. If you already have a worktree path, enter that directory first and launch `gjc --tmux`.
 
 See [Sessions & worktrees](/docs/concepts/sessions) for the full lifecycle.
 

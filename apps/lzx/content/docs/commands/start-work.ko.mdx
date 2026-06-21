@@ -1,9 +1,9 @@
 ---
 title: $start-work
-description: Prometheus 계획을 모든 체크박스가 끝날 때까지 실행하며, 지속 가능한 Boulder 진행 상태를 유지합니다.
+description: .omo/plans의 Prometheus 계획을 체크박스 단위로 실행하고 Boulder 상태와 evidence ledger를 남깁니다.
 ---
 
-`$start-work`는 [Prometheus 작업 계획](/ko/docs/commands/ulw-plan)을 최상위 체크박스가 모두 끝날 때까지 실행합니다. 계획 우선 흐름의 구현 절반에 해당합니다. 계획을 넘겨주면 그 계획을 완료까지 끌고 갑니다.
+`$start-work`는 [Prometheus 작업 계획](/ko/docs/commands/ulw-plan)을 최상위 체크박스가 모두 끝날 때까지 실행합니다. 실행 대상은 `.omo/plans/<slug>.md`이고, 진행 상태는 `.omo/boulder.json`에 남습니다.
 
 ## 문법
 
@@ -11,16 +11,19 @@ description: Prometheus 계획을 모든 체크박스가 끝날 때까지 실행
 $start-work [plan-name] [--worktree <absolute-path>]
 ```
 
-- `plan-name` — 선택. 실행할 계획(`plans/<slug>.md`). 생략하면 가장 최근 계획을 사용합니다.
+- `plan-name` — 선택. 실행할 계획(`.omo/plans/<slug>.md`)의 파일 이름 또는 일부 이름입니다.
 - `--worktree <absolute-path>` — 선택. 격리된 git worktree에서 작업을 실행합니다.
 
 ## 동작 방식
 
-- `.omo/boulder.json`의 **지속 가능한 Boulder 상태**는 턴과 세션을 넘어 유지되어, 실행 사이에 진행 상태가 사라지지 않습니다.
+- `.omo/boulder.json`의 **Boulder 상태**는 턴과 세션을 넘어 유지되어, 실행 사이에 진행 상태가 사라지지 않습니다.
 - **Stop-hook**이 계획이 끝날 때까지 다음 턴을 다시 주입합니다 — 루프가 스스로 이어집니다.
 - **독립적인 하위 작업은 병렬 서브에이전트로 펼쳐집니다.**
 - **엄격한 TDD에 더해 다섯 가지 증거 게이트**: 계획 재독, 자동 검증, 수동 QA, 적대적 QA, 정리.
-- 각 체크박스가 체크될 때마다 **진행 상태가 원장(ledger)에 기록됩니다.**
+- 각 체크박스가 체크될 때마다 **증거가 `.omo/start-work/ledger.jsonl`에 기록됩니다.**
+- 실행자는 하위 작업의 "완료" 보고를 그대로 믿지 않고, 독립 검증을 통과한 뒤에만 체크박스를 완료 처리합니다.
+
+계획이 없는데 사용자가 명시적으로 `$start-work`를 호출하면, 최신 흐름은 먼저 `$ulw-plan`을 부트스트랩해 실행 가능한 계획을 만든 뒤 실행으로 넘어갑니다.
 
 ## 완료
 
@@ -38,7 +41,7 @@ ORCHESTRATION COMPLETE
 
 ### 계획 준비
 
-`$ulw-plan`으로 계획을 쓰거나, 기존 `plans/<slug>.md`를 `$start-work`에 가리킵니다.
+`$ulw-plan`으로 계획을 쓰거나, 기존 `.omo/plans/<slug>.md`를 `$start-work`에 가리킵니다.
 
 ```bash
 $ulw-plan "add OAuth login with refresh tokens"
@@ -54,7 +57,7 @@ $ulw-plan "add OAuth login with refresh tokens"
 $start-work oauth-refresh-tokens
 ```
 
-독립적인 작업은 병렬 서브에이전트로 펼쳐지고, 지속 가능한 Boulder 진행 상태가 중단을 견딥니다.
+독립적인 작업은 병렬 서브에이전트로 펼쳐지고, Boulder 진행 상태가 중단을 견딥니다.
 
 </Step>
 
@@ -73,5 +76,5 @@ $start-work oauth-refresh-tokens
 <Cards>
   <Card title="$ulw-plan" href="/ko/docs/commands/ulw-plan">$start-work가 실행할 계획을 작성합니다.</Card>
   <Card title="$ulw-loop" href="/ko/docs/commands/ulw-loop">작성된 계획 없이 열린 작업의 검증된 완료.</Card>
-  <Card title="커맨드 기둥" href="/ko/docs/commands">커맨드들이 어떻게 조합되는지.</Card>
+  <Card title="Commands" href="/ko/docs/commands">커맨드들이 어떻게 조합되는지.</Card>
 </Cards>

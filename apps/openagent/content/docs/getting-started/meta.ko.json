@@ -2,7 +2,12 @@
   "title": "빠른 시작",
   "pages": [
     "[사전 요구사항](/ko/docs/getting-started#사전-요구사항)",
+    "[Edition 선택](/ko/docs/getting-started#edition-선택)",
     "[설치](/ko/docs/getting-started#설치)",
+    "[비대화형 설치](/ko/docs/getting-started#ultimate-비대화형-설치)",
+    "[Provider 인증](/ko/docs/getting-started#provider-인증)",
+    "[검증](/ko/docs/getting-started#검증)",
+    "[첫 작업](/ko/docs/getting-started#첫-작업)",
     "[Telemetry](/ko/docs/getting-started#telemetry)"
   ]
 }

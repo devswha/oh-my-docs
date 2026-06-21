@@ -1,0 +1,33 @@
+---
+title: Ultragoal
+description: 将 .omc/ultragoal artifacts 与 Claude /goal handoff 配合使用的 durable multi-goal workflow。
+---
+
+## Overview
+
+`ultragoal` 把大型 brief 拆成有序 goals，将进度记录到 `.omc/ultragoal/`，并打印 handoff text，指导当前 Claude agent 与 Claude Code `/goal` slash command 协作。
+
+它不会从 shell 直接修改 Claude `/goal` state。CLI 只持久化 repo state，并告诉 session 内 agent 应设置什么 `/goal` condition、何时 checkpoint、回传什么 evidence。
+
+## CLI Flow
+
+```bash
+omc ultragoal create-goals --brief-file plan.md
+omc ultragoal complete-goals
+omc ultragoal checkpoint --goal-id G001-example --status complete --evidence "tests passed"
+omc ultragoal status
+```
+
+默认 `claudeGoalMode` 是 `aggregate`：一个 Claude `/goal` 覆盖整个 run，OMC stories 由 ledger 追踪。只有每个 story 都需要独立 Claude `/goal` 时，才使用 `--claude-goal-mode per-story`。
+
+## Final Gate
+
+最后一个 story 必须包含 `ai-slop-cleaner`、verification 和 `$code-review` evidence。如果 review 不干净，请调用 `omc ultragoal record-review-blockers`，不要标记 complete。
+
+## Reference
+
+| Item | Value |
+|------|-------|
+| Invoke | `/oh-my-claudecode:ultragoal` |
+| CLI | `omc ultragoal ...` |
+| Artifact root | `.omc/ultragoal/` |

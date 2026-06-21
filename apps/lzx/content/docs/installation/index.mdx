@@ -1,9 +1,9 @@
 ---
 title: Installation
-description: "Install LazyCodex into Codex: prerequisites, the one-line npx install, and signing in to Codex."
+description: "Install LazyCodex into Codex: prerequisites, the one-line npx install, marketplace option, Windows notes, and signing in to Codex."
 ---
 
-LazyCodex adds the OmO agent harness to Codex with one `npx` command. No global install. Install the prerequisites, run the command, then make sure Codex is signed in.
+LazyCodex adds the OmO-powered Codex light setup with one `npx` command. No global install. Install the prerequisites, run the command, approve hooks on first launch, then verify with `doctor`.
 
 <Steps>
 
@@ -11,7 +11,7 @@ LazyCodex adds the OmO agent harness to Codex with one `npx` command. No global 
 
 ### Prerequisites
 
-- [Bun](https://bun.sh)
+- [Node.js](https://nodejs.org) — any maintained LTS; `npx` ships with it. Bun is **not** required.
 - [OpenAI Codex](https://github.com/openai/codex): the **Codex app** (recommended) or the **Codex CLI**
 
 LazyCodex runs inside OpenAI Codex, so Codex needs to be installed and signed in first. Choose the Codex surface you want to use:
@@ -46,7 +46,7 @@ Continue to **Install** below.
 
 ### Install
 
-Run one command. Do not install it globally with `npm i -g`.
+Run one command. Do not install it globally with `npm i -g`, `npm install -g`, or `bun add -g`.
 
 ```bash
 npx lazycodex-ai install
@@ -64,7 +64,7 @@ For a fully autonomous setup without the TUI, use:
 npx lazycodex-ai install --no-tui --codex-autonomous
 ```
 
-The installer adds the OmO harness to your Codex setup: commands, skills, hooks, and model routing.
+The installer adds the Codex light setup: commands, skills, hooks, model routing, and verification defaults.
 
 I recommend letting an LLM agent run the install for you. It can detect your subscription, pick the right model, and handle provider authentication without making you step through each prompt manually.
 
@@ -78,13 +78,67 @@ Join the [LazyCodex Discord](https://discord.gg/6ztZB9jvWq) and ask **Jabdori** 
 
 <Step>
 
+### Marketplace alternative
+
+The `npx` installer above stays the primary path. As an additive, experimental path, type `/plugins` inside Codex, open **Add Marketplace**, and add:
+
+```text
+https://github.com/code-yeongyu/lazycodex
+```
+
+Then install `omo` from the `sisyphuslabs` marketplace. From the CLI, the equivalent is:
+
+```bash
+codex plugin marketplace add https://github.com/code-yeongyu/lazycodex
+codex plugin add omo@sisyphuslabs
+```
+
+On the next launch, approve the omo hooks in Codex's startup review. Hooks never run before approval. The first approved session prints `LazyCodex bootstrap running in background — restart the session when it completes` while a background worker finishes setup, including config blocks, agent roles, bin links, and a pinned `sg` binary for the `ast_grep` MCP. Restart when it completes.
+
+Marketplace installs do not change Codex permission settings. Autonomous mode remains the explicit `npx lazycodex-ai install --no-tui --codex-autonomous` choice.
+
+To upgrade the marketplace install:
+
+```bash
+codex plugin marketplace upgrade sisyphuslabs
+```
+
+The next startup review shows the hooks as **Modified** after every upgrade because the plugin files changed and the previous trust hashes no longer match. Re-approve them, and the following session re-runs bootstrap on the new version.
+
+</Step>
+
+<Step>
+
+### Windows notes
+
+Native Windows works with both install paths.
+
+- `npx lazycodex-ai install` needs Node.js on `PATH`.
+- Marketplace bootstrap provisions a pinned Node LTS runtime into `%USERPROFILE%\.codex\runtime\node\` when `node` is missing.
+- Git Bash is required for shell hooks. The installer and marketplace bootstrap try `winget install --id Git.Git -e --source winget` when Git Bash is missing.
+- If Git is installed in a custom location, set `OMO_CODEX_GIT_BASH_PATH` to a path like `C:\Program Files\Git\bin\bash.exe`.
+- `C:\Windows\System32\bash.exe` is the WSL launcher, not Git Bash. LazyCodex ignores `System32` and `WindowsApps` bash shims when resolving Git Bash.
+- Marketplace bootstrap logs degraded setup lines to `%USERPROFILE%\.codex\plugins\data\omo-sisyphuslabs\bootstrap\ps-bootstrap.log`.
+
+</Step>
+
+<Step>
+
 ### Authenticate
 
 You authenticate **Codex itself**, not LazyCodex.
 
 With the **Codex CLI**, sign-in happens during Codex setup and Codex prompts you on first run. With the **Codex app**, sign in through the app UI. LazyCodex does not have a separate login command.
 
-After Codex is signed in, `npx lazycodex-ai install` handles OmO setup automatically: subscription detection and model routing.
+After Codex is signed in, `npx lazycodex-ai install` handles setup automatically: subscription detection and model routing.
+
+Verify the setup with:
+
+```bash
+npx lazycodex-ai doctor
+```
+
+`doctor` explains what is configured, what is missing, and why. Run it first when a hook is pending, a skill is not loading, or routing looks wrong.
 
 For provider and routing details, see [Configuration](/docs/reference/configuration).
 

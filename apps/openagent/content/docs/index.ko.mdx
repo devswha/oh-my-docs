@@ -28,13 +28,20 @@ Install and configure oh-my-openagent by following the instructions here:
 https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/refs/heads/dev/docs/guide/installation.md
 ```
 
-직접 실행하려면 Bun을 쓰세요. npm, yarn, pnpm은 쓰지 마세요.
+직접 실행하려면 edition을 고르세요.
 
 ```bash
+# Ultimate / OpenCode
 bunx oh-my-openagent install
+
+# Light / Codex CLI
+npx lazycodex-ai install
+
+# 둘 다
+bunx oh-my-openagent install --platform=both
 ```
 
-installer가 사용자가 가진 모델 구독을 묻고, 각 에이전트를 거기에 맞춰 라우팅합니다.
+Ultimate는 Bun을 쓰고 모델 구독을 물어봅니다. Light는 Node/npm의 `lazycodex-ai`로 설치되며, 관리되는 Codex plugin 상태를 `~/.codex/` 아래에 씁니다.
 
 </Step>
 
@@ -140,7 +147,7 @@ OmO는 각 에이전트를 그 일에 맞는 모델과 짝지웁니다. Sisyphus
 - **Hash-anchored edit** — `LINE#ID` 콘텐츠 해시가 모든 변경을 검증합니다. stale-line 오류 0건.
 - **LSP + AST-Grep** — workspace rename, build 전 진단, AST 인지 rewrite. 에이전트에게 IDE 수준의 정밀도를 줍니다.
 - **끝까지 미는 실행** — Ralph 루프, todo 강제, runtime fallback. 검증될 때까지 멈추지 않습니다.
-- **내장 MCP** — Exa(웹 검색), Context7(공식 문서), Grep.app(GitHub 검색). 항상 켜져 있습니다.
+- **내장 MCP** — Ultimate는 Exa, Context7, Grep.app 같은 OpenCode MCP surface를 쓰고, Codex Light는 plugin-scoped `grep_app`, `context7`, `codegraph`, `git_bash`, `lsp`를 추가합니다.
 - **tmux 통합** — 인터랙티브 REPL, 디버거, TUI. 스크린샷이 아니라 실제로 들어가서 봅니다.
 - **Claude Code 호환** — 기존 hook, command, skill, MCP, plugin이 그대로 동작합니다.
 

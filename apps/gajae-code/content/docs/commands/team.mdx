@@ -1,0 +1,120 @@
+---
+title: team
+description: An optional tmux-backed parallel execution mode that coordinates real GJC worker sessions — not a required handoff step.
+---
+
+`team` is the tmux-based multi-worker execution mode for Gajae-Code. It starts real `gjc` worker CLI sessions by splitting the current tmux leader window and coordinates them through state files under `.gjc/state/team/` plus the `gjc team api` interop surface.
+
+It is an **optional execution mode, not a required handoff**. Reach for it only when the task genuinely benefits from coordinated parallel workers. For bounded, in-session parallelism, native subagents are usually enough.
+
+## team vs native subagents
+
+| Use | When |
+| --- | --- |
+| **Native subagents** | Bounded, in-session parallelism where one leader thread fans out a few independent subtasks and waits for them directly. |
+| **`gjc team`** | You need durable, visible tmux workers, shared task state, worker mailboxes, worktrees, explicit lifecycle control, or long-running execution that must survive beyond one local reasoning burst. |
+
+Native subagents can complement team execution, but they do not replace the tmux team runtime's stateful coordination contract.
+
+## Invocation
+
+```bash
+gjc team [N:agent-type] "<task description>"
+```
+
+`N:agent-type` selects the worker count and the shared role prompt. Plain `gjc team "task"` defaults to **3 executor workers**; `gjc team 1:executor "task"` is the explicit single-worker form. Worker count is capped at 20.
+
+```bash
+gjc team 2:executor "split implementation and verification for this bug fix"
+gjc team 3:executor "analyze feature X and report flaws"
+gjc team "debug flaky integration tests"
+```
+
+<Callout type="warn">
+`team` only works when the leader session is **inside a tmux session** (`$TMUX` is set). In the GJC App or a plain outside-tmux shell, `gjc team` / `$team` is not directly available — launch the `gjc` CLI from a shell first, e.g. `gjc --tmux`.
+</Callout>
+
+`team` must be launched from inside an attached tmux leader pane. In the GJC App or a plain outside-tmux session, launch the `gjc` CLI from a shell first.
+
+### Preconditions
+
+<Steps>
+<Step>`tmux` is installed (`tmux -V`).</Step>
+<Step>The current leader session is inside tmux (`$TMUX` is set).</Step>
+<Step>`gjc` resolves to the intended install or build.</Step>
+</Steps>
+
+Outside tmux, a non-dry-run launch fails before any team state or worktrees are created.
+
+## What a launch does
+
+On a non-dry-run launch, `gjc team`:
+
+- Parses the args (`N`, `agent-type`, task) and detects the current tmux leader context.
+- Initializes team state under `.gjc/state/team/<team>/` (`config.json`, `manifest.v2.json`, `tasks/task-1.json`, `mailbox/worker-1.json`).
+- Splits the current window — worker 1 to the right of the leader, additional workers stacked in the right column — keeping a roughly 50/50 leader-left / worker-right layout.
+- Launches each worker as a full `gjc` worker CLI session with `GJC_TEAM_NAME`, `GJC_TEAM_WORKER_ID`, and `GJC_TEAM_STATE_ROOT` set.
+- Returns control to the leader. The leader stays in the existing left pane.
+
+Workers may run in dedicated git worktrees that share the team state root. During leader monitoring, clean-ahead worker history is merged into the leader, diverged history is cherry-picked, and conflicts are aborted, recorded, and reported to the leader mailbox.
+
+## Lifecycle
+
+<Steps>
+<Step>Start the team and confirm startup evidence (team line, tmux target, worker pane id, state dir).</Step>
+<Step>Monitor with `gjc team status <team>` or `gjc team resume <team>`, e.g. `sleep 30 && gjc team status <team>`.</Step>
+<Step>Wait for terminal task state (`pending=0`, `in_progress=0`, `failed=0`) before shutting down.</Step>
+<Step>Run `gjc team shutdown <team>`, then verify `phase=complete` and worker status `stopped`.</Step>
+</Steps>
+
+```bash
+gjc team status <team-name>
+gjc team resume <team-name>
+gjc team shutdown <team-name>
+```
+
+- `status` and `resume` are mutating monitor paths: they read the snapshot and apply any pending worker-worktree integration before returning task counts, worker state, tmux target/pane evidence, and `integration_by_worker`.
+- `shutdown` kills only the recorded worker pane (after confirming it still belongs to the stored tmux target and is not the leader pane), marks the worker stopped, and sets `phase` from task state — `complete` only when all tasks completed, `failed` on failed/blocked tasks, and `cancelled` when work remains pending or in progress. It never kills the tmux session and preserves `.gjc/state/team/<team>` as evidence.
+
+## Machine-readable interop
+
+Use `gjc team api` for task-lifecycle operations:
+
+```bash
+gjc team api claim-task --input '{"team_name":"my-team","worker_id":"worker-1"}' --json
+gjc team api transition-task-status --input '{"team_name":"my-team","task_id":"task-1","to":"completed","worker_id":"worker-1","claim_token":"<claim-token>","evidence":"summary of completed work"}' --json
+```
+
+The canonical worker lifecycle is `worker-startup-ack` → `claim-task` → `transition-task-status` (with claim token, worker id, and completion evidence) → `release-task-claim`. Run `gjc team api --help` for the full operation list.
+
+## Dry-run state
+
+`gjc team ... --dry-run --json` creates the same machine-readable state tree as a real launch without starting any tmux panes. Treat the generated state as ephemeral smoke-test/review state — do not commit `.gjc/state/team` contents, and remove the generated team directory once it is no longer needed.
+
+## Environment variables
+
+| Variable | Behavior |
+| --- | --- |
+| `GJC_TEAM_STATE_ROOT` | Overrides the team state root (default `<cwd>/.gjc/state/team`). |
+| `GJC_TEAM_TMUX_COMMAND` | tmux binary/command override for team launch (default `tmux`). |
+| `GJC_TEAM_WORKER_COMMAND` | Worker GJC command override (default resolves to the active `gjc` entrypoint). |
+| `GJC_TEAM_WORKER_CLI` | Team worker CLI selector; accepted values are `auto` or `gjc`. |
+| `GJC_TEAM_WORKER_CLI_MAP` | Comma-separated worker CLI selector map; entries must be `auto` or `gjc`. |
+
+Worker CLI selection is teammate-only: only `auto` or `gjc` are accepted. Legacy/provider values such as `codex`, `claude`, or `gemini` are rejected before launch.
+
+```bash
+GJC_TEAM_WORKER_COMMAND="bun packages/coding-agent/src/cli.ts" gjc team executor "update docs and report"
+```
+
+See [Environment variables](/docs/reference/environment-variables) for the full list.
+
+## team and ultragoal together
+
+`team` and [`ultragoal`](/docs/commands/ultragoal) compose well: `ultragoal` stays leader-owned and durable, while `team` provides the visible parallel execution lanes. Workers return task and verification evidence only — they do not own goal state, do not write worker ledgers, and must not run `gjc ultragoal checkpoint`. Checkpoint authority stays with the leader after worker tasks are terminal, and `ultragoal` never auto-launches a team.
+
+<Cards>
+<Card title="ultragoal" href="/docs/commands/ultragoal" />
+<Card title="executor agent" href="/docs/skills/executor" />
+<Card title="Sessions & worktrees" href="/docs/concepts/sessions" />
+</Cards>

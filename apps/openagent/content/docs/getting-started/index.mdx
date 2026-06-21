@@ -1,38 +1,48 @@
 ---
 title: Getting Started
-description: Install OmO, configure providers, run doctor, and try your first ulw.
+description: Install the right OmO edition, configure providers, run doctor, and try your first ulw.
 ---
 
-OmO runs on top of OpenCode. Install the harness, point it at your model subscriptions, verify with `doctor`, and the loop is ready.
+OmO now ships in two editions from the same upstream product. Use **Ultimate** for the full OpenCode harness, or **Light** when you want the Codex CLI plugin bundle that LazyCodex installs.
 
 ## Prerequisites
 
 | Item | Requirement |
 |---|---|
-| OpenCode | `opencode` 1.4.0 or newer (matches `bunx oh-my-openagent doctor` floor). |
-| Runtime | `bunx` (or `npx`) to bootstrap the installer. The CLI ships standalone binaries afterwards. |
-| Providers | Whatever subset you have: Claude, OpenAI/ChatGPT, Gemini, GitHub Copilot, OpenCode Go/Zen, Kimi for Coding, Z.ai, or Vercel AI Gateway. |
+| Harness | OpenCode for Ultimate, OpenAI Codex CLI for Light, or both. |
+| Runtime | `bunx` for Ultimate. `npx lazycodex-ai install` for the Codex Light installer. |
+| Providers | For Ultimate, whatever subset you have: Claude, OpenAI/ChatGPT, Gemini, GitHub Copilot, OpenCode Go/Zen, Kimi for Coding, Z.ai, or Vercel AI Gateway. Light does not ask provider-subscription questions. |
 | OS | macOS ARM64/x64, Linux x64/ARM64 (incl. musl/Alpine), Windows x64. |
 
-## Setup
+## Pick an Edition
+
+| You want | Run | What lands on disk |
+|---|---|---|
+| Ultimate for OpenCode | `bunx oh-my-openagent install` | OpenCode plugin registration, agent/model config, and provider auth prompts. |
+| Light for Codex CLI | `npx lazycodex-ai install` | Managed `~/.codex/plugins/cache/sisyphuslabs/omo/`, Codex marketplace/plugin config, optional autonomous Codex permissions, component CLIs, and plugin-scoped MCPs. |
+| Both | `bunx oh-my-openagent install --platform=both` | Both installer paths. |
+
+`lazycodex-ai` is the supported npm installer for the Codex Light edition. It is not the Codex marketplace name; Codex sees marketplace `sisyphuslabs` and plugin `omo@sisyphuslabs`.
+
+## Install
 
 <Steps>
 
 <Step>
 
-### Install
+### Ultimate: OpenCode
 
 ```bash
 bunx oh-my-openagent install
 ```
 
-The compat binary `oh-my-opencode` works too. The installer asks which model subscriptions you have, registers the OpenCode plugin, writes a config file, and prints auth hints for the providers you said yes to.
+The installer asks which model subscriptions you have, registers the OpenCode plugin, writes config, and prints auth hints for the providers you said yes to. The legacy package/CLI name `oh-my-opencode` still works during the rename transition, but new docs and config should prefer `oh-my-openagent`.
 
 </Step>
 
 <Step>
 
-### Non-Interactive Install
+### Ultimate: Non-Interactive Install
 
 When an agent runs setup for you, pass flags directly:
 
@@ -63,13 +73,42 @@ Provider selection is per-agent — OmO does not use one global priority.
 
 <Step>
 
+### Light: Codex CLI
+
+```bash
+npx lazycodex-ai install
+# non-interactive recommended mode:
+npx lazycodex-ai install --no-tui --codex-autonomous
+```
+
+`--codex-autonomous` lets the installer configure Codex for autonomous agent-style use: `approval_policy = "never"`, `sandbox_mode = "danger-full-access"`, and `network_access = "enabled"`. Use `--no-codex-autonomous` if you want the installer to leave those permission settings alone.
+
+</Step>
+
+<Step>
+
+### Codex Marketplace Path
+
+The marketplace path is experimental and additive; `npx lazycodex-ai install` remains the primary supported Light installer.
+
+```bash
+codex plugin marketplace add https://github.com/code-yeongyu/lazycodex
+codex plugin add omo@sisyphuslabs
+```
+
+Relaunch Codex, review and approve the new hooks, then restart again after the background bootstrap notice completes.
+
+</Step>
+
+<Step>
+
 ### Authenticate Providers
 
 ```bash
 opencode auth login
 ```
 
-For Gemini Antigravity OAuth, install the upstream `opencode-antigravity-auth` plugin. For GitHub Copilot, Z.ai, OpenCode Go, OpenCode Zen, and Kimi, the installer wires defaults from your provider flags.
+This is an Ultimate/OpenCode step. For Gemini Antigravity OAuth, install the upstream `opencode-antigravity-auth` plugin. For GitHub Copilot, Z.ai, OpenCode Go, OpenCode Zen, and Kimi, the installer wires defaults from your provider flags.
 
 </Step>
 
@@ -80,9 +119,10 @@ For Gemini Antigravity OAuth, install the upstream `opencode-antigravity-auth` p
 ```bash
 opencode --version
 bunx oh-my-openagent doctor
+npx lazycodex-ai doctor
 ```
 
-`doctor` checks four groups:
+Use the first two commands for Ultimate and `npx lazycodex-ai doctor` for Light. `doctor` checks four groups:
 
 | Group | What it checks |
 |---|---|
@@ -114,6 +154,8 @@ For precision-first work, plan before executing:
 
 Need GPT-native deep work? Switch to Hephaestus from the agent selector and give him a goal, not a recipe.
 
+Inside Codex after installing Light, use the LazyCodex/OmO components such as `ultrawork`, `$ulw-loop`, or the installed Codex plugin skills from the `omo@sisyphuslabs` marketplace bundle.
+
 </Step>
 
 </Steps>
@@ -125,4 +167,6 @@ Anonymous active-install telemetry is on by default — at most one event per UT
 ```bash
 OMO_SEND_ANONYMOUS_TELEMETRY=0
 OMO_DISABLE_POSTHOG=1
+OMO_CODEX_SEND_ANONYMOUS_TELEMETRY=0
+OMO_CODEX_DISABLE_POSTHOG=1
 ```

@@ -51,6 +51,14 @@ Many more are supported, including Synthetic, NVIDIA, NanoGPT, Venice, LiteLLM, 
 | `ANTHROPIC_FOUNDRY_API_KEY`                   | Anthropic via Azure Foundry (when Foundry mode on)  |
 | `GITLAB_TOKEN`                                | GitLab Duo                                          |
 
+### Auth broker and credential ranking
+
+| Variable | Used for |
+| --- | --- |
+| `GJC_AUTH_BROKER_URL` | Base URL of the remote auth broker. When set, local SQLite credentials are bypassed and stored API/OAuth credentials resolve through the broker. |
+| `GJC_AUTH_BROKER_TOKEN` | Bearer token for broker endpoints except `/v1/healthz`; falls back to `auth.broker.token` or `<config-dir>/auth-broker.token`. |
+| `GJC_CREDENTIAL_RANKING_MODE` | Multi-account OAuth selection strategy. `balanced` is the default; `earliest-reset` prefers the account whose quota resets soonest. |
+
 ## Provider base-URL overrides
 
 Built-in provider base URLs resolve as: `models.yml` `baseUrl` → provider-specific base-URL env var → bundled default.

@@ -1,0 +1,133 @@
+---
+title: team
+description: 실제 GJC 워커 세션을 조율하는 선택적 tmux 기반 병렬 실행 모드입니다 — 필수 핸드오프 단계가 아닙니다.
+---
+
+`team`은 Gajae-Code의 tmux 기반 다중 워커 실행 모드입니다. 현재 tmux 리더 윈도우를 분할해 실제 `gjc` 워커 CLI 세션을 띄웁니다. 워커 조율에는 `.gjc/state/team/` 아래의 상태 파일과 `gjc team api` interop 표면을 사용합니다.
+
+이것은 **선택적 실행 모드이며 필수 핸드오프가 아닙니다**. 조율된 병렬 워커가 실제로 도움이 될 때만 사용하세요. 세션 안에서 끝나는 제한된 병렬 작업이라면 보통 네이티브 서브에이전트로 충분합니다.
+
+## team vs 네이티브 서브에이전트
+
+| 사용 | 시점 |
+| --- | --- |
+| **네이티브 서브에이전트** | 하나의 리더 스레드가 몇 개의 독립적인 서브태스크를 펼치고 직접 기다리는, 세션 내 제한된 병렬 작업. |
+| **`gjc team`** | 지속적이고 눈에 보이는 tmux 워커, 공유 태스크 상태, 워커 메일박스, worktree, 명시적 라이프사이클 제어, 또는 한 번의 로컬 추론 버스트를 넘어 살아남아야 하는 장기 실행이 필요할 때. |
+
+네이티브 서브에이전트는 team 실행을 보완할 수 있지만, tmux team 런타임의 상태 기반 조율 계약을 대체하지는 못합니다.
+
+## 호출
+
+```bash
+gjc team [N:agent-type] "<task description>"
+```
+
+`N:agent-type`은 워커 수와 공유 역할 프롬프트를 지정합니다. 단순 `gjc team "task"`는 기본값으로 **executor 워커 3개**를 띄웁니다. `gjc team 1:executor "task"`는 명시적 단일 워커 형식입니다. 워커 수는 최대 20개로 제한됩니다.
+
+```bash
+gjc team 2:executor "split implementation and verification for this bug fix"
+gjc team 3:executor "analyze feature X and report flaws"
+gjc team "debug flaky integration tests"
+```
+
+<Callout type="warn">
+`team`은 리더 세션이 **tmux 세션 안에 있을 때**(`$TMUX`가 설정됨)만 동작합니다. GJC App이나 tmux 밖의 평범한 셸에서는 `gjc team` / `$team`을 바로 쓸 수 없습니다 — 먼저 셸에서 `gjc` CLI를 실행하세요. 예: `gjc --tmux`.
+</Callout>
+
+`team`은 연결된 tmux 리더 페인 안에서 띄워야 합니다. GJC App이나 tmux 밖의 평범한 세션이라면 먼저 셸에서 `gjc` CLI를 실행하세요.
+
+### 전제 조건
+
+<Steps>
+<Step>`tmux`가 설치되어 있을 것 (`tmux -V`).</Step>
+<Step>현재 리더 세션이 tmux 안에 있을 것 (`$TMUX`가 설정됨).</Step>
+<Step>`gjc`가 의도한 설치/빌드로 해석될 것.</Step>
+</Steps>
+
+tmux 밖에서는 non-dry-run 런치가 team 상태나 worktree를 만들기 전에 실패합니다.
+
+## 런치 동작
+
+non-dry-run 런치 시 `gjc team`은:
+
+- 인자(`N`, `agent-type`, task)를 파싱하고 현재 tmux 리더 컨텍스트를 감지합니다.
+- `.gjc/state/team/<team>/` 아래에 team 상태를 초기화합니다 (`config.json`, `manifest.v2.json`, `tasks/task-1.json`, `mailbox/worker-1.json`).
+- 현재 윈도우를 분할합니다. 워커 1은 리더 오른쪽에, 추가 워커는 오른쪽 열에 쌓이며 대략 50/50 레이아웃을 유지합니다.
+- 각 워커를 `GJC_TEAM_NAME`, `GJC_TEAM_WORKER_ID`, `GJC_TEAM_STATE_ROOT`가 설정된 완전한 `gjc` 워커 CLI 세션으로 띄웁니다.
+- 리더에게 제어를 돌려줍니다. 리더는 기존 왼쪽 페인에 그대로 머뭅니다.
+
+워커는 team 상태 루트를 공유하는 전용 git worktree에서 돌 수 있습니다. 리더 모니터링 중 처리 방식:
+
+- clean-ahead 워커 히스토리는 리더에 머지됩니다.
+- 분기된 히스토리는 cherry-pick됩니다.
+- 충돌은 중단·기록되어 리더 메일박스에 보고됩니다.
+
+## 라이프사이클
+
+<Steps>
+<Step>team을 시작하고 시작 증거(team 라인, tmux 타깃, 워커 페인 id, 상태 디렉터리)를 확인합니다.</Step>
+<Step>`gjc team status <team>` 또는 `gjc team resume <team>`로 모니터링합니다. 예: `sleep 30 && gjc team status <team>`.</Step>
+<Step>종료 전에 종결 태스크 상태(`pending=0`, `in_progress=0`, `failed=0`)를 기다립니다.</Step>
+<Step>`gjc team shutdown <team>`를 실행한 뒤 `phase=complete`와 워커 상태 `stopped`를 확인합니다.</Step>
+</Steps>
+
+```bash
+gjc team status <team-name>
+gjc team resume <team-name>
+gjc team shutdown <team-name>
+```
+
+- **`status` / `resume`** — 스냅샷을 읽고 대기 중인 워커-worktree 통합을 적용하는 모니터 경로입니다. 태스크 카운트, 워커 상태, tmux 타깃/페인 증거, `integration_by_worker`를 반환합니다.
+- **`shutdown`** — 기록된 워커 페인만 종료합니다(저장된 tmux 타깃에 여전히 속하고 리더 페인이 아님을 확인한 뒤). 워커를 stopped로 표시하고 태스크 상태에서 `phase`를 설정합니다: 모든 태스크 완료 시 `complete`, 실패/차단 태스크 존재 시 `failed`, 작업이 pending/in-progress로 남으면 `cancelled`. tmux 세션은 절대 죽이지 않으며 `.gjc/state/team/<team>`을 증거로 보존합니다.
+
+## 머신 판독 interop
+
+태스크 라이프사이클 작업에는 `gjc team api`를 사용합니다:
+
+```bash
+gjc team api claim-task --input '{"team_name":"my-team","worker_id":"worker-1"}' --json
+gjc team api transition-task-status --input '{"team_name":"my-team","task_id":"task-1","to":"completed","worker_id":"worker-1","claim_token":"<claim-token>","evidence":"summary of completed work"}' --json
+```
+
+표준 워커 라이프사이클은 `worker-startup-ack` → `claim-task` → `transition-task-status`(claim token, 워커 id, 완료 증거 포함) → `release-task-claim`입니다. 전체 작업 목록은 `gjc team api --help`로 확인하세요.
+
+## dry-run 상태
+
+`gjc team ... --dry-run --json`은 tmux 페인을 띄우지 않고 실제 런치와 동일한 머신 판독 상태 트리를 만듭니다. 생성된 상태는 일회성 스모크 테스트/리뷰 상태로 취급하세요 — `.gjc/state/team` 내용을 커밋하지 말고, 더 이상 필요 없으면 생성된 team 디렉터리를 삭제하세요.
+
+## 환경 변수
+
+| 변수 | 동작 |
+| --- | --- |
+| `GJC_TEAM_STATE_ROOT` | team 상태 루트를 재정의합니다(기본 `<cwd>/.gjc/state/team`). |
+| `GJC_TEAM_TMUX_COMMAND` | team 런치용 tmux 바이너리/명령 재정의(기본 `tmux`). |
+| `GJC_TEAM_WORKER_COMMAND` | 워커 GJC 명령 재정의(기본은 활성 `gjc` 엔트리포인트로 해석). |
+| `GJC_TEAM_WORKER_CLI` | team 워커 CLI 선택자. 허용 값은 `auto` 또는 `gjc`. |
+| `GJC_TEAM_WORKER_CLI_MAP` | 쉼표 구분 워커 CLI 선택자 맵. 항목은 `auto` 또는 `gjc`여야 함. |
+
+워커 CLI 선택은 팀메이트 전용입니다. 허용 값은 `auto` 또는 `gjc`뿐입니다. `codex`, `claude`, `gemini` 같은 레거시/provider 값은 런치 전에 거부됩니다.
+
+```bash
+GJC_TEAM_WORKER_COMMAND="bun packages/coding-agent/src/cli.ts" gjc team executor "update docs and report"
+```
+
+전체 목록은 [환경 변수](/ko/docs/reference/environment-variables)를 보세요.
+
+## team과 ultragoal 함께 쓰기
+
+`team`과 [`ultragoal`](/ko/docs/commands/ultragoal)은 잘 어울립니다. `ultragoal`은 리더 소유로 지속되고, `team`은 눈에 보이는 병렬 실행 레인을 제공합니다.
+
+워커 역할 제약:
+
+- 태스크와 검증 증거만 반환합니다.
+- 목표 상태를 소유하지 않습니다.
+- 워커 원장(ledger)을 쓰지 않습니다.
+- `gjc ultragoal checkpoint`를 실행해서는 안 됩니다.
+
+워커 태스크가 종결된 뒤 체크포인트 권한은 리더에게 남습니다. `ultragoal`은 team을 자동으로 띄우지 않습니다.
+
+<Cards>
+<Card title="ultragoal" href="/ko/docs/commands/ultragoal" />
+<Card title="executor 에이전트" href="/ko/docs/skills/executor" />
+<Card title="세션과 worktree" href="/ko/docs/concepts/sessions" />
+</Cards>

@@ -22,8 +22,14 @@ If you are new to Oh My ClaudeCode (OMC), follow the steps below in order.
 
 ## Installation
 
-OMC can only be installed as a Claude Code Plugin.
-Direct installation via npm or bun is not supported.
+OMC ships two surfaces and they are designed to coexist:
+
+| Surface | What you get | Recommended install |
+|---|---|---|
+| Claude Code plugin (`oh-my-claudecode@omc`) | In-session skills, agents, hooks, statusline, MCP servers, and slash commands such as `/autopilot`, `/ralph`, `/ultrawork`, and `/team`. | Marketplace plugin install below. |
+| Terminal CLI (`omc`, npm package `oh-my-claude-sisyphus`) | Shell commands such as `omc setup`, `omc update`, `omc team`, and `omc ask`. | `npm i -g oh-my-claude-sisyphus@latest` |
+
+Most users want both. The CLI detects the plugin install and avoids double-registering in-session skills.
 
 ### Add the Marketplace
 
@@ -39,6 +45,14 @@ After adding the marketplace, install the plugin.
 
 ```bash
 /plugin install oh-my-claudecode
+```
+
+### Optional: Install the Terminal CLI
+
+If you want `omc setup`, `omc update`, `omc team`, and `omc ask` from your shell:
+
+```bash
+npm i -g oh-my-claude-sisyphus@latest
 ```
 
 ### Run Initial Setup

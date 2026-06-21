@@ -7,14 +7,14 @@ Gajae-Code (`gjc`) ships a themed TUI driven by JSON color tokens. Explicit user
 
 ## Default theme
 
-The default dark theme is `red-claw` — the GJC crustacean look, with red/orange brand tokens, separate semantic error/warning/diff-removal tokens, and crab-oriented symbol overrides.
+The default dark theme is `red-claw` — the GJC red-claw look, with warm red accents and strong status contrast. Light-appearance terminals default to `blue-crab`.
 
 Defaults from the settings schema:
 
 | Setting | Default |
 | --- | --- |
 | `theme.dark` | `red-claw` |
-| `theme.light` | `light` |
+| `theme.light` | `blue-crab` |
 | `symbolPreset` | `unicode` |
 | `colorBlindMode` | `false` |
 
@@ -41,10 +41,20 @@ The theme system drives the TUI color tokens: foreground/background, markdown st
 
 Theme lookup order:
 
-1. Built-in embedded themes (`dark.json`, `light.json`, and all bundled `defaults/*.json`, including `red-claw`).
+1. Built-in embedded themes (`red-claw`, `blue-crab`, `claude-code`, `codex`, `opencode`, and legacy dark/light themes).
 2. Custom theme file: `<customThemesDir>/<name>.json`.
 
 The custom themes directory defaults to `~/.gjc/agent/themes`, overridden by `GJC_CODING_AGENT_DIR` (`$GJC_CODING_AGENT_DIR/themes`). Built-ins take precedence on name collision.
+
+## Bundled themes
+
+| Theme | Best fit |
+| --- | --- |
+| `red-claw` | Native GJC identity for dark terminals. |
+| `blue-crab` | Light terminal or OS appearance. |
+| `claude-code` | Claude Code muscle memory without leaving GJC. |
+| `codex` | A Codex-like dark workspace. |
+| `opencode` | OpenCode muscle memory in the bundled picker. |
 
 ### Create a custom theme
 

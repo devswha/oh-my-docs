@@ -1,0 +1,65 @@
+---
+title: CLI
+description: launch, provider setup, research, team execution, ultragoal에 쓰는 주요 gjc command 형태.
+---
+
+이 페이지는 짧은 command reference입니다. 첫 실행은 [시작하기](/ko/docs/getting-started)를 보고, 각 command의 의미는 [Commands](/ko/docs/commands)를 보세요.
+
+## Launch
+
+| Command | 용도 |
+| --- | --- |
+| `gjc --tmux` | 권장 tmux 기반 interactive session 시작. |
+| `gjc` | tmux session 생성·attach 없이 직접 시작. |
+| `gjc --tmux --worktree my-task-branch` | branch-like task name으로 GJC-managed sibling Git worktree 생성 또는 사용. |
+| `gjc @screenshot.png "What should I change?"` | image input과 함께 시작. |
+
+`--worktree`는 filesystem path가 아닙니다. 이미 worktree directory가 있다면 그 안으로 `cd`한 뒤 `gjc --tmux`를 실행하세요.
+
+## Provider setup
+
+```bash
+gjc setup provider --preset minimax
+gjc setup provider --preset minimax-cn
+gjc setup provider --preset glm
+```
+
+TUI 안에서는 다음을 사용합니다.
+
+```text
+/provider add --preset glm
+/provider add zai
+```
+
+모델은 TUI에서 `/model`로, CLI에서는 `--model` / `--models`로 고릅니다.
+
+## Workflow commands
+
+```text
+/skill:deep-interview clarify the bug, affected behavior, non-goals, and acceptance checks
+/skill:ralplan turn the clarified bug report into a reviewed fix plan
+gjc ultragoal create-goals --brief-file <approved-plan>
+gjc ultragoal complete-goals
+```
+
+병렬 tmux worker가 도움이 될 때만 `team`을 사용합니다.
+
+```bash
+gjc team 2:executor "split implementation and verification for this bug fix"
+```
+
+## Research mode
+
+```bash
+gjc rlm
+```
+
+`rlm`은 notebook-style research/REPL loop를 열고 artifact를 `.gjc/_session-<gjcSessionId>/rlm/<rlmSessionId>/` 아래에 기록합니다.
+
+## Auth broker
+
+```bash
+gjc auth-broker
+```
+
+OAuth refresh token을 local machine에만 두지 않고 shared host에서 제공하려는 경우에만 broker를 사용하세요.

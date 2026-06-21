@@ -1,0 +1,114 @@
+---
+title: FAQ
+description: Short answers about LazyCodex install, OmO, ulw, hooks, doctor, tokens, Codex App, and OMX conflicts.
+---
+
+Start with the section that matches where you are stuck: **Install and environment** for setup, **First use** for choosing a command, **Running and verification** for behavior during a session.
+
+## Install and Environment
+
+<section className="not-prose my-6 divide-y divide-fd-border rounded-lg border border-fd-border bg-fd-card">
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>What is LazyCodex?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">LazyCodex is a Codex-focused light port that layers core OmO commands, skills, and hooks onto Codex. Think of it as a thin layer that helps Codex plan long work, keep going, and verify completion with evidence.</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>Is LazyCodex a replacement for OmO?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">Not exactly. It is closer to a light port of OmO for Codex. Full OmO has deeper orchestration; LazyCodex focuses on the parts that fit Codex directly.</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>Can I ask Codex to install it for me?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">Yes. Give Codex App or Codex CLI the LazyCodex GitHub link or <code>lazycodex.ai</code> and ask it to install LazyCodex. You can also run <code>npx lazycodex-ai install</code> yourself.</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>Do Codex App and Codex CLI install differently?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">Treat them as the same setup path. LazyCodex installs into the Codex environment; use Codex App or Codex CLI, whichever you normally work in.</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>Do I need Bun?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">No. You do not need Bun unless you are building LazyCodex from source. Normal installation and use follow the Node.js/npm <code>npx</code> path.</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>Does it work on Windows?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">It can, but native Windows is not the recommended path. If you must use Windows, use Codex and LazyCodex inside WSL2 Ubuntu. If install or runtime behavior gets strange, retry from WSL2 or a Git Bash-based shell before assuming LazyCodex itself is broken.</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>Which version should I look at?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">The docs show the plugin version. At the moment that is <code>4.12.1</code>, taken from the LazyCodex OmO plugin package.</p>
+  </details>
+</section>
+
+## First Use
+
+<section className="not-prose my-6 divide-y divide-fd-border rounded-lg border border-fd-border bg-fd-card">
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>What kind of work fits LazyCodex best?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">It fits larger or longer work where planning, delegation, and verification matter. For small questions or one-line edits, ask Codex normally.</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>Should I use it brain-off or brain-on?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">Both work. LazyCodex is designed to run even when you delegate loosely, but it gets better when you can state the goal and completion criteria clearly. Do not study every internal skill first; learn the pieces only when you hit a real edge.</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>Which commands should I learn first?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">On a large repository, run <code>$init-deep</code> once first. Use <code>$ulw-plan</code> when the work needs decisions before code, <code>$start-work</code> to execute a written plan, and <code>$ulw-loop</code> when you want an open-ended task to keep going until evidence proves it is done.</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>How do I know the install worked?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">Open Codex, type <code>$</code>, and check that OmO commands and skills appear. In the CLI, typing <code>ulw</code> and seeing ultrawork mode enable is also a useful check. The first useful command is usually <code>$init-deep</code>.</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>What if commands do not appear in the $ menu after install?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">Open a fresh Codex session so the plugin reloads, then check whether omo hook approval is pending in the startup review. If commands still do not appear, run <code>npx lazycodex-ai doctor</code> to inspect install and skill loading state.</p>
+  </details>
+</section>
+
+## Running and Verification
+
+<section className="not-prose my-6 divide-y divide-fd-border rounded-lg border border-fd-border bg-fd-card">
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>Is npx lazycodex-ai doctor a real command?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">Yes. <code>lazycodex-ai</code> passes <code>doctor</code> through to the OmO doctor flow. It checks the local LazyCodex/Codex setup and can exit with an error when it finds problems.</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>Why do I need to approve hooks?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">Codex reviews hooks on startup. LazyCodex hooks do not run before approval, so approve the omo hooks after installation if you want the lifecycle checks to work.</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>What should I check after an update?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">If hooks show as Modified after an update, approve them again. If anything looks wrong, run <code>npx lazycodex-ai doctor</code> first to inspect install, hook, and skill loading state.</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>What if $ulw-loop finishes too shallowly?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">Repetition alone will not improve missing data or vague completion criteria. State the collection scope, required checks, and what to investigate when data is missing, or start with <code>$ulw-plan</code> first.</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>Do I need a higher plan or a huge token budget?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">Do not treat LazyCodex as a token-saving tool. It is closer to a workflow that spends a good model and enough tokens on planning, execution, and verification. For large work, split by work unit before a single thread gets too heavy.</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>How should I choose the thinking or reasoning level?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">Do not overthink it. Avoid <code>low</code>; use <code>medium</code> for normal work and <code>high</code> when mistakes are expensive or the task needs stronger review. Reserve <code>xhigh</code> for truly heavy work.</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>Does LazyCodex do computer-use?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">Yes, when the current Codex session has a computer-use tool available. LazyCodex can put that tool into the workflow, but browser or OS control still requires a callable computer-use capability.</p>
+  </details>
+</section>
+
+## Conflicts and Limits
+
+<section className="not-prose my-6 divide-y divide-fd-border rounded-lg border border-fd-border bg-fd-card">
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>Can I use it from Codex App, mobile, or remote sessions?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">LazyCodex installs inside Codex, so use it from whichever Codex surface you normally use. It pairs especially well with Codex App desktop/mobile remote flows, although a few capabilities may be desktop-app-only.</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>Team mode appears, but thread creation fails. What should I do?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">First update LazyCodex and Codex, then run <code>npx lazycodex-ai doctor</code> to check plugin, hook, and configuration state. Team mode can depend on Codex desktop app behavior, so do not assume the CLI and desktop app expose identical paths.</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>Can I use LazyCodex together with OMX?</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">Not recommended. Keeping LazyCodex and OMX active together can conflict, spend tokens, and then fail. If the installer warns about another harness, clean one side up and run LazyCodex as the thin layer on top of Codex.</p>
+  </details>
+</section>

@@ -1,0 +1,83 @@
+---
+title: 媒体与杂项工具
+description: 图表、图像分析、算术、项目任务运行器与交互式提示 —— render_mermaid、inspect_image、calc、recipe、ask。
+---
+
+少量工具覆盖图表、视觉、数学、任务运行器以及向用户提问。名称与上游 `docs/tools/` 参考一致。
+
+## `render_mermaid`
+
+把 Mermaid 源转换为终端友好的 ASCII/Unicode 文本。尽管名字如此，它生成的是文本——不涉及 PNG、SVG、浏览器或 Mermaid CLI，渲染在进程内通过 `beautiful-mermaid` 完成。
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `mermaid` | `string` | 是 | Mermaid 源文本（如 `graph TD; A-->B`）。 |
+| `config` | `object` | 否 | 可选渲染选项，使用前会清洗。 |
+
+`config` 字段：`useAscii`（`true` 为纯 ASCII，否则 Unicode 方框字符）、`paddingX`、`paddingY`、`boxBorderPadding`（数值字段向下取整并钳为 `>= 0`）。
+
+渲染文本内联返回。在持久会话中，完整文本还会保存为 `<id>.render_mermaid.log` 产物，结果追加 `Saved artifact: artifact://<id>`。Mermaid 语法无效会让调用失败而非返回部分输出。受 `renderMermaid.enabled` 控制。
+
+## `inspect_image`
+
+把本地图像文件发送给具备视觉能力的模型并返回文本分析。
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `path` | `string` | 是 | 相对于会话 cwd 解析的图像路径。 |
+| `question` | `string` | 是 | 与图像一起发送的提示。 |
+
+模型选择依次尝试 `pi/vision`、`pi/default`、当前模型、首个可用模型；所选模型必须支持图像输入。支持格式按文件**内容**（非扩展名）检测：PNG、JPEG、GIF、WEBP。超过 `20 MiB`（`MAX_IMAGE_INPUT_BYTES`）的文件在调用前被拒绝。
+
+启用 `images.autoResize` 时，过大图像会向 500 KiB 目标缩放并重编码（默认上限 `1568x1568`）；缩放失败则静默保留原始字节。设置 `images.blockImages` 时该工具被完全禁用。
+
+结果为模型的文本分析，外加包含所选 `model`、解析后的 `imagePath` 与实际发送的 `mimeType` 的 `details`。
+
+## `calc`
+
+求值一个或多个算术表达式并返回格式化的数值结果。
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `calculations` | `Calculation[]` | 是 | 按顺序求值的表达式批次。 |
+
+每个 `Calculation` 含 `expression`（表达式）、`prefix`（原样前缀）、`suffix`（原样后缀），均为必填。
+
+支持运算符 `+`、`-`、`*`、`/`、`%`、`**`（右结合）。数字字面量包括小数（含 `.5` 这类前导点形式）、科学计数法（`1e10`）、十六进制（`0x...`）、二进制（`0b...`）、八进制（`0o...`）。**不支持**函数、标识符、单位或常量——尽管 schema 示例为 `sqrt(16)`，它无法解析。结果必须有限，任何求值错误都会中止整批。
+
+## `recipe`
+
+运行已检测项目任务运行器暴露的任务。仅在至少检测到一个含任务的运行器时出现。
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `op` | `string` | 是 | 任务选择器加尾随参数。首个 token 选任务，其余原样附加到命令。 |
+
+示例：`test`、`build --release`、`pkg-a/test`、`crate/bin/server`、`pkg:test --watch`。
+
+支持的运行器：`just`（`PATH` 上的 just + justfile）、`pkg`（根 `package.json`，根与工作区脚本）、`cargo`（`PATH` 上的 cargo + `Cargo.toml`）、`make`（`PATH` 上的 make + makefile）、`task`（`PATH` 上的 task + Taskfile）。
+
+解析规则：未限定任务名（`test`）仅当恰好一个运行器拥有时成功，歧义会提示用 `<runner-id>:<task>`；显式前缀（`pkg:test`）定向单一运行器；命名空间任务名用 `/`（如 `pkg-a/test`），`/` 是名称的一部分而非分隔符。
+
+执行委托给 `bash`，故输出、截断、cwd 处理与 `bash` 工具一致。recipe 自身不设超时，沿用 bash 默认 `300` 秒。受 `recipe.enabled` 控制；工具描述每个运行器最多列 20 个任务。
+
+## `ask`
+
+向交互式用户请求一个或多个选择或自由文本回答。仅在会话有 UI 时注册；无头会话不可见。
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `questions` | `Question[]` | 是 | 一个或多个问题（非空）。 |
+
+每个 `Question` 含 `id`（稳定标识）、`question`（提示文本）、`options`（显式选项；UI 总会追加 `Other (type your own)`，勿自行加入）、`multi`（多选，默认 `false`）、`recommended`（零基推荐索引，仅 UI 提示，无效索引被忽略）。
+
+若 `ask.notify` 非 `off`，会发送终端通知（`Waiting for input`）。在任何输入前超时则自动选推荐项（否则首项）。`ask.timeout` 默认 `30` 秒，`0` 禁用，计划模式下也禁用。超时仅适用于选项选择器——一旦选 `Other`，编辑器无超时。取消或无头使用会抛错而非返回结果。
+
+## 相关
+
+<Cards>
+  <Card title="工具总览" href="/zh/docs/reference/tools" />
+  <Card title="运行时工具" href="/zh/docs/reference/tools/runtime" />
+  <Card title="文件工具" href="/zh/docs/reference/tools/files" />
+  <Card title="配置" href="/zh/docs/reference/configuration" />
+</Cards>

@@ -23,7 +23,7 @@ const translations = {
     pipeline: 'The Working Loop', pipelineDesc: 'A request is classified, routed, delegated, checked, and driven through the surface.',
     steps: [['Intent Gate', 'Read the real intent'], ['Sisyphus', 'Plan and delegate'], ['Specialists', 'Research and implement'], ['Verification', 'Diagnostics, build, tests, QA']],
     agents: 'Core Agents', agentsDesc: 'A coordinated development team inside OpenCode.',
-    skills: 'Start in 3 Steps', install: 'Install command', stepList: [['01', 'Install OpenCode', 'Install and authenticate OpenCode first.'], ['02', 'Install OmO', 'Run bunx oh-my-opencode install and follow provider prompts.'], ['03', 'Work', 'Run bunx oh-my-opencode doctor, then type ultrawork.']],
+    skills: 'Start in 3 Steps', install: 'Install command', stepList: [['01', 'Install OpenCode', 'Install and authenticate OpenCode first.'], ['02', 'Install OmO', 'Run bunx oh-my-openagent install and follow provider prompts.'], ['03', 'Work', 'Run bunx oh-my-openagent doctor, then type ultrawork.']],
   },
   ko: {
     metaTitle: 'Oh My OpenAgent - OpenCode 멀티 모델 오케스트레이션',
@@ -40,7 +40,7 @@ const translations = {
     pipeline: '작동 흐름', pipelineDesc: '요청을 분류하고, 라우팅하고, 위임한 뒤 실제 표면에서 확인합니다.',
     steps: [['Intent Gate', '진짜 의도 파악'], ['Sisyphus', '계획과 위임'], ['전문가', '리서치와 구현'], ['검증', '진단, 빌드, 테스트, QA']],
     agents: '핵심 에이전트', agentsDesc: 'OpenCode 안에 들어온 작은 개발팀입니다.',
-    skills: '3단계로 시작', install: '설치 명령', stepList: [['01', 'OpenCode 설치', '먼저 OpenCode를 설치하고 인증합니다.'], ['02', 'OmO 설치', 'bunx oh-my-opencode install을 실행하고 provider 질문에 답합니다.'], ['03', '작업 시작', 'bunx oh-my-opencode doctor로 확인한 뒤 ultrawork를 입력합니다.']],
+    skills: '3단계로 시작', install: '설치 명령', stepList: [['01', 'OpenCode 설치', '먼저 OpenCode를 설치하고 인증합니다.'], ['02', 'OmO 설치', 'bunx oh-my-openagent install을 실행하고 provider 질문에 답합니다.'], ['03', '작업 시작', 'bunx oh-my-openagent doctor로 확인한 뒤 ultrawork를 입력합니다.']],
   },
   zh: {
     metaTitle: 'Oh My OpenAgent - OpenCode 多模型编排',
@@ -51,7 +51,7 @@ const translations = {
     pipeline: '工作循环', pipelineDesc: '请求会被分类、路由、委派、验证，并在真实使用界面检查。',
     steps: [['Intent Gate', '理解真实意图'], ['Sisyphus', '规划和委派'], ['Specialists', '研究和实现'], ['Verification', '诊断、构建、测试、QA']],
     agents: '核心智能体', agentsDesc: 'OpenCode 内部的协作开发团队。', skills: '三步开始', install: '安装命令',
-    stepList: [['01', '安装 OpenCode', '先安装并认证 OpenCode。'], ['02', '安装 OmO', '运行 bunx oh-my-opencode install。'], ['03', '开始工作', '运行 doctor 后输入 ultrawork。']],
+    stepList: [['01', '安装 OpenCode', '先安装并认证 OpenCode。'], ['02', '安装 OmO', '运行 bunx oh-my-openagent install。'], ['03', '开始工作', '运行 doctor 后输入 ultrawork。']],
   },
   ja: {
     metaTitle: 'Oh My OpenAgent - OpenCode のマルチモデル編成',
@@ -62,7 +62,7 @@ const translations = {
     pipeline: 'ワークループ', pipelineDesc: '要求を分類し、ルーティングし、委任し、検証し、実際の表面で確認します。',
     steps: [['Intent Gate', '本当の意図を読む'], ['Sisyphus', '計画と委任'], ['Specialists', '調査と実装'], ['Verification', '診断、ビルド、テスト、QA']],
     agents: 'コアエージェント', agentsDesc: 'OpenCode 内の小さな開発チームです。', skills: '3 ステップで開始', install: 'インストールコマンド',
-    stepList: [['01', 'OpenCode をインストール', '先に OpenCode を認証します。'], ['02', 'OmO をインストール', 'bunx oh-my-opencode install を実行します。'], ['03', '作業開始', 'doctor の後に ultrawork と入力します。']],
+    stepList: [['01', 'OpenCode をインストール', '先に OpenCode を認証します。'], ['02', 'OmO をインストール', 'bunx oh-my-openagent install を実行します。'], ['03', '作業開始', 'doctor の後に ultrawork と入力します。']],
   },
 } as const;
 
@@ -94,7 +94,7 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
               <Link href={`${prefix}/docs/getting-started`} className="rounded-full bg-fd-primary px-5 py-3 font-semibold text-fd-primary-foreground">{t.getStarted}</Link>
               <Link href={`${prefix}/docs`} className="rounded-full border border-fd-border px-5 py-3 font-semibold">{t.docs}</Link>
             </div>
-            <div className="max-w-xl"><CopyInstallCommand command="bunx oh-my-opencode install" label={t.install} /></div>
+            <div className="max-w-xl"><CopyInstallCommand command="bunx oh-my-openagent install" label={t.install} /></div>
           </div>
           <div className="relative overflow-hidden rounded-3xl border border-fd-border bg-fd-card p-5 shadow-2xl">
             <Image src="/images/omo.png" alt="Oh My OpenAgent preview" width={960} height={600} priority className="rounded-2xl" />
@@ -121,5 +121,4 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
     </HomeLayout>
   );
 }
-
 

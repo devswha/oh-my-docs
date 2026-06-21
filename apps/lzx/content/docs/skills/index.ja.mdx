@@ -1,47 +1,57 @@
 ---
-title: スキル
-description: LazyCodex がコマンド柱の上に読み込む専門家プレイブック。
+title: Skills
+description: LazyCodex が Commands の上で使う specialist playbooks。
 ---
 
-LazyCodex は OmO（oh-my-openagent）を Codex のエージェントハーネスとしてパッケージします。コマンド柱（`$ulw-plan`、`$start-work`、`$ulw-loop`、`$init-deep`）の上に、OmO プラグインが一連のスキルをインストールします。スキルは再利用可能な指示パックで、集中したワーカーをドメイン専門家に変えます。
+LazyCodex は OmO plugin の Skills を Codex にインストールします。Commands (`$ulw-plan`、`$start-work`、`$ulw-loop`、`$init-deep`) は workflow を作り、Skills はその workflow 内で必要な専門判断を提供します。
 
-スキルは Codex セッションの内部で呼び出されます。規律エージェント（Sisyphus、Hephaestus、Oracle、Librarian）がタスクとドメインが重なるスキルを読み込み、そのプレイブックに従います。
+Skills は Codex session 内で load されます。ユーザーが明示的に「この Skill を使って」と言うこともでき、task 内容が Skill description と合う場合は Codex がその playbook に従います。
 
-## インストールされるスキル
+## Documented Skills
 
-| スキル | 用途 |
+| Skill | 用途 |
 | --- | --- |
-| [`review-work`](/ja/docs/skills/review-work) | 多角的な実装後レビュー |
-| [`remove-ai-slops`](/ja/docs/skills/remove-ai-slops) | 振る舞いを保ちつつ AI らしいコードを整理 [^1] |
+| [`review-work`](/ja/docs/skills/review-work) | 多角度の実装後レビュー |
+| [`remove-ai-slops`](/ja/docs/skills/remove-ai-slops) | 挙動を保ったまま AI っぽいコードを整理 |
 | [`debugging`](/ja/docs/skills/debugging) | 体系的な根本原因デバッグ |
-| [`refactor`](/ja/docs/skills/refactor) | テストで検証するリファクタリング。`ast_grep_search` / `ast_grep_replace` による構造的検索・書き換えを含む |
-| [`frontend-ui-ux`](/ja/docs/skills/frontend-ui-ux) | 汎用的なレイアウト埋めではなく、設計された UI 作業 |
-| [`programming`](/ja/docs/skills/programming) | 厳格な TypeScript、Rust、Python、Go の規律 |
-| [`LSP`](/ja/docs/skills/lsp) | 診断、定義、参照、シンボル、リネーム |
-| [`rules`](/ja/docs/skills/rules) | AGENTS、rules、指示ファイルからのプロジェクト指示 |
-| [`comment-checker`](/ja/docs/skills/comment-checker) | 編集系操作後のフィードバック |
-| [`ultragoal`](/ja/docs/skills/ultragoal) | ゴールを固定した証拠駆動の完了 |
+| [`frontend`](/ja/docs/skills/frontend-ui-ux) | generic layout ではなく design された UI work |
+| [`programming`](/ja/docs/skills/programming) | 厳格な TypeScript、Rust、Python、Go discipline |
+| [`refactor`](/ja/docs/skills/refactor) | AST-grep による structural search/rewrite を含む、test-verified refactoring |
+| [`LSP`](/ja/docs/skills/lsp) | diagnostics、definitions、references、symbols、rename |
+| [`rules`](/ja/docs/skills/rules) | AGENTS、rules、instruction files からの project instructions |
+| [`comment-checker`](/ja/docs/skills/comment-checker) | edit-like work 後の feedback |
 
-[^1]: `ai-slop-remover` は `remove-ai-slops` が並列で呼び出す単一ファイルワーカーであり、独立したユーザー向けスキルではありません。
+## Other Installed Skills
 
-## スキルの位置づけ
+`4.12.1` 時点の plugin には以下の Skills も含まれます。この docs site ではまだ個別 page を作っていませんが、Codex session では Skill として load できます。
 
-- コマンド柱がループを担います: 計画、実行、検証済みの完了。
-- スキルはその柱の周りに専門家の判断を加えます: レビュー、整理、UI の作り込み、言語規律、コードインテリジェンス。
-- スキルは目の前のタスクのために読み込まれ、終われば外れるため、エージェントのプロンプトは軽量に保たれます。
+| Skill | 用途 |
+| --- | --- |
+| `ast-grep` | AST-aware structural search と rewrite |
+| `git-master` | commits、history investigation、rebase/squash/fixup などの git work |
+| `lsp-setup` | language server install と configuration |
+| `lcx-doctor` | LazyCodex/Codex install health diagnosis |
+| `lcx-report-bug` | LazyCodex/Codex bug issue drafting |
+| `lcx-contribute-bug-fix` | verified bug-fix contribution workflow |
+| `teammode` | 複数 Codex threads を team のように coordinating |
+| `ultraresearch` | 明示的に要求された deep research |
+| `visual-qa` | UI/TUI 変更後の screenshot と visual verification |
 
-## スキルの置き場所
+Commands 自体も Skills として install されますが、ユーザー向け docs では [Commands](/ja/docs/commands) に分けています。
 
-OmO は `.opencode/skills`、`~/.config/opencode/skills`、`.claude/skills`、`.agents/skills`、`~/.agents/skills` などのプロジェクト・ユーザー位置からスキルを読み込めます。
+## Where Skills Fit
 
-## スキル別ドキュメント
+- Commands が flow を持ちます: planning、execution、verified completion。
+- Skills はその flow の周辺に専門判断を足します: review、cleanup、UI work、language discipline、code intelligence。
+- Skills は該当作業でだけ load され、終わると降りるため、agent prompt が軽く保たれます。
+
+## Skill Docs
 
 <Cards>
-  <Card title="review-work" href="/ja/docs/skills/review-work">5 つの並列エージェントが完了作業をレビューし、全員の合格が必要。</Card>
-  <Card title="remove-ai-slops" href="/ja/docs/skills/remove-ai-slops">テストで振る舞いを固定し、AI スロップを除去し、検証。</Card>
-  <Card title="frontend-ui-ux" href="/ja/docs/skills/frontend-ui-ux">デザイナー出身開発者の手腕で磨かれた UI サーフェス。</Card>
-  <Card title="debugging" href="/ja/docs/skills/debugging">体系的な根本原因デバッグ。</Card>
-  <Card title="refactor" href="/ja/docs/skills/refactor">構造的検索・書き換えを備えたテスト検証リファクタリング。</Card>
-  <Card title="ultragoal" href="/ja/docs/skills/ultragoal">ゴールを固定した証拠駆動の完了。</Card>
-  <Card title="コマンド柱" href="/ja/docs/commands">スキルがその上で動く `$ulw-*` と `$init-deep` のワークフロー。</Card>
+  <Card title="review-work" href="/ja/docs/skills/review-work">完了した work を 5 agents が並列 review し、全員が pass する必要があります。</Card>
+  <Card title="remove-ai-slops" href="/ja/docs/skills/remove-ai-slops">tests で behavior を固定し、AI slop を取り除いて verify します。</Card>
+  <Card title="frontend" href="/ja/docs/skills/frontend-ui-ux">design、UI、UX、performance、visual QA をまとめて扱う Skill。</Card>
+  <Card title="debugging" href="/ja/docs/skills/debugging">体系的な root-cause debugging。</Card>
+  <Card title="refactor" href="/ja/docs/skills/refactor">structural search/rewrite を備えた test-verified refactoring。</Card>
+  <Card title="Commands" href="/ja/docs/commands">Skills がその周りで動く `$ulw-*` と `$init-deep` workflows。</Card>
 </Cards>

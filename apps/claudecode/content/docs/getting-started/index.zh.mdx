@@ -22,8 +22,14 @@ description: 从安装到第一次会话，快速上手 Oh My ClaudeCode (OMC)
 
 ## 安装
 
-OMC 只能作为 Claude Code 插件安装。
-不支持通过 npm 或 bun 直接安装。
+OMC 现在提供两个可以共存的 surface。
+
+| Surface | 提供内容 | 推荐安装 |
+|---|---|---|
+| Claude Code plugin (`oh-my-claudecode@omc`) | session 内 skills、agents、hooks、statusline、MCP servers，以及 `/autopilot`、`/ralph`、`/ultrawork`、`/team` slash commands。 | 下方 marketplace plugin install |
+| Terminal CLI (`omc`，npm package `oh-my-claude-sisyphus`) | `omc setup`、`omc update`、`omc team`、`omc ask` 等 shell commands。 | `npm i -g oh-my-claude-sisyphus@latest` |
+
+多数用户应该同时安装二者。CLI 会检测 plugin install，避免重复注册 in-session skills。
 
 ### 添加 Marketplace
 
@@ -39,6 +45,14 @@ OMC 只能作为 Claude Code 插件安装。
 
 ```bash
 /plugin install oh-my-claudecode
+```
+
+### 可选：安装 Terminal CLI
+
+如果你想在 shell 中使用 `omc setup`、`omc update`、`omc team` 和 `omc ask`：
+
+```bash
+npm i -g oh-my-claude-sisyphus@latest
 ```
 
 ### 运行初始设置

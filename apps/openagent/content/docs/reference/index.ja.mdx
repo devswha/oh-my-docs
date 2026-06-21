@@ -26,8 +26,14 @@ Schema URL:
 |---|---|
 | `bunx oh-my-openagent install` | Interactive installer. |
 | `bunx oh-my-openagent install --no-tui ...` | Non-interactive setup. |
+| `bunx oh-my-openagent install --platform=both` | Install both Ultimate/OpenCode and Light/Codex surfaces. |
+| `npx lazycodex-ai install` | Supported Codex Light installer; Bun is not required. |
+| `npx lazycodex-ai install --no-tui --codex-autonomous` | Non-interactive Codex Light install with autonomous Codex permissions. |
+| `npx lazycodex-ai doctor` | Codex Light diagnostics. |
 | `bunx oh-my-openagent doctor` | Verify system, config, tools, and model resolution. |
+
+Do not use `bunx omo` or `npx omo` for OmO. `omo` is a different npm package name; use `oh-my-openagent` for Ultimate and `lazycodex-ai` for Codex Light.
 
 ## Telemetry
 
-Anonymous active-install telemetry is enabled by default. Disable it with `OMO_SEND_ANONYMOUS_TELEMETRY=0` or `OMO_DISABLE_POSTHOG=1`.
+Anonymous active-install telemetry is enabled by default. Disable Ultimate with `OMO_SEND_ANONYMOUS_TELEMETRY=0` or `OMO_DISABLE_POSTHOG=1`; disable Codex Light with `OMO_CODEX_SEND_ANONYMOUS_TELEMETRY=0` or `OMO_CODEX_DISABLE_POSTHOG=1`.

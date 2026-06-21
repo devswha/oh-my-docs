@@ -1,9 +1,9 @@
 ---
 title: $start-work
-description: Execute a Prometheus plan until every checkbox is done, with durable Boulder progress.
+description: Executes Prometheus plans from .omo/plans checkbox by checkbox, with Boulder state and an evidence ledger.
 ---
 
-`$start-work` executes a [Prometheus work plan](/docs/commands/ulw-plan) until every top-level checkbox is done. It is the implementation half of the plan-first flow: hand it a plan, and it drives the plan to completion.
+`$start-work` executes a [Prometheus work plan](/docs/commands/ulw-plan) until every top-level checkbox is done. The target is `.omo/plans/<slug>.md`, and progress is stored in `.omo/boulder.json`.
 
 ## Syntax
 
@@ -11,34 +11,37 @@ description: Execute a Prometheus plan until every checkbox is done, with durabl
 $start-work [plan-name] [--worktree <absolute-path>]
 ```
 
-- `plan-name` — optional. The plan to execute (from `plans/<slug>.md`). Omit it to use the most recent plan.
-- `--worktree <absolute-path>` — optional. Run the work in an isolated git worktree.
+- `plan-name` is optional. It can be the file name or partial name of the plan under `.omo/plans/<slug>.md`.
+- `--worktree <absolute-path>` is optional. It runs the work inside an isolated git worktree.
 
-## How it works
+## How It Works
 
-- **Durable Boulder state** in `.omo/boulder.json` survives across turns and sessions, so progress is never lost between runs.
-- A **Stop-hook** re-injects the next turn until the plan is complete — the loop keeps itself going.
-- **Independent sub-tasks fan out** to parallel subagents.
-- **Strict TDD plus five evidence gates**: plan reread, automated verification, manual QA, adversarial QA, and cleanup.
-- **Progress is recorded to a ledger** as each checkbox is checked.
+- **Boulder state** in `.omo/boulder.json` survives turns and sessions, so progress is not lost between runs.
+- A **Stop-hook** re-injects the next turn until the plan is done; the loop continues itself.
+- **Independent subtasks fan out to parallel subagents.**
+- It adds **five evidence gates** on top of strict TDD: reread the plan, automated verification, manual QA, adversarial QA, and cleanup.
+- Each checked box records **evidence in `.omo/start-work/ledger.jsonl`**.
+- The executor does not trust a child task's "done" report by itself. It marks a checkbox complete only after independent verification passes.
 
-## Done
+If the user explicitly invokes `$start-work` without an available plan, the latest workflow first bootstraps `$ulw-plan` to create an executable plan, then moves into execution.
 
-When every checkbox is checked, it prints an `ORCHESTRATION COMPLETE` block.
+## Completion
+
+When every checkbox is checked, `$start-work` prints an `ORCHESTRATION COMPLETE` block.
 
 ```text
 ORCHESTRATION COMPLETE
 ```
 
-## Typical flow
+## Typical Flow
 
 <Steps>
 
 <Step>
 
-### Have a plan ready
+### Prepare a Plan
 
-Either write one with `$ulw-plan` or point `$start-work` at an existing `plans/<slug>.md`.
+Write a plan with `$ulw-plan`, or point `$start-work` at an existing `.omo/plans/<slug>.md`.
 
 ```bash
 $ulw-plan "add OAuth login with refresh tokens"
@@ -48,30 +51,30 @@ $ulw-plan "add OAuth login with refresh tokens"
 
 <Step>
 
-### Execute it
+### Execute
 
 ```bash
 $start-work oauth-refresh-tokens
 ```
 
-Independent work fans out to parallel subagents; durable Boulder progress survives interruptions.
+Independent work fans out to parallel subagents, and Boulder progress survives interruptions.
 
 </Step>
 
 <Step>
 
-### Wait for completion
+### Wait for Completion
 
-`$start-work` stops only when every checkbox is checked and prints `ORCHESTRATION COMPLETE`.
+`$start-work` stops only when every checkbox is checked and `ORCHESTRATION COMPLETE` is printed.
 
 </Step>
 
 </Steps>
 
-## Related
+## Related Docs
 
 <Cards>
-  <Card title="$ulw-plan" href="/docs/commands/ulw-plan">Write the plan that $start-work executes.</Card>
-  <Card title="$ulw-loop" href="/docs/commands/ulw-loop">Verified completion for open-ended tasks without a written plan.</Card>
-  <Card title="Command pillars" href="/docs/commands">How the commands compose.</Card>
+  <Card title="$ulw-plan" href="/docs/commands/ulw-plan">Writes the plan that $start-work executes.</Card>
+  <Card title="$ulw-loop" href="/docs/commands/ulw-loop">Verified completion for open work without a written plan.</Card>
+  <Card title="Commands" href="/docs/commands">How the commands compose.</Card>
 </Cards>

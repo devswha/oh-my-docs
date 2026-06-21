@@ -19,10 +19,9 @@ description: 诊断OMX安装状态和环境的工具技能
 ```bash
 $doctor
 $doctor --verbose
-$doctor --fix
 ```
 
-`--fix` 会自动修复可以修复的问题。无法修复时会提供解决方法。
+提交 issue 前如果需要完整诊断输出，请使用 `--verbose`。
 
 ## 检查项
 
@@ -41,7 +40,7 @@ $doctor --fix
 - `WARN` — 可以运行但不是推荐配置
 - `ERROR` — 需要立即修复
 
-如果有 `ERROR`，先尝试 `$doctor --fix`，仍无法解决则附上输出结果提交Issue。
+如果有 `ERROR`，请附上输出结果以及相关安装/环境信息提交 issue。
 
 ## 相关
 

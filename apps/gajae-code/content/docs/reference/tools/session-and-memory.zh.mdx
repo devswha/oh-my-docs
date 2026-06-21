@@ -1,0 +1,83 @@
+---
+title: 会话与记忆工具
+description: 子代理、待办、检查点与 Hindsight 记忆层 —— task、todo_write、checkpoint、rewind、recall、retain、reflect。
+---
+
+这些工具让代理把工作分发给子代理、跟踪自身计划、修剪探索性上下文，并读写持久记忆。名称与上游 `docs/tools/` 参考一致。
+
+## `task`
+
+启动子代理执行并行（可选隔离）的工作。父代理按名称选择代理，并交付一批小而自包含的任务项。
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `agent` | `string` | 是 | 批次使用的精确代理名，执行时解析。 |
+| `tasks` | `Array<{ id; description; assignment }>` | 是 | 小而自包含的项。`id` 最长 48；忽略大小写的重复会被拒绝。`description` 仅用于 UI，`assignment` 才是真正的指令。 |
+| `context` | `string` | 否 | 加在每个子代理提示前的共享背景。`independent` 模式下拒绝。 |
+| `schema` | `string` | 否 | JSON 编码的 JTD 输出 schema。`schema-free` 与 `independent` 模式下拒绝。 |
+| `isolated` | `boolean` | 否 | 仅在启用隔离时存在，在隔离工作区中运行批次。 |
+
+简易模式：`default`（允许 context/schema）、`schema-free`（拒绝 schema）、`independent`（两者皆拒绝，每个 assignment 须自包含）。
+
+内置代理：`explore`（只读侦察）、`plan`（架构/规划，可派生 explore）、`designer`（UI/UX）、`reviewer`（带 report_finding）、`task`（通用全功能）、`quick_task`（低推理机械工）、`librarian`（外部 API/库研究）。项目 `agents/` 目录的自定义代理可按名称覆盖内置代理。
+
+执行模型：**同步**为默认（代理标记 `blocking` 或无任务时强制）；**异步**在 `async.enabled` 开启且代理非 `blocking` 时，为每个任务排一个后台作业并流式回传进度。每个子代理通过隐藏的 `yield` 工具结束（否则最多 3 次提醒）。子代理写 `<id>.md`，`agent://<id>` 解析到该文件。
+
+隔离后端：`worktree`、`fuse-overlay`、`fuse-projfs`；合并策略为 patch 模式或 branch 模式（提交到 `gjc/task/<id>` 后 cherry-pick）。隔离执行需 git 仓库。
+
+限额：单子代理输出截断 `MAX_OUTPUT_BYTES = 500_000`、`MAX_OUTPUT_LINES = 5000`（完整原始输出仍写入 `<id>.md`，可用 `GJC_TASK_MAX_OUTPUT_BYTES` / `GJC_TASK_MAX_OUTPUT_LINES` 覆盖）；并发用 `task.maxConcurrency`；`task.maxRecursionDepth` 之上隐藏 `task`；`GJC_BLOCKED_AGENT` 屏蔽指定子代理类型。子代理不继承对话历史，也不获得 `todo_write`。await 超时只是观察窗口，不会停止或失败子代理。
+
+## `todo_write`
+
+按顺序对会话待办列表施加变更，返回摘要与完整阶段/任务状态。`ops` 数组非空，每个 op 变更列表。
+
+| Op | 必填 | 效果 |
+| --- | --- | --- |
+| `init` | `list` | 替换整个列表，新任务均为 `pending`。 |
+| `start` | `task` | 一个任务设为 `in_progress`，其余活动任务降为 `pending`。 |
+| `done` | `task`/`phase`/无 | 目标设为 `completed`。 |
+| `drop` | `task`/`phase`/无 | 目标设为 `abandoned`。 |
+| `rm` | `task`/`phase`/无 | 移除任务或清空阶段/全部。 |
+| `append` | `phase`, `items` | 追加 `pending` 任务，阶段缺失则创建。 |
+| `note` | `task`, `text` | 给任务加一条备注，去空后为空则拒绝。 |
+
+批次结束后归一化强制单一活动任务：多个 `in_progress` 时仅保留首个，无活动时首个 `pending` 自动晋升。任务查找为精确字符串匹配；坏负载不抛错而以 `Errors:` 前缀累积。完成/放弃任务在 `tasks.todoClearDelay`（默认 60 秒）后自动清理；恢复时被剥离，`/todo` 命令从记录中重建。
+
+## `checkpoint`
+
+标记当前顶层对话状态，以便随后的 `rewind` 把探索性上下文折叠成简报。默认关闭（`checkpoint.enabled`），子代理不可用。
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `goal` | `string` | 是 | 调查目标，会回显到结果。 |
+
+仅捕获对话元数据（消息数、会话条目 id、时间戳），**不**调用 git，也不快照工作树或产物。检查点活动时若先 `yield` 会被系统警告拦截。每会话仅允许一个活动检查点。
+
+## `rewind`
+
+结束活动检查点：修剪探索性消息，原位保留简报。
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `report` | `string` | 是 | 调查结论，去空后为空则拒绝。 |
+
+立即返回，但副作用在回合结束时生效：内存历史替换为检查点之前的前缀，持久会话叶分支回检查点条目并附 `branch_summary`，隐藏的 `rewind-report` 把报告带入重建上下文。仅恢复记录/会话状态，不恢复文件、git、产物或 blob。对持久历史非破坏性；`rewind` 始终针对唯一的活动检查点。
+
+## 记忆：`recall`、`retain`、`reflect`
+
+三者是 Hindsight 记忆后端的前端，仅在 `memory.backend == "hindsight"` 时可用。存储在服务端、跨会话；子代理共享父级状态写入同一 bank。bank 作用域：`global`（单一共享）、`per-project`（按 cwd 名分库）、`per-project-tagged`（共享库 + `project:<cwd basename>` 标签）。
+
+- **`recall`** — `query`（必填）。搜索活动 bank 返回原始记忆条目；无结果返回 `No relevant memories found.`。默认 `recallBudget = "mid"`、`recallMaxTokens = 1024`、`recallTypes = ["world", "experience"]`。
+- **`retain`** — `items`（必填，`minItems: 1`，每项含 `content` 与可选 `context`）。把记忆排队异步写入，返回前**不**确认写入；队列在达到 16 条、5000ms 去抖或代理结束时刷新。刷新失败仅作会话警告。
+- **`reflect`** — `query`（必填）、`context`（可选）。请求服务端综合答案，返回综合文本（为空时 `No relevant information found to reflect on.`），而非原始命中。
+
+内置心智模型 `user-preferences`、`project-conventions`、`project-decisions` 由共享后端单独播种与刷新。
+
+## 相关
+
+<Cards>
+  <Card title="记忆：recall 与 retain" href="/zh/docs/concepts/memory" />
+  <Card title="会话与 worktree" href="/zh/docs/concepts/sessions" />
+  <Card title="代理总览" href="/zh/docs/skills" />
+  <Card title="环境变量" href="/zh/docs/reference/environment-variables" />
+</Cards>

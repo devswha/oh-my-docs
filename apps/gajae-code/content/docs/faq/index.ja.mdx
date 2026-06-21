@@ -1,0 +1,57 @@
+---
+title: FAQ
+description: Gajae-Code の install、gjc、tmux、provider、commands、rlm、team、computer-use、制限についての短い回答。
+---
+
+詰まっている場所に合うセクションから読んでください。**Install and environment** は setup、**First use** は最初の command 選び、**Running and limits** は長い session 向けです。
+
+## Install and Environment
+
+<section className="not-prose my-6 divide-y divide-fd-border rounded-lg border border-fd-border bg-fd-card">
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>Gajae-Code とは？</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">Gajae-Code は <code>gjc</code> coding-agent harness です。小さな公開 workflow surface を session、tmux、model routing、tools、evidence で支えます。</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>どう install しますか？</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground"><code>bun install -g gajae-code</code> を使います。この package が <code>gjc</code> binary をインストールします。scoped package <code>@gajae-code/coding-agent</code> も利用できます。</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>tmux は必須ですか？</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">bare <code>gjc</code> には必須ではありませんが、推奨 path は <code>gjc --tmux</code> です。<code>team</code> command は tmux session を期待します。</p>
+  </details>
+</section>
+
+## First Use
+
+<section className="not-prose my-6 divide-y divide-fd-border rounded-lg border border-fd-border bg-fd-card">
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>最初に覚える flow は？</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">まず loop を覚えてください。<code>deep-interview</code> で明確化し、<code>ralplan</code> でレビュー済み plan を作り、<code>ultragoal</code> で durable execution と evidence まで進めます。</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>rlm はいつ使いますか？</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">code mutation ではなく exploratory research が目的なら <code>gjc rlm</code> を使います。notebook と report artifact は <code>.gjc/_session-&lt;gjcSessionId&gt;/rlm/&lt;rlmSessionId&gt;/</code> 配下に書かれます。</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>team は必須ですか？</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">いいえ。<code>team</code> は parallel tmux workers が本当に役立つときだけ使う任意機能です。single-threaded work は通常 loop のままで構いません。</p>
+  </details>
+</section>
+
+## Running and Limits
+
+<section className="not-prose my-6 divide-y divide-fd-border rounded-lg border border-fd-border bg-fd-card">
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>provider credentials の解決順は？</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground"><code>gjc</code> は CLI API key、保存済み API key、保存済み OAuth credential、environment variables、<code>models.yml</code> <code>apiKey</code> の順に確認します。secret を commit 済み file に入れないでください。</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>computer-use には何が必要ですか？</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">実験的 computer tool は対応 Apple Silicon macOS host で既定利用可能、supervisor gated です。<code>computer.alwaysOn=false</code> で無効化できます。</p>
+  </details>
+  <details className="group px-4 py-3">
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-fd-foreground [&::-webkit-details-marker]:hidden"><span>command 詳細はどこですか？</span><span className="text-fd-muted-foreground transition-transform group-open:rotate-45">+</span></summary>
+    <p className="mt-3 text-sm leading-7 text-fd-muted-foreground">workflow command は <a href="/ja/docs/commands">Commands</a>、launch/setup/research/team/ultragoal の形は <a href="/ja/docs/reference/cli">CLI Reference</a> を見てください。</p>
+  </details>
+</section>

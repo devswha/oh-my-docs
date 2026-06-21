@@ -9,6 +9,19 @@ description: 安装 Gajae-Code，启动 gjc 可执行文件，认证 provider，
 
 <Step>
 
+### 前提条件
+
+- 可用 `bun` 执行的 Bun。
+- `gjc` 要处理的 Git repository。
+- 如果使用推荐的 `gjc --tmux` 体验，请安装 `tmux`。
+- 至少一个可访问的 model provider。
+
+OS 与 shell notes 见[推荐环境](/zh/docs/recommended-environment)。
+
+</Step>
+
+<Step>
+
 ### 安装
 
 Gajae-Code 通过 npm 注册表以 `gajae-code` 发布。推荐使用 Bun：
@@ -37,11 +50,31 @@ gjc --tmux
 gjc
 ```
 
-需要更安全的分支级工作区时，在隔离的 Git worktree 中运行。为一次性或分支专用工作使用独立路径，保持主检出干净：
+需要更安全的分支级工作区时，在隔离的 Git worktree 中运行。`--worktree` 的值不是文件系统路径，而是 GJC 管理的 sibling worktree 的 branch-like 名称：
 
 ```bash
-gjc --tmux --worktree <path>
+gjc --tmux --worktree my-task-branch
 ```
+
+如果你已经创建了 worktree 目录，请进入该目录再启动：
+
+```bash
+cd ../my-task-worktree && gjc --tmux
+```
+
+</Step>
+
+<Step>
+
+### 传入图片
+
+启动时，在本地图片路径前加 `@`：
+
+```bash
+gjc @screenshot.png "What should I change?"
+```
+
+在 TUI 中，把图片复制到系统剪贴板后使用 **Paste image from clipboard** 键（Linux/macOS 为 `Ctrl+V`，Windows 为 `Alt+V`），或输入 `#paste-image` 并选择 prompt action。剪贴板不可用时，粘贴或传入 `@path/to/image.png`。
 
 </Step>
 
@@ -97,6 +130,20 @@ gjc setup provider --preset glm
 
 <Step>
 
+### 使用 research 模式
+
+如果目标是探索研究而不是直接修改代码，请使用 `rlm`：
+
+```bash
+gjc rlm
+```
+
+`rlm` 通过持久 Python kernel 和受限工具集打开笔记本式 research/REPL 循环：`python`、`read`、`web_search`、`search_tool_bm25`、read-only `bash`、`goal`、`complete_research`。`notebook.ipynb`、`report.md`、metadata 与 agent-session 产物写入 `.gjc/_session-<gjcSessionId>/rlm/<rlmSessionId>/`。
+
+</Step>
+
+<Step>
+
 ### 运行循环
 
 Gajae-Code 专注于一个有用的循环：
@@ -125,42 +172,13 @@ gjc ultragoal complete-goals
 
 </Steps>
 
-## 技能
-
-Gajae-Code 恰好提供四个工作流技能，没有臃肿的默认技能动物园。每个技能在 GJC 会话中以 `/skill:<name>` 调用。
-
-| 技能             | 作用                                                |
-| ---------------- | --------------------------------------------------- |
-| `deep-interview` | 在规划或代码变更前消除歧义。                        |
-| `ralplan`        | 在变更前构建并评审计划。                            |
-| `team`           | 当多个 worker 有帮助时，可选地协调 tmux 并行执行。  |
-| `ultragoal`      | 经由实现、修订、验证与证据追踪持久 goal。           |
-
-四个内置角色 agent —— `executor`、`architect`、`planner`、`critic` —— 负责执行这些技能。技能详见[工作流](/zh/docs/workflows)，角色详见[Agent](/zh/docs/agents)。
-
-## 配置
-
-provider 重试预算等设置位于 `~/.gjc/config.yml`（或当前生效的项目/用户设置源）：
-
-```yaml
-retry:
-  # 类似 codex-cli 的 request_max_retries。统计重试次数，不含首次请求。
-  requestMaxRetries: 4
-  # 类似 codex-cli 的 stream_max_retries。统计可安全重放的流重试。
-  streamMaxRetries: 100
-  # 会话级的终止错误重试仍可单独配置。
-  maxRetries: 3
-  maxDelayMs: 300000
-```
-
-Gajae-Code 有两层重试：会话自动重试（`retry.maxRetries`）在终止性瞬时错误后重试失败的助手回合；provider 重试预算（`requestMaxRetries`、`streamMaxRetries`）在该终止错误到达会话之前，于 provider 传输层内部控制重试。无效认证、不支持的模型/provider、格式错误的请求、上下文溢出、用户中止和永久配额失败均保持快速失败（fail-fast），不会被重试循环掩盖。
-
 ## 下一步
 
 <Cards>
-  <Card title="用例与指南" href="/zh/docs/guides" description="日常任务的实战示例。" />
+  <Card title="推荐环境" href="/zh/docs/recommended-environment" description="install 前检查 local setup。" />
+  <Card title="Commands" href="/zh/docs/commands" description="deep-interview、ralplan、rlm、team、ultragoal。" />
   <Card title="核心概念" href="/zh/docs/concepts" description="工作循环、会话、模型路由与持久验证。" />
-  <Card title="工作流" href="/zh/docs/workflows" description="deep-interview、ralplan、team、ultragoal。" />
+  <Card title="FAQ" href="/zh/docs/faq" description="setup 与 first use 的短答。" />
 </Cards>
 
 - 源项目与完整参考：[Yeachan-Heo/gajae-code](https://github.com/Yeachan-Heo/gajae-code)

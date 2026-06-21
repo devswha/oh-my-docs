@@ -1,0 +1,44 @@
+---
+title: "故障排查"
+description: "OMX 安装看似健康但真实执行失败时的检查边界"
+---
+
+当 `omx setup` 或 `omx doctor` 看起来正常，但真实 Codex 请求仍然失败时，使用本页。
+
+## Install Health vs Execution Health
+
+`omx doctor` 检查本地 OMX install surface：prompts、skills、config files、hooks、AGENTS scaffolding 和 runtime prerequisites。它不能证明当前 Codex profile 可以认证并完成 model request。
+
+请在你实际运行 OMX 的同一个 shell、`HOME`、`CODEX_HOME` 和 project directory 中执行 smoke test：
+
+```bash
+codex login status
+omx exec --skip-git-repo-check -C . "Reply with exactly OMX-EXEC-OK"
+```
+
+| Check | What it proves |
+|---|---|
+| `omx doctor` green | Local OMX wiring 看起来正常。 |
+| `codex login status` green | 当前 Codex profile 可以看到 login state。 |
+| `omx exec ...` returns `OMX-EXEC-OK` | auth、provider routing、execution、cwd 假设一起工作。 |
+
+## Common Failure Modes
+
+| Symptom | Check |
+|---|---|
+| `401 Unauthorized`、缺少 bearer auth、API key 错误 | 确认启动 OMX 的 shell 使用同一个 `HOME`/`CODEX_HOME`。 |
+| proxy/gateway auth fails | 使用 local OpenAI-compatible proxy 时，确认 active `~/.codex/config.toml` 有 `openai_base_url`。 |
+| `AGENTS.md` exists but doctor says OMX contract missing | 运行 `omx setup --scope user --merge-agents`，或用 project scope。 |
+| `.omx/` or `.beads/` writes fail | 检查 root-owned、owner-mismatched、non-writable files。`omx doctor --force` 只在 repo root 属于当前用户时自动修复。 |
+| Team resume or `doctor --team` references dead tmux state | 先检查 `omx team status <team>` 和 `tmux ls`；确认废弃后运行 `omx team shutdown <team> --force --confirm-issues`，再运行 `omx cancel`。 |
+| Shift+Enter submits inside tmux | 检查 `tmux show -gv extended-keys`、`tmux info | grep extkeys`、`tmux show -gv terminal-features`、`TERM`、`TERM_PROGRAM`。 |
+
+## Deprecated Explore Surface
+
+`omx explore` 已 hard-deprecated。read-only repository lookup 使用普通 Codex inspection tools/subagents；需要 shell-native read-only evidence 或 tmux-pane summary 时使用 `omx sparkshell -- <command>`。
+
+## Related
+
+- [Quick Commands](/zh/docs/reference/quick-commands)
+- [Configuration](/zh/docs/reference/configuration)
+- [Codex Native Hooks](/zh/docs/hooks/codex-native-hooks)

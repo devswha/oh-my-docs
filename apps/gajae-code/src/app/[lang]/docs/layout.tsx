@@ -40,7 +40,7 @@ export default async function Layout({
         title: (
           <div key="docs-nav-title" className="flex items-center gap-2">
             <Image
-              src="/icon.svg"
+              src="/icon.png"
               alt="Gajae-Code"
               width={28}
               height={28}

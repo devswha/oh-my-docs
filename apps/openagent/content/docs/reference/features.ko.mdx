@@ -37,7 +37,7 @@ Core 순서는 주입되는 `order` 필드로 결정됩니다. plugin config의 
 | **Momus** | `gpt-5.5` (xhigh) | plan reviewer. read-only. |
 | **Sisyphus-Junior** | (category 의존) | category에서 spawn되는 executor. 재위임 불가. |
 
-치환 정책과 fallback chain은 [에이전트-모델 매칭](/ko/docs/agents/model-matching), 에이전트별 도구 제한은 [Configuration → 도구별 권한](/ko/docs/reference/configuration#%EB%8F%84%EA%B5%AC%EB%B3%84-%EA%B6%8C%ED%95%9C).
+치환 정책과 fallback chain은 [에이전트-모델 매칭](/ko/docs/agents/model-matching), 에이전트별 도구 제한은 [Configuration → 도구별 권한](/ko/docs/reference/configuration#도구별-권한).
 
 ## 카테고리 (빌트인 8개)
 
@@ -54,7 +54,7 @@ Core 순서는 주입되는 `order` 필드로 결정됩니다. plugin config의 
 | `unspecified-high` | `anthropic/claude-opus-4-7` (max) | 고효 general. |
 | `writing` | `google/gemini-3-flash` | 문서/prose/테크니컬 라이팅. |
 
-커스텀 카테고리: plugin config의 `categories.<name>`에 정의. 스키마와 예시는 [Configuration → Category 옵션](/ko/docs/reference/configuration#category-%EC%98%B5%EC%85%98).
+커스텀 카테고리: plugin config의 `categories.<name>`에 정의. 스키마와 예시는 [Configuration → Category 옵션](/ko/docs/reference/configuration#category-옵션).
 
 ## 빌트인 스킬 (7개)
 
@@ -140,6 +140,7 @@ Hook은 **PreToolUse / PostToolUse / Message / Event / Transform / Params** 6개
 | 빌트인 | `src/mcp/` | `websearch` (Exa), `context7` (라이브러리 문서), `grep_app` (GitHub 코드 검색) |
 | `.mcp.json` loader | 프로젝트/사용자 `.mcp.json` / `.claude.json` | 커스텀 원격 MCP. `${VAR}` 확장 지원. |
 | Skill-embedded | `SKILL.md`의 `mcp:` 프론트매터 | Playwright, skill-specific MCP |
+| Codex Light plugin-scoped | `packages/omo-codex/plugin/.mcp.json` | `grep_app`, `context7`, `codegraph`, `git_bash`, `lsp` |
 
 skill MCP 클라이언트는 `${sessionID}:${skillName}:${serverName}` 키로 세션별 격리.
 

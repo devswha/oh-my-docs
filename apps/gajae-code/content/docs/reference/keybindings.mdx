@@ -54,12 +54,14 @@ Older unqualified action names are migrated when `keybindings.json` is loaded, b
 | `app.thinking.cycle` | `Shift+Tab` | Cycle thinking level |
 | `app.editor.external` | `Ctrl+G` | Edit the draft in `$VISUAL` / `$EDITOR` |
 | `app.message.followUp` | `Ctrl+Enter` | Queue a follow-up message |
+| `app.message.queue` | `Alt+Enter` | Explicitly queue a message for the next turn |
 | `app.message.dequeue` | `Alt+Up` | Dequeue a queued message back into the editor |
+| `app.clipboard.pasteImage` | `Ctrl+V` (`Alt+V` on Windows) | Paste an image from the system clipboard |
 | `app.clipboard.copyLine` | `Alt+Shift+L` | Copy the current line |
 | `app.clipboard.copyPrompt` | `Alt+Shift+C` | Copy the whole prompt |
 | `app.stt.toggle` | `Alt+H` | Toggle speech-to-text recording |
 
-These are the common bindings; run `/hotkeys` for the complete, build-accurate list including extension-contributed actions.
+These are the common bindings; run `/hotkeys` for the complete, build-accurate list including extension-contributed actions. The registry intentionally reuses some default chords across different focused contexts, such as `Enter`, `Ctrl+C`, and `Ctrl+P`; only the active component dispatches its binding.
 
 ## Related pages
 

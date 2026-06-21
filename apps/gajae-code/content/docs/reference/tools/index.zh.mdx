@@ -1,0 +1,62 @@
+---
+title: 工具
+description: Gajae-Code 智能体使用的工具表面 —— 文件、搜索、运行时、computer-use、网络、会话与媒体 —— 按家族归类。
+---
+
+Gajae-Code 智能体通过精简且具名的工具表面行动。每个工具都映射到上游 `docs/tools/` 条目，名称、标志与行为保持一致。下面的家族链接到各工具的详细页面。
+
+## 工具家族
+
+<Cards>
+  <Card title="文件" href="/zh/docs/reference/tools/files">
+    `read`、`write`、`edit`（多种编辑 variant）、用于结构化重写的 `ast-edit`。
+  </Card>
+  <Card title="搜索与导航" href="/zh/docs/reference/tools/search">
+    `find`、`search`、`search_tool_bm25`、`ast-grep`、`lsp`、`resolve`。
+  </Card>
+  <Card title="运行时与执行" href="/zh/docs/reference/tools/runtime">
+    `bash`、`eval`、`python-repl`、`debug`、`ssh`、后台 `job` 控制。
+  </Card>
+  <Card title="Computer use" href="/zh/docs/reference/tools/computer-use">
+    面向 Apple Silicon macOS 截屏与鼠标/键盘控制的实验性工具。
+  </Card>
+  <Card title="网络与外部" href="/zh/docs/reference/tools/web">
+    `web_search`、`browser`、`github`。
+  </Card>
+  <Card title="会话与记忆" href="/zh/docs/reference/tools/session-and-memory">
+    `task`、`todo_write`、`checkpoint`、`rewind`、`recall`、`retain`、`reflect`。
+  </Card>
+  <Card title="媒体与其他" href="/zh/docs/reference/tools/media">
+    `render_mermaid`、`inspect_image`、`calc`、`recipe`、`ask`。
+  </Card>
+</Cards>
+
+## 一览
+
+| 家族 | 工具 | 页面 |
+| --- | --- | --- |
+| 文件 | `read` · `write` · `edit` · `ast-edit` | [文件](/zh/docs/reference/tools/files) |
+| 搜索与导航 | `find` · `search` · `search_tool_bm25` · `ast-grep` · `lsp` · `resolve` | [搜索](/zh/docs/reference/tools/search) |
+| 运行时与执行 | `bash` · `eval` · `python-repl` · `debug` · `ssh` · `job` | [运行时](/zh/docs/reference/tools/runtime) |
+| Computer use | `computer` | [Computer use](/zh/docs/reference/tools/computer-use) |
+| 网络与外部 | `web_search` · `browser` · `github` | [网络](/zh/docs/reference/tools/web) |
+| 会话与记忆 | `task` · `todo_write` · `checkpoint` · `rewind` · `recall` · `retain` · `reflect` | [会话与记忆](/zh/docs/reference/tools/session-and-memory) |
+| 媒体与其他 | `render_mermaid` · `inspect_image` · `calc` · `recipe` · `ask` | [媒体](/zh/docs/reference/tools/media) |
+
+## 通用约定
+
+- **内部 URL。** 内容工具（`read`、`search`、`ast-grep`）在路由器能解析到后端资源时接受 `agent://`、`artifact://`、`memory://`、`gjc://`、`rule://`、`issue://`、`pr://`。内部 URL 不允许 glob。
+- **哈希行锚点。** `read`、`search`、`ast-grep` 输出 `LINEhh|text` 锚点（如 `41th|def alpha():`）；`edit` 仅消费 `|` 左侧的 `LINEhh` 令牌。`:raw` 读取和不可变资源会抑制锚点。
+- **先预览后 resolve。** 部分工具（尤其 `ast-edit`）先预览并排入强制 `resolve` 动作；在 `resolve(action: "apply", ...)` 前不写入。
+- **限制与截断。** 输出按字节/行设限（`search` 显示前 `100` 个匹配，`ast-grep` 默认 `50`），结果会报告是否触达限制或截断。
+
+## 需要配置或凭据的工具
+
+部分工具需先配置后端。启用它们的键、环境变量与凭据见[参考](/zh/docs/reference)。
+
+- `web_search` 与 `browser` 依赖 provider 设置。
+- `computer` 在 Apple Silicon macOS 上默认可调用，并由 supervisor 管控。可用 `computer.alwaysOn=false` 禁用。
+- `github` 使用 `gh` CLI 及其缓存。
+- `lsp` 受 `lsp.enabled` 限制，按项目探测/配置语言服务器。
+- `search_tool_bm25` 仅在 `tools.discoveryMode !== "off"` 时出现。
+- 活动 `edit` variant 由 `GJC_EDIT_VARIANT` 决定，`ast-edit` 文件范围由 `GJC_MAX_AST_FILES` 决定。

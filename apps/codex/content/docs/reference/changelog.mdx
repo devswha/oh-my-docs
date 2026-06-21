@@ -5,7 +5,15 @@ description: "OMX release history — latest release summary and link to the ups
 
 The full changelog is maintained upstream at [`CHANGELOG.md`](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md). This page summarizes the most recent releases.
 
-## Latest release — v0.17.0
+## Latest release — v0.18.14
+
+Patch release after `0.18.13`: clearer agent/model routing diagnostics, safer goal/planning workflows, sturdier plugin/native hook behavior, cleaner HUD/Team/tmux handling, root-owned artifact detection in doctor, and madmax run-history discovery for resume.
+
+**Changed:** per-agent model overrides, launch diagnostics, completed Codex goal cleanup guidance, Ralplan transition diagnostics, supervised Autopilot rework, Beads metadata handling, and goal/skill workflow guidance.
+
+**Fixed:** plugin AGENTS policy preservation, dev plugin cache diagnostics, bundled skill agent-tier references, null-output native hook success, `PreToolUse` stdout/schema handling, Windows native hook launch, stale Autopilot HUD reporting, tmux paste-buffer cleanup, worker AGENTS guidance, and Ralplan freshness/approval gates.
+
+## v0.17.0
 
 A minor release after `0.16.4` focused on new coordination and workflow surfaces: bounded Hermes MCP coordination, canonical `$design` workflow guidance, plugin-mode skill marketplace exposure, stronger UltraQA adversarial contracts, Windows native-hook reliability, tmux ownership safety, startup shell isolation, committed project-memory loading, and Ultragoal task-scoped goal reconciliation.
 

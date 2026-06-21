@@ -1,45 +1,40 @@
 ---
-title: マルチモデルルーティング
-description: タスクカテゴリごとの自動モデル選択 —— クォータ規律を守り、ベンチマーク駆動で、ランダムな入れ替えではありません。
+title: Model Routing
+description: How LazyCodex aligns model profiles with Codex roles.
 ---
 
-LazyCodex(LZX)の実行は、すべてのサブタスクに最良のモデルを使うわけではありません。基盤の OmO ハーネスは **タスクカテゴリ** とフォールバックチェーンを定義し、各作業ユニットを最も適切な GPT モデルに到達させます。これはランダムなモデル入れ替えではなく、ベンチマーク駆動のルーティングです。
+LazyCodex (LZX) は install 時に、Codex 設定と agent roles に合う model profiles を合わせます。この値は plugin に含まれる `model-catalog.json` と、利用中の Codex build がサポートする models によって適用されます。
 
-## 異なる GPT モデルが現れる理由
+## Current Baseline
 
-実行中に `gpt-5.2` + `xhigh`、`gpt-5.4-mini`、`gpt-5.3-codex`、あるいは `gpt-5.5` + `xhigh` のような新しい同等モデルが見えても驚かないでください。これは意図的です。
+`4.12.1` の bundled `model-catalog.json` は、現在の default profiles を `gpt-5.5` 中心に置いています。
 
-ハーネスは仕事に合うモデルを選びます:
-
-| カテゴリ | ルーティング先 | 用途 |
+| Profile | Model | Reasoning |
 |---|---|---|
-| `quick` | `gpt-5.4-mini` | 小さな編集 |
-| `ultrabrain` | 高推論の GPT モデル | 難しいロジック |
-| agentic coding | Codex 調整済み GPT モデル(例: `gpt-5.3-codex`) | ソフトウェアエンジニアリング経路(利用可能なとき) |
+| default | `gpt-5.5` | `high` |
+| plan mode | `gpt-5.5` | `xhigh` |
+| worker | `gpt-5.5` | `high` |
+| verifier | `gpt-5.5` | `high` |
 
-## クォータ規律
+Codex や OpenAI 側の model 構成が変わると、実際に見える model name は変わることがあります。そのため、このページは model performance の比較ではなく、LazyCodex が model profiles をどこで使うかに集中します。
 
-要点はクォータ規律です: 深い推論が必要なタスクには最強のモデルを、それで十分なタスクには安く速いモデルを使い、ルーチンの手順にプレミアムクォータを燃やす代わりに、並列のエージェント作業を効率的に保ちます。
+## Why Role Profiles Exist
 
-これは[並列実行](/ja/docs/concepts/discipline-agents)と組み合わさります: 多くのレーンが、それぞれ適切なコストで同時に走ります。
+Role profiles は作業の性質を分けるための仕組みです。
 
-## ベンチマーク駆動、モデルごとに
+- 一般作業は default model setting に従います。
+- planning mode はより強い reasoning setting を要求することがあります。
+- worker と verifier は実行と検証を分け、同じ結果を別の視点から確認します。
 
-このルーティングは、OpenAI が各モデルについて文書化している内容を反映します:
+これは [Agent Roles](/ja/docs/concepts/discipline-agents) と組み合わさります。複数の roles が同時に動いても、各 role がどの model profile で動くかを Codex 設定で追跡できます。
 
-- **GPT-5.2** は、コードレビュー、バグ発見、複雑なツール使用に強いと OpenAI が文書化しており、その発表は最大 API 推論強度が `xhigh` を使うと述べています。
-- **GPT-5.3-Codex** はエージェント的ソフトウェアエンジニアリング向けの OpenAI の Codex 調整モデルで、SWE-Bench Pro、Terminal-Bench 2.0、OSWorld Verified などの公開コーディングエージェントベンチマークが発表で報告されています。
-- **GPT-5.4 mini** は効率的な日常コーディング、コンピュータ操作、サブエージェント向けに位置づけられており —— だからこそ軽量なタスクが、フロンティア推論モデルを使わずにここへ落ちることがあります。
+## User Notes
 
-## 参考リンク
-
-- [OpenAI GPT-5.2 発表](https://openai.com/index/introducing-gpt-5-2/)
-- [OpenAI GPT-5.2 モデルドキュメント](https://platform.openai.com/docs/models/gpt-5.2/)
-- [OpenAI GPT-5.3-Codex モデルドキュメント](https://developers.openai.com/api/docs/models/gpt-5.3-codex)
-- [OpenAI GPT-5.4 mini と nano の発表](https://openai.com/index/introducing-gpt-5-4-mini-and-nano/)
-- [OpenAI 最新モデルガイド](https://platform.openai.com/docs/guides/latest-model)
+- install 後に表示される model name は文書と異なることがあります。その場合、Codex がサポートする最新 model name と LazyCodex の `model-catalog.json` が優先です。
+- model setting は品質と速度を同時に扱います。むやみに下げると、planning、review、QA の品質が一緒に揺らぎます。
+- 問題が疑われる場合は、まず install state と Codex 設定を確認するのが安全です。
 
 <Cards>
-  <Card title="ディシプリンエージェント" href="/ja/docs/concepts/discipline-agents">ルーティングされた作業が委譲される先。</Card>
-  <Card title="ultrawork ループ" href="/ja/docs/concepts/ultrawork">ルーティングされた並列作業が検証済みの完了へ収束する仕組み。</Card>
+  <Card title="Agent Roles" href="/ja/docs/concepts/discipline-agents">role ごとの作業分離と検証 flow。</Card>
+  <Card title="Ultrawork Loop" href="/ja/docs/concepts/ultrawork">role ごとの作業が evidence-based completion へ収束する仕組み。</Card>
 </Cards>

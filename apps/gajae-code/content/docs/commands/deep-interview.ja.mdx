@@ -1,0 +1,44 @@
+---
+title: deep-interview
+description: 計画やコード変更の前に曖昧さを取り除く明確化スキル — 本当のバグや機能、影響範囲、非目標、受け入れ基準。
+---
+
+`deep-interview` は[動作ループ](/ja/docs/commands)の最初のステップです。計画やコード変更の前に曖昧さを取り除き、以降のループが推測ではなく明確で合意された理解の上に構築されるようにします。
+
+## 何を明確にするか
+
+計画を描いたりファイルに触れたりする前に、`deep-interview` は次を確定します：
+
+- **本当のバグや機能** — 最初の表現と切り離して、実際に求められているもの。
+- **影響範囲** — どのユーザー可視動作やシステム動作が対象か。
+- **非目標** — 明示的に範囲外のもの。作業が広がらないようにする。
+- **受け入れ基準** — 作業が完了し正しいことをどう判断するか。
+
+## 使い方
+
+GJC セッション内で `/skill:<name>` で呼び出します：
+
+```text
+/skill:deep-interview clarify the bug, affected behavior, non-goals, and acceptance checks
+```
+
+問題を自分の言葉で説明します。スキルは、曖昧な要求を計画できるほど具体的にするために必要な質問をします。
+
+`--quick`、`--standard`、`--deep` でインタビューの深さを調整できます：
+
+```text
+/skill:deep-interview --deep <vague idea>
+```
+
+## いつ使うか
+
+- **使う**：要求が曖昧、影響範囲が不明、バグ報告が不完全、または機能に一度も述べられていない暗黙の制約があるとき。
+- **省く**：タスクがすでに完全に仕様化され小さく、明確化すべきことが残っていないとき。
+
+## ループ内での位置
+
+```text
+deep-interview -> ralplan -> ultragoal
+```
+
+`deep-interview` は明確化した問題定義を [`ralplan`](/ja/docs/commands/ralplan) に渡し、ralplan が変更前にそれを批評済みの計画に変えます。明確化を省くと、確認していない前提が発見と矛盾した瞬間に [`ultragoal`](/ja/docs/commands/ultragoal) の段階で手戻りとして現れがちです。

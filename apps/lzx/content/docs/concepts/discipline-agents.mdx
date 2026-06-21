@@ -1,54 +1,56 @@
 ---
-title: Discipline agents
-description: Sisyphus orchestrates Hephaestus, Oracle, and Librarian — a coordinated AI dev team running inside Codex with parallel execution.
+title: Agent Roles
+description: Selectable Codex roles and the verification-first work loop.
 ---
 
-LazyCodex (LZX) does not run as one big prompt. It installs a small cast of **discipline agents** into Codex, each tuned to one job. Sisyphus reads your intent and delegates; the specialists work their lanes; the loop keeps moving until the result is verified by evidence instead of a hopeful status update.
+LazyCodex (LZX) packages the OmO agent harness for Codex. Most users only need to remember commands such as `$init-deep`, `$ulw-plan`, `$start-work`, and `$ulw-loop`. Internally, Codex multi-agent tools and selectable roles split exploration, planning, review, and QA.
 
-These agents come from the **OmO (oh-my-openagent)** harness. LazyCodex is a thin distribution layer that packages that harness for Codex — "LazyVim for Codex."
+As of `4.12.1`, installed roles include `explorer`, `librarian`, `plan`, `momus`, `metis`, `lazycodex-executor`, `lazycodex-code-reviewer`, `lazycodex-qa-executor`, `lazycodex-gate-reviewer`, and `lazycodex-clone-fidelity-reviewer`. If the Codex build exposes `agent_type`, LazyCodex can select those roles directly. If not, it falls back to describing the role inside the message.
 
-> **Where the role detail comes from.** The LazyCodex README only *names* these agents — "Sisyphus orchestrates Hephaestus, Oracle, Librarian." The per-role behavior and tool boundaries below are defined by the underlying **OmO** engine, not by the LazyCodex README. See the OmO agent docs for the authoritative source.
+## Parent Session Ownership
 
-## The cast
+Even with many roles, completion judgment is not handed wholesale to child agents. The parent Codex session keeps ownership of the goal, constraints, and final judgment. Child agents map terrain, find gaps, review, or help with QA.
 
-<Cards>
-  <Card title="Sisyphus" href="/docs/concepts/discipline-agents">Main orchestrator. Reads intent, plans, delegates, tracks progress, finishes the work.</Card>
-  <Card title="Hephaestus" href="/docs/concepts/discipline-agents">Autonomous deep worker. Implementation, architecture, debugging, and synthesis.</Card>
-  <Card title="Oracle" href="/docs/concepts/discipline-agents">Read-only verification and architecture/debugging consultation. No writes.</Card>
-  <Card title="Librarian" href="/docs/concepts/discipline-agents">Fast, cheap retrieval of docs, remote repositories, and OSS examples.</Card>
-</Cards>
+| Role | Used for |
+| --- | --- |
+| `explorer` | Internal context such as codebase structure, call flow, and test locations |
+| `librarian` | External docs, library contracts, and current API research |
+| `plan` | Draft plans and work breakdowns |
+| `momus` / `metis` | Missing decisions, edge cases, and risk review |
+| `lazycodex-executor` | Executing a specific unit of a plan |
+| `lazycodex-code-reviewer` | Post-implementation code quality review |
+| `lazycodex-qa-executor` | Hands-on QA against real surfaces |
+| `lazycodex-gate-reviewer` | Pre-completion verification gate |
+| `lazycodex-clone-fidelity-reviewer` | Fidelity review for clone or sync work |
 
-## Roles at a glance
+## Execution Loop
 
-| Agent | Role | Boundary |
-|---|---|---|
-| **Sisyphus** | Orchestrator | Reads intent, splits the work, delegates to specialists, tracks todos, and only stops when the task is done. |
-| **Hephaestus** | Implementation | The deep worker that writes code, debugs, and reasons through hard logic and synthesis. |
-| **Oracle** | Verification & review | Read-only consultant for architecture and debugging. Verifies completion; performs no writes, edits, or delegation. |
-| **Librarian** | Retrieval | Research-only. Pulls documentation, remote repos, and OSS code. No writes, edits, or delegation. |
+However roles are split, the basic loop for a unit of work is the same.
 
-The read-only boundaries on Oracle and Librarian are part of the harness. They stop a "smart" agent from doing unsafe work in the wrong role — retrieval and review never silently mutate your codebase.
+1. **Explore**: map the terrain. Read code with tools instead of guessing, and launch read-only child agents in parallel when useful.
+2. **Plan**: choose the path. Record files, concrete changes, and dependencies in the active plan.
+3. **Implement**: build precisely. Match the existing codebase style even when a greenfield version would look different.
+4. **Verify**: prove it works. Run diagnostics, related tests, and build checks in parallel where possible.
+5. **Manual QA**: check the real surface, then write the final message.
 
-## How they coordinate
+## Non-goals
 
-Sisyphus is the entry-point orchestrator: it reads intent, splits a request into units, and hands them to the right specialist.
+- **It does not trust child-agent self-reports.** Completion is judged by independent verification.
+- **It does not stop at suggestions when code was requested.** Unless the user explicitly asks for planning or brainstorming, it implements.
+- **It does not guess unread code.** Exploration is cheap; assumptions are expensive.
+- **It does not leave work blurry at the end of a turn.** Each plan step is reconciled as completed, blocked with a reason, or removed with a reason.
 
-- **Hephaestus** takes the implementation and hard-reasoning units.
-- **Oracle** verifies the result and consults on architecture and debugging, read-only.
-- **Librarian** retrieves the context (docs, repos, examples) the workers need.
+## Orchestration and Delegation
 
-Oracle and Librarian do not delegate — their tool access is read-only by design. Because delegation is explicit, multiple lanes can run at once.
+LazyCodex uses child-agent roles inside Codex. It can use read-only roles for parallel exploration and reviewer roles for review or QA. Final reporting is still based on evidence collected by the parent session.
 
-## Parallel execution
+## Boulder State
 
-LazyCodex runs specialists in parallel when the main session can keep moving without a result. Independent research and self-contained units run simultaneously; work stays synchronous when a result blocks the next implementation decision. Each unit is paired with a model that fits the job — see [Multi-model routing](/docs/concepts/model-routing).
+`$start-work` uses `.omo/boulder.json` to preserve progress and Stop-hook continuation to keep plan execution moving. This is the key user-visible durable behavior. When every checkbox is done, it prints **ORCHESTRATION COMPLETE**.
 
-## Where this fits
+## Related Docs
 
-- The command pillars drive these agents: [`$ulw-plan`](/docs/commands/ulw-plan) plans, [`$start-work`](/docs/commands/start-work) executes a plan, and [`$ulw-loop`](/docs/commands/ulw-loop) keeps looping until Oracle-verified completion.
-- Verified completion is what makes the loop stop — see [The ultrawork loop](/docs/concepts/ultrawork).
-
-<Cards>
-  <Card title="Multi-model routing" href="/docs/concepts/model-routing">How each unit lands on the right GPT model.</Card>
-  <Card title="The ultrawork loop" href="/docs/concepts/ultrawork">Self-referential looping until completion is verified.</Card>
-</Cards>
+- [`$ulw-plan`](/docs/commands/ulw-plan): plans before implementation and writes `.omo/plans/<slug>.md`.
+- [`$start-work`](/docs/commands/start-work): executes a plan with durable Boulder progress.
+- [`$ulw-loop`](/docs/commands/ulw-loop): keeps looping until evidence is verified.
+- [Hooks & Lifecycle](/docs/concepts/hooks-lifecycle): how Stop-hook continuation and evidence gates keep long work moving.

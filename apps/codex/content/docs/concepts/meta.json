@@ -1,10 +1,9 @@
 {
   "title": "Core Concepts",
   "pages": [
-    "[Agent prompts](/docs/concepts#agent-prompts)",
-    "[Skills](/docs/concepts#skills)",
-    "[Codex-native hooks](/docs/concepts#codex-native-hooks)",
-    "[Team orchestration](/docs/concepts#team-orchestration)",
-    "[The .omx/ directory](/docs/concepts#the-omx-directory)"
+    "[Agents](/docs/concepts#what-are-agents)",
+    "[Skills](/docs/concepts#what-are-skills)",
+    "[Hooks](/docs/concepts#what-are-hooks)",
+    "[State management](/docs/concepts#state-management-overview)"
   ]
 }

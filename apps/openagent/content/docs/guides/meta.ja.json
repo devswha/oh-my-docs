@@ -1,8 +1,11 @@
 {
   "title": "活用ガイド",
   "pages": [
-    "[Which Mode?](/ja/docs/guides#which-mode-should-i-use)",
-    "[First Workflow](/ja/docs/guides#recommended-first-workflow)",
-    "[Model Setup](/ja/docs/guides#model-setup-guidance)"
+    "[Choosing a Workflow](/ja/docs/guides#choosing-a-workflow)",
+    "[Ultrawork](/ja/docs/guides#ultrawork)",
+    "[Prometheus + Atlas](/ja/docs/guides#prometheus--atlas)",
+    "[Hephaestus vs Sisyphus](/ja/docs/guides#hephaestus-vs-sisyphus)",
+    "[Agent Install](/ja/docs/guides#installation-as-an-agent-task)",
+    "[Model Rule](/ja/docs/guides#model-rule-of-thumb)"
   ]
 }

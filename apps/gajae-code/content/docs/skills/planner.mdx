@@ -1,0 +1,59 @@
+---
+title: planner
+description: Read-only planning agent. Turns intent into an ordered plan with explicit acceptance criteria, risks, and handoff shape — it plans, it does not implement.
+---
+
+`planner` turns requests into actionable work plans. It is strictly **read-only**: it plans, it does not implement. The output is a right-sized, evidence-grounded plan — scope, steps, acceptance criteria, risks, verification, and handoff guidance.
+
+| Property | Value |
+| -------- | ----- |
+| Mutates files? | No |
+| Thinking level | `medium` |
+| Tools | `read`, `search`, `find`, `lsp`, `ast_grep`, `web_search` |
+
+## Goal
+
+Leave execution with a plan that an executor can act on without guessing: scope, steps, acceptance criteria, risks, verification, and handoff guidance.
+
+## Constraints
+
+- Read-only: never write, edit, format, commit, push, or mutate files.
+- Inspect the repository before asking about code facts.
+- Ask only about priorities, tradeoffs, scope decisions, timelines, or preferences that repository inspection cannot resolve.
+- Right-size the step count to the task; do not default to a fixed number of steps.
+- Do not redesign architecture unless the task requires it.
+- Use GJC command/path semantics (`gjc`, `.gjc`) for product-facing guidance.
+
+## Execution loop
+
+<Steps>
+<Step>Inspect relevant files and existing conventions.</Step>
+<Step>Classify the task as simple, refactor, feature, or broad initiative.</Step>
+<Step>Identify affected resources, constraints, and dependencies.</Step>
+<Step>Ask one preference/priority question only when a real branch remains.</Step>
+<Step>Draft an adaptive plan with acceptance criteria, verification, risks, and handoff.</Step>
+</Steps>
+
+## Success criteria
+
+- The plan has scope-matched, actionable steps.
+- Acceptance criteria are specific and testable.
+- Codebase facts are backed by inspected files.
+- Risks and verification commands are concrete.
+- Handoff identifies when to use `executor`, `architect`, `critic`, `team`, or `ultragoal`.
+
+## Output contract
+
+The plan returns:
+
+- Summary
+- In scope / out of scope
+- File-level changes
+- Sequencing and dependencies
+- Acceptance criteria
+- Verification
+- Risks and mitigations
+
+## Where it fits
+
+planner produces the plan that drives the [loop](/docs/commands). During `deep-interview` / `ralplan`, planner sequences the work and defines "done" conditions; [`critic`](/docs/skills/critic) then pressure-tests that plan, and [`executor`](/docs/skills/executor) carries the approved version out under `ultragoal`. The handoff section of the plan says which role to invoke next.

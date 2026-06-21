@@ -25,15 +25,9 @@ memories:
 - 当记忆改变计划时引用记忆工件路径，并在行动前与当前仓库证据配对；
 - 当记忆与仓库状态或用户指令冲突时优先后者，把冲突的记忆视为陈旧。
 
-## 读取记忆工件
+## 运行时记忆产物
 
-智能体可用 `read` 工具与 `memory://` URL 直接读取记忆文件：
-
-| URL                                    | 内容                |
-| -------------------------------------- | ------------------- |
-| `memory://root`                        | 启动时注入的紧凑摘要 |
-| `memory://root/MEMORY.md`              | 完整长期记忆文档     |
-| `memory://root/skills/<name>/SKILL.md` | 生成的 skill 手册    |
+生成的本地记忆产物属于 private runtime state。GJC 可能把摘要、长期记忆文档和生成的 playbook 写到磁盘，供后续会话 recall；但 `memory://` 应视为内部读取的 compatibility route，而不是公开用户契约。
 
 ## `/memory` 斜杠命令
 

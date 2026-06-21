@@ -143,10 +143,10 @@ gjc ultragoal complete-goals
 在隔离的 Git worktree 中运行会话,使主检出保持干净:
 
 ```sh
-gjc --tmux --worktree <path>
+gjc --tmux --worktree my-refactor-branch
 ```
 
-为一次性或分支专属工作使用专用路径。在 worktree 内用 `ralplan` 规划,再用 `ultragoal` 跟踪变更。
+`--worktree` 的值是 GJC 管理的 sibling worktree 的 branch-like 名称。如果已有 worktree 路径，请进入该目录并运行 `gjc --tmux`。在 worktree 内用 `ralplan` 规划，再用 `ultragoal` 跟踪变更。
 
 ### 探索陌生的代码库
 
@@ -180,15 +180,15 @@ gjc ultragoal complete-goals
 任何应与主检出隔离的工作 —— 重构、有风险的实验、分支专属任务 —— 都在隔离的 Git worktree 中运行:
 
 ```sh
-gjc --tmux --worktree <path>
+gjc --tmux --worktree my-task-branch
 ```
 
-为一次性或分支专属工作使用专用路径,使主检出保持干净。
+GJC 管理的 worktree 使用 branch-like 名称。如果已有路径，请进入该目录并启动 `gjc --tmux`。
 
 ## 继续阅读
 
 <Cards>
-  <Card title="工作流" href="/zh/docs/workflows" />
-  <Card title="代理" href="/zh/docs/agents" />
+  <Card title="工作流" href="/zh/docs/commands" />
+  <Card title="代理" href="/zh/docs/skills" />
   <Card title="核心概念" href="/zh/docs/concepts" />
 </Cards>

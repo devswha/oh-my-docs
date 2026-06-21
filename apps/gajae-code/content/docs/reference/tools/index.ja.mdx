@@ -1,0 +1,62 @@
+---
+title: ツール
+description: Gajae-Code エージェントが使うツール表面 — ファイル、検索、ランタイム、computer-use、Web、セッション、メディア — をファミリー別に整理。
+---
+
+Gajae-Code エージェントは絞り込まれた名前付きツール表面を通じて動作します。各ツールは上流 `docs/tools/` 項目と対応し、名称・フラグ・挙動はそのまま保たれます。以下のファミリーは各ツールの詳細ページにリンクします。
+
+## ツールファミリー
+
+<Cards>
+  <Card title="ファイル" href="/ja/docs/reference/tools/files">
+    `read`、`write`、`edit`（複数の編集 variant）、構造的書き換えの `ast-edit`。
+  </Card>
+  <Card title="検索とナビゲーション" href="/ja/docs/reference/tools/search">
+    `find`、`search`、`search_tool_bm25`、`ast-grep`、`lsp`、`resolve`。
+  </Card>
+  <Card title="ランタイムと実行" href="/ja/docs/reference/tools/runtime">
+    `bash`、`eval`、`python-repl`、`debug`、`ssh`、バックグラウンド `job` 制御。
+  </Card>
+  <Card title="Computer use" href="/ja/docs/reference/tools/computer-use">
+    Apple Silicon macOS スクリーンショットとマウス/キーボード制御の実験的ツール。
+  </Card>
+  <Card title="Web と外部" href="/ja/docs/reference/tools/web">
+    `web_search`、`browser`、`github`。
+  </Card>
+  <Card title="セッションとメモリ" href="/ja/docs/reference/tools/session-and-memory">
+    `task`、`todo_write`、`checkpoint`、`rewind`、`recall`、`retain`、`reflect`。
+  </Card>
+  <Card title="メディアとその他" href="/ja/docs/reference/tools/media">
+    `render_mermaid`、`inspect_image`、`calc`、`recipe`、`ask`。
+  </Card>
+</Cards>
+
+## 一覧
+
+| ファミリー | ツール | ページ |
+| --- | --- | --- |
+| ファイル | `read` · `write` · `edit` · `ast-edit` | [ファイル](/ja/docs/reference/tools/files) |
+| 検索とナビ | `find` · `search` · `search_tool_bm25` · `ast-grep` · `lsp` · `resolve` | [検索](/ja/docs/reference/tools/search) |
+| ランタイムと実行 | `bash` · `eval` · `python-repl` · `debug` · `ssh` · `job` | [ランタイム](/ja/docs/reference/tools/runtime) |
+| Computer use | `computer` | [Computer use](/ja/docs/reference/tools/computer-use) |
+| Web と外部 | `web_search` · `browser` · `github` | [Web](/ja/docs/reference/tools/web) |
+| セッションとメモリ | `task` · `todo_write` · `checkpoint` · `rewind` · `recall` · `retain` · `reflect` | [セッションとメモリ](/ja/docs/reference/tools/session-and-memory) |
+| メディアとその他 | `render_mermaid` · `inspect_image` · `calc` · `recipe` · `ask` | [メディア](/ja/docs/reference/tools/media) |
+
+## 共通の取り決め
+
+- **内部 URL。** 内容ツール（`read`、`search`、`ast-grep`）はルーターがバッキングリソースに解決できる場合 `agent://`、`artifact://`、`memory://`、`gjc://`、`rule://`、`issue://`、`pr://` を受け付けます。内部 URL に glob は不可。
+- **ハッシュラインアンカー。** `read`、`search`、`ast-grep` は `LINEhh|text` アンカー（例：`41th|def alpha():`）を出力し、`edit` は `|` 左側の `LINEhh` トークンのみ消費します。`:raw` 読み取りと不変リソースではアンカーが抑制されます。
+- **プレビューしてから resolve。** 一部のツール（特に `ast-edit`）は先にプレビューし強制 `resolve` アクションを予約します。`resolve(action: "apply", ...)` を呼ぶまで書き込みません。
+- **上限と切り詰め。** 出力はバイト/行で上限が掛かり（`search` は先頭 `100` 件、`ast-grep` はデフォルト `50` 件）、結果に上限・切り詰めの到達が報告されます。
+
+## 設定・資格情報が必要なツール
+
+一部のツールはバックエンド設定後に動作します。有効化するキー・環境変数・資格情報は[リファレンス](/ja/docs/reference)を参照。
+
+- `web_search` と `browser` は provider 設定に依存。
+- `computer` は Apple Silicon macOS で既定で呼び出し可能で、supervisor によりゲートされます。`computer.alwaysOn=false` で無効化できます。
+- `github` は `gh` CLI とそのキャッシュを使用。
+- `lsp` は `lsp.enabled` でゲートされ、プロジェクトごとに言語サーバーを探索/設定。
+- `search_tool_bm25` は `tools.discoveryMode !== "off"` のときのみ出現。
+- アクティブな `edit` variant は `GJC_EDIT_VARIANT`、`ast-edit` のファイル範囲は `GJC_MAX_AST_FILES` で決まる。

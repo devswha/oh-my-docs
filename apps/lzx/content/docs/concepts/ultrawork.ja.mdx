@@ -1,73 +1,61 @@
 ---
-title: ultrawork ループ
-description: $ulw-loop が作業を Oracle 検証済みの完了まで進める仕組み — 楽観的な状況ではなく証拠、反復上限、--completion-promise と --strategy、そして $ulw-plan・$start-work との関係。
+title: Ultrawork Loop
+description: The evidence-first work discipline behind LazyCodex.
 ---
 
-ultrawork は看板モードです。プロンプトのどこかに `ultrawork`（または短い別名 `ulw`）を入力すると、最高精度・結果優先・証拠駆動のオーケストレーションが有効になります。
+ultrawork は LazyCodex が長い作業を扱うときの規律です。prompt に `ultrawork` または `ulw` が含まれるか、`$ulw-loop` を実行すると、agent は「終わったように見える」ではなく実行した証拠を基準に完了を判断します。
 
-> _"計画し、実行し、検証し、証拠を添えて残す。"_
+> _"計画し、実行し、検証し、証拠を一緒に残す。"_
 
-原則はシンプルです。エージェントが完了したと言ったから完了なのではありません。**Oracle が証拠に照らして検証**したときに完了です。
+原則は単純です。agent が終わったと言ったから作業が終わるわけではありません。**観測可能な証拠が検証**されたときに初めて終わります。
 
-## ultrawork が強制すること
+## What Ultrawork Enforces
 
-ultrawork が有効なとき、harness は楽観的な「完了したように見える」では満足しません：
+ultrawork が有効になると、harness は希望的な「終わったようだ」では満足しません。
 
-- 厳格な TDD：RED → GREEN → SURFACE → CLEAN
-- 少なくとも 3 つの現実的な QA シナリオ
-- 実際の手動 QA チャネル（HTTP 呼び出し、tmux、ブラウザ）
-- 作業が本当に完了するまで回る拘束力のある検証ゲート
+- 厳格な TDD: RED -> GREEN -> SURFACE -> CLEAN
+- 作業リスクに合った現実的な QA scenarios
+- 実際の manual QA channels: HTTP calls、tmux、browser、computer use、CLI stdout、data diff
+- 作業が本当に終わるまで回る拘束力のある verification gates
 
-## $ulw-loop：検証済みの完了
+## Relationship to `$ulw-loop`
 
-`$ulw-loop` は検証済みの完了まで回る自己参照型の開発ループです。エージェントは継続的に作業し、完了したと判断すると `<promise>DONE</promise>` を出します — しかしそれでループは終わり**ません**。
+`$ulw-loop` は ultrawork の規律を Commands として使う方法です。最新の流れでは `.omo/ulw-loop` の下に request、goals、success criteria、evidence ledger を残します。
 
-まず Oracle が結果を検証する必要があります。システムが Oracle の検証を確認した後にのみループは終わります。検証が失敗すると、次のメッセージと共に継続します：
-
-```text
-Oracle verification failed. Continuing ULTRAWORK loop.
-```
-
-### 構文
-
-```bash
-$ulw-loop "task description" [--completion-promise=TEXT] [--strategy=reset|continue]
-```
-
-| フラグ | 効果 |
+| File | Role |
 | --- | --- |
-| `--completion-promise=TEXT` | 検証前にエージェントが満たすべき約束テキストを指定 |
-| `--strategy=reset` | 各反復をクリーンな状態から開始 |
-| `--strategy=continue` | 反復間で状態を引き継ぐ |
+| `.omo/ulw-loop/brief.md` | 元の依頼と継続制約 |
+| `.omo/ulw-loop/goals.json` | 目標と成功基準 |
+| `.omo/ulw-loop/ledger.jsonl` | pass、fail、block、steering、checkpoint 記録 |
 
-### 反復上限
+作業が終わったという言葉だけでは足りません。各 success criterion には実際の表面で確認した evidence が必要で、その evidence が通過して初めて loop が止まります。
 
-ループは無限に回らないよう上限があります：
+正確な syntax と flags は [`$ulw-loop` command doc](/ja/docs/commands/ulw-loop) にだけ置きます。
 
-- ultrawork モードで **500** 回
-- 通常モードで **100** 回
+## Failure Limits
 
-## 楽観的な状況ではなく証拠
+loop は永遠に回らないよう制限されています。最新の `$ulw-loop` workflow は以下の上限を使います。
 
-ループは「コードを少し書いた」では止まりません。エージェントが期待する状況報告ではなく、証拠 — 実行された検査とその結果 — で結果が確認されたときに止まります。だからこそ `<promise>DONE</promise>` とループ終了の間に Oracle が立ちます。
-
-## 柱の中での位置づけ
-
-`$ulw-loop` は 3 つのコマンドの柱の 1 つで、それぞれ異なる形の作業のためにあります：
-
-| 柱 | 使うとき |
+| Condition | Limit |
 | --- | --- |
-| `$ulw-plan` | コードを書く前に意思決定が必要なとき。`plans/<slug>.md` を書き、プロダクトコードは書かない。 |
-| `$start-work` | 計画が整い、完了まで実行すべきとき。**ORCHESTRATION COMPLETE** を出力。 |
-| `$ulw-loop` | 結果が証拠で検証されるまで作業を進め続けるべきとき。 |
+| 1 つの goal で全体通過なしに繰り返す | 5 cycles |
+| 同じ criterion の同じ失敗 | 3 回 |
 
-典型的な流れ：`$ulw-plan` が意思決定完了済みの計画を作り、`$start-work` がチェックボックスごとに実行し、`$ulw-loop` がオープンエンドのタスクを Oracle が承認するまで回し続けます。
+## Evidence Over Hope
 
-## 関連
+loop は「少しコードを書いた」で止まりません。agent が期待する status report ではなく、どの検査が走り、何を示したかという evidence で結果が確認されたときに止まります。
+
+## Position Among Commands
+
+`$ulw-loop` は Commands の 1 つで、それぞれ異なる形の作業のためにあります。
+
+一般的な流れは単純です。`$ulw-plan` が decision-complete plan を作り、`$start-work` が checkbox 単位で実行し、`$ulw-loop` が開いた作業を verifier が承認するまで続けます。各 command の詳細 syntax は [Commands](/ja/docs/commands) にまとめています。
+
+## Related Docs
 
 <Cards>
-  <Card title="$ulw-loop コマンド" href="/ja/docs/commands/ulw-loop" />
-  <Card title="$ulw-plan コマンド" href="/ja/docs/commands/ulw-plan" />
-  <Card title="$start-work コマンド" href="/ja/docs/commands/start-work" />
-  <Card title="規律エージェント" href="/ja/docs/concepts/discipline-agents" />
+  <Card title="$ulw-loop Command" href="/ja/docs/commands/ulw-loop" />
+  <Card title="$ulw-plan Command" href="/ja/docs/commands/ulw-plan" />
+  <Card title="$start-work Command" href="/ja/docs/commands/start-work" />
+  <Card title="Agent Roles" href="/ja/docs/concepts/discipline-agents" />
 </Cards>

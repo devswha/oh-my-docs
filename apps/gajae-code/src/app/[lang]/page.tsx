@@ -99,7 +99,7 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
             <div className="max-w-xl"><CopyInstallCommand command={INSTALL_COMMAND} label={t.install} /></div>
           </div>
           <div className="relative overflow-hidden rounded-3xl border border-fd-border bg-fd-card p-5 shadow-2xl">
-            <Image src="/images/hero.png" alt="Gajae-Code preview" width={960} height={600} priority className="rounded-2xl" />
+            <Image src="/images/hero.png" alt="Gajae-Code preview" width={1672} height={941} priority className="rounded-2xl" />
           </div>
         </section>
 

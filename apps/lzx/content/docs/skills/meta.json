@@ -9,7 +9,6 @@
     "refactor",
     "lsp",
     "rules",
-    "comment-checker",
-    "ultragoal"
+    "comment-checker"
   ]
 }

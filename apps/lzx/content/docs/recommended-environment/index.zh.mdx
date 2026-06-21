@@ -1,0 +1,60 @@
+---
+title: 推荐环境
+description: 安装 LazyCodex 前建议准备好的 Codex、Node.js 与仓库环境。
+---
+
+LazyCodex 不需要一套单独的运行环境。它更像是把 OmO 命令、技能和钩子接入 Codex。先确认 Codex 可正常打开、可以运行 `npx`，并且目标仓库已经准备好。
+
+## 操作系统
+
+最稳妥的选择是 Ubuntu 或 macOS。LazyCodex 会接触 shell、Git、Node.js/npm、Codex 配置文件和钩子，因此类 Unix 环境通常更顺。
+
+| 操作系统 | 推荐程度 | 说明 |
+| --- | --- | --- |
+| <span className="not-prose inline-flex items-center gap-2 whitespace-nowrap align-middle"><img src="/images/docs/os-ubuntu.svg" alt="" width="20" height="20" className="h-5 w-5 shrink-0" /> Ubuntu</span> | 最推荐 | 无论服务器还是本地开发，路径、shell 和包管理都更可预测。 |
+| <span className="not-prose inline-flex items-center gap-2 whitespace-nowrap align-middle"><img src="/images/docs/os-macos.svg" alt="" width="20" height="20" className="h-5 w-5 shrink-0" /> macOS</span> | 推荐 | 适合本地开发。Homebrew 和 Node.js/npm 配好即可。 |
+| <span className="not-prose inline-flex items-center gap-2 whitespace-nowrap align-middle"><img src="/images/docs/os-windows.svg" alt="" width="20" height="20" className="h-5 w-5 shrink-0" /> Windows</span> | 强烈不推荐 | 原生 Windows 的 shell 和路径差异容易在钩子、CLI、文件权限和脚本执行上带来额外摩擦。 |
+
+如果必须使用 Windows，建议在 WSL2 的 Ubuntu 中使用 Codex 和 LazyCodex，而不是直接使用原生 Windows。项目也尽量放在 WSL2 文件系统内。
+
+## 安装前检查
+
+| 项目 | 推荐状态 |
+| --- | --- |
+| Codex | Codex App 或 Codex CLI 已安装、可用并已登录。 |
+| Node.js/npm | 使用仍在维护的 Node.js LTS。`npx` 随 npm 提供。 |
+| 项目 | 在 Codex 中打开要使用 LazyCodex 的仓库。 |
+| Git | 推荐在 Git 仓库中使用，便于查看和回退改动。 |
+| 密钥 | 如果需要提供方密钥，请放在 shell 或 Codex 环境中，不要写进项目文件。 |
+
+除非要从源码构建 LazyCodex，否则不需要安装 Bun。普通安装和使用走 Node.js/npm 的 `npx` 路径。
+
+`npx` 随 npm 提供。先检查版本：
+
+```bash
+node -v
+npm -v
+npx -v
+```
+
+如果没有安装，请安装 Node.js/npm：
+
+```bash
+# Ubuntu 或 WSL2 Ubuntu
+sudo apt update
+sudo apt install -y nodejs npm
+
+# macOS
+brew install node
+```
+
+<Callout title="Node.js 和 npm 是什么？">
+  Node.js 让电脑可以运行 JavaScript 工具。npm 是随 Node.js 提供的包管理器，`npx` 是 npm 提供的命令运行工具。LazyCodex 安装时会用 `npx` 运行一次安装命令。
+</Callout>
+
+## 作者的主观推荐
+
+- **从 Codex App 开始**：安装、登录、会话状态和技能调用流程都更容易直接看见。
+- **使用 ChatGPT Pro 或更高版本**：本文档中的示例更适合按 ChatGPT Pro 以上提供的 Codex 使用环境来理解。
+- **新手先体验原生 Codex**：如果刚开始接触 vibe coding，建议先打开一个项目，让 Codex 做普通修改，熟悉它的回应和改文件方式，再叠加 LazyCodex。
+- **避免其他模型组合**：不建议使用 GLM、Kimi、Mimo 等组合。LazyCodex 文档围绕 Codex 和 OmO 技能流程编写，不会为其他模型提供同等程度的指导。

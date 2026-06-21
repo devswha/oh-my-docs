@@ -28,7 +28,7 @@ setup omc
 #### NPM Installation
 
 ```bash
-npm install -g oh-my-claudecode@latest
+npm install -g oh-my-claude-sisyphus@latest
 omc setup
 ```
 
@@ -76,14 +76,14 @@ No breaking changes. Upgrade via standard install.
 
 | Area | v2.x | v3.0 |
 |------|------|------|
-| Package name | `claude-code-orchestrator` | `oh-my-claudecode` |
+| Package name | `claude-code-orchestrator` | `oh-my-claude-sisyphus` npm package; `oh-my-claudecode` brand/plugin/commands |
 | Activation | Manual `omc start` | Auto-activation via hooks |
 | Config location | `~/.omc/` | `.omc/` (per-project) |
 
 #### Migration Steps
 
 1. Uninstall old package: `npm uninstall -g claude-code-orchestrator`
-2. Install new package: `npm install -g oh-my-claudecode`
+2. Install new package: `npm install -g oh-my-claude-sisyphus`
 3. Move config: `mv ~/.omc/ .omc/`
 4. Run setup: `setup omc`
 

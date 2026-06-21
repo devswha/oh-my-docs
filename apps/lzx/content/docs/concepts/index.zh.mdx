@@ -1,97 +1,40 @@
 ---
-title: LazyCodex 是什么
-description: 把 OmO（oh-my-openagent）打包为 Codex 智能体 harness 的薄分发层——项目记忆、规划、执行与已验证的完成。"懒人专用的 Codex 中的 omo。"
+title: Concept
+description: A thin Codex distribution for OmO.
 ---
 
-LazyCodex（LZX）把 [OmO（oh-my-openagent）](https://github.com/code-yeongyu/oh-my-openagent)打包为 Codex 的智能体 harness。OmO 是为 Codex 提供纪律智能体、并行编排、多模型路由、skill、hook 与已验证完成的引擎。LazyCodex 把该引擎封装为一条命令即可安装的、可复用的 Codex 配置。
+LazyCodex 将 [OmO (oh-my-openagent)](https://github.com/code-yeongyu/oh-my-openagent) 打包成适合在 Codex 中使用的发行层。安装命令很短，但里面包含 Codex 用的 OmO 插件、Skills、hooks、MCP servers，以及 Commands 工作流。
 
-> _"LazyVim 让 Neovim 人人可用，LazyCodex 为 Codex 做同样的事。"_
+> _"就像 LazyVim 让更多人能轻松使用 Neovim，LazyCodex 对 Codex 做同样的事。"_
 
-可以把它理解为面向 Codex 的 [LazyVim](https://github.com/LazyVim/LazyVim)（对应 [lazy.nvim](https://github.com/folke/lazy.nvim)）。一句话：**懒人专用的 Codex 中的 omo。**
+可以把它理解为面向 Codex 的 [LazyVim](https://github.com/LazyVim/LazyVim) for [lazy.nvim](https://github.com/folke/lazy.nvim)。
 
-## 薄分发层
+## Thin Distribution
 
-LazyCodex 不重新实现智能体 harness，而是分发一个。核心引擎是 OmO，`npx lazycodex-ai install` 是 `npx --yes --package oh-my-openagent omo install --platform=codex` 的简写。LazyCodex 增加的是一个干净易记的入口和面向 Codex 的安装。
+LazyCodex 本身更像一个小型安装 alias。`lazycodex-ai` 针对 Codex 平台运行 OmO 安装，真正的功能由 `omo` 插件提供。
 
 ```text
 lazycodex/
-├── src/            → oh-my-openagent（OmO 子模块——引擎）
-└── packages/
-    └── web/        → lazycodex.ai 文档站点
+├── package.json       -> lazycodex-ai install alias
+└── plugins/omo/       -> Codex plugin, Skills, hooks, MCP servers
 ```
 
-真正做事的一切——智能体、路由、skill、hook、验证——都在 OmO 子模块中。LazyCodex 是让 Codex 指向它的那一层。
+安装步骤放在 [Getting Started](/zh/docs/getting-started)。本节只说明安装后 Codex 会增加哪些层。
 
-## harness 给 Codex 带来什么
+## What Gets Installed
 
-安装后，Codex 运行完整的 OmO harness：
-
-| 能力 | 在 Codex 中的含义 |
+| Layer | 在 Codex 中的含义 |
 | --- | --- |
-| 纪律智能体 | Sisyphus 编排 Hephaestus、Oracle、Librarian——一支完整的 AI 开发团队 |
-| 并行执行 | 独立子任务同时分发给多个智能体 |
-| 多模型路由 | 按任务类别自动选择合适的 GPT 模型 |
-| skill 系统 | 专家级判断（评审、清理、前端、LSP、AST-grep 等） |
-| hook 与生命周期 | hook 在会话启动、提示词提交与编辑类工具调用时触发 —— 见 [hook 与生命周期](/zh/docs/concepts/hooks-lifecycle) |
-| 零配置 | 开箱即用的合理默认值，需要时再覆盖 |
+| Commands | `$init-deep`、`$ulw-plan`、`$start-work`、`$ulw-loop` 等工作流入口 |
+| Skills | review、debugging、refactor、frontend、LSP、rules injection 等专家 playbook |
+| Hooks | session start、prompt submit、edit 后、compact 后、stop 时自动运行的辅助机制 |
+| MCP Servers | `grep_app`、`context7`、`codegraph`、`git_bash`、`lsp` 等工具连接 |
 
-## 四个核心理念
-
-harness 的存在是为了端到端地把四件事做好：
-
-<Steps>
-
-<Step>
-
-### 项目记忆
-
-`$init-deep` 在整个仓库生成分层的 `AGENTS.md` 上下文，让智能体在改动前先看到正确的文件。当代码库大到无法凭记忆解释时运行它。
-
-</Step>
-
-<Step>
-
-### 规划
-
-`$ulw-plan "要构建什么"` 把模糊想法转为决策完备的计划，写入 `plans/<slug>.md`。它只做规划，绝不编写产品代码。
-
-</Step>
-
-<Step>
-
-### 执行
-
-`$start-work [plan-name]` 执行计划直到每个复选框完成，进度持久保存，计划完成时打印 **ORCHESTRATION COMPLETE**。
-
-</Step>
-
-<Step>
-
-### 已验证的完成
-
-`$ulw-loop "task"` 持续推进，直到结果由证据验证而非靠乐观的状态更新。循环结束前必须由 Oracle 确认。
-
-</Step>
-
-</Steps>
-
-## 安装
-
-```bash
-npx lazycodex-ai install
-```
-
-没有全局安装——始终使用 `npx`。完全自主、无 TUI 的安装：
-
-```bash
-npx lazycodex-ai install --no-tui --codex-autonomous
-```
-
-## 浏览概念
+## Explore Concept
 
 <Cards>
-  <Card title="ultrawork 循环" href="/zh/docs/concepts/ultrawork" />
-  <Card title="纪律智能体" href="/zh/docs/concepts/discipline-agents" />
-  <Card title="多模型路由" href="/zh/docs/concepts/model-routing" />
-  <Card title="命令支柱" href="/zh/docs/commands" />
+  <Card title="Commands" href="/zh/docs/commands" />
+  <Card title="Ultrawork Loop" href="/zh/docs/concepts/ultrawork" />
+  <Card title="Model Routing" href="/zh/docs/concepts/model-routing" />
+  <Card title="Hooks & Lifecycle" href="/zh/docs/concepts/hooks-lifecycle" />
 </Cards>

@@ -61,7 +61,7 @@ Choose the setup path that matches the way you want to use OMX first.
         #### Launch the leader session
 
         ```bash
-        omx --madmax --high
+        omx --worktree=feat/first-task --madmax --xhigh
         ```
       </Step>
     </Steps>
@@ -72,10 +72,10 @@ Choose the setup path that matches the way you want to use OMX first.
     Use this path when a plan needs multiple coordinated lanes or work should survive tmux panes.
 
     ```bash
-    npm install -g @openai/codex oh-my-codex
+    npm install -g oh-my-codex
     codex login
     omx setup
-    omx --tmux --madmax --high
+    omx --tmux --worktree=feat/team-task --madmax --xhigh
     ```
 
     Then start parallel execution only after the task is clear enough to split:
@@ -101,6 +101,7 @@ Choose the setup path that matches the way you want to use OMX first.
 
 <Callout type="warn">
 `--madmax` bypasses Codex approvals and sandboxing. Use it only in repositories and environments where that execution boundary is intentional.
+If your `codex` binary is Homebrew-owned, do not overwrite it with a combined `npm install -g @openai/codex oh-my-codex`; install or update Codex through its owning package manager and install `oh-my-codex` separately.
 </Callout>
 
 ## First session

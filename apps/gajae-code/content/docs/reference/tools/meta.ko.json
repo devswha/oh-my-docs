@@ -1,0 +1,12 @@
+{
+  "title": "도구",
+  "pages": [
+    "files",
+    "search",
+    "runtime",
+    "computer-use",
+    "web",
+    "session-and-memory",
+    "media"
+  ]
+}

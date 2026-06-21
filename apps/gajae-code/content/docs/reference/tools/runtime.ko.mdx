@@ -1,0 +1,179 @@
+---
+title: 런타임·실행
+description: Gajae-Code 에이전트가 명령과 코드를 실행하게 해주는 bash, eval, python-repl, debug, ssh, job 도구.
+---
+
+런타임 도구는 Gajae-Code 에이전트가 실제로 무언가를 실행하는 방법입니다. 셸 명령, 즉석 코드, 디버그 세션, 원격 명령, 백그라운드 작업을 다룹니다. 아래 각 도구는 업스트림 `docs/tools/` 레퍼런스에 대응하며, 플래그·환경변수·한도는 소스 그대로입니다.
+
+## bash
+
+`bash`는 세션 워크스페이스에서 셸 명령을 실행합니다. 출력(stdout·stderr 병합)은 텍스트로 돌아옵니다. 0이 아닌 종료 코드는 오류로 표면화됩니다.
+
+### 입력
+
+| 필드      | 타입                     | 설명                                                                                            |
+| --------- | ------------------------ | ----------------------------------------------------------------------------------------------- |
+| `command` | `string`                 | 셸 명령 텍스트. `cwd`가 없으면 앞쪽 `cd <path> && ...`가 `cwd`로 재작성됩니다.                   |
+| `env`     | `Record<string, string>` | 추가 환경변수. 키는 `^[A-Za-z_][A-Za-z0-9_]*$`와 일치해야 합니다.                                |
+| `timeout` | `number`                 | 타임아웃(초). 기본 `300`, `1..3600`으로 클램프.                                                 |
+| `cwd`     | `string`                 | 작업 디렉터리. 세션 cwd 기준으로 해석되며 존재하는 디렉터리여야 합니다.                          |
+| `pty`     | `boolean`                | PTY 모드 요청. 기본 `false`.                                                                    |
+| `async`   | `boolean`                | 백그라운드 실행. async 작업이 켜진 경우만 사용 가능하며, 즉시 job id를 반환합니다.               |
+
+### PTY 모드와 `GJC_NO_PTY`
+
+PTY 모드는 대화형 xterm 기반 콘솔 오버레이를 열고 키 입력을 실행 중인 프로세스로 전달합니다. 다음이 **모두** 성립할 때만 사용됩니다:
+
+- 호출에 `pty: true`,
+- 도구 컨텍스트에 UI가 있고,
+- `GJC_NO_PTY !== "1"`.
+
+`GJC_NO_PTY=1`을 설정하면 어디서든 비-PTY 실행을 강제합니다. 도구는 조용히 비대화형 실행기로 폴백합니다. print 모드와 UI 없는 RPC 컨텍스트는 항상 비-PTY로 동작합니다.
+
+```bash
+# 세션 전체에서 대화형 PTY 비활성화
+GJC_NO_PTY=1 gjc --tmux
+```
+
+### 모드
+
+<Steps>
+<Step>**포그라운드 비-PTY** — 기본. 실행 중 tail만 스트리밍합니다.</Step>
+<Step>**포그라운드 PTY** — `pty: true`, UI, `GJC_NO_PTY !== "1"` 필요. 대화형이며 오버레이에서 `Esc`로 세션을 종료합니다.</Step>
+<Step>**명시적 백그라운드 작업** — `async: true`는 작업을 등록하고 즉시 job id를 반환합니다.</Step>
+<Step>**자동 백그라운드** — `bash.autoBackground.enabled`가 켜져 있으면, 대기 창을 넘긴 긴 비-PTY 실행은 백그라운드로 이동합니다(기본 임계값 `60초`).</Step>
+</Steps>
+
+### 인터셉터
+
+`bashInterceptor.enabled`가 켜져 있으면 흔한 셸 오남용을 차단하고 더 적합한 도구를 가리킵니다. 기본 규칙:
+
+| 패턴                                     | 대신 사용 |
+| ---------------------------------------- | --------- |
+| `cat`, `head`, `tail`, `less`, `more`    | `read`    |
+| `grep`, `rg`, `ripgrep`, `ag`, `ack`     | `search`  |
+| `find`, `fd`, `locate` (name/type/glob)  | `find`    |
+| `sed -i`, `perl -i`, `awk -i inplace`    | `edit`    |
+| 리디렉션이 있는 `echo`/`printf`/`cat <<` | `write`   |
+
+규칙은 제안 도구가 실제로 세션에 있을 때만 발동합니다.
+
+### 한도
+
+- 기본 타임아웃 `300초`, 클램프 `1..3600초`.
+- 인메모리 출력 tail 상한 `50KB`. 그 이상이면 tail만 메모리에 남고 전체 출력은 `artifact://<id>`로 흘려보낼 수 있습니다.
+- 자동 백그라운드 기본 임계값 `60000ms`, `timeout - 1000ms`로 상한.
+
+## eval
+
+`eval`은 Python 또는 JavaScript 코드를 지속적인 셀 기반 런타임에서 실행합니다. 상태는 언어별로 셀 간·도구 호출 간 유지됩니다. `python -c`, `bun -e`, `node -e`로 셸 아웃하는 것보다 이쪽을 선호하세요. 지속 상태, 구조화된 `display()` 출력, 이미지/JSON 캡처, 제대로 된 취소 처리를 얻습니다.
+
+### 입력
+
+유일한 파라미터는 `cells` — 순서 있는 배열입니다. 각 셀:
+
+| 필드       | 타입            | 설명                                                            |
+| ---------- | --------------- | --------------------------------------------------------------- |
+| `language` | `"py" \| "js"`  | 백엔드. `"py"` → Python 커널, `"js"` → 지속 JavaScript VM.      |
+| `code`     | `string`        | 셀 본문, 그대로(JSON 인코딩 — 줄바꿈을 직접 삽입).             |
+| `title`    | `string`        | 트랜스크립트에 표시되는 선택 라벨.                              |
+| `timeout`  | `integer`       | 셀별 타임아웃(초), `1..600`으로 클램프. 기본 `30`.             |
+| `reset`    | `boolean`       | 실행 전 이 셀의 언어 커널을 비움. 언어별로 적용.               |
+
+```json
+{
+  "cells": [
+    { "language": "py", "title": "imports", "code": "import json\nfrom pathlib import Path" },
+    { "language": "py", "title": "load config", "code": "data = json.loads(read('package.json'))\ndisplay(data)" },
+    { "language": "js", "title": "summary", "reset": true, "code": "const data = JSON.parse(await read('package.json'));\ndisplay(data);\nreturn data.name;" }
+  ]
+}
+```
+
+### 백엔드와 `GJC_PY`
+
+백엔드 선택은 **셀별로 명시적**입니다 — 자동 감지나 폴백이 없습니다. 두 백엔드 모두 기본 켜짐(`eval.py` / `eval.js`). `GJC_PY` 환경변수가 노출되는 백엔드를 덮어씁니다:
+
+| `GJC_PY`        | 효과                  |
+| --------------- | --------------------- |
+| `0` / `bash`    | JavaScript 백엔드만.  |
+| `1` / `py`      | Python 백엔드만.      |
+| `mix` / `both`  | 둘 다.                |
+
+요청한 백엔드가 비활성이거나 사용 불가면 그 셀은 `ToolError`를 던집니다. Python 사전 점검이 실패해도 `eval.js`가 켜져 있으면 `eval`은 계속 사용 가능합니다. 셀이 명시적으로 Python을 요청하지 않는 한 JavaScript로 디스패치합니다.
+
+- **JavaScript**는 지속 `vm.Context`에서 돕니다. 최상위 `await`와 단독 `return`을 지원합니다. 정적/동적 `import`는 세션 cwd 기준으로 해석되도록 재작성됩니다. 로컬 import는 셀 간 캐시 무효화됩니다. 프렐류드 전역에는 `display`, `read`, `write`, `append`, `env`, 그리고 임의 세션 도구 호출용 `tool.<name>(args)` 프록시가 있습니다.
+- **Python**은 NDJSON으로 통신하는 장수 `python3` 서브프로세스 안에서 돕니다. Jupyter나 추가 pip 의존성 없이 Python 3.8+면 충분합니다. 최상위 `await`가 동작합니다. 리치 `display()` 출력(pandas, matplotlib, PIL)은 이미지/JSON/markdown으로 보존됩니다.
+
+### 한도
+
+- 셀별 타임아웃 기본 `30초`, 클램프 `1..600초`.
+- 출력 절단 창 `50KB`, 줄 상한 `3000`.
+- Python 보존 커널 유휴 타임아웃 `5분`, 최대 `4`개 세션, 하드 실패 전 세션당 1회 자동 재시작.
+
+## python-repl
+
+`eval` 뒤의 Python 백엔드는 Python 커널 런타임으로 깊이 문서화되어 있습니다. 운영 메모 몇 가지:
+
+- **매직** — IPython 스타일 매직은 일반 Python으로 재작성됩니다: `%pip`, `%cd`, `%pwd`, `%ls`, `%env`, `%time`/`%timeit`, `%who`/`%whos`, `%reset`, `%load`, `%run`, `%%bash`/`%%sh`, `%%capture`, `%%writefile`, `!cmd`.
+- **세션 vs 호출별 커널** — `python.kernelMode = "session"`(기본)은 세션 파일·cwd로 키된 보존 커널을 재사용합니다. `"per-call"`은 요청마다 새 서브프로세스를 띄운 뒤 종료합니다.
+- **환경** — 러너 환경은 필터링됩니다(허용 목록 + `LC_`/`XDG_`/`GJC_` 접두사, API 키 제거). 런타임 해석은 활성/탐지된 venv, 그다음 `~/.gjc/python-env`의 관리 venv, 그다음 `PATH`의 `python`/`python3` 순입니다.
+- **stdin 미지원** — `input()`은 취소까지 블록됩니다. 데이터는 프로그램적으로 전달하세요.
+- **Matplotlib** — `MPLBACKEND=Agg`가 설정되어 figure가 오프스크린으로 렌더되고, 셀 후 각 figure가 PNG로 캡처됩니다.
+
+관련 환경변수: `GJC_PY`(백엔드 노출), `GJC_PYTHON_SKIP_CHECK=1`(사전 점검 우회), `GJC_PYTHON_INTEGRATION=1`(게이트 통합 테스트), `GJC_PYTHON_IPC_TRACE=1`(NDJSON 프레임 로그). `gjc setup python --check`로 해석된 인터프리터를 확인합니다.
+
+## debug
+
+`debug`는 하나의 Debug Adapter Protocol(DAP) 세션을 구동합니다. `debug.enabled`가 true일 때만 노출되며, 동시에 하나의 활성 세션만 허용됩니다.
+
+`action` 필드가 동작을 선택합니다. 요점:
+
+- **수명 주기** — `launch`(`program` 필요), `attach`(`pid` 또는 `port` 필요), `terminate`, `sessions`.
+- **브레이크포인트** — `set_breakpoint` / `remove_breakpoint`(file+line 또는 function), 명령·데이터 브레이크포인트 변형.
+- **스테핑** — `continue`, `step_over`, `step_in`, `step_out`, `pause`.
+- **검사** — `stack_trace`, `threads`, `scopes`, `variables`, `evaluate`(컨텍스트 기본 `repl`), `modules`, `loaded_sources`, `disassemble`, `read_memory`, `write_memory`, `output`, `custom_request`.
+
+어댑터는 파일 확장자·루트 마커로 자동 선택되거나(`gdb`, `lldb-dap`, `debugpy`, `dlv` 등 내장) `adapter`로 강제할 수 있습니다. 요청별 `timeout`은 기본 `30초`, `5..300`으로 클램프됩니다. `continue` / `step_*`은 대상이 타임아웃을 넘겨 계속 실행 중이어도 치명적이지 않습니다 — 던지는 대신 `details.timedOut = true`를 반환합니다.
+
+## ssh
+
+`ssh`는 탐지된 SSH 호스트에서 **하나의** 원격 명령을 실행합니다.
+
+| 필드      | 타입     | 설명                                                              |
+| --------- | -------- | ----------------------------------------------------------------- |
+| `host`    | `string` | 탐지된 설정의 호스트 **이름 키** — 임의 호스트/IP가 아닙니다.      |
+| `command` | `string` | 원격 명령 문자열.                                                 |
+| `cwd`     | `string` | 원격 작업 디렉터리. 도구가 셸별 `cd`를 앞에 붙입니다.             |
+| `timeout` | `number` | 타임아웃(초). 기본 `60`, `1..3600`으로 클램프.                    |
+
+호스트 탐지는 JSON 기반만입니다 — `~/.ssh/config`를 읽지 **않습니다**. 호스트는 프로젝트 관리 설정(`.gjc/ssh.json`), 사용자 관리 설정(`~/.gjc/agent/ssh.json`), 그다음 리포 루트의 `ssh.json` / `.ssh.json`에서 로드됩니다. `host` 값은 원시 호스트네임이 아니라 설정 키여야 합니다.
+
+명령은 PTY 없이 실행됩니다. `StrictHostKeyChecking=accept-new`와 `BatchMode=yes`가 항상 설정되고, 마스터 연결이 재사용됩니다(`ControlPersist=3600`). 0이 아닌 원격 종료는 캡처된 출력과 `Command exited with code N`이 붙은 오류가 됩니다.
+
+## job
+
+`job`은 `bash`(`async: true` 또는 자동 백그라운드)와 async 작업이 만든 백그라운드 작업을 기다리거나 취소합니다. 백그라운드 작업이 켜진 경우에만 노출됩니다.
+
+| 필드     | 타입       | 설명                                                                  |
+| -------- | ---------- | --------------------------------------------------------------------- |
+| `poll`   | `string[]` | 감시할 job id. 생략(그리고 `cancel`도 없음)하면 실행 중인 전체 감시.   |
+| `cancel` | `string[]` | 폴링 전에 취소할 job id.                                              |
+| `list`   | `boolean`  | 이 에이전트가 생성한 모든 작업의 읽기 전용 스냅샷. 나머지와 조합 불가. |
+
+동작:
+
+- `job`은 감시 중 실행 작업 **하나**가 종료될 때까지 기다리며, 전부를 기다리지 않습니다. 나머지는 `## Still Running` 아래에 보고되고 계속 기다리려면 `job`을 다시 호출합니다.
+- 폴 대기 시간은 `async.pollWaitDuration`에서 옵니다 — `5s`, `10s`, `30s`, `1m`, `5m` 중 하나(기본 `30s`). 타임아웃은 오류가 아니라 현재 스냅샷을 반환합니다.
+- 비실행 작업 취소는 `already_completed`로 보고하고, 미상 id는 `not_found`로 보고합니다.
+- 작업 레코드는 완료 후 `5분` 보존된 뒤 제거됩니다.
+
+---
+
+여러 런타임 도구는 설정에 의존합니다.
+
+- `debug`는 `debug.enabled`가 필요합니다.
+- `eval`은 `GJC_PY`로 백엔드가 결정됩니다.
+- 백그라운드 작업은 async 지원이 필요합니다.
+
+토글 전체 목록은 [환경 변수](/ko/docs/reference/environment-variables)를 보세요.

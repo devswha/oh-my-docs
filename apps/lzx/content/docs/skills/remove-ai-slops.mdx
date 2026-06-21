@@ -1,34 +1,34 @@
 ---
 title: remove-ai-slops
-description: Behavior-preserving cleanup of AI-generated code smells.
+description: Cleans AI-generated code smells while preserving behavior.
 ---
 
-`remove-ai-slops` removes AI-generated code smells (slop) from branch changes or an explicit file list while strictly preserving behavior. The core safety invariant: behavior is locked by green regression tests before a single line is removed. A checklist is not safety; a passing test is.
+`remove-ai-slops` removes AI-generated code smells from branch changes or an explicit file list while strictly preserving behavior. Its core safety invariant is simple: before deleting a line, lock current behavior with passing regression tests. A checklist is not the safety net. Passing tests are.
 
-Triggers include "remove ai slops", "clean ai code", "deslop", and "cleanup AI generated".
+The triggers include "remove ai slops", "clean ai code", "deslop", and "cleanup AI generated".
 
-`remove-ai-slops` is the orchestrator: it determines scope (branch diff or file list), locks behavior with regression tests first, then runs categorized cleanup across files via parallel `deep` agents in batches of 5, then verifies with quality gates. Each `deep` agent loads the `ai-slop-remover` skill — the single-file worker that removes slop from exactly one file. Multiple files are handled by invoking that worker in parallel, one per file.
+`remove-ai-slops` is an orchestrator. It determines the scope, locks behavior with regression tests first, splits category-based cleanup across parallel workers, and verifies the result with quality gates. In Codex, OpenCode-style `deep` examples are not called directly. They are translated into worker sub-agents with self-contained messages.
 
 ## Scope
 
-- **Default**: the branch diff versus `merge-base main` — no arguments needed.
-- **Optional**: an explicit file list passed by the caller (for example, a loop workflow's changed-files set).
+- **Default**: branch diff against `merge-base main`; no arguments needed.
+- **Optional**: explicit file list from the caller, such as the changed file set from a loop workflow.
 
 Deleted, binary, generated, and vendored files are filtered out.
 
-## Slop categories
+## Slop Categories
 
-The skill evaluates ten categories, grouped by kind.
+This Skill evaluates major slop categories by group.
 
 | Group | Categories |
 | --- | --- |
-| Stylistic | Obvious comments; over-defensive code; excessive complexity |
-| Structural | Needless abstraction; boundary violations; dead code |
-| Hidden cost | Duplication; performance equivalences |
-| Behavior coverage | Missing tests |
-| Structural (size) | Oversized modules (250+ pure LOC) |
+| Style | Obvious comments, excessive defensive code, unnecessary complexity. |
+| Structure | Needless abstractions, boundary violations, dead code. |
+| Hidden cost | Duplication, behavior-equivalent performance cleanup. |
+| Behavior coverage | Missing tests. |
+| Structure, size | Oversized modules over 250 pure LOC. |
 
-Each category carries explicit KEEP rules. Comments that explain WHY, validation at system boundaries, abstractions that provide a real seam, and intentional patterns are preserved. Performance fixes apply only when behavior equivalence is obvious — otherwise SKIP. Oversized modules trigger a full modular refactoring, not just a flag, with each new file named after the concept it owns (never `utils`, `helpers`, `common`, or `part_1`).
+Each category has explicit KEEP rules. Comments that explain why, validation at system boundaries, abstractions that create real boundaries, and intentional patterns are preserved. Performance changes are applied only when behavioral equivalence is obvious; otherwise they are skipped. Oversized modules are not treated as a simple warning. They trigger a real modular refactor, and new files must be named after the concept they own. Never use names such as `utils`, `helpers`, `common`, or `part_1`.
 
 ## Process
 
@@ -36,9 +36,9 @@ Each category carries explicit KEEP rules. Comments that explain WHY, validation
 
 <Step>
 
-### Determine scope
+### Determine Scope
 
-If file paths were passed, that is the scope. Otherwise use the branch diff:
+If file paths were provided, they are the scope. Otherwise, use the branch diff.
 
 ```bash
 git diff $(git merge-base main HEAD)..HEAD --name-only
@@ -48,43 +48,43 @@ git diff $(git merge-base main HEAD)..HEAD --name-only
 
 <Step>
 
-### Lock behavior with regression tests
+### Lock Behavior With Regression Tests
 
-For each in-scope file, identify the observable behavior, find existing coverage, and write the narrowest regression test that pins current behavior before editing. The baseline must be green. If you cannot establish a green baseline, STOP and report.
-
-</Step>
-
-<Step>
-
-### Plan, then clean in parallel
-
-Produce an explicit per-file cleanup plan ordered safest to riskiest (comments → dead code → defensive → duplication → complexity → abstraction/boundary → performance → tests → oversized-modules). Then process files via `deep` agents loaded with the `ai-slop-remover` skill, batched five at a time in parallel. If a file fails, retry once; otherwise escalate it.
+For each file in scope, identify observable behavior, find existing coverage, and write the narrowest regression test that locks current behavior before editing. The baseline must be green. If a green baseline cannot be established, stop and report it.
 
 </Step>
 
 <Step>
 
-### Verify with quality gates
+### Plan, Then Parallel Cleanup
 
-Run regression tests, lint, typecheck (LSP diagnostics plus the project type-checker), unit/integration tests, and any static/security scan. Gates that are genuinely N/A are reported as `N/A`, never silently skipped. Then walk the safety/behavior/quality critical-review checklist.
+Write a cleanup plan from safer to riskier categories: comments, dead code, defensive code, duplication, complexity, abstraction/boundary, performance, tests, oversized modules. Then run file-level workers in batches of at most five. If a file fails, retry once. If it still fails, escalate.
 
 </Step>
 
 <Step>
 
-### Fix issues
+### Verify With Quality Gates
 
-If any gate fails, revert the offending change with `git checkout` or a targeted edit, re-apply only what is provably safe, and re-run the gate. Fail three times on the same file and you STOP and escalate.
+Run regression tests, lint, typecheck through both LSP diagnostics and the project type checker, unit/integration tests, and static/security scans. Gates that are truly not applicable must be reported as `N/A`; do not silently skip them. Then review the safety, behavior, and quality checklist.
+
+</Step>
+
+<Step>
+
+### Fix Issues
+
+If a gate fails, revert the problematic change with a targeted edit or checkout, reapply only what can be proven safe, and rerun the gates. If the same file fails three times, stop and escalate.
 
 </Step>
 
 </Steps>
 
-## Anti-patterns
+## Antipatterns
 
-- Skipping the regression-test phase — removing code on uncovered ground is a behavior-change time bomb.
-- Bundling unrelated refactors into one cleanup commit.
-- Disguising an algorithm change as a performance optimization.
-- Silent skips — say `N/A` and why.
-- Removing comments that explain WHY.
-- Touching files outside scope.
+- Skipping the regression-test step. Deleting code on uncovered ground is a delayed behavior change.
+- Mixing unrelated refactors into a cleanup commit.
+- Disguising algorithm changes as performance cleanup.
+- Silent skips. Say `N/A` and why.
+- Removing comments that explain why.
+- Touching files outside the agreed scope.

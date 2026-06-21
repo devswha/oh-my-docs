@@ -1,0 +1,60 @@
+---
+title: 推奨環境
+description: LazyCodex の導入前に整えておく Codex、Node.js、リポジトリ環境。
+---
+
+LazyCodex は独自の大きな実行環境を要求しません。Codex に OmO のコマンド、スキル、フックを接続するものです。まず Codex が開けること、`npx` が使えること、作業対象のリポジトリが用意されていることを確認します。
+
+## オペレーティングシステム
+
+最も無難なのは Ubuntu または macOS です。LazyCodex は shell、Git、Node.js/npm、Codex 設定ファイル、hook を扱うため、Unix 系の環境のほうが安定しやすいです。
+
+| OS | 推奨度 | メモ |
+| --- | --- | --- |
+| <span className="not-prose inline-flex items-center gap-2 whitespace-nowrap align-middle"><img src="/images/docs/os-ubuntu.svg" alt="" width="20" height="20" className="h-5 w-5 shrink-0" /> Ubuntu</span> | 最も推奨 | サーバーでもローカル開発でも、パス、shell、パッケージ管理が予測しやすいです。 |
+| <span className="not-prose inline-flex items-center gap-2 whitespace-nowrap align-middle"><img src="/images/docs/os-macos.svg" alt="" width="20" height="20" className="h-5 w-5 shrink-0" /> macOS</span> | 推奨 | ローカル開発に向いています。Homebrew と Node.js/npm が整っていれば十分です。 |
+| <span className="not-prose inline-flex items-center gap-2 whitespace-nowrap align-middle"><img src="/images/docs/os-windows.svg" alt="" width="20" height="20" className="h-5 w-5 shrink-0" /> Windows</span> | 強く非推奨 | ネイティブ Windows の shell やパス差異により、hook、CLI、ファイル権限、script 実行で余計な摩擦が起きやすいです。 |
+
+Windows を使う必要がある場合は、ネイティブ Windows ではなく WSL2 の Ubuntu で Codex と LazyCodex を使うことを推奨します。プロジェクトもできるだけ WSL2 のファイルシステム内に置くほうが安定します。
+
+## インストール前の確認
+
+| 項目 | 推奨状態 |
+| --- | --- |
+| Codex | Codex App または Codex CLI がインストール済みで、サインイン済み。 |
+| Node.js/npm | メンテナンス中の Node.js LTS を使う。`npx` は npm に含まれます。 |
+| プロジェクト | LazyCodex を使うリポジトリを Codex で開いておく。 |
+| Git | 変更の確認や巻き戻しができるよう、Git リポジトリで使うことを推奨。 |
+| シークレット | プロバイダーキーが必要なら shell や Codex 環境に置き、プロジェクトファイルには貼り付けない。 |
+
+LazyCodex をソースからビルドする場合を除き、Bun をインストールする必要はありません。通常のインストールと利用は Node.js/npm の `npx` 経路を前提にします。
+
+`npx` は npm に含まれます。まずバージョンを確認します。
+
+```bash
+node -v
+npm -v
+npx -v
+```
+
+入っていなければ Node.js/npm をインストールします。
+
+```bash
+# Ubuntu または WSL2 Ubuntu
+sudo apt update
+sudo apt install -y nodejs npm
+
+# macOS
+brew install node
+```
+
+<Callout title="Node.js/npm とは？">
+  Node.js は、コンピューター上で JavaScript のツールを動かすための実行環境です。npm は Node.js に同梱されるパッケージ管理ツールで、`npx` は npm に含まれるコマンド実行ツールです。LazyCodex のインストールでは、この `npx` でインストールコマンドを一度実行します。
+</Callout>
+
+## 作者の主観的な推奨
+
+- **Codex App から始める**: インストール、サインイン、セッション状態、スキル呼び出しの流れを目で確認しやすいです。
+- **ChatGPT Pro 以上を使う**: このドキュメントの例は、ChatGPT Pro 以上で利用できる Codex 環境を前提に読むと理解しやすいです。
+- **初めてならネイティブ Codex を先に体験する**: vibe coding が初めての場合は、先に Codex で通常の編集を依頼し、応答やファイル変更の感覚をつかんでから LazyCodex を重ねるほうが理解しやすくなります。
+- **他のモデル構成は避ける**: GLM、Kimi、Mimo などはここでは推奨しません。LazyCodex のドキュメントは Codex と OmO スキルの流れを基準にしているため、他のモデル向けに同じ粒度の案内はしません。

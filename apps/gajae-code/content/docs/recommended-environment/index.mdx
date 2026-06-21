@@ -1,0 +1,41 @@
+---
+title: Recommended Environment
+description: The shell, Bun, tmux, Git, provider, and OS setup Gajae-Code expects before the first gjc session.
+---
+
+Gajae-Code is a terminal-first coding-agent harness. Before installing it, make sure the shell can run Bun, the repository is in Git, and at least one model provider can authenticate.
+
+## Operating system
+
+| OS | Recommendation | Notes |
+| --- | --- | --- |
+| macOS | Recommended | Good local developer setup. Apple Silicon macOS is also the supported host for the experimental `computer-use` tool. |
+| Linux | Recommended | Best fit for tmux-backed terminal sessions, CI-like shells, and remote development. |
+| Windows | Use WSL2 when possible | Native Windows can work for some terminal flows, but tmux and shell behavior are usually smoother inside WSL2. |
+
+## Before installing
+
+| Check | Recommended state |
+| --- | --- |
+| Bun | Installed and on `PATH`; `bun install -g gajae-code` is the documented install command. |
+| Git | Open a Git repository so diffs, worktrees, and checkpoints are reviewable. |
+| tmux | Installed if you plan to use the recommended `gjc --tmux` experience or `team`. |
+| Provider auth | Set an API key, OAuth credential, or provider preset before choosing a model. |
+| Secrets | Keep keys in your shell, `~/.gjc/agent/.env`, or another private env file. Do not commit them. |
+
+Check the basics first:
+
+```bash
+bun --version
+git --version
+tmux -V
+```
+
+## Author's subjective recommendation
+
+- **Start in a Git checkout.** Gajae-Code is most useful when it can reason over real diffs and keep risky work isolated.
+- **Use `gjc --tmux` first.** The tmux path gives team execution and long-running work a stable terminal surface.
+- **Set one provider clearly.** Export one provider key or add one preset before experimenting with model routing.
+- **Use WSL2 for Windows-heavy setups.** It keeps tmux, shell paths, and project file behavior closer to the documented flow.
+
+For the first run, continue with [Getting Started](/docs/getting-started).

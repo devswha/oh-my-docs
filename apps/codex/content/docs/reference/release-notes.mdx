@@ -5,6 +5,25 @@ description: "Detailed OMX release notes with user impact, compatibility, verifi
 
 The [changelog](/docs/reference/changelog) is the short version. Use this page when you need the practical details behind recent releases: what changed, whether you need to migrate, and what was verified before release.
 
+## v0.18.14 — Routing diagnostics, safer goals, hook/HUD hardening
+
+[Upstream release notes](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/release-notes-0.18.14.md) · [CHANGELOG entry](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#01814---2026-06-20) · [Readiness evidence](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/qa/release-readiness-0.18.14.md) · [Compare](https://github.com/Yeachan-Heo/oh-my-codex/compare/v0.18.13...v0.18.14)
+
+### User impact
+
+- Agent/model routing is easier to inspect through per-agent overrides and launch diagnostics.
+- Goal/planning workflows are safer around Codex goal cleanup, Ralplan freshness/approval, supervised Autopilot rework, and Ultragoal architecture invariant handling.
+- Plugin setup, native hooks, HUD, Team, tmux paste buffers, and worker AGENTS guidance preserve more local state and fail less ambiguously.
+- `omx doctor` surfaces root-owned repo artifacts, and resume discovery includes madmax run histories.
+
+### Compatibility
+
+No normal migration is required from `0.18.13`. Existing CLI, plugin, native-agent, HUD, state, hook, package layout, and runtime contracts remain compatible.
+
+### Verification noted upstream
+
+Upstream records release-readiness evidence for version sync, build, native-agent verification, plugin mirror/bundle checks, catalog docs checks, CLI dogfooding, `npm pack --dry-run`, and `git diff --check`. Publication-stage proof is tracked separately in the upstream release workflow.
+
 ## v0.17.0 — Hermes MCP, `$design`, plugin discovery, and adversarial UltraQA
 
 [Upstream release notes](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/release-notes-0.17.0.md) · [CHANGELOG entry](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/CHANGELOG.md#0170---2026-05-12) · [Readiness evidence](https://github.com/Yeachan-Heo/oh-my-codex/blob/main/docs/qa/release-readiness-0.17.0.md)

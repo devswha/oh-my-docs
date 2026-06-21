@@ -3,9 +3,10 @@
   "pages": [
     "index",
     "getting-started",
-    "guides",
-    "commands",
+    "recommended-environment",
+    "faq",
     "concepts",
+    "commands",
     "skills",
     "reference"
   ]

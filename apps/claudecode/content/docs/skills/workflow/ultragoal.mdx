@@ -1,0 +1,33 @@
+---
+title: Ultragoal
+description: Durable multi-goal workflow that pairs .omc/ultragoal artifacts with Claude /goal handoffs.
+---
+
+## Overview
+
+`ultragoal` breaks a large brief into ordered goals, records progress in `.omc/ultragoal/`, and prints handoff text for the active Claude agent to coordinate with Claude Code's `/goal` slash command.
+
+It does not mutate Claude `/goal` state from the shell. The CLI persists durable repo state and tells the in-session agent what `/goal` condition to set, when to checkpoint, and what evidence to report back.
+
+## CLI Flow
+
+```bash
+omc ultragoal create-goals --brief-file plan.md
+omc ultragoal complete-goals
+omc ultragoal checkpoint --goal-id G001-example --status complete --evidence "tests passed"
+omc ultragoal status
+```
+
+The default `claudeGoalMode` is `aggregate`: one Claude `/goal` covers the whole run while OMC stories are tracked in the ledger. Use `--claude-goal-mode per-story` only when each story should get a separate Claude `/goal`.
+
+## Final Gate
+
+The final story must include `ai-slop-cleaner`, verification, and `$code-review` evidence. If review is not clean, call `omc ultragoal record-review-blockers` instead of marking the run complete.
+
+## Reference
+
+| Item | Value |
+|------|-------|
+| Invoke | `/oh-my-claudecode:ultragoal` |
+| CLI | `omc ultragoal ...` |
+| Artifact root | `.omc/ultragoal/` |

@@ -1,0 +1,62 @@
+---
+title: Computer use
+description: Experimental Apple Silicon macOS screenshot and input control through Gajae-Code's native, supervisor-gated computer tool.
+---
+
+`computer` is an experimental desktop-control tool surface for Apple Silicon macOS. It controls the real desktop, so use it only when the task genuinely needs screenshots or input control.
+
+![Gajae-Code operator mascot representing desktop-control computer use](/images/docs/reference-tools-computer-use.png)
+
+## Availability
+
+The tool is callable and discoverable by default on supported hosts:
+
+1. Apple Silicon macOS (`process.platform === "darwin"` and `process.arch === "arm64"`).
+2. `computer.alwaysOn` is not explicitly `false`, unless `computer.enabled` is set to `true`.
+
+When disabled or unsupported, every action returns `COMPUTER_DISABLED` and captures nothing. Native execution remains supervisor-gated: stale supervisor state, missing permissions, stale displays, cancellation, or suspension fail closed with a `COMPUTER_*` code.
+
+## Actions
+
+The action object uses an exact snake_case discriminated schema. CamelCase fields are rejected.
+
+| Action | Required fields | Optional fields |
+| --- | --- | --- |
+| `screenshot` | none | `timeout`, `include_screenshot` |
+| `click` | `x`, `y` | `button`, `timeout`, `include_screenshot` |
+| `double_click` | `x`, `y` | `button`, `timeout`, `include_screenshot` |
+| `move` | `x`, `y` | `button`, `timeout`, `include_screenshot` |
+| `drag` | `x`, `y`, `to_x`, `to_y` | `button`, `timeout`, `include_screenshot` |
+| `scroll` | `x`, `y`, `scroll_x`, `scroll_y` | `timeout`, `include_screenshot` |
+| `type` | `text` | `timeout`, `include_screenshot` |
+| `keypress` | `keys` | `timeout`, `include_screenshot` |
+| `wait` | `ms` | `timeout`, `include_screenshot` |
+| `batch` | `actions` | `timeout`, `include_screenshot` |
+
+`button` is one of `left`, `right`, or `middle`.
+
+## Coordinate contract
+
+`x`, `y`, `to_x`, and `to_y` are screenshot pixels in the latest screenshot coordinate frame. They are not CSS pixels and not normalized fractions. Native code validates display freshness and coordinates before input; invalid coordinates return `COMPUTER_COORD_INVALID` or `COMPUTER_DISPLAY_STALE`.
+
+## Errors
+
+Stable error codes include:
+
+- `COMPUTER_DISABLED`
+- `COMPUTER_SUSPENDED`
+- `COMPUTER_SUPERVISOR_NOT_LIVE`
+- `COMPUTER_PERMISSION_REQUIRED`
+- `COMPUTER_DISPLAY_STALE`
+- `COMPUTER_COORD_INVALID`
+- `COMPUTER_CANCELLED`
+
+The TUI renderer shows bounded action metadata, coordinates, screenshot dimensions, supervisor status, and error code. It never renders raw screenshot base64.
+
+## Related
+
+<Cards>
+  <Card title="Runtime tools" href="/docs/reference/tools/runtime" />
+  <Card title="Media tools" href="/docs/reference/tools/media" />
+  <Card title="Configuration" href="/docs/reference/configuration" />
+</Cards>

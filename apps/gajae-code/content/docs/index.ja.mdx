@@ -29,37 +29,32 @@ deep-interview -> ralplan -> ultragoal
 
 この順序は隠れた自動化ではなく操作の流れを説明します。エージェントは何を変え、何を改訂し、どの検査を実行し、どの証拠が結果を裏付けるかを報告します。
 
-## インストール
+## 最初に覚えること
 
-```bash
-bun install -g gajae-code
-```
+最初は 4 つだけで十分です。
 
-このパッケージは `gjc` バイナリをインストールします。scoped パッケージ `@gajae-code/coding-agent` でも入手できます。その後、推奨の tmux ベース環境で起動します：
+1. Bun、Git、tmux、provider credentials を準備する。
+2. `gjc --tmux` で起動する。
+3. `deep-interview` と `ralplan` で明確化し、計画する。
+4. `ultragoal` で作業を進める。parallel tmux workers が役立つときだけ `team` を加える。
 
-```bash
-gjc --tmux
-```
-
-## ワークフロー
-
-4 つのデフォルトワークフロースキル：`deep-interview`、`ralplan`、`team`、`ultragoal`。
-
-4 つの組み込みロールエージェント：`executor`、`architect`、`planner`、`critic`。
+mutation ではなく research が目的なら `gjc rlm` で始めます。
 
 ## ドキュメントを見る
 
 <Cards>
   <Card title="はじめに" href="/ja/docs/getting-started" description="インストールして gjc を起動し、最初のループを実行。" />
+  <Card title="推奨環境" href="/ja/docs/recommended-environment" description="Bun、Git、tmux、provider credentials、OS notes。" />
+  <Card title="FAQ" href="/ja/docs/faq" description="setup、first use、rlm、team、computer-use の短い回答。" />
   <Card title="コアコンセプト" href="/ja/docs/concepts" description="ワークループ、セッション、モデルルーティング、検証。" />
-  <Card title="ワークフロー" href="/ja/docs/workflows" description="deep-interview、ralplan、team、ultragoal。" />
-  <Card title="エージェント" href="/ja/docs/agents" description="executor、architect、planner、critic。" />
-  <Card title="ツール" href="/ja/docs/tools" description="ファイル、検索、ランタイム、Web、セッション、メディア。" />
+  <Card title="Commands" href="/ja/docs/commands" description="deep-interview、ralplan、rlm、team、ultragoal。" />
+  <Card title="Skills" href="/ja/docs/skills" description="executor、architect、planner、critic role agents。" />
   <Card title="リファレンス" href="/ja/docs/reference" description="設定、モデル、認証情報、キーバインド、テーマ。" />
 </Cards>
 
 ## 次のステップ
 
 - [はじめに](/ja/docs/getting-started) — インストール、起動、最初のループ。
+- [推奨環境](/ja/docs/recommended-environment) — install 前の local setup 確認。
 - ソースプロジェクト：[Yeachan-Heo/gajae-code](https://github.com/Yeachan-Heo/gajae-code)
 - コミュニティ：[Discord](https://discord.gg/sj4exxQ9v)

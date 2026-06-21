@@ -143,10 +143,10 @@ gjc ultragoal complete-goals
 메인 체크아웃을 깨끗하게 유지하도록 격리된 Git worktree 안에서 세션을 실행합니다.
 
 ```sh
-gjc --tmux --worktree <path>
+gjc --tmux --worktree my-refactor-branch
 ```
 
-일회성이거나 브랜치별 작업에는 전용 경로를 쓰세요. worktree 안에서 `ralplan`으로 계획하고, `ultragoal`로 변경을 추적합니다.
+`--worktree` 값은 GJC가 관리하는 sibling worktree의 branch-like 이름입니다. 이미 만든 worktree 경로가 있다면 그 디렉터리로 들어가 `gjc --tmux`를 실행하세요. worktree 안에서 `ralplan`으로 계획하고, `ultragoal`로 변경을 추적합니다.
 
 ### 낯선 코드베이스 탐색
 
@@ -178,7 +178,7 @@ gjc ultragoal complete-goals
 ## 계속 보기
 
 <Cards>
-  <Card title="워크플로" href="/ko/docs/workflows" />
-  <Card title="에이전트" href="/ko/docs/agents" />
+  <Card title="워크플로" href="/ko/docs/commands" />
+  <Card title="에이전트" href="/ko/docs/skills" />
   <Card title="핵심 개념" href="/ko/docs/concepts" />
 </Cards>
