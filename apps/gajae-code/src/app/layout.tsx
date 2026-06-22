@@ -7,6 +7,28 @@ export const metadata: Metadata = {
   title: 'Gajae-Code - Docs',
   description:
     'Official documentation for Gajae-Code, a red-claw coding-agent harness (gjc).',
+  openGraph: {
+    title: 'Gajae-Code - Docs',
+    description:
+      'Official documentation for Gajae-Code, a red-claw coding-agent harness (gjc).',
+    type: 'website',
+    url: 'https://gjc.vibetip.help',
+    images: [
+      {
+        url: 'https://gjc.vibetip.help/images/gjc-social-preview.jpg',
+        width: 1280,
+        height: 640,
+        alt: 'Gajae-Code documentation preview',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Gajae-Code - Docs',
+    description:
+      'Official documentation for Gajae-Code, a red-claw coding-agent harness (gjc).',
+    images: ['https://gjc.vibetip.help/images/gjc-social-preview.jpg'],
+  },
   icons: {
     icon: '/icon.png',
     shortcut: '/icon.png',
