@@ -55,6 +55,16 @@ If you want `omc setup`, `omc update`, `omc team`, and `omc ask` from your shell
 npm i -g oh-my-claude-sisyphus@latest
 ```
 
+### Install Without the Plugin (npm-only)
+
+Prefer one command and no plugin at all? This installs OMC's agents, skills, and hooks straight into `~/.claude` and adds the `omc` command:
+
+```bash
+npm i -g oh-my-claude-sisyphus@latest && omc setup --no-plugin
+```
+
+The `--no-plugin` flag wires the bundled components directly, so you can skip the marketplace steps above.
+
 ### Run Initial Setup
 
 After installation, enter one of the following in Claude Code.

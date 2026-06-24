@@ -55,6 +55,16 @@ OMC 现在提供两个可以共存的 surface。
 npm i -g oh-my-claude-sisyphus@latest
 ```
 
+### 不使用插件，仅用 npm 安装
+
+想用一条命令、完全不用插件安装？这会将 OMC 的 agent、skill 和 hook 直接安装到 `~/.claude`，并添加 `omc` 命令：
+
+```bash
+npm i -g oh-my-claude-sisyphus@latest && omc setup --no-plugin
+```
+
+`--no-plugin` 参数会直接接入捆绑的组件，因此可以跳过上面的 marketplace 步骤。
+
 ### 运行初始设置
 
 安装后，在 Claude Code 中输入以下任一命令。

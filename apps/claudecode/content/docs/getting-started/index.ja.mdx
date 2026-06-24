@@ -55,6 +55,16 @@ shellから`omc setup`、`omc update`、`omc team`、`omc ask`を使いたい場
 npm i -g oh-my-claude-sisyphus@latest
 ```
 
+### プラグインなしで npm だけでインストール
+
+コマンド 1 つで、プラグインなしでインストールしたい場合は？ OMC のエージェント・スキル・フックを `~/.claude` に直接インストールし、`omc` コマンドを追加します。
+
+```bash
+npm i -g oh-my-claude-sisyphus@latest && omc setup --no-plugin
+```
+
+`--no-plugin` フラグがバンドルされたコンポーネントを直接設定するため、上記のマーケットプレイス手順はスキップできます。
+
 ### 初期セットアップの実行
 
 インストール後、Claude Code 内で次のいずれかを入力してください。
